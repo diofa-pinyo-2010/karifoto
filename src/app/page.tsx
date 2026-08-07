@@ -68,4 +68,4 @@ export default function Home() {
   );
 }
 
-const _unusedTestVar = 'this should fail lint';
+const unusedTestVar: number = 'this is a type error and unused var';
