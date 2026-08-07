@@ -67,3 +67,5 @@ export default function Home() {
     </div>
   );
 }
+
+const _unusedTestVar = 'this should fail lint';
