@@ -17,17 +17,19 @@ import {
 } from '@/components/ui/sidebar';
 
 const items = [
-  { title: 'Bookings', url: '/admin/bookings', icon: CalendarDays },
-  { title: 'Settings', url: '/admin/settings', icon: Settings },
+  { title: 'Foglalások', url: '/admin/bookings', icon: CalendarDays },
+  { title: 'Beállítások', url: '/admin/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
-        <span className="px-2 py-1 text-sm font-semibold">Admin</span>
+        <span className="px-2 py-1 text-sm font-semibold group-data-[collapsible=icon]:hidden">
+          Admin
+        </span>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -37,6 +39,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     isActive={pathname === item.url}
+                    tooltip={item.title}
                     render={<Link href={item.url} />}
                   >
                     <item.icon />
