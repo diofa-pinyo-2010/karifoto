@@ -67,5 +67,3 @@ export default function Home() {
     </div>
   );
 }
-
-const unusedTestVar: number = 'this is a type error and unused var';
