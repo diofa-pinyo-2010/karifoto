@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { CalendarDays, Settings } from 'lucide-react';
+import { CalendarDays, Home, Settings } from 'lucide-react';
 
 import {
   Sidebar,
@@ -14,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 const items = [
@@ -23,13 +24,27 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <span className="px-2 py-1 text-sm font-semibold group-data-[collapsible=icon]:hidden">
-          Admin
-        </span>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Home Page"
+              render={
+                <Link
+                  href="/"
+                  onClick={() => isMobile && setOpenMobile(false)}
+                />
+              }
+            >
+              <Home />
+              <span className="font-semibold">Home Page</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -40,7 +55,12 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     isActive={pathname === item.url}
                     tooltip={item.title}
-                    render={<Link href={item.url} />}
+                    render={
+                      <Link
+                        href={item.url}
+                        onClick={() => isMobile && setOpenMobile(false)}
+                      />
+                    }
                   >
                     <item.icon />
                     <span>{item.title}</span>
