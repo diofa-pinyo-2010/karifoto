@@ -27,7 +27,7 @@ export const packages: Package[] = [
   {
     id: 'mini',
     name: 'Mini',
-    sub: '30 perc · választható díszlet',
+    sub: '30 perc · egy választható díszlet',
     price: '39 000 Ft',
     priceHuf: 39000,
     studioFee: '+6 000 Ft stúdió bérlet',
