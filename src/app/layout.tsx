@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Inter } from 'next/font/google';
+import { Cormorant_Garamond, Jost, Parisienne } from 'next/font/google';
 
 import '@/app/globals.css';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -7,16 +7,20 @@ import { cn } from '@/lib/utils';
 
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+const display = Cormorant_Garamond({
+  subsets: ['latin-ext'],
+  weight: ['400', '500', '600'],
+  variable: '--font-cormorant',
 });
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const script = Parisienne({
+  subsets: ['latin-ext'],
+  weight: ['400'],
+  variable: '--font-parisienne',
+});
+const sans = Jost({
+  subsets: ['latin-ext'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-jost',
 });
 
 export const metadata: Metadata = {
@@ -28,14 +32,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
-      lang="en"
+      lang="hu"
       className={cn(
         'h-full',
         'antialiased',
-        geistSans.variable,
-        geistMono.variable,
+        display.variable,
+        script.variable,
+        sans.variable,
         'font-sans',
-        inter.variable,
       )}
       suppressHydrationWarning
     >
