@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, useState } from 'react';
 
-import { LIGHT_FEE, baseSetNames, days, packages } from '@/lib/data';
+import { LIGHT_PLAY_FEE, baseSetNames, days, packages } from '@/lib/data';
 
 type BookingState = {
   pkgIndex: number;
@@ -72,11 +72,11 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       setLabel: bothSets
         ? `${baseSetNames.join(' + ')} díszlet`
         : `${baseSetNames[state.setIndex]} díszlet`,
-      lightFee: lightIncluded ? 0 : state.light ? LIGHT_FEE : 0,
+      lightFee: lightIncluded ? 0 : state.light ? LIGHT_PLAY_FEE : 0,
       totalHuf:
         pkg.priceHuf +
         pkg.studioFeeHuf +
-        (lightIncluded ? 0 : state.light ? LIGHT_FEE : 0),
+        (lightIncluded ? 0 : state.light ? LIGHT_PLAY_FEE : 0),
       canConfirm,
       selectPackage: (i) => setState((s) => ({ ...s, pkgIndex: i })),
       selectSet: (i) =>

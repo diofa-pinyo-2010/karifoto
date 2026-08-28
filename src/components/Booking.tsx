@@ -1,7 +1,7 @@
 'use client';
 
 import { useBooking } from '@/components/BookingProvider';
-import { LIGHT_FEE, baseSetNames, days, huf, packages } from '@/lib/data';
+import { LIGHT_PLAY_FEE, baseSetNames, days, huf, packages } from '@/lib/data';
 
 export function Booking() {
   const booking = useBooking();
@@ -48,7 +48,7 @@ function Form() {
                   : 'border-ink/20 text-ink hover:border-ink/50'
               }`}
             >
-              {p.name} · {p.price}
+              {p.name}
             </button>
           ))}
         </div>
@@ -106,7 +106,7 @@ function Form() {
               <span className="text-[12.5px] leading-[1.4] opacity-[.72]">
                 {booking.lightIncluded
                   ? 'A Family csomag tartalmazza'
-                  : `+ ${huf(LIGHT_FEE)}`}
+                  : `+ ${huf(LIGHT_PLAY_FEE)}`}
               </span>
             </span>
           </button>
@@ -191,7 +191,7 @@ function Form() {
           {booking.lightIncluded ? (
             <Row label="Fényjáték extra" value="a csomag része" />
           ) : booking.light ? (
-            <Row label="Fényjáték extra" value={huf(LIGHT_FEE)} />
+            <Row label="Fényjáték extra" value={huf(LIGHT_PLAY_FEE)} />
           ) : null}
           <div className="mt-1.5 flex items-baseline justify-between gap-3.5 border-t border-cream/[.14] pt-3">
             <span className="text-sm text-[#F1E7D5]">Fizetendő összesen</span>
