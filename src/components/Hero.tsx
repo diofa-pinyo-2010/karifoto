@@ -8,7 +8,7 @@ export function Hero() {
       <div className="mx-auto max-w-225">
         <div className="eyebrow">2026 · Karácsonyi szezon · Budapest</div>
 
-        <h1 className="font-display text-cream-strong mt-4 text-[38px] leading-[1.05] font-medium text-balance sm:mt-5.5 sm:text-[78px]">
+        <h1 className="mt-4 font-display text-[38px] leading-[1.05] font-medium text-balance text-cream-strong sm:mt-5.5 sm:text-[78px]">
           Karácsonyi családi fotózás,
           <br />
           <em className="text-gold italic">amit évekig előveszel</em>
@@ -22,13 +22,13 @@ export function Hero() {
         <div className="mt-6.5 flex flex-wrap items-center justify-center gap-3 sm:mt-9.5 sm:gap-4">
           <a
             href="#foglalas"
-            className="btn-cta shadow-cta px-6.5 py-4.5 text-base sm:px-10.5 sm:text-[17px]"
+            className="btn-cta px-6.5 py-4.5 text-base shadow-cta sm:px-10.5 sm:text-[17px]"
           >
             Időpont foglalása →
           </a>
           <a
             href="#csomagok"
-            className="border-cream/25 hover:border-gold rounded-full border px-5.5 py-4.5 text-base text-[#D8E2DA] transition-colors sm:px-6.5"
+            className="rounded-full border border-cream/25 px-5.5 py-4.5 text-base text-[#D8E2DA] transition-colors hover:border-gold sm:px-6.5"
           >
             Csomagok és árak
           </a>
@@ -44,7 +44,7 @@ export function Hero() {
       </div>
 
       <div className="mx-auto mt-8 max-w-310 sm:mt-14">
-        <div className="border-gold/20 bg-ink relative h-[clamp(280px,52vw,540px)] overflow-hidden rounded-[20px_20px_28px_28px] border">
+        <div className="relative h-[clamp(280px,52vw,540px)] overflow-hidden rounded-[20px_20px_28px_28px] border border-gold/20 bg-ink">
           <Image
             src="/images/hero-anya-lanya.jpg"
             alt="Anya és kislánya a karácsonyi stúdióban"

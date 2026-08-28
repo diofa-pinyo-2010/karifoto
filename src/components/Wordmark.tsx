@@ -17,7 +17,7 @@ export function Wordmark({
         Kari
       </span>
       <span
-        className={`font-script ml-0.75 leading-none ${scriptClassName}`}
+        className={`ml-0.75 font-script leading-none ${scriptClassName}`}
         style={{ fontSize: Math.round(size * 1.16) }}
       >
         foto
