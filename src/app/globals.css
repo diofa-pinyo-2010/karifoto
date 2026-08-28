@@ -7,7 +7,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -46,6 +45,37 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ───────────────────────────────────────────── Karifoto colors ───────────────────────────────────────────── */
+
+  --color-forest: #0e2620;
+  --color-panel: #143329;
+  --color-panel-active: #17392e;
+  --color-ink: #14332a;
+  --color-cream: #f6ebd9;
+  --color-cream-strong: #f8efde;
+  --color-gold: #e5b77e;
+  --color-terracotta: #b8503a;
+  --color-terracotta-hover: #c95f45;
+  --color-sage: #9cb3a6;
+  --color-sage-soft: #b4c5bb;
+  --color-sage-dim: #8fa79b;
+  --color-cream-muted: #41564a;
+  --color-cream-dim: #6e7e71;
+
+  /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
+
+  --font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
+  --font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
+  --font-script: var(--font-parisienne), 'Parisienne', cursive;
+
+  /* ───────────────────────────────────────────── Karifoto shadows ───────────────────────────────────────────── */
+  --shadow-cta: 0 16px 40px rgba(184, 80, 58, 0.4);
+  --shadow-cta-sm: 0 10px 24px rgba(184, 80, 58, 0.32);
+
+  /* ───────────────────────────────────────────── Karifoto letter spacing ───────────────────────────────────────────── */
+  --tracking-label: 0.34em;
+  --tracking-chip: 0.24em;
 }
 
 :root {
@@ -129,6 +159,16 @@
     cursor: pointer;
   }
   html {
-    @apply font-sans;
+    @apply scroll-smooth font-sans;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply text-[11px] tracking-label text-sage uppercase;
+  }
+
+  .btn-cta {
+    @apply inline-block rounded-full bg-terracotta text-center font-medium text-[#FFF4E6] transition-colors hover:bg-terracotta-hover;
   }
 }
