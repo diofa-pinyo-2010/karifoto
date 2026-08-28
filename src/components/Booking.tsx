@@ -18,8 +18,7 @@ export function Booking() {
             Válassz időpontot
           </h2>
           <p className="mx-auto mt-3.5 max-w-[520px] text-base font-light text-sage-soft">
-            Előre fizetés nincs. A visszaigazolást e-mailben kapod, és 48 órán
-            belül díjmentesen módosítható.
+            A visszaigazolást e-mailben fogjuk elküldeni.
           </p>
         </div>
 
