@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String @unique
+  firstName   String
+  lastName    String
+  phoneNumber String
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+  staffProfile  StaffProfile?
+  clientProfile ClientProfile?
+
+  magicLinkTokens MagicLinkToken[]
+  sessions        Session[]
+}
+
+model StaffProfile {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner           User             @relation(fields: [userId], references: [id])
+  userId          String           @unique @db.Uuid
+  role            StaffProfileRole @default(ADMIN)
+  isPhotographer  Boolean          @default(false)
+  isEditor        Boolean          @default(false)
+  photoShootings  PhotoShooting[]  @relation("Photographer")
+  editingSessions PhotoShooting[]  @relation("Editor")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ClientProfile {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner            User            @relation(fields: [userId], references: [id])
+  userId           String          @unique @db.Uuid
+  stripeCustomerId String
+  photoShootings   PhotoShooting[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model TimeSlot {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  startTime     DateTime       @db.Timestamptz
+  endTime       DateTime       @db.Timestamptz
+  revealed      Boolean        @default(false)
+  photoShooting PhotoShooting?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model PhotoShooting {
+  id       String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  client   ClientProfile @relation(fields: [clientId], references: [id])
+  clientId String        @db.Uuid
+
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
+  timeSlotId String   @unique @db.Uuid
+
+  payments Payment[]
+  invoices Invoice[]
+  status   PhotoShootingStatus @default(PHOTOGRAPHER_SELECTION)
+
+  photographer   StaffProfile? @relation("Photographer", fields: [photographerId], references: [id])
+  photographerId String?       @db.Uuid
+
+  editor   StaffProfile? @relation("Editor", fields: [editorId], references: [id])
+  editorId String?       @db.Uuid
+
+  rawImagesUrl   String?
+  finalImagesUrl String?
+  clientNote     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([clientId])
+  @@index([photographerId])
+  @@index([editorId])
+}
+
+model Payment {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paymentIntent   String
+  amountInCents   Int
+  currency        Currency      @default(HUF)
+  type            PaymentType
+  method          PaymentMethod
+  photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String        @db.Uuid
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
+  invoiceId       String        @unique @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([photoShootingId])
+}
+
+model Invoice {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceNumber   String        @unique
+  publicUrl       String
+  paymentMethod   PaymentMethod
+  amountInCents   Int
+  currency        Currency      @default(HUF)
+  status          InvoiceStatus @default(WAITING_FOR_PAYMENT)
+  photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String        @db.Uuid
+  payment         Payment?
+
+  stornoOf      Invoice? @relation("StornoInvoice", fields: [stornoOfId], references: [id])
+  stornoOfId    String?  @unique @db.Uuid
+  stornoInvoice Invoice? @relation("StornoInvoice")
+
+  @@index([photoShootingId])
+}
+
+model MagicLinkToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner     User      @relation(fields: [userId], references: [id])
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, usedAt, expiresAt])
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner     User     @relation(fields: [userId], references: [id])
+  userId    String   @db.Uuid
+  tokenHash String   @unique
+  expiresAt DateTime @db.Timestamptz
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+enum StaffProfileRole {
+  SUPERADMIN
+  ADMIN
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  EXTRA
+  OTHER
+}
+
+enum PaymentMethod {
+  CARD
+  TRANSFER // or WIRE?
+  CASH
+}
+
+enum PhotoShootingStatus {
+  PHOTOGRAPHER_SELECTION
+  RAW_PHOTOS_UPLOAD
+  USER_SELECTION
+  FINAL_PHOTOS_UPLOAD
+  COMPLETED
+  CLOSED
+}
+
+enum Currency {
+  HUF
+  EUR
+  USD
+}
+
+enum InvoiceStatus {
+  WAITING_FOR_PAYMENT
+  SETTLED
+  REFUNDED
+}
+
+enum InvoiceType {
+  INVOICE
+  REVERSE_INVOICE
+  CORRECTION_INVOICE
+}

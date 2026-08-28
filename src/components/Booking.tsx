@@ -11,15 +11,15 @@ export function Booking() {
   return (
     <section
       id="foglalas"
-      className="border-t border-cream/[.09] bg-[linear-gradient(180deg,#0E2620,#122E26)] px-[18px] py-14 sm:px-7 sm:py-[88px]"
+      className="border-t border-cream/9 bg-[linear-gradient(180deg,#0E2620,#122E26)] px-4.5 py-14 sm:px-7 sm:py-22"
     >
-      <div className="mx-auto max-w-[1080px]">
+      <div className="mx-auto max-w-270">
         <div className="text-center">
           <div className="eyebrow">Foglalás · 30 másodperc</div>
           <h2 className="mt-3.5 font-display text-[32px] font-medium text-cream-strong sm:text-[52px]">
             Válassz időpontot
           </h2>
-          <p className="mx-auto mt-3.5 max-w-[520px] text-base font-light text-sage-soft">
+          <p className="mx-auto mt-3.5 max-w-130 text-base font-light text-sage-soft">
             A visszaigazolást e-mailben fogjuk elküldeni.
           </p>
         </div>
@@ -34,7 +34,7 @@ function Form() {
   const booking = useBooking();
 
   return (
-    <div className="mt-7 grid grid-cols-1 gap-6 rounded-[22px] bg-cream p-5 text-ink sm:mt-11 sm:p-[34px] lg:grid-cols-[1.35fr_1fr] lg:gap-[34px]">
+    <div className="mt-7 grid grid-cols-1 gap-6 rounded-[22px] bg-cream p-5 text-ink sm:mt-11 sm:p-8.5 lg:grid-cols-[1.35fr_1fr] lg:gap-8.5">
       <div>
         <Step n={1} label="Csomag" />
         <div className="mt-3 flex flex-wrap gap-2.5">
@@ -43,7 +43,7 @@ function Form() {
               key={p.id}
               type="button"
               onClick={() => booking.selectPackage(i)}
-              className={`rounded-full border px-[18px] py-3 text-sm transition-colors ${
+              className={`rounded-full border px-4.5 py-3 text-sm transition-colors ${
                 i === booking.pkgIndex
                   ? 'border-ink bg-ink text-cream'
                   : 'border-ink/20 text-ink hover:border-ink/50'
@@ -55,7 +55,7 @@ function Form() {
         </div>
 
         <Step n={2} label="Díszlet" className="mt-7" />
-        <div className="mt-[7px] text-[13px] text-[#4A5F53]">
+        <div className="mt-1.75 text-[13px] text-[#4A5F53]">
           {booking.bothSets
             ? `A ${booking.pkg.name} csomagban mindkét díszlettel fotózunk.`
             : 'A Mini csomagban egy díszletet választhatsz.'}
@@ -69,7 +69,7 @@ function Form() {
                 type="button"
                 disabled={booking.bothSets}
                 onClick={() => booking.selectSet(i)}
-                className={`rounded-full border px-[18px] py-3 text-sm transition-colors disabled:cursor-default disabled:opacity-[.82] ${
+                className={`rounded-full border px-4.5 py-3 text-sm transition-colors disabled:cursor-default disabled:opacity-[.82] ${
                   on
                     ? 'border-ink bg-ink text-cream'
                     : 'border-ink/20 text-ink hover:border-ink/50'
@@ -89,7 +89,7 @@ function Form() {
             type="button"
             disabled={booking.lightIncluded}
             onClick={booking.toggleLight}
-            className={`mt-3 flex items-center gap-[13px] rounded-2xl border px-[18px] py-3.5 text-left transition-colors disabled:cursor-default disabled:opacity-[.85] ${
+            className={`mt-3 flex items-center gap-3.25 rounded-2xl border px-4.5 py-3.5 text-left transition-colors disabled:cursor-default disabled:opacity-[.85] ${
               booking.lightOn
                 ? 'border-solid border-ink bg-ink text-cream'
                 : 'border-dashed border-ink/[.28] text-ink hover:border-ink/50'
@@ -102,7 +102,7 @@ function Form() {
             >
               {booking.lightOn ? '✓' : '+'}
             </span>
-            <span className="flex flex-col gap-[3px]">
+            <span className="flex flex-col gap-0.75">
               <span className="text-[15px] font-medium">Fényjáték</span>
               <span className="text-[12.5px] leading-[1.4] opacity-[.72]">
                 {booking.lightIncluded
@@ -127,7 +127,7 @@ function Form() {
                 className={`rounded-2xl border px-4 py-3.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                   active
                     ? 'border-ink bg-ink text-cream'
-                    : 'border-ink/[.18] bg-ink/[.04] text-ink'
+                    : 'border-ink/18 bg-ink/4 text-ink'
                 }`}
               >
                 <span className="block text-[11px] tracking-[.16em] uppercase opacity-70">
@@ -136,7 +136,7 @@ function Form() {
                 <span className="mt-0.5 block font-display text-2xl">
                   {d.label}
                 </span>
-                <span className="mt-[3px] block text-[11px] opacity-75">
+                <span className="mt-0.75 block text-[11px] opacity-75">
                   {d.note}
                 </span>
               </button>
@@ -147,7 +147,7 @@ function Form() {
         <Step n={4} label="Idősáv" className="mt-7" />
         <div className="mt-3 flex flex-wrap gap-2.5">
           {booking.day.slots.length === 0 ? (
-            <span className="rounded-[14px] border border-dashed border-ink/25 px-[22px] py-3.5 text-[15px] text-cream-dim">
+            <span className="rounded-[14px] border border-dashed border-ink/25 px-5.5 py-3.5 text-[15px] text-cream-dim">
               Ezen a napon nincs szabad hely
             </span>
           ) : (
@@ -156,7 +156,7 @@ function Form() {
                 key={t}
                 type="button"
                 onClick={() => booking.selectSlot(t)}
-                className={`rounded-[14px] border px-[22px] py-3.5 text-[15px] transition-colors ${
+                className={`rounded-[14px] border px-5.5 py-3.5 text-[15px] transition-colors ${
                   booking.slot === t
                     ? 'border-terracotta bg-terracotta text-[#FFF4E6]'
                     : 'border-ink/20 text-ink hover:border-ink/50'
@@ -169,11 +169,11 @@ function Form() {
         </div>
       </div>
 
-      <div className="flex flex-col rounded-[18px] bg-ink p-5 text-[#F1E7D5] sm:p-[26px]">
+      <div className="flex flex-col rounded-[18px] bg-ink p-5 text-[#F1E7D5] sm:p-6.5">
         <div className="text-[11px] tracking-chip text-sage-dim uppercase">
           Foglalás összegzése
         </div>
-        <div className="mt-3 font-display text-[28px] leading-[1.25] text-cream-strong">
+        <div className="mt-3 font-display text-[28px] leading-tight text-cream-strong">
           {booking.slot
             ? `${booking.day.weekday}, ${booking.day.label} ${booking.slot}`
             : 'Válassz napot és idősávot'}
@@ -183,7 +183,7 @@ function Form() {
         </div>
         <div className="mt-1 text-sm text-gold">{booking.setLabel}</div>
 
-        <div className="mt-[18px] flex flex-col gap-[7px] border-t border-cream/[.14] pt-4">
+        <div className="mt-4.5 flex flex-col gap-1.75 border-t border-cream/[.14] pt-4">
           <Row
             label={`${booking.pkg.name} csomag`}
             value={formatMoney(booking.pkg.priceHuf)}
@@ -252,7 +252,7 @@ function Confirmation() {
   const booking = useBooking();
 
   return (
-    <div className="mt-7 rounded-[22px] bg-cream px-5 py-9 text-center text-ink sm:mt-11 sm:px-[34px] sm:py-14">
+    <div className="mt-7 rounded-[22px] bg-cream px-5 py-9 text-center text-ink sm:mt-11 sm:px-8.5 sm:py-14">
       <div className="font-display text-[30px] text-ink sm:text-[44px]">
         Megvan az időpontod
       </div>
@@ -264,13 +264,13 @@ function Confirmation() {
         {booking.setLabel}
         {booking.lightOn ? ' + Fényjáték' : ''}
       </div>
-      <div className="mt-[18px] text-[15px] text-cream-dim">
+      <div className="mt-4.5 text-[15px] text-cream-dim">
         A visszaigazolást elküldtük ide: {booking.email}
       </div>
       <button
         type="button"
         onClick={booking.reset}
-        className="mt-[26px] rounded-full border border-ink/30 px-[26px] py-3.5 text-[15px] text-ink transition-colors hover:bg-ink/5"
+        className="mt-6.5 rounded-full border border-ink/30 px-6.5 py-3.5 text-[15px] text-ink transition-colors hover:bg-ink/5"
       >
         Másik időpontot választok
       </button>
