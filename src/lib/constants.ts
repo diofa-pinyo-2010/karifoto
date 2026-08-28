@@ -1,0 +1,10 @@
+export const PACKAGE_PRICE_MINI = 39000_00;
+export const STUDIO_PRICE_MINI = 6000_00;
+
+export const PACKAGE_PRICE_CLASSIC = 49000_00;
+export const STUDIO_PRICE_CLASSIC = 9000_00;
+
+export const PACKAGE_PRICE_FAMILY = 59000_00;
+export const STUDIO_PRICE_FAMILY = 12000_00;
+
+export const LIGHT_PLAY_FEE = 15000_00;

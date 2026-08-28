@@ -1,5 +1,15 @@
 // Static content. Replace with a CMS / API fetch when the backend lands.
 
+import {
+  PACKAGE_PRICE_CLASSIC,
+  PACKAGE_PRICE_FAMILY,
+  PACKAGE_PRICE_MINI,
+  STUDIO_PRICE_CLASSIC,
+  STUDIO_PRICE_FAMILY,
+  STUDIO_PRICE_MINI,
+} from '@/lib/constants';
+import { formatMoney } from '@/lib/utils';
+
 export type Feature = { text: string; ok: boolean; note?: string };
 
 export type Package = {
@@ -28,10 +38,10 @@ export const packages: Package[] = [
     id: 'mini',
     name: 'Mini',
     sub: '30 perc · egy választható díszlet',
-    price: '39 000 Ft',
-    priceHuf: 39000,
-    studioFee: '+6 000 Ft stúdió bérlet',
-    studioFeeHuf: 6000,
+    price: `${formatMoney(PACKAGE_PRICE_MINI)}`,
+    priceHuf: PACKAGE_PRICE_MINI,
+    studioFee: `+${formatMoney(STUDIO_PRICE_MINI)} stúdió bérlet`,
+    studioFeeHuf: STUDIO_PRICE_MINI,
     features: [
       { text: '30 perces fotózás', ok: true },
       {
@@ -54,10 +64,10 @@ export const packages: Package[] = [
     id: 'classic',
     name: 'Classic',
     sub: '40 perc · két díszlet',
-    price: '49 000 Ft',
-    priceHuf: 49000,
-    studioFee: '+9 000 Ft stúdió bérlet',
-    studioFeeHuf: 9000,
+    price: `${formatMoney(PACKAGE_PRICE_CLASSIC)}`,
+    priceHuf: PACKAGE_PRICE_CLASSIC,
+    studioFee: `+${formatMoney(STUDIO_PRICE_CLASSIC)} stúdió bérlet`,
+    studioFeeHuf: STUDIO_PRICE_CLASSIC,
     badge: 'Népszerű',
     features: [
       { text: '40 perces fotózás', ok: true },
@@ -81,10 +91,10 @@ export const packages: Package[] = [
     id: 'family',
     name: 'Family',
     sub: '50 perc · két díszlet, fényjáték',
-    price: '59 000 Ft',
-    priceHuf: 59000,
-    studioFee: '+12 000 Ft stúdió bérlet',
-    studioFeeHuf: 12000,
+    price: `${formatMoney(PACKAGE_PRICE_FAMILY)}`,
+    priceHuf: PACKAGE_PRICE_FAMILY,
+    studioFee: `+${formatMoney(STUDIO_PRICE_FAMILY)} Ft stúdió bérlet`,
+    studioFeeHuf: STUDIO_PRICE_FAMILY,
     features: [
       { text: '50 perces fotózás', ok: true },
       {
@@ -241,12 +251,6 @@ const SHOTS = [
 
 /** A foglaláskor választható alapdíszletek (a Fényjáték nem tartozik ide — az extra). */
 export const baseSetNames = ['Hófehér', 'Álomkastély'];
-
-/** A Fényjáték extra felára Mini és Classic csomag esetén. */
-export const LIGHT_PLAY_FEE = 15000;
-
-export const huf = (n: number) =>
-  String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Ft';
 
 export const photoSets: PhotoSet[] = [
   {

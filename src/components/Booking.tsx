@@ -1,7 +1,9 @@
 'use client';
 
 import { useBooking } from '@/components/BookingProvider';
-import { LIGHT_PLAY_FEE, baseSetNames, days, huf, packages } from '@/lib/data';
+import { LIGHT_PLAY_FEE } from '@/lib/constants';
+import { baseSetNames, days, packages } from '@/lib/data';
+import { formatMoney } from '@/lib/utils';
 
 export function Booking() {
   const booking = useBooking();
@@ -105,7 +107,7 @@ function Form() {
               <span className="text-[12.5px] leading-[1.4] opacity-[.72]">
                 {booking.lightIncluded
                   ? 'A Family csomag tartalmazza'
-                  : `+ ${huf(LIGHT_PLAY_FEE)}`}
+                  : `+ ${formatMoney(LIGHT_PLAY_FEE)}`}
               </span>
             </span>
           </button>
@@ -184,29 +186,32 @@ function Form() {
         <div className="mt-[18px] flex flex-col gap-[7px] border-t border-cream/[.14] pt-4">
           <Row
             label={`${booking.pkg.name} csomag`}
-            value={huf(booking.pkg.priceHuf)}
+            value={formatMoney(booking.pkg.priceHuf)}
           />
-          <Row label="Stúdió bérlet" value={huf(booking.pkg.studioFeeHuf)} />
+          <Row
+            label="Stúdió bérlet"
+            value={formatMoney(booking.pkg.studioFeeHuf)}
+          />
           {booking.lightIncluded ? (
             <Row label="Fényjáték extra" value="a csomag része" />
           ) : booking.light ? (
-            <Row label="Fényjáték extra" value={huf(LIGHT_PLAY_FEE)} />
+            <Row label="Fényjáték extra" value={formatMoney(LIGHT_PLAY_FEE)} />
           ) : null}
           <div className="mt-1.5 flex items-baseline justify-between gap-3.5 border-t border-cream/[.14] pt-3">
             <span className="text-sm text-[#F1E7D5]">Fizetendő összesen</span>
             <span className="font-display text-[28px] leading-none whitespace-nowrap text-gold">
-              {huf(booking.totalHuf)}
+              {formatMoney(booking.totalHuf)}
             </span>
           </div>
         </div>
 
-        <div className="mt-[22px] flex flex-col gap-2.5">
+        <div className="mt-5.5 flex flex-col gap-2.5">
           <input
             value={booking.name}
             onChange={(e) => booking.setName(e.target.value)}
             placeholder="Teljes neved"
             autoComplete="name"
-            className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
+            className="rounded-xl border border-cream/18 bg-forest px-3.75 py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
           />
           <input
             value={booking.email}
@@ -214,7 +219,7 @@ function Form() {
             placeholder="E-mail címed"
             type="email"
             autoComplete="email"
-            className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
+            className="rounded-xl border border-cream/18 bg-forest px-3.75 py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
           />
         </div>
 
@@ -222,7 +227,7 @@ function Form() {
           type="button"
           onClick={booking.confirm}
           disabled={!booking.canConfirm}
-          className={`mt-[18px] rounded-full px-5 py-[18px] text-base font-medium transition-colors ${
+          className={`mt-4.5 rounded-full px-5 py-4.5 text-base font-medium transition-colors ${
             booking.canConfirm
               ? 'bg-terracotta text-[#FFF4E6] hover:bg-terracotta-hover'
               : 'cursor-not-allowed bg-cream/[.14] text-sage-dim'
@@ -235,7 +240,7 @@ function Form() {
               : 'Válassz idősávot'}
         </button>
 
-        <div className="mt-3 text-xs leading-[1.5] text-sage-dim">
+        <div className="mt-3 text-xs leading-normal text-sage-dim">
           A következő oldalon még pár szükséges adatot elkérünk a foglaláshoz.
         </div>
       </div>
@@ -253,7 +258,7 @@ function Confirmation() {
       </div>
       <div className="mt-3 text-[18px] text-cream-muted">
         {booking.day.weekday}, {booking.day.label} {booking.slot} —{' '}
-        {booking.pkg.name} csomag · {huf(booking.totalHuf)}
+        {booking.pkg.name} csomag · {formatMoney(booking.totalHuf)}
       </div>
       <div className="mt-1.5 text-base text-cream-dim">
         {booking.setLabel}

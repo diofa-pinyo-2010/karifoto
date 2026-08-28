@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useMemo, useState } from 'react';
 
-import { LIGHT_PLAY_FEE, baseSetNames, days, packages } from '@/lib/data';
+import { LIGHT_PLAY_FEE } from '@/lib/constants';
+import { baseSetNames, days, packages } from '@/lib/data';
 
 type BookingState = {
   pkgIndex: number;
