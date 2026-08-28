@@ -156,22 +156,25 @@ export const days: Day[] = [
 
 export const reviews = [
   {
-    initial: 'K',
-    name: 'Kovács Anna',
-    when: '2 hete · Google',
-    text: 'A kétéves lányunk öt perc alatt felengedett. Zsuzsi végig nyugodt volt, a képek pedig gyönyörűek — a nagyszülők sírtak, amikor megkapták.',
+    initial: 'B',
+    name: 'Magashegyi Bettina',
+    when: '8 hónapja · Google',
+    text: 'Nagyszerű élmény volt a fotózás, végig nagyon jó hangulatban telt. A díszletek csodálatosak, meghitt hangulatú a hely. Mi egy páros fotózásra mentünk, ahol Maru fotózott minket. Nagyon kedvesen, támogatóan állt hozzánk, így kellemes légkörben telt az egész fotózás. Figyelt ránk, meghallgatta az ötleteinket, és segített abban, hogy igazán felszabadultan érezzük magunkat a kamera előtt. Külön pozitívum, hogy már aznap megkaptuk az összes elkészült fényképet. A fényjátékos fotók szerintem a legjobbak. Tényleg csak ajánlani tudom a stúdiót! 🎄✨',
+    href: 'https://maps.app.goo.gl/Zr8Thpygf9Dm92zGA',
   },
   {
     initial: 'T',
-    name: 'Tóth Gergő',
-    when: '1 hónapja · Google',
-    text: 'Pontos, gyors, korrekt. Csütörtökön fotóztunk, hétfőn már a galériában voltak a képek. Idén is jövünk, már foglaltunk is.',
+    name: 'Bunta-Kranabeth Terézia',
+    when: '7 hónapja · Google',
+    text: 'Nagyon jól éreztük magunkat a fotózás során, végig kellemes és nyugodt volt a hangulat. A kisbabánk is nagyon élvezte, ami különösen sokat jelentett számunkra. A fotósunk rendkívül kedves és türelmes volt, ez igazán meglátszik a képeken is. Csak ajánlani tudjuk a Karifotó csapatát!',
+    href: 'https://maps.app.goo.gl/o5AdDnsR7WEjZmt6A',
   },
   {
-    initial: 'S',
-    name: 'Szabó Réka',
-    when: '3 hete · Google',
-    text: 'A díszlet valódi, nem műanyag giccs. Végre olyan karácsonyi képeink vannak, amit ki is merünk tenni a falra.',
+    initial: 'A',
+    name: 'Gecser Adrienn',
+    when: '9 hónapja · Google',
+    text: 'Nagyon kellemesen telt a fotózás, Niki profi volt és végtelenül kedves :) Pedig nem volt egyszerű dolga a 6 hónapos kislányunkkal :D Szívből ajánlom ❤️',
+    href: 'https://maps.app.goo.gl/qW2poJWjruRYk9nb8',
   },
 ];
 
@@ -205,7 +208,7 @@ export const stats = [
 ];
 
 export const SLOTS_LEFT_LABEL = '15 szabad időpont maradt decemberre';
-export const RATING = { score: '4,9', count: 214 };
+export const RATING = { score: '4,9', count: 99 };
 
 // --- Díszletek ---------------------------------------------------------------
 

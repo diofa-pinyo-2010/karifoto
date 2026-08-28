@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { RATING, reviews } from '@/lib/data';
 
 export function Reviews() {
@@ -18,9 +20,12 @@ export function Reviews() {
 
       <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">
         {reviews.map((r) => (
-          <div
+          <Link
             key={r.name}
-            className="rounded-[20px] border border-cream/9 bg-panel p-7"
+            href={r.href}
+            className="rounded-[20px] border border-cream/9 bg-panel p-7 transition-colors hover:border-cream"
+            target="_blank"
+            rel="noreferrer noopener"
           >
             <div className="flex items-center gap-3.25">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta text-base font-medium text-[#FFF4E6]">
@@ -35,7 +40,7 @@ export function Reviews() {
             <p className="mt-3 text-[15px] leading-[1.62] font-light text-pretty text-[#C2D2C8]">
               {r.text}
             </p>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

@@ -1,6 +1,7 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
-import { RATING, SLOTS_LEFT_LABEL } from '@/lib/data';
+import { RATING } from '@/lib/data';
 
 export function Hero() {
   return (
@@ -34,13 +35,17 @@ export function Hero() {
           </a>
         </div>
 
-        <div className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-[13px] text-[#93A99D]">
+        <Link
+          href="https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA"
+          className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-[13px] text-[#93A99D] hover:text-[#93A99D]/90"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
           <span>
-            ★★★★★ {RATING.score} a Google-on ({RATING.count} értékelés)
+            <span className="text-gold">★★★★★</span> {RATING.score} a Google-on
+            ({RATING.count} értékelés)
           </span>
-          <span className="hidden sm:inline">·</span>
-          <span>{SLOTS_LEFT_LABEL}</span>
-        </div>
+        </Link>
       </div>
 
       <div className="mx-auto mt-8 max-w-310 sm:mt-14">
