@@ -117,25 +117,27 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
               {set.desc}
             </p>
 
-            <div className="mt-6">
-              <div className="text-[11px] tracking-chip text-sage-dim uppercase">
-                Uralkodó színek
+            {set.colors != null && (
+              <div className="mt-6">
+                <div className="text-[11px] tracking-chip text-sage-dim uppercase">
+                  Uralkodó színek
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2.5">
+                  {set.colors.map((c) => (
+                    <div
+                      key={c.name}
+                      className="flex items-center gap-[9px] rounded-full border border-cream/[.16] bg-cream/[.04] py-2 pr-3.5 pl-[9px]"
+                    >
+                      <span
+                        className="h-4 w-4 rounded-full border border-black/20"
+                        style={{ background: c.hex }}
+                      />
+                      <span className="text-sm text-[#D8E2DA]">{c.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2.5">
-                {set.colors.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex items-center gap-[9px] rounded-full border border-cream/[.16] bg-cream/[.04] py-2 pr-3.5 pl-[9px]"
-                  >
-                    <span
-                      className="h-4 w-4 rounded-full border border-black/20"
-                      style={{ background: c.hex }}
-                    />
-                    <span className="text-sm text-[#D8E2DA]">{c.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
 
             {set.extra ? (
               <div className="mt-[26px] flex max-w-[520px] items-start gap-3 rounded-2xl border border-gold/30 bg-gold/[.08] px-[18px] py-4">

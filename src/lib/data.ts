@@ -222,7 +222,7 @@ export type PhotoSet = {
   hero: string;
   heroAlt: string;
   desc: string;
-  colors: SetColor[];
+  colors?: SetColor[];
   tips: string;
   shots: { src: string; alt: string }[];
   bg: string; // section background utility
@@ -273,13 +273,13 @@ export const photoSets: PhotoSet[] = [
     thumb: '/images/diszlet-alomkastely.jpg',
     hero: '/images/diszlet-alomkastely.jpg',
     heroAlt: 'Az Álomkastély díszlet arany fényekkel',
-    desc: 'Placeholder: rövid leírás az Álomkastély díszletről — arany fények, mélyzöld falak, meseszerű hangulat.',
+    desc: 'Idén egy igazán elegáns és kifinomult, a megszokottól kicsit elrugaszkodott díszlettel készülünk Nektek!',
     colors: [
-      { name: 'Mélyzöld', hex: '#1D4B3C' },
-      { name: 'Arany', hex: '#D9AE6A' },
-      { name: 'Éjkék', hex: '#26364F' },
+      { name: 'Fekete', hex: '#161616' },
+      { name: 'Antracit', hex: '#2F3130' },
+      { name: 'Arany', hex: '#D4A95F' },
     ],
-    tips: 'Placeholder öltözködési tipp: ide jön az Álomkastély díszlethez ajánlott ruhaválasztás leírása — mély, telített színek, bársony és elegáns anyagok, összehangolt családi szettek.',
+    tips: 'A sötét antracit és arany árnyalataiból összeállított "Álomkastély" díszletünkhöz az elegáns viseletek illenek a legjobban, mert ez a díszlet is egy elegánsabb stílust képvisel. Válasszatok ünneplős ruhákat, estélyiket, zakókat és ingeket. Ajánlott színek: fekete, fehér, arany, barna és ezek különböző árnyalatai.',
     shots: SHOTS,
     bg: 'bg-[#122E26]',
   },
@@ -290,13 +290,8 @@ export const photoSets: PhotoSet[] = [
     thumb: '/images/diszlet-fenyjatek.jpg',
     hero: '/images/diszlet-fenyjatek.jpg',
     heroAlt: 'A Fényjáték díszlet meleg izzófüzérekkel',
-    desc: 'Placeholder: rövid leírás a Fényjáték díszletről — meleg izzófüzérek, meghitt, játékos közelik.',
-    colors: [
-      { name: 'Meleg arany', hex: '#E2B979' },
-      { name: 'Krém', hex: '#EFE3CE' },
-      { name: 'Grafit', hex: '#3A3A3A' },
-    ],
-    tips: 'Placeholder öltözködési tipp: ide jön a Fényjáték díszlethez ajánlott ruhaválasztás leírása — egyszerű, mintátlan felsők, pizsamák, semleges tónusok, hogy a fények domináljanak.',
+    desc: 'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
+    tips: 'A stílust 4 éve a "HÓFEHÉR" díszlet ihlette, és idén is a díszlet megújult változatában készítjük a Fényjátékos fotókat.',
     shots: SHOTS,
     bg: 'bg-forest',
     extra: true,

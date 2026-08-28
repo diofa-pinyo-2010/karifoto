@@ -205,14 +205,14 @@ function Form() {
           <input
             value={booking.name}
             onChange={(e) => booking.setName(e.target.value)}
-            placeholder="Neved"
+            placeholder="Teljes neved"
             autoComplete="name"
             className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
           />
           <input
             value={booking.email}
             onChange={(e) => booking.setEmail(e.target.value)}
-            placeholder="E-mail cím"
+            placeholder="E-mail címed"
             type="email"
             autoComplete="email"
             className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
