@@ -58,6 +58,7 @@ export const packages: Package[] = [
     priceHuf: 49000,
     studioFee: '+9 000 Ft stúdió bérlet',
     studioFeeHuf: 9000,
+    badge: 'Népszerű',
     features: [
       { text: '40 perces fotózás', ok: true },
       {
@@ -84,7 +85,6 @@ export const packages: Package[] = [
     priceHuf: 59000,
     studioFee: '+12 000 Ft stúdió bérlet',
     studioFeeHuf: 12000,
-    badge: 'Népszerű',
     features: [
       { text: '50 perces fotózás', ok: true },
       {
