@@ -207,7 +207,7 @@ function Form() {
             onChange={(e) => booking.setName(e.target.value)}
             placeholder="Neved"
             autoComplete="name"
-            className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[15px] text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
+            className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
           />
           <input
             value={booking.email}
@@ -215,7 +215,7 @@ function Form() {
             placeholder="E-mail cím"
             type="email"
             autoComplete="email"
-            className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[15px] text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
+            className="rounded-xl border border-cream/[.18] bg-forest px-[15px] py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
           />
         </div>
 
