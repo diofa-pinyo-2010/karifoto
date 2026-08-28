@@ -243,7 +243,7 @@ const SHOTS = [
 export const baseSetNames = ['Hófehér', 'Álomkastély'];
 
 /** A Fényjáték extra felára Mini és Classic csomag esetén. */
-export const LIGHT_PLAY_FEE = 10000;
+export const LIGHT_PLAY_FEE = 15000;
 
 export const huf = (n: number) =>
   String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Ft';
