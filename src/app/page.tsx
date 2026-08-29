@@ -12,6 +12,8 @@ import { Video } from '@/components/Video';
 import { groupSlotsByDay } from '@/lib/utils';
 import { fetchTimeSlots } from '@/server/time-slots';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const availableTimeSlots = await fetchTimeSlots();
   const groups = groupSlotsByDay(availableTimeSlots);
