@@ -8,3 +8,7 @@ export const PACKAGE_PRICE_FAMILY = 59000_00;
 export const STUDIO_PRICE_FAMILY = 12000_00;
 
 export const LIGHT_PLAY_FEE = 15000_00;
+export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
+export const EXTRA_FEE_PER_PET = 5000_00;
+export const MAX_PERSONS = 8;
+export const PERSONS_INCLUDED = 5;

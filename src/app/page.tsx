@@ -7,7 +7,7 @@ import { Hero } from '@/components/Hero';
 import { Pricing } from '@/components/Pricing';
 import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
-import { StickyCta } from '@/components/StickyCta';
+// import { StickyCta } from '@/components/StickyCta';
 import { Video } from '@/components/Video';
 
 export default function Home() {
@@ -24,7 +24,7 @@ export default function Home() {
         <Faq />
       </main>
       <Footer />
-      <StickyCta />
+      {/* <StickyCta /> */}
     </BookingProvider>
   );
 }

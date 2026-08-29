@@ -6,7 +6,7 @@ import { LIGHT_PLAY_FEE } from '@/lib/constants';
 import { baseSetNames, days, packages } from '@/lib/data';
 
 type BookingState = {
-  pkgIndex: number;
+  packageIndex: number;
   setIndex: number; // csak Mini esetén választható (0 = Hófehér)
   light: boolean; // Fényjáték extra (Family csomagban alapból jár)
   dayIndex: number;
@@ -44,7 +44,7 @@ const Ctx = createContext<BookingApi | null>(null);
 
 export function BookingProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<BookingState>({
-    pkgIndex: 1, // Classic előre kiválasztva — ez a konverziós cél
+    packageIndex: 1, // Classic előre kiválasztva — ez a konverziós cél
     setIndex: 0,
     light: false,
     dayIndex: 0,
@@ -55,10 +55,10 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
   });
 
   const api = useMemo<BookingApi>(() => {
-    const pkg = packages[state.pkgIndex];
+    const pkg = packages[state.packageIndex];
     const day = days[state.dayIndex];
-    const bothSets = state.pkgIndex > 0;
-    const lightIncluded = state.pkgIndex === 2;
+    const bothSets = state.packageIndex > 0;
+    const lightIncluded = state.packageIndex === 2;
     const lightOn = lightIncluded || state.light;
     const canConfirm =
       !!state.slot && state.name.trim().length > 1 && state.email.includes('@');
@@ -79,11 +79,11 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         pkg.studioFeeHuf +
         (lightIncluded ? 0 : state.light ? LIGHT_PLAY_FEE : 0),
       canConfirm,
-      selectPackage: (i) => setState((s) => ({ ...s, pkgIndex: i })),
+      selectPackage: (i) => setState((s) => ({ ...s, packageIndex: i })),
       selectSet: (i) =>
-        setState((s) => (s.pkgIndex > 0 ? s : { ...s, setIndex: i })),
+        setState((s) => (s.packageIndex > 0 ? s : { ...s, setIndex: i })),
       toggleLight: () =>
-        setState((s) => (s.pkgIndex === 2 ? s : { ...s, light: !s.light })),
+        setState((s) => (s.packageIndex === 2 ? s : { ...s, light: !s.light })),
       selectDay: (i) =>
         setState((s) =>
           days[i].slots.length ? { ...s, dayIndex: i, slot: null } : s,

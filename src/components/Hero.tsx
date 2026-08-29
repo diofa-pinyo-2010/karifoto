@@ -36,10 +36,8 @@ export function Hero() {
         </div>
 
         <Link
-          href="https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA"
-          className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-[13px] text-[#93A99D] hover:text-[#93A99D]/90"
-          target="_blank"
-          rel="noreferrer noopener"
+          href="#velemenyek"
+          className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-[13px] text-[#93A99D] underline-offset-4 hover:text-[#93A99D]/90 hover:underline"
         >
           <span>
             <span className="text-gold">★★★★★</span> {RATING.score} a Google-on

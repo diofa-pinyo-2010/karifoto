@@ -44,7 +44,7 @@ function Form() {
               type="button"
               onClick={() => booking.selectPackage(i)}
               className={`rounded-full border px-4.5 py-3 text-sm transition-colors ${
-                i === booking.pkgIndex
+                i === booking.packageIndex
                   ? 'border-ink bg-ink text-cream'
                   : 'border-ink/20 text-ink hover:border-ink/50'
               }`}

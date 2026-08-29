@@ -4,7 +4,7 @@ import { useBooking } from '@/components/BookingProvider';
 import { packages } from '@/lib/data';
 
 export function Pricing() {
-  const { pkgIndex, selectPackage } = useBooking();
+  const { packageIndex, selectPackage } = useBooking();
 
   return (
     <section
@@ -20,7 +20,7 @@ export function Pricing() {
 
       <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3">
         {packages.map((p, i) => {
-          const active = i === pkgIndex;
+          const active = i === packageIndex;
           return (
             <div
               key={p.id}

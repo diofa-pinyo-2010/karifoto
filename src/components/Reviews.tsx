@@ -13,9 +13,15 @@ export function Reviews() {
         <h2 className="mt-3.5 mb-1.5 font-display text-[31px] font-medium text-cream-strong sm:text-[50px]">
           {RATING.score} / 5 · {RATING.count} család
         </h2>
-        <div className="text-sm text-[#93A99D]">
-          ★★★★★ &nbsp;valódi, ellenőrzött Google vélemények
-        </div>
+        <Link
+          href="https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA"
+          className="text-sm text-[#93A99D] underline-offset-4 hover:text-[#93A99D]/90 hover:underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          <span className="text-gold">★★★★★</span> &nbsp;valódi, ellenőrzött
+          Google vélemények
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">

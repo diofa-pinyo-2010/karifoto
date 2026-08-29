@@ -217,7 +217,6 @@ export const stats = [
   },
 ];
 
-export const SLOTS_LEFT_LABEL = '15 szabad időpont maradt decemberre';
 export const RATING = { score: '4,9', count: 99 };
 
 // --- Díszletek ---------------------------------------------------------------
