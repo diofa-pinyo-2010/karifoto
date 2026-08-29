@@ -1,13 +1,17 @@
 'use client';
 
-import { useBooking } from '@/components/BookingProvider';
+import { useAppContext } from '@/components/AppContextProvider';
+import { DaysAndTimes } from '@/components/DaysAndTimes';
+import { Step } from '@/components/Step';
 import { LIGHT_PLAY_FEE } from '@/lib/constants';
-import { baseSetNames, days, packages } from '@/lib/data';
-import { formatMoney } from '@/lib/utils';
+import { packages } from '@/lib/data';
+import { cn, formatMoney, GroupedSlots } from '@/lib/utils';
 
-export function Booking() {
-  const booking = useBooking();
-
+export function Booking({
+  groupedTimeSlots,
+}: {
+  groupedTimeSlots: GroupedSlots;
+}) {
   return (
     <section
       id="foglalas"
@@ -23,59 +27,55 @@ export function Booking() {
             A visszaigazolást e-mailben fogjuk elküldeni.
           </p>
         </div>
-
-        {booking.confirmed ? <Confirmation /> : <Form />}
+        <Form groupedTimeSlots={groupedTimeSlots} />
       </div>
     </section>
   );
 }
 
-function Form() {
-  const booking = useBooking();
+function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
+  const ctx = useAppContext();
 
   return (
     <div className="mt-7 grid grid-cols-1 gap-6 rounded-[22px] bg-cream p-5 text-ink sm:mt-11 sm:p-8.5 lg:grid-cols-[1.35fr_1fr] lg:gap-8.5">
       <div>
         <Step n={1} label="Csomag" />
         <div className="mt-3 flex flex-wrap gap-2.5">
-          {packages.map((p, i) => (
+          {packages.map(({ id, name }) => (
             <button
-              key={p.id}
+              key={id}
               type="button"
-              onClick={() => booking.selectPackage(i)}
-              className={`rounded-full border px-4.5 py-3 text-sm transition-colors ${
-                i === booking.packageIndex
-                  ? 'border-ink bg-ink text-cream'
-                  : 'border-ink/20 text-ink hover:border-ink/50'
-              }`}
+              onClick={() => ctx.selectPackage(id)}
+              className={cn(
+                'rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50',
+                ctx.selectedPackageKey === id && 'border-ink bg-ink text-cream',
+              )}
             >
-              {p.name}
+              {name}
             </button>
           ))}
         </div>
 
         <Step n={2} label="Díszlet" className="mt-7" />
         <div className="mt-1.75 text-[13px] text-[#4A5F53]">
-          {booking.bothSets
-            ? `A ${booking.pkg.name} csomagban mindkét díszlettel fotózunk.`
+          {ctx.bothDecorSets
+            ? `A ${ctx.selectedPackage.name} csomagban mindkét díszlettel fotózunk.`
             : 'A Mini csomagban egy díszletet választhatsz.'}
         </div>
         <div className="mt-3 flex flex-wrap gap-2.5">
-          {baseSetNames.map((label, i) => {
-            const on = booking.bothSets || i === booking.setIndex;
+          {ctx.decorSets.map(({ key, name, selected, disabled }) => {
             return (
               <button
-                key={label}
+                key={key}
                 type="button"
-                disabled={booking.bothSets}
-                onClick={() => booking.selectSet(i)}
-                className={`rounded-full border px-4.5 py-3 text-sm transition-colors disabled:cursor-default disabled:opacity-[.82] ${
-                  on
-                    ? 'border-ink bg-ink text-cream'
-                    : 'border-ink/20 text-ink hover:border-ink/50'
-                }`}
+                disabled={disabled}
+                onClick={() => ctx.selectDecorSet(key)}
+                className={cn(
+                  'rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50 disabled:cursor-default disabled:opacity-[.82]',
+                  selected && 'border-ink bg-ink text-cream',
+                )}
               >
-                {label}
+                {name}
               </button>
             );
           })}
@@ -87,25 +87,25 @@ function Form() {
           </div>
           <button
             type="button"
-            disabled={booking.lightIncluded}
-            onClick={booking.toggleLight}
-            className={`mt-3 flex items-center gap-3.25 rounded-2xl border px-4.5 py-3.5 text-left transition-colors disabled:cursor-default disabled:opacity-[.85] ${
-              booking.lightOn
-                ? 'border-solid border-ink bg-ink text-cream'
-                : 'border-dashed border-ink/[.28] text-ink hover:border-ink/50'
-            }`}
+            disabled={ctx.isLightPlayIncluded}
+            onClick={ctx.toggleLightPlay}
+            className={cn(
+              'mt-3 flex items-center gap-3.25 rounded-2xl border border-dashed border-ink/[.28] px-4.5 py-3.5 text-left text-ink transition-colors hover:border-ink/50 disabled:cursor-default disabled:opacity-[.85]',
+              ctx.isLightPlayOn && 'border-solid border-ink bg-ink text-cream',
+            )}
           >
             <span
-              className={`inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border text-[13px] ${
-                booking.lightOn ? 'border-cream/40' : 'border-ink/30'
-              }`}
+              className={cn(
+                'inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border border-ink/30 text-[13px]',
+                ctx.isLightPlayOn && 'border-cream/40',
+              )}
             >
-              {booking.lightOn ? '✓' : '+'}
+              {ctx.isLightPlayOn ? '✓' : '+'}
             </span>
             <span className="flex flex-col gap-0.75">
               <span className="text-[15px] font-medium">Fényjáték</span>
               <span className="text-[12.5px] leading-[1.4] opacity-[.72]">
-                {booking.lightIncluded
+                {ctx.isLightPlayIncluded
                   ? 'A Family csomag tartalmazza'
                   : `+ ${formatMoney(LIGHT_PLAY_FEE)}`}
               </span>
@@ -113,7 +113,7 @@ function Form() {
           </button>
         </div>
 
-        <Step n={3} label="Nap" className="mt-7" />
+        {/* <Step n={3} label="Nap" className="mt-7" />
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {days.map((d, i) => {
             const full = d.slots.length === 0;
@@ -151,22 +151,23 @@ function Form() {
               Ezen a napon nincs szabad hely
             </span>
           ) : (
-            booking.day.slots.map((t) => (
+            booking.day.slots.map((selectedTime) => (
               <button
-                key={t}
+                key={selectedTime}
                 type="button"
-                onClick={() => booking.selectSlot(t)}
-                className={`rounded-[14px] border px-5.5 py-3.5 text-[15px] transition-colors ${
-                  booking.slot === t
-                    ? 'border-terracotta bg-terracotta text-[#FFF4E6]'
-                    : 'border-ink/20 text-ink hover:border-ink/50'
-                }`}
+                onClick={() => booking.selectSlot(selectedTime)}
+                className={cn(
+                  'rounded-[14px] border border-ink/20 px-5.5 py-3.5 text-[15px] text-ink transition-colors hover:border-ink/50',
+                  booking.slot === selectedTime &&
+                    'border-terracotta bg-terracotta text-[#FFF4E6]',
+                )}
               >
-                {t}
+                {selectedTime}
               </button>
             ))
           )}
-        </div>
+        </div> */}
+        <DaysAndTimes groupedTimeSlots={groupedTimeSlots} />
       </div>
 
       <div className="flex flex-col rounded-[18px] bg-ink p-5 text-[#F1E7D5] sm:p-6.5">
@@ -174,48 +175,49 @@ function Form() {
           Foglalás összegzése
         </div>
         <div className="mt-3 font-display text-[28px] leading-tight text-cream-strong">
-          {booking.slot
-            ? `${booking.day.weekday}, ${booking.day.label} ${booking.slot}`
-            : 'Válassz napot és idősávot'}
+          {ctx.selectedTimeSlot != null
+            ? 'TODO: Ezt javitani'
+            : // ? `${booking.day.weekday}, ${booking.day.label} ${booking.slot}`
+              'Válassz napot és idősávot'}
         </div>
         <div className="mt-2 text-sm text-sage-soft">
-          {booking.pkg.name} csomag · {booking.pkg.sub}
+          {ctx.selectedPackage.name} csomag · {ctx.selectedPackage.sub}
         </div>
-        <div className="mt-1 text-sm text-gold">{booking.setLabel}</div>
+        <div className="mt-1 text-sm text-gold">{ctx.decorSetLabel}</div>
 
         <div className="mt-4.5 flex flex-col gap-1.75 border-t border-cream/[.14] pt-4">
           <Row
-            label={`${booking.pkg.name} csomag`}
-            value={formatMoney(booking.pkg.priceHuf)}
+            label={`${ctx.selectedPackage.name} csomag`}
+            value={formatMoney(ctx.selectedPackage.priceHuf)}
           />
           <Row
             label="Stúdió bérlet"
-            value={formatMoney(booking.pkg.studioFeeHuf)}
+            value={formatMoney(ctx.selectedPackage.studioFeeHuf)}
           />
-          {booking.lightIncluded ? (
+          {ctx.isLightPlayIncluded ? (
             <Row label="Fényjáték extra" value="a csomag része" />
-          ) : booking.light ? (
+          ) : ctx.isLightPlayOn ? (
             <Row label="Fényjáték extra" value={formatMoney(LIGHT_PLAY_FEE)} />
           ) : null}
           <div className="mt-1.5 flex items-baseline justify-between gap-3.5 border-t border-cream/[.14] pt-3">
-            <span className="text-sm text-[#F1E7D5]">Fizetendő összesen</span>
+            <span className="text-sm text-[#F1E7D5]">Várható végösszeg</span>
             <span className="font-display text-[28px] leading-none whitespace-nowrap text-gold">
-              {formatMoney(booking.totalHuf)}
+              {formatMoney(ctx.estimatedTotalAmount)}
             </span>
           </div>
         </div>
 
         <div className="mt-5.5 flex flex-col gap-2.5">
           <input
-            value={booking.name}
-            onChange={(e) => booking.setName(e.target.value)}
+            value={ctx.name}
+            onChange={(e) => ctx.setName(e.target.value)}
             placeholder="Teljes neved"
             autoComplete="name"
             className="rounded-xl border border-cream/18 bg-forest px-3.75 py-3.5 text-[#F1E7D5] outline-none placeholder:text-sage-dim focus:border-gold"
           />
           <input
-            value={booking.email}
-            onChange={(e) => booking.setEmail(e.target.value)}
+            value={ctx.email}
+            onChange={(e) => ctx.setEmail(e.target.value)}
             placeholder="E-mail címed"
             type="email"
             autoComplete="email"
@@ -225,17 +227,17 @@ function Form() {
 
         <button
           type="button"
-          onClick={booking.confirm}
-          disabled={!booking.canConfirm}
+          onClick={ctx.confirm}
+          disabled={!ctx.canConfirm}
           className={`mt-4.5 rounded-full px-5 py-4.5 text-base font-medium transition-colors ${
-            booking.canConfirm
+            ctx.canConfirm
               ? 'bg-terracotta text-[#FFF4E6] hover:bg-terracotta-hover'
               : 'cursor-not-allowed bg-cream/[.14] text-sage-dim'
           }`}
         >
-          {booking.canConfirm
+          {ctx.canConfirm
             ? 'Tovább'
-            : booking.slot
+            : ctx.selectedTimeSlotId
               ? 'Add meg a neved és e-mailed'
               : 'Válassz idősávot'}
         </button>
@@ -248,59 +250,41 @@ function Form() {
   );
 }
 
-function Confirmation() {
-  const booking = useBooking();
+// function Confirmation() {
+//   const booking = useBooking();
 
-  return (
-    <div className="mt-7 rounded-[22px] bg-cream px-5 py-9 text-center text-ink sm:mt-11 sm:px-8.5 sm:py-14">
-      <div className="font-display text-[30px] text-ink sm:text-[44px]">
-        Megvan az időpontod
-      </div>
-      <div className="mt-3 text-[18px] text-cream-muted">
-        {booking.day.weekday}, {booking.day.label} {booking.slot} —{' '}
-        {booking.pkg.name} csomag · {formatMoney(booking.totalHuf)}
-      </div>
-      <div className="mt-1.5 text-base text-cream-dim">
-        {booking.setLabel}
-        {booking.lightOn ? ' + Fényjáték' : ''}
-      </div>
-      <div className="mt-4.5 text-[15px] text-cream-dim">
-        A visszaigazolást elküldtük ide: {booking.email}
-      </div>
-      <button
-        type="button"
-        onClick={booking.reset}
-        className="mt-6.5 rounded-full border border-ink/30 px-6.5 py-3.5 text-[15px] text-ink transition-colors hover:bg-ink/5"
-      >
-        Másik időpontot választok
-      </button>
-    </div>
-  );
-}
+//   return (
+//     <div className="mt-7 rounded-[22px] bg-cream px-5 py-9 text-center text-ink sm:mt-11 sm:px-8.5 sm:py-14">
+//       <div className="font-display text-[30px] text-ink sm:text-[44px]">
+//         Megvan az időpontod
+//       </div>
+//       <div className="mt-3 text-[18px] text-cream-muted">
+//         {booking.day.weekday}, {booking.day.label} {booking.slot} —{' '}
+//         {booking.pkg.name} csomag · {formatMoney(booking.totalHuf)}
+//       </div>
+//       <div className="mt-1.5 text-base text-cream-dim">
+//         {booking.setLabel}
+//         {booking.lightOn ? ' + Fényjáték' : ''}
+//       </div>
+//       <div className="mt-4.5 text-[15px] text-cream-dim">
+//         A visszaigazolást elküldtük ide: {booking.email}
+//       </div>
+//       <button
+//         type="button"
+//         onClick={booking.reset}
+//         className="mt-6.5 rounded-full border border-ink/30 px-6.5 py-3.5 text-[15px] text-ink transition-colors hover:bg-ink/5"
+//       >
+//         Másik időpontot választok
+//       </button>
+//     </div>
+//   );
+// }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-3.5 text-sm text-sage-soft">
       <span>{label}</span>
       <span className="whitespace-nowrap text-[#D8E2DA]">{value}</span>
-    </div>
-  );
-}
-
-function Step({
-  n,
-  label,
-  className = '',
-}: {
-  n: number;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`text-[11px] tracking-chip text-[#7B8C80] uppercase ${className}`}
-    >
-      {n} · {label}
     </div>
   );
 }

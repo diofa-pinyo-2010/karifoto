@@ -12,8 +12,10 @@ import { formatMoney } from '@/lib/utils';
 
 export type Feature = { text: string; ok: boolean; note?: string };
 
+export type PackageKey = 'mini' | 'classic' | 'family';
+
 export type Package = {
-  id: string;
+  id: PackageKey;
   name: string;
   sub: string;
   price: string;
@@ -225,6 +227,7 @@ export type SetColor = { name: string; hex: string };
 
 export type PhotoSet = {
   id: string; // section anchor
+  key: DecorSetKey | null;
   name: string;
   tagline: string;
   thumb: string;
@@ -248,12 +251,19 @@ const SHOTS = [
   { src: '/images/hofeher-pelda-3.jpg', alt: 'Család a fényfüzérek között' },
 ];
 
-/** A foglaláskor választható alapdíszletek (a Fényjáték nem tartozik ide — az extra). */
-export const baseSetNames = ['Hófehér', 'Álomkastély'];
+export type DecorSetKey = 'hofeher' | 'alomkastely';
+
+export const photoShootingSets = {
+  hofeher: { name: 'Hófehér' },
+  alomkastely: { name: 'Álomkastély' },
+} as const satisfies Record<DecorSetKey, { name: string }>;
+
+export const SET_ORDER: DecorSetKey[] = ['hofeher', 'alomkastely'];
 
 export const photoSets: PhotoSet[] = [
   {
     id: 'diszlet-hofeher',
+    key: 'hofeher',
     name: 'Hófehér',
     tagline: 'Világos, havas hangulat',
     thumb: '/images/diszlet-hofeher.jpg',
@@ -271,6 +281,7 @@ export const photoSets: PhotoSet[] = [
   },
   {
     id: 'diszlet-alomkastely',
+    key: 'alomkastely',
     name: 'Álomkastély',
     tagline: 'Arany fények, sötétzöld fal',
     thumb: '/images/diszlet-alomkastely.jpg',
@@ -288,6 +299,7 @@ export const photoSets: PhotoSet[] = [
   },
   {
     id: 'diszlet-fenyjatek',
+    key: null,
     name: 'Fényjáték',
     tagline: 'Meleg izzók, meghitt közelik',
     thumb: '/images/diszlet-fenyjatek.jpg',

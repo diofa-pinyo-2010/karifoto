@@ -1,5 +1,5 @@
+import { AppProvider } from '@/components/AppContextProvider';
 import { Booking } from '@/components/Booking';
-import { BookingProvider } from '@/components/BookingProvider';
 import { Faq } from '@/components/Faq';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -9,10 +9,15 @@ import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
 // import { StickyCta } from '@/components/StickyCta';
 import { Video } from '@/components/Video';
+import { groupSlotsByDay } from '@/lib/utils';
+import { fetchTimeSlots } from '@/server/time-slots';
 
-export default function Home() {
+export default async function Home() {
+  const availableTimeSlots = await fetchTimeSlots();
+  const groups = groupSlotsByDay(availableTimeSlots);
+
   return (
-    <BookingProvider>
+    <AppProvider availableTimeSlotsGrouped={groups}>
       <Header />
       <main className="bg-forest font-sans text-cream">
         <Hero />
@@ -20,11 +25,11 @@ export default function Home() {
         <Pricing />
         <Sets />
         <Video />
-        <Booking />
+        <Booking groupedTimeSlots={groups} />
         <Faq />
       </main>
       <Footer />
       {/* <StickyCta /> */}
-    </BookingProvider>
+    </AppProvider>
   );
 }
