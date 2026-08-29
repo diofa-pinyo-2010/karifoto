@@ -1,6 +1,6 @@
 'use client';
 
-import { useBooking } from '@/components/BookingProvider';
+import { useAppContext } from '@/components/AppContextProvider';
 import { photoSets } from '@/lib/data';
 
 /** Áttekintő (krém háttéren) + egy szekció díszletenként. */
@@ -19,11 +19,11 @@ function SetsOverview() {
   return (
     <section
       id="diszletek"
-      className="bg-cream px-[18px] py-14 text-[#1A3A2E] sm:px-7 sm:py-[88px]"
+      className="bg-cream px-4.5 py-14 text-[#1A3A2E] sm:px-7 sm:py-22"
     >
-      <div className="mx-auto max-w-[1200px]">
-        <div className="flex flex-wrap items-end justify-between gap-[26px]">
-          <div className="max-w-[640px]">
+      <div className="mx-auto max-w-300">
+        <div className="flex flex-wrap items-end justify-between gap-6.5">
+          <div className="max-w-160">
             <div className="text-[11px] tracking-label text-[#7B8C80] uppercase">
               Díszleteink
             </div>
@@ -32,7 +32,7 @@ function SetsOverview() {
               <br />
               várja a családokat
             </h2>
-            <p className="mt-[18px] text-[16px] leading-[1.65] font-light text-pretty text-cream-muted sm:text-[17px]">
+            <p className="mt-4.5 text-[16px] leading-[1.65] font-light text-pretty text-cream-muted sm:text-[17px]">
               Köszönjük, hogy évek óta bizalmat szavaztok nekünk a karácsonyi
               fotózásban. 2026-ban is különleges karácsonyi díszletekkel
               készültünk Nektek. Az időpontok gyorsan fogynak – foglaljatok
@@ -85,8 +85,7 @@ function SetsOverview() {
 }
 
 function SetSection({ set }: { set: (typeof photoSets)[number] }) {
-  const b = useBooking();
-  const setIndex = photoSets.findIndex((s) => s.id === set.id);
+  const { selectDecorSet } = useAppContext();
 
   return (
     <section
@@ -155,7 +154,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
             ) : (
               <a
                 href="#foglalas"
-                onClick={() => b.selectSet(setIndex)}
+                onClick={() => selectDecorSet(set.key ?? 'hofeher')}
                 className="btn-cta mt-[26px] px-6 py-[17px] text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9"
               >
                 Ezt szeretném →

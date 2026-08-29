@@ -1,10 +1,10 @@
 'use client';
 
-import { useBooking } from '@/components/BookingProvider';
+import { useAppContext } from '@/components/AppContextProvider';
 import { packages } from '@/lib/data';
 
 export function Pricing() {
-  const { pkgIndex, selectPackage } = useBooking();
+  const { selectedPackageKey, selectPackage } = useAppContext();
 
   return (
     <section
@@ -19,8 +19,8 @@ export function Pricing() {
       </div>
 
       <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3">
-        {packages.map((p, i) => {
-          const active = i === pkgIndex;
+        {packages.map((p) => {
+          const active = p.id === selectedPackageKey;
           return (
             <div
               key={p.id}
@@ -79,7 +79,7 @@ export function Pricing() {
 
               <a
                 href="#foglalas"
-                onClick={() => selectPackage(i)}
+                onClick={() => selectPackage(p.id)}
                 className={`mt-auto block rounded-full border px-5 py-4 text-center text-[15px] font-medium transition-opacity hover:opacity-90 ${
                   active
                     ? 'border-terracotta bg-terracotta text-[#FFF4E6]'

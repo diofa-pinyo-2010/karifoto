@@ -14,6 +14,7 @@
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "postinstall": "prisma generate",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit"
   },
