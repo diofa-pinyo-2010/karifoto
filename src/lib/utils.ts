@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const formatMoney = (cents: number) => {
-  return `${new Intl.NumberFormat('hu-HU').format(cents / 100)} Ft`;
+  return `${new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(cents / 100)} Ft`;
 };
 
 export const capitalize = (text: string) =>
