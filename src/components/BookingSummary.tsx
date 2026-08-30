@@ -1,31 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 
+import {
+  DEPOSIT_AMOUNT,
+  EXTRA_FEE_PER_EXTRA_PERSON,
+  EXTRA_FEE_PER_PET,
+  LIGHT_PLAY_FEE,
+  PACKAGE_PRICES,
+  PERSONS_INCLUDED,
+} from '@/lib/constants';
+import { formatLongDate } from '@/lib/formatters';
 import { formatMoney } from '@/lib/utils';
+import { BookingIntentWithTimeSlot } from '@/server/booking-intent';
+import { createCheckoutSession } from '@/server/stripe';
 
-const PKG_HUF = 49000_00;
-const STUDIO_HUF = 9000_00;
-const LIGHT_HUF = 15000_00;
-
-const PER_HEAD = 5000_00;
-const PER_PET = 5000_00;
-const FREE_HEADS = 5;
-const DEPOSIT = 10000_00;
-
-export function BookingSummary() {
+export function BookingSummary({
+  bookingIntent,
+}: {
+  bookingIntent: BookingIntentWithTimeSlot;
+}) {
   const [people, setPeople] = useState(0);
   const [pets, setPets] = useState(0);
   const [note, setNote] = useState('');
 
-  const extraHeads = Math.max(0, people - FREE_HEADS);
-  const headFee = extraHeads * PER_HEAD;
-  const petFee = pets * PER_PET;
-  const total = PKG_HUF + STUDIO_HUF + LIGHT_HUF + headFee + petFee;
+  const [state, formAction, isPending] = useActionState(
+    createCheckoutSession.bind(null, bookingIntent.id),
+    undefined,
+  );
+
+  const packageBasePrice =
+    PACKAGE_PRICES[bookingIntent.package as keyof typeof PACKAGE_PRICES].base;
+
+  const packageStudioFee =
+    PACKAGE_PRICES[bookingIntent.package as keyof typeof PACKAGE_PRICES].studio;
+
+  const shouldShowLight = bookingIntent.package != 'FAMILY';
+  const lightFee =
+    shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
+
+  const extraHeads = Math.max(0, people - PERSONS_INCLUDED);
+  const headFee = extraHeads * EXTRA_FEE_PER_EXTRA_PERSON;
+  const petFee = pets * EXTRA_FEE_PER_PET;
+  const total =
+    packageBasePrice + packageStudioFee + lightFee + headFee + petFee;
   const missingPeople = people === 0;
 
   return (
-    <>
+    <form action={formAction}>
       <section className="border-b border-ink/12 bg-[#FCF5E8]">
         <div className="mx-auto max-w-180 px-4.5 pt-5.5 pb-7 sm:px-10">
           <div className="flex items-center gap-3">
@@ -35,11 +57,11 @@ export function BookingSummary() {
           </div>
 
           <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
-            Szombat, december 13. · 11:30
+            {formatLongDate(bookingIntent.timeSlot.startTime)}
           </div>
-          <div className="mt-1.5 text-sm text-[#5C7064]">
+          {/* <div className="mt-1.5 text-sm text-[#5C7064]">
             Karifoto stúdió · Budapest, Rózsa utca 12.
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -54,6 +76,7 @@ export function BookingSummary() {
 
       <section className="mx-auto max-w-180 px-4.5 pt-5.5 sm:px-10">
         <StepperLight
+          name="numberOfGuests"
           label={
             <>
               Hányan jönnétek?<span className="ml-1 text-terracotta">*</span>
@@ -82,13 +105,15 @@ export function BookingSummary() {
             {missingPeople
               ? 'Legalább 1 fő :)'
               : `Megvan! ${people === 1 ? 'egy' : people} főre készülünk.`}{' '}
-            {people > 5 && `${formatMoney(PER_HEAD)}/extra fő`}
+            {people > 5 &&
+              `${formatMoney(EXTRA_FEE_PER_EXTRA_PERSON)}/extra fő`}
           </span>
         </div>
       </section>
 
       <section className="mx-auto max-w-180 px-4.5 pt-7.5 sm:px-10">
         <StepperLight
+          name="numberOfPets"
           label="Hoztok-e kisállatot?"
           ariaLabel="Hoztok-e kisállatot"
           unit="db"
@@ -110,7 +135,7 @@ export function BookingSummary() {
         </div>
         <textarea
           id="note"
-          name="note"
+          name="clientNote"
           rows={4}
           maxLength={500}
           value={note}
@@ -131,17 +156,32 @@ export function BookingSummary() {
 
           <div className="mt-3.5 flex flex-col">
             <PriceRowLight
-              label="Classic csomag"
-              value={formatMoney(PKG_HUF)}
+              label={`${bookingIntent.package} csomag`}
+              value={formatMoney(
+                PACKAGE_PRICES[
+                  bookingIntent.package as keyof typeof PACKAGE_PRICES
+                ].base,
+              )}
             />
             <PriceRowLight
               label="Stúdió bérlet"
-              value={formatMoney(STUDIO_HUF)}
+              value={formatMoney(
+                PACKAGE_PRICES[
+                  bookingIntent.package as keyof typeof PACKAGE_PRICES
+                ].studio,
+              )}
             />
-            <PriceRowLight
-              label="Fényjáték extra"
-              value={formatMoney(LIGHT_HUF)}
-            />
+            {shouldShowLight && (
+              <PriceRowLight
+                state={bookingIntent.isLightPlaySelected ? 'base' : 'idle'}
+                label="Fényjáték extra"
+                value={
+                  bookingIntent.isLightPlaySelected
+                    ? formatMoney(LIGHT_PLAY_FEE)
+                    : formatMoney(0)
+                }
+              />
+            )}
             {/* mindig látszanak — 0 Ft-tal, halványan, hogy ne ugorjon a layout */}
             <PriceRowLight
               label={
@@ -176,9 +216,9 @@ export function BookingSummary() {
           <span className="text-[15px] leading-[1.6] font-light text-pretty text-cream-muted">
             A következő lépésben{' '}
             <strong className="font-medium text-ink">
-              {formatMoney(DEPOSIT)} foglalót
+              {formatMoney(DEPOSIT_AMOUNT)} foglalót
             </strong>{' '}
-            kell kifizetni — ezzel válik véglegessé az időpontod. A végleges
+            kell kifizetni — ezzel válik véglegessé a foglalás. A végleges
             összeget a fotózás napján, a stúdióban fizetitek — a foglaló ebből
             levonásra kerül.
           </span>
@@ -197,28 +237,37 @@ export function BookingSummary() {
               Foglaló
             </span>
             <span className="text-[26px] leading-none text-cream">
-              {formatMoney(DEPOSIT)}
+              {formatMoney(DEPOSIT_AMOUNT)}
             </span>
           </div>
-          {/* TODO(Stripe): POST /api/checkout → redirect a checkout session URL-re. */}
           <button
-            type="button"
-            disabled={missingPeople}
+            type="submit"
+            disabled={missingPeople || isPending}
             className={`ml-auto max-w-70 flex-1 rounded-full px-5 py-4.25 text-base font-medium transition-colors ${
-              missingPeople
+              missingPeople || isPending
                 ? 'cursor-not-allowed bg-cream/12 text-[#7C9083]'
                 : 'bg-terracotta text-[#FFF4E6] shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-terracotta-hover'
             }`}
           >
-            {missingPeople ? 'Add meg, hányan jöttök' : 'Foglaló fizetése →'}
+            {isPending
+              ? 'Feldolgozás…'
+              : missingPeople
+                ? 'Add meg, hányan jöttök'
+                : 'Foglaló fizetése →'}
           </button>
         </div>
+        {state?.error && (
+          <div className="mx-auto mt-2.5 max-w-180 text-[13px] text-terracotta">
+            {state.error}
+          </div>
+        )}
       </div>
-    </>
+    </form>
   );
 }
 
 function StepperLight({
+  name,
   label,
   ariaLabel,
   unit,
@@ -230,6 +279,7 @@ function StepperLight({
   max,
   onChange,
 }: {
+  name: string;
   label: React.ReactNode;
   ariaLabel: string;
   unit: string;
@@ -269,6 +319,7 @@ function StepperLight({
         </StepButtonLight>
         <input
           type="range"
+          name={name}
           min={min}
           max={max}
           step={1}

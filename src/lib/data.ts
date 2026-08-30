@@ -1,13 +1,6 @@
 // Static content. Replace with a CMS / API fetch when the backend lands.
 
-import {
-  PACKAGE_PRICE_CLASSIC,
-  PACKAGE_PRICE_FAMILY,
-  PACKAGE_PRICE_MINI,
-  STUDIO_PRICE_CLASSIC,
-  STUDIO_PRICE_FAMILY,
-  STUDIO_PRICE_MINI,
-} from '@/lib/constants';
+import { PACKAGE_PRICES } from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 
 export type Feature = { text: string; ok: boolean; note?: string };
@@ -40,10 +33,10 @@ export const packages: Package[] = [
     id: 'mini',
     name: 'Mini',
     sub: '30 perc · egy választható díszlet',
-    price: `${formatMoney(PACKAGE_PRICE_MINI)}`,
-    priceHuf: PACKAGE_PRICE_MINI,
-    studioFee: `+${formatMoney(STUDIO_PRICE_MINI)} stúdió bérlet`,
-    studioFeeHuf: STUDIO_PRICE_MINI,
+    price: `${formatMoney(PACKAGE_PRICES.MINI.base)}`,
+    priceHuf: PACKAGE_PRICES.MINI.base,
+    studioFee: `+${formatMoney(PACKAGE_PRICES.MINI.studio)} stúdió bérlet`,
+    studioFeeHuf: PACKAGE_PRICES.MINI.studio,
     features: [
       { text: '30 perces fotózás', ok: true },
       {
@@ -66,10 +59,10 @@ export const packages: Package[] = [
     id: 'classic',
     name: 'Classic',
     sub: '40 perc · két díszlet',
-    price: `${formatMoney(PACKAGE_PRICE_CLASSIC)}`,
-    priceHuf: PACKAGE_PRICE_CLASSIC,
-    studioFee: `+${formatMoney(STUDIO_PRICE_CLASSIC)} stúdió bérlet`,
-    studioFeeHuf: STUDIO_PRICE_CLASSIC,
+    price: `${formatMoney(PACKAGE_PRICES.CLASSIC.base)}`,
+    priceHuf: PACKAGE_PRICES.CLASSIC.base,
+    studioFee: `+${formatMoney(PACKAGE_PRICES.CLASSIC.studio)} stúdió bérlet`,
+    studioFeeHuf: PACKAGE_PRICES.CLASSIC.studio,
     badge: 'Népszerű',
     features: [
       { text: '40 perces fotózás', ok: true },
@@ -93,10 +86,10 @@ export const packages: Package[] = [
     id: 'family',
     name: 'Family',
     sub: '50 perc · két díszlet, fényjáték',
-    price: `${formatMoney(PACKAGE_PRICE_FAMILY)}`,
-    priceHuf: PACKAGE_PRICE_FAMILY,
-    studioFee: `+${formatMoney(STUDIO_PRICE_FAMILY)} Ft stúdió bérlet`,
-    studioFeeHuf: STUDIO_PRICE_FAMILY,
+    price: `${formatMoney(PACKAGE_PRICES.FAMILY.base)}`,
+    priceHuf: PACKAGE_PRICES.FAMILY.base,
+    studioFee: `+${formatMoney(PACKAGE_PRICES.FAMILY.studio)} Ft stúdió bérlet`,
+    studioFeeHuf: PACKAGE_PRICES.FAMILY.studio,
     features: [
       { text: '50 perces fotózás', ok: true },
       {

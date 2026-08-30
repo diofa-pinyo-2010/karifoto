@@ -4,9 +4,9 @@ export function Faq() {
   return (
     <section
       id="gyik"
-      className="mx-auto max-w-[840px] px-[18px] pt-[52px] pb-16 sm:px-7 sm:pt-20 sm:pb-[110px]"
+      className="mx-auto max-w-210 px-4.5 pt-13 pb-16 sm:px-7 sm:pt-20 sm:pb-27.5"
     >
-      <h2 className="mb-6 text-center font-display text-[29px] font-medium text-cream-strong sm:mb-[30px] sm:text-[42px]">
+      <h2 className="mb-6 text-center font-display text-[29px] font-medium text-cream-strong sm:mb-7.5 sm:text-[42px]">
         Gyakori kérdések
       </h2>
 
@@ -14,7 +14,7 @@ export function Faq() {
         {faqs.map((f) => (
           <div
             key={f.q}
-            className="rounded-2xl border border-cream/[.09] bg-panel px-6 py-[22px]"
+            className="rounded-2xl border border-cream/9 bg-panel px-6 py-5.5"
           >
             <div className="text-[17px] text-[#F1E7D5]">{f.q}</div>
             <div className="mt-2 text-[15px] leading-[1.6] font-light text-sage-soft">
@@ -27,7 +27,7 @@ export function Faq() {
       <div className="mt-11 text-center">
         <a
           href="#foglalas"
-          className="btn-cta px-7 py-[18px] text-base shadow-[0_16px_40px_rgba(184,80,58,.34)] sm:px-11 sm:text-[17px]"
+          className="btn-cta px-7 py-4.5 text-base shadow-[0_16px_40px_rgba(184,80,58,.34)] sm:px-11 sm:text-[17px]"
         >
           Foglalok időpontot →
         </a>
