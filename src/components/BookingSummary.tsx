@@ -141,7 +141,7 @@ export function BookingSummary({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Írd ide a megjegyzésed…"
-          className="w-full resize-none rounded-2xl border border-ink/18 bg-[#FFFDF8] px-4 py-3.5 text-[15px] leading-[1.55] text-ink outline-none placeholder:text-[#8C9A8F] focus:border-terracotta"
+          className="w-full resize-none rounded-2xl border border-ink/18 bg-[#FFFDF8] px-4 py-3.5 leading-[1.55] text-ink outline-none placeholder:text-[#8C9A8F] focus:border-terracotta"
         />
         <div className="mt-1.5 text-right text-xs text-[#9AA89D]">
           {note.length} / 500
