@@ -112,61 +112,6 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             </span>
           </button>
         </div>
-
-        {/* <Step n={3} label="Nap" className="mt-7" />
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {days.map((d, i) => {
-            const full = d.slots.length === 0;
-            const active = i === booking.dayIndex;
-            return (
-              <button
-                key={d.id}
-                type="button"
-                disabled={full}
-                onClick={() => booking.selectDay(i)}
-                className={`rounded-2xl border px-4 py-3.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                  active
-                    ? 'border-ink bg-ink text-cream'
-                    : 'border-ink/18 bg-ink/4 text-ink'
-                }`}
-              >
-                <span className="block text-[11px] tracking-[.16em] uppercase opacity-70">
-                  {d.weekday}
-                </span>
-                <span className="mt-0.5 block font-display text-2xl">
-                  {d.label}
-                </span>
-                <span className="mt-0.75 block text-[11px] opacity-75">
-                  {d.note}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <Step n={4} label="Idősáv" className="mt-7" />
-        <div className="mt-3 flex flex-wrap gap-2.5">
-          {booking.day.slots.length === 0 ? (
-            <span className="rounded-[14px] border border-dashed border-ink/25 px-5.5 py-3.5 text-[15px] text-cream-dim">
-              Ezen a napon nincs szabad hely
-            </span>
-          ) : (
-            booking.day.slots.map((selectedTime) => (
-              <button
-                key={selectedTime}
-                type="button"
-                onClick={() => booking.selectSlot(selectedTime)}
-                className={cn(
-                  'rounded-[14px] border border-ink/20 px-5.5 py-3.5 text-[15px] text-ink transition-colors hover:border-ink/50',
-                  booking.slot === selectedTime &&
-                    'border-terracotta bg-terracotta text-[#FFF4E6]',
-                )}
-              >
-                {selectedTime}
-              </button>
-            ))
-          )}
-        </div> */}
         <DaysAndTimes groupedTimeSlots={groupedTimeSlots} />
       </div>
 
@@ -249,36 +194,6 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
     </div>
   );
 }
-
-// function Confirmation() {
-//   const booking = useBooking();
-
-//   return (
-//     <div className="mt-7 rounded-[22px] bg-cream px-5 py-9 text-center text-ink sm:mt-11 sm:px-8.5 sm:py-14">
-//       <div className="font-display text-[30px] text-ink sm:text-[44px]">
-//         Megvan az időpontod
-//       </div>
-//       <div className="mt-3 text-[18px] text-cream-muted">
-//         {booking.day.weekday}, {booking.day.label} {booking.slot} —{' '}
-//         {booking.pkg.name} csomag · {formatMoney(booking.totalHuf)}
-//       </div>
-//       <div className="mt-1.5 text-base text-cream-dim">
-//         {booking.setLabel}
-//         {booking.lightOn ? ' + Fényjáték' : ''}
-//       </div>
-//       <div className="mt-4.5 text-[15px] text-cream-dim">
-//         A visszaigazolást elküldtük ide: {booking.email}
-//       </div>
-//       <button
-//         type="button"
-//         onClick={booking.reset}
-//         className="mt-6.5 rounded-full border border-ink/30 px-6.5 py-3.5 text-[15px] text-ink transition-colors hover:bg-ink/5"
-//       >
-//         Másik időpontot választok
-//       </button>
-//     </div>
-//   );
-// }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
