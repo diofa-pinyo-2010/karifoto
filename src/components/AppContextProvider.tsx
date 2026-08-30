@@ -59,7 +59,6 @@ type AppContextApi = AppState & {
   setEmail: (v: string) => void;
   selectDay: (key: string) => void;
   selectTime: (id: string) => void;
-  confirm: () => void;
 };
 
 const Ctx = createContext<AppContextApi | null>(null);
@@ -156,10 +155,6 @@ export function AppProvider({
             ? s
             : { ...s, isLightPlaySelected: !s.isLightPlaySelected },
         ),
-      confirm: () =>
-        canConfirm
-          ? console.log(state)
-          : console.error('Something is missing...'),
     };
   }, [state, availableTimeSlotsGrouped]);
 

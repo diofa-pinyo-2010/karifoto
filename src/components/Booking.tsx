@@ -1,5 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+
 import { useAppContext } from '@/components/AppContextProvider';
 import { DaysAndTimes } from '@/components/DaysAndTimes';
 import { Step } from '@/components/Step';
@@ -7,6 +10,7 @@ import { LIGHT_PLAY_FEE } from '@/lib/constants';
 import { packages } from '@/lib/data';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { cn, formatMoney, GroupedSlots } from '@/lib/utils';
+import { createBookingIntent } from '@/server/booking-intent';
 
 export function Booking({
   groupedTimeSlots,
@@ -36,6 +40,29 @@ export function Booking({
 
 function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
   const ctx = useAppContext();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleConfirm = () => {
+    if (!ctx.canConfirm || !ctx.selectedTimeSlotId) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await createBookingIntent({
+        timeSlotId: ctx.selectedTimeSlotId!,
+        name: ctx.name,
+        email: ctx.email,
+        packageKey: ctx.selectedPackageKey,
+        decorSetKey: ctx.selectedDecorSetKey,
+        isLightPlaySelected: ctx.isLightPlaySelected,
+      });
+      if ('error' in result) {
+        setError(result.error);
+        return;
+      }
+      router.push(`/foglalas-veglegesitese/${result.id}`);
+    });
+  };
 
   return (
     <div className="mt-7 grid grid-cols-1 gap-6 rounded-[22px] bg-cream p-5 text-ink sm:mt-11 sm:p-8.5 lg:grid-cols-[1.35fr_1fr] lg:gap-8.5">
@@ -172,20 +199,26 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
 
         <button
           type="button"
-          onClick={ctx.confirm}
-          disabled={!ctx.canConfirm}
+          onClick={handleConfirm}
+          disabled={!ctx.canConfirm || isPending}
           className={`mt-4.5 rounded-full px-5 py-4.5 text-base font-medium transition-colors ${
-            ctx.canConfirm
+            ctx.canConfirm && !isPending
               ? 'bg-terracotta text-[#FFF4E6] hover:bg-terracotta-hover'
               : 'cursor-not-allowed bg-cream/[.14] text-sage-dim'
           }`}
         >
-          {ctx.canConfirm
-            ? 'Tovább'
-            : ctx.selectedTimeSlotId
-              ? 'Add meg a neved és e-mailed'
-              : 'Válassz idősávot'}
+          {isPending
+            ? 'Foglalás létrehozása…'
+            : ctx.canConfirm
+              ? 'Tovább'
+              : ctx.selectedTimeSlotId
+                ? 'Add meg a neved és e-mailed'
+                : 'Válassz idősávot'}
         </button>
+
+        {error && (
+          <div className="mt-2.5 text-[13px] text-terracotta">{error}</div>
+        )}
 
         <div className="mt-3 text-xs leading-normal text-sage-dim">
           A következő oldalon még pár szükséges adatot elkérünk a foglaláshoz.

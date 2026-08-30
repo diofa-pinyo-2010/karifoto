@@ -12,3 +12,5 @@ export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PERSONS = 8;
 export const PERSONS_INCLUDED = 5;
+
+export const BOOKING_INTENT_TTL_MINUTES = 80;
