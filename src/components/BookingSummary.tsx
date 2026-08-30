@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import { formatMoney } from '@/lib/utils';
 
-/** A foglalás fix részei — TODO(dinamikus): a kiválasztott csomagból/extrákból számold. */
 const PKG_HUF = 49000_00;
 const STUDIO_HUF = 9000_00;
 const LIGHT_HUF = 15000_00;
@@ -14,9 +13,8 @@ const PER_PET = 5000_00;
 const FREE_HEADS = 5;
 const DEPOSIT = 10000_00;
 
-/** Időpont + árbontás, létszám/kisállat kérdések, foglaló-tájékoztató és a fizetés CTA. */
-export function BookingSummary() {
-  const [people, setPeople] = useState(0); // kötelező mező: 0 = nincs megadva
+export function BookingSummaryLight() {
+  const [people, setPeople] = useState(0);
   const [pets, setPets] = useState(0);
 
   const extraHeads = Math.max(0, people - FREE_HEADS);
@@ -27,34 +25,34 @@ export function BookingSummary() {
 
   return (
     <>
-      <section className="mt-[26px] border-y border-cream/[.09] bg-[#122E26]">
+      <section className="border-b border-ink/[.12] bg-[#FCF5E8]">
         <div className="mx-auto max-w-[720px] px-[18px] pt-[22px] pb-7 sm:px-10">
           <div className="flex items-center gap-3">
-            <span className="text-[11px] tracking-chip text-sage-dim uppercase">
+            <span className="text-[11px] tracking-chip text-[#7B8C80] uppercase">
               A foglalásod
-            </span>
-            <span className="ml-auto inline-flex items-center gap-[7px] rounded-full border border-gold/[.32] bg-gold/[.09] px-3 py-1.5 text-xs text-gold">
-              Fenntartva · 19:42
             </span>
           </div>
 
-          <div className="mt-3.5 text-[26px] leading-[1.2] text-cream-strong sm:text-[34px]">
+          <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
             Szombat, december 13. · 11:30
           </div>
-          <div className="mt-1.5 text-sm text-sage-dim">
+          <div className="mt-1.5 text-sm text-[#5C7064]">
             Karifoto stúdió · Budapest, Rózsa utca 12.
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[720px] px-[18px] pt-[34px] pb-1 sm:px-10">
-        <h2 className="mt-2.5 font-display text-xl leading-[1.2] font-medium text-cream-strong sm:text-[32px]">
+      {/* <section className="mx-auto max-w-[720px] px-[18px] pt-[34px] pb-1 sm:px-10">
+        <div className="text-[11px] tracking-chip text-[#7B8C80] uppercase">
+          Még két kérdés
+        </div>
+        <h2 className="mt-2.5 font-display text-2xl leading-[1.2] font-medium text-ink sm:text-[32px]">
           Kik lesznek a képeken?
         </h2>
-      </section>
+      </section> */}
 
       <section className="mx-auto max-w-[720px] px-[18px] pt-[22px] sm:px-10">
-        <Stepper
+        <StepperLight
           label={
             <>
               Hányan jönnétek?<span className="ml-1 text-terracotta">*</span>
@@ -62,7 +60,7 @@ export function BookingSummary() {
           }
           ariaLabel="Hányan jönnétek"
           unit="fő"
-          hint={`Az 5 fő fölötti vendégekért ${formatMoney(PER_HEAD)} / fő felárat számolunk.`}
+          // hint="Az 5 fő fölötti vendégekért 5 000 Ft / fő felárat számolunk."
           value={people}
           display={missingPeople ? '–' : String(people)}
           dim={missingPeople}
@@ -70,28 +68,30 @@ export function BookingSummary() {
           max={8}
           onChange={setPeople}
         />
+        {/* konstans banner — figyelmeztetésből visszajelzés lesz, nincs layout ugrás */}
         <div
           className={`mt-2.5 flex items-center gap-[9px] rounded-2xl border px-3.5 py-[11px] text-[13.5px] leading-[1.45] ${
             missingPeople
-              ? 'border-terracotta/40 bg-terracotta/10 text-[#F0C9BC]'
-              : 'border-gold/[.28] bg-gold/[.07] text-[#D9C9A6]'
+              ? 'border-terracotta/35 bg-terracotta/[.07] text-[#8F3A26]'
+              : 'border-[#1D4B3C]/25 bg-[#1D4B3C]/[.06] text-[#2F5D45]'
           }`}
         >
           <span className="flex-none">{missingPeople ? '✱' : '✓'}</span>
           <span>
             {missingPeople
-              ? 'Kötelező megadni — legalább 1 fő kell a továbblépéshez.'
-              : `Megvan — ${people === 1 ? 'egy' : people} főre készülünk.`}
+              ? 'Legalább 1 fő :)'
+              : `Megvan! ${people === 1 ? 'egy' : people} főre készülünk.`}{' '}
+            {people > 5 && `${formatMoney(PER_HEAD)}/extra fő`}
           </span>
         </div>
       </section>
 
       <section className="mx-auto max-w-[720px] px-[18px] pt-[30px] sm:px-10">
-        <Stepper
+        <StepperLight
           label="Hoztok-e kisállatot?"
           ariaLabel="Hoztok-e kisállatot"
           unit="db"
-          hint={`Kutya, cica, nyuszi is jöhet — ${formatMoney(PER_PET)} / kisállat.`}
+          hint="Kutya, cica, nyuszi is jöhet — 5 000 Ft / kisállat."
           value={pets}
           display={String(pets)}
           min={0}
@@ -100,18 +100,27 @@ export function BookingSummary() {
         />
       </section>
 
-      <section className="mt-[34px] border-y border-cream/10 bg-panel">
+      <section className="mt-[34px] border-y border-ink/[.12] bg-[#FCF5E8]">
         <div className="mx-auto max-w-[720px] px-[18px] pt-6 pb-7 sm:px-10">
-          <div className="text-[11px] tracking-chip text-sage-dim uppercase">
+          <div className="text-[11px] tracking-chip text-[#7B8C80] uppercase">
             Összefoglaló
           </div>
 
           <div className="mt-3.5 flex flex-col">
-            <PriceRow label="Classic csomag" value={formatMoney(PKG_HUF)} />
-            <PriceRow label="Stúdió bérlet" value={formatMoney(STUDIO_HUF)} />
-            <PriceRow label="Fényjáték extra" value={formatMoney(LIGHT_HUF)} />
+            <PriceRowLight
+              label="Classic csomag"
+              value={formatMoney(PKG_HUF)}
+            />
+            <PriceRowLight
+              label="Stúdió bérlet"
+              value={formatMoney(STUDIO_HUF)}
+            />
+            <PriceRowLight
+              label="Fényjáték extra"
+              value={formatMoney(LIGHT_HUF)}
+            />
             {/* mindig látszanak — 0 Ft-tal, halványan, hogy ne ugorjon a layout */}
-            <PriceRow
+            <PriceRowLight
               label={
                 extraHeads > 0
                   ? `Extra emberek · ${extraHeads} fő`
@@ -120,7 +129,7 @@ export function BookingSummary() {
               value={formatMoney(headFee)}
               state={extraHeads > 0 ? 'accent' : 'idle'}
             />
-            <PriceRow
+            <PriceRowLight
               label={pets > 0 ? `Kisállat · ${pets} db` : 'Kisállat'}
               value={formatMoney(petFee)}
               state={pets > 0 ? 'accent' : 'idle'}
@@ -128,10 +137,8 @@ export function BookingSummary() {
           </div>
 
           <div className="mt-[18px] flex items-baseline justify-between gap-4">
-            <span className="text-[15px] text-[#F1E7D5]">
-              Várható végösszeg
-            </span>
-            <span className="text-[32px] leading-none whitespace-nowrap text-gold sm:text-[42px]">
+            <span className="text-[15px] text-ink">Várható végösszeg</span>
+            <span className="text-[32px] leading-none whitespace-nowrap text-terracotta sm:text-[42px]">
               {formatMoney(total)}
             </span>
           </div>
@@ -139,13 +146,13 @@ export function BookingSummary() {
       </section>
 
       <section className="mx-auto max-w-[720px] px-[18px] pt-[30px] sm:px-10">
-        <div className="flex items-start gap-[13px] rounded-[18px] border border-gold/[.28] bg-gold/[.07] p-[18px]">
-          <span className="mt-0.5 font-display text-xl leading-none text-gold">
+        <div className="flex items-start gap-[13px] rounded-[18px] border border-terracotta/[.26] bg-terracotta/[.06] p-[18px]">
+          <span className="mt-0.5 font-display text-xl leading-none text-terracotta">
             ✦
           </span>
-          <span className="text-[15px] leading-[1.6] font-light text-pretty text-[#E7D9BE]">
+          <span className="text-[15px] leading-[1.6] font-light text-pretty text-[#41564A]">
             A következő lépésben{' '}
-            <strong className="font-medium text-[#F1E7D5]">
+            <strong className="font-medium text-ink">
               {formatMoney(DEPOSIT)} foglalót
             </strong>{' '}
             kell kifizetni — ezzel válik véglegessé az időpontod. A végleges
@@ -153,14 +160,14 @@ export function BookingSummary() {
             levonásra kerül.
           </span>
         </div>
-        <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-[#6E8478]">
+        <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-[#7B8C80]">
           A fizetés biztonságos Stripe oldalon történik, bankkártya adataidat
           nem látjuk. A tovább gombbal elfogadod az{' '}
           <a href="#0">Általános Szerződési Feltételeket</a>.
         </div>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-cream/[.12] bg-[#0E2620]/[.95] px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] backdrop-blur-xl sm:px-10">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-ink/20 bg-[#0E2620]/[.97] px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(20,51,42,.16)] backdrop-blur-xl sm:px-10">
         <div className="mx-auto flex max-w-[720px] items-center gap-4">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] tracking-[.16em] text-sage-dim uppercase">
@@ -188,7 +195,7 @@ export function BookingSummary() {
   );
 }
 
-function Stepper({
+function StepperLight({
   label,
   ariaLabel,
   unit,
@@ -203,7 +210,7 @@ function Stepper({
   label: React.ReactNode;
   ariaLabel: string;
   unit: string;
-  hint: string;
+  hint?: string;
   value: number;
   display: string;
   dim?: boolean;
@@ -217,22 +224,26 @@ function Stepper({
   return (
     <>
       <div className="flex items-baseline gap-3">
-        <span className="text-[17px] text-[#F1E7D5]">{label}</span>
+        <span className="text-[17px] text-ink">{label}</span>
         <span
-          className={`ml-auto text-3xl leading-none font-semibold ${
-            dim ? 'text-[#5F7568]' : 'text-gold'
+          className={`ml-auto text-3xl leading-none ${
+            dim ? 'text-[#9AA89D]' : 'text-[#A2612F]'
           }`}
         >
           {display}
         </span>
-        <span className="text-[13px] text-sage-dim">{unit}</span>
+        <span className="text-[13px] text-[#7B8C80]">{unit}</span>
       </div>
-      <div className="mt-1.5 text-[13.5px] leading-[1.5] text-sage-dim">
-        {hint}
-      </div>
+      {hint && (
+        <div className="mt-1.5 text-[13.5px] leading-[1.5] text-[#5C7064]">
+          {hint}
+        </div>
+      )}
 
       <div className="mt-[18px] flex items-center gap-3.5">
-        <StepButton onClick={() => onChange(clamp(value - 1))}>−</StepButton>
+        <StepButtonLight onClick={() => onChange(clamp(value - 1))}>
+          −
+        </StepButtonLight>
         <input
           type="range"
           min={min}
@@ -242,13 +253,15 @@ function Stepper({
           aria-label={ariaLabel}
           onChange={(e) => onChange(Number(e.target.value))}
           style={{
-            backgroundImage: `linear-gradient(to right, #E5B77E 0%, #E5B77E ${pct}%, rgba(246,235,217,.14) ${pct}%, rgba(246,235,217,.14) 100%)`,
+            backgroundImage: `linear-gradient(to right, #B8503A 0%, #B8503A ${pct}%, rgba(20,51,42,.14) ${pct}%, rgba(20,51,42,.14) 100%)`,
           }}
-          className="range-slider h-11 flex-1 cursor-pointer touch-none appearance-none rounded-full bg-transparent bg-[length:100%_6px] bg-center bg-no-repeat outline-none"
+          className="range-slider-light h-11 flex-1 cursor-pointer touch-none appearance-none rounded-full bg-transparent bg-[length:100%_6px] bg-center bg-no-repeat outline-none"
         />
-        <StepButton onClick={() => onChange(clamp(value + 1))}>+</StepButton>
+        <StepButtonLight onClick={() => onChange(clamp(value + 1))}>
+          +
+        </StepButtonLight>
       </div>
-      <div className="mt-2 flex justify-between px-[42px] text-xs text-[#5F7568]">
+      <div className="mt-2 flex justify-between px-[42px] text-xs text-[#8C9A8F]">
         <span>{min}</span>
         <span>{max}</span>
       </div>
@@ -256,7 +269,7 @@ function Stepper({
   );
 }
 
-function StepButton({
+function StepButtonLight({
   children,
   onClick,
 }: {
@@ -267,14 +280,14 @@ function StepButton({
     <button
       type="button"
       onClick={onClick}
-      className="h-11 w-11 flex-none rounded-full border border-cream/[.22] text-xl leading-none text-[#F1E7D5] transition-colors hover:border-cream/50"
+      className="h-11 w-11 flex-none rounded-full border border-ink/[.22] text-xl leading-none text-ink transition-colors hover:border-ink/50"
     >
       {children}
     </button>
   );
 }
 
-function PriceRow({
+function PriceRowLight({
   label,
   value,
   state = 'base',
@@ -286,13 +299,13 @@ function PriceRow({
 }) {
   const labelColor =
     state === 'accent'
-      ? 'text-gold'
+      ? 'text-[#A2612F]'
       : state === 'idle'
-        ? 'text-[#5F7568]'
-        : 'text-sage-soft';
-  const valueColor = state === 'idle' ? 'text-[#5F7568]' : 'text-[#D8E2DA]';
+        ? 'text-[#9AA89D]'
+        : 'text-[#41564A]';
+  const valueColor = state === 'idle' ? 'text-[#9AA89D]' : 'text-ink';
   return (
-    <div className="flex justify-between gap-4 border-b border-cream/[.08] py-3">
+    <div className="flex justify-between gap-4 border-b border-ink/10 py-3">
       <span className={`text-[14.5px] ${labelColor}`}>{label}</span>
       <span className={`text-[14.5px] whitespace-nowrap ${valueColor}`}>
         {value}
