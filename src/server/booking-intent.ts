@@ -1,6 +1,6 @@
 'use server';
 
-import { DecorSet, Package } from '@/generated/prisma/client';
+import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
 import { BOOKING_INTENT_TTL_MINUTES } from '@/lib/constants';
 import { DecorSetKey, PackageKey } from '@/lib/data';
 import { prisma } from '@/lib/prisma';
@@ -70,7 +70,20 @@ export async function createBookingIntent(
   }
 }
 
+const bookingIntentWithTimeSlot = {
+  include: {
+    timeSlot: { select: { startTime: true } },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+export type BookingIntentWithTimeSlot = Prisma.BookingIntentGetPayload<
+  typeof bookingIntentWithTimeSlot
+>;
+
 export async function getBookingIntent(id: string) {
   if (!UUID_RE.test(id)) return null;
-  return prisma.bookingIntent.findUnique({ where: { id } });
+  return prisma.bookingIntent.findUnique({
+    where: { id },
+    ...bookingIntentWithTimeSlot,
+  });
 }

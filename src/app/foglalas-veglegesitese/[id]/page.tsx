@@ -17,7 +17,10 @@ export default async function BookingLightPage({
 }) {
   const { id } = await params;
   const bookingIntent = await getBookingIntent(id);
-  const isValid = bookingIntent != null && bookingIntent.expiresAt > new Date();
+  const isValid =
+    bookingIntent != null &&
+    bookingIntent.expiresAt > new Date() &&
+    bookingIntent.timeSlot != null;
 
   return (
     <div className="min-h-screen bg-cream pb-33">
@@ -25,9 +28,9 @@ export default async function BookingLightPage({
         <Link href="/" className="text-ink transition-opacity hover:opacity-75">
           <Wordmark size={20} scriptClassName="text-terracotta" />
         </Link>
-        <span className="ml-auto text-[11px] tracking-[.22em] text-[#7B8C80] uppercase">
+        {/* <span className="ml-auto text-[11px] tracking-[.22em] text-[#7B8C80] uppercase">
           2 / 3 · Részletek
-        </span>
+        </span> */}
       </header>
 
       {/* <div className="mt-3.5 flex gap-1 px-[18px] sm:px-10">
@@ -52,7 +55,7 @@ export default async function BookingLightPage({
       </section> */}
 
       {isValid ? (
-        <BookingSummary />
+        <BookingSummary bookingIntent={bookingIntent} />
       ) : (
         <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 text-center sm:px-10">
           <div className="eyebrow">Foglalás</div>

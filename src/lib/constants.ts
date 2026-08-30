@@ -1,16 +1,24 @@
-export const PACKAGE_PRICE_MINI = 39000_00;
-export const STUDIO_PRICE_MINI = 6000_00;
-
-export const PACKAGE_PRICE_CLASSIC = 49000_00;
-export const STUDIO_PRICE_CLASSIC = 9000_00;
-
-export const PACKAGE_PRICE_FAMILY = 59000_00;
-export const STUDIO_PRICE_FAMILY = 12000_00;
-
 export const LIGHT_PLAY_FEE = 15000_00;
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PERSONS = 8;
+export const MAX_PETS = 8;
 export const PERSONS_INCLUDED = 5;
+export const DEPOSIT_AMOUNT = 10000_00;
 
 export const BOOKING_INTENT_TTL_MINUTES = 80;
+
+export const PACKAGE_PRICES = {
+  MINI: {
+    base: 39000_00,
+    studio: 6000_00,
+  },
+  CLASSIC: {
+    base: 49000_00,
+    studio: 9000_00,
+  },
+  FAMILY: {
+    base: 59000_00,
+    studio: 12000_00,
+  },
+};
