@@ -21,8 +21,8 @@ export default function SuccessPage() {
           Sikeres foglalás!
         </h1>
         <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
-          Köszönjük az előleg befizetését — hamarosan e-mailben visszaigazoljuk
-          az időpontodat.
+          Köszönjük az előleg befizetését, ellenőrizd az email fiókodban a
+          visszaigazolást.
         </p>
         <Link
           href="/"

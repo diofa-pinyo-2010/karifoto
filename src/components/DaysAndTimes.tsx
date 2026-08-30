@@ -28,9 +28,6 @@ export function DaysAndTimes({
                 (slot) => slot.revealed && slot.photoShooting == null,
               ) ?? [];
             const full = availableSlots.length === 0;
-            const dayLabel = full
-              ? 'Betelt'
-              : `${availableSlots.length} időpont`;
             const active = ctx.selectedDayKey === dayKey;
 
             return (
@@ -50,9 +47,13 @@ export function DaysAndTimes({
                 <span className="mt-0.5 block font-display text-2xl">
                   {shortDateFormatter.format(daySlots[0].startTime)}
                 </span>
-                <span className="mt-1 block text-xs opacity-75">
-                  {dayLabel}
-                </span>
+                {full ? (
+                  <span className="mt-1 block text-xs opacity-75">BETELT</span>
+                ) : (
+                  <span className="mt-1 block text-xs font-medium opacity-75">
+                    {`${availableSlots.length} SZABAD időpont`}
+                  </span>
+                )}
               </button>
             );
           })}

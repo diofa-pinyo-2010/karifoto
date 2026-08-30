@@ -35,7 +35,9 @@ export function BookingSummary({
   const packageStudioFee =
     PACKAGE_PRICES[bookingIntent.package as keyof typeof PACKAGE_PRICES].studio;
 
-  const lightFee = bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
+  const shouldShowLight = bookingIntent.package != 'FAMILY';
+  const lightFee =
+    shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
 
   const extraHeads = Math.max(0, people - PERSONS_INCLUDED);
   const headFee = extraHeads * EXTRA_FEE_PER_EXTRA_PERSON;
@@ -169,15 +171,17 @@ export function BookingSummary({
                 ].studio,
               )}
             />
-            <PriceRowLight
-              state={bookingIntent.isLightPlaySelected ? 'base' : 'idle'}
-              label="Fényjáték extra"
-              value={
-                bookingIntent.isLightPlaySelected
-                  ? formatMoney(LIGHT_PLAY_FEE)
-                  : formatMoney(0)
-              }
-            />
+            {shouldShowLight && (
+              <PriceRowLight
+                state={bookingIntent.isLightPlaySelected ? 'base' : 'idle'}
+                label="Fényjáték extra"
+                value={
+                  bookingIntent.isLightPlaySelected
+                    ? formatMoney(LIGHT_PLAY_FEE)
+                    : formatMoney(0)
+                }
+              />
+            )}
             {/* mindig látszanak — 0 Ft-tal, halványan, hogy ne ugorjon a layout */}
             <PriceRowLight
               label={
@@ -214,7 +218,7 @@ export function BookingSummary({
             <strong className="font-medium text-ink">
               {formatMoney(DEPOSIT_AMOUNT)} foglalót
             </strong>{' '}
-            kell kifizetni — ezzel válik véglegessé az időpontod. A végleges
+            kell kifizetni — ezzel válik véglegessé a foglalás. A végleges
             összeget a fotózás napján, a stúdióban fizetitek — a foglaló ebből
             levonásra kerül.
           </span>
