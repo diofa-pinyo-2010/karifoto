@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { BookingSummaryLight } from '@/components/BookingSummary';
+import { BookingSummary } from '@/components/BookingSummary';
 import { Wordmark } from '@/components/Wordmark';
 
 export const metadata: Metadata = {
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
  */
 export default function BookingLightPage() {
   return (
-    <div className="min-h-screen bg-cream pb-[132px]">
-      <header className="sticky top-0 z-40 flex items-center gap-3.5 border-b border-ink/[.12] bg-cream/[.94] px-[18px] py-4 backdrop-blur-[10px] sm:px-10">
+    <div className="min-h-screen bg-cream pb-33">
+      <header className="sticky top-0 z-40 flex items-center gap-3.5 border-b border-ink/12 bg-cream/94 px-4.5 py-4 backdrop-blur-[10px] sm:px-10">
         <Link href="/" className="text-ink transition-opacity hover:opacity-75">
           <Wordmark size={20} scriptClassName="text-terracotta" />
         </Link>
@@ -45,7 +45,7 @@ export default function BookingLightPage() {
         </p>
       </section> */}
 
-      <BookingSummaryLight />
+      <BookingSummary />
     </div>
   );
 }
