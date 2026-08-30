@@ -54,20 +54,44 @@ model ClientProfile {
 }
 
 model TimeSlot {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  startTime     DateTime       @db.Timestamptz
-  endTime       DateTime       @db.Timestamptz
-  revealed      Boolean        @default(false)
-  photoShooting PhotoShooting?
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  startTime      DateTime        @db.Timestamptz
+  endTime        DateTime        @db.Timestamptz
+  revealed       Boolean         @default(false)
+  photoShooting  PhotoShooting?
+  bookingIntents BookingIntent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+model BookingIntent {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  email               String
+  package             Package
+  decorSet            DecorSet?
+  isLightPlaySelected Boolean   @default(false)
+  customerNote        String?
+  expiresAt           DateTime
+
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
+  timeSlotId String   @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([timeSlotId])
+}
+
 model PhotoShooting {
-  id       String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  client   ClientProfile @relation(fields: [clientId], references: [id])
-  clientId String        @db.Uuid
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  client              ClientProfile @relation(fields: [clientId], references: [id])
+  clientId            String        @db.Uuid
+  package             Package
+  decorSet            DecorSet?
+  isLightPlaySelected Boolean       @default(false)
+  customerNote        String?
 
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @unique @db.Uuid
@@ -199,4 +223,16 @@ enum InvoiceType {
   INVOICE
   REVERSE_INVOICE
   CORRECTION_INVOICE
+}
+
+enum Package {
+  MINI
+  CLASSIC
+  FAMILY
+  PARTY
+}
+
+enum DecorSet {
+  HOFEHER
+  ALOMKASTELY
 }

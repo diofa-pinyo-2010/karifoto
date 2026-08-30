@@ -16,6 +16,7 @@ const DEPOSIT = 10000_00;
 export function BookingSummaryLight() {
   const [people, setPeople] = useState(0);
   const [pets, setPets] = useState(0);
+  const [note, setNote] = useState('');
 
   const extraHeads = Math.max(0, people - FREE_HEADS);
   const headFee = extraHeads * PER_HEAD;
@@ -99,6 +100,28 @@ export function BookingSummaryLight() {
           onChange={setPets}
         />
       </section>
+      <section className="mx-auto max-w-[720px] px-[18px] pt-[30px] sm:px-10">
+        <label htmlFor="note" className="block text-[17px] text-ink">
+          Megjegyzés
+        </label>
+        <div className="my-1.5 text-[13.5px] leading-[1.5] text-[#5C7064]">
+          Bármi, amit jó, ha tudunk: babakocsi, allergia, kedvenc pléd, ünnepi
+          szett.
+        </div>
+        <textarea
+          id="note"
+          name="note"
+          rows={4}
+          maxLength={500}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Írd ide a megjegyzésed…"
+          className="w-full resize-none rounded-2xl border border-ink/[.18] bg-[#FFFDF8] px-4 py-3.5 text-[15px] leading-[1.55] text-ink outline-none placeholder:text-[#8C9A8F] focus:border-terracotta"
+        />
+        <div className="mt-1.5 text-right text-xs text-[#9AA89D]">
+          {note.length} / 500
+        </div>
+      </section>
 
       <section className="mt-[34px] border-y border-ink/[.12] bg-[#FCF5E8]">
         <div className="mx-auto max-w-[720px] px-[18px] pt-6 pb-7 sm:px-10">
@@ -171,7 +194,7 @@ export function BookingSummaryLight() {
         <div className="mx-auto flex max-w-[720px] items-center gap-4">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] tracking-[.16em] text-sage-dim uppercase">
-              Foglaló most
+              Foglaló
             </span>
             <span className="text-[26px] leading-none text-cream">
               {formatMoney(DEPOSIT)}
@@ -187,7 +210,7 @@ export function BookingSummaryLight() {
                 : 'bg-terracotta text-[#FFF4E6] shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-terracotta-hover'
             }`}
           >
-            {missingPeople ? 'Add meg, hányan jöttök' : 'Fizetés →'}
+            {missingPeople ? 'Add meg, hányan jöttök' : 'Foglaló fizetése →'}
           </button>
         </div>
       </div>
