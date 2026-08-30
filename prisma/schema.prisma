@@ -72,7 +72,7 @@ model BookingIntent {
   package             Package
   decorSet            DecorSet?
   isLightPlaySelected Boolean   @default(false)
-  customerNote        String?
+  clientNote          String?
   expiresAt           DateTime
 
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
@@ -91,7 +91,6 @@ model PhotoShooting {
   package             Package
   decorSet            DecorSet?
   isLightPlaySelected Boolean       @default(false)
-  customerNote        String?
 
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @unique @db.Uuid
