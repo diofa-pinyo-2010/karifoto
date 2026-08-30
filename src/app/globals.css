@@ -159,7 +159,7 @@
     cursor: pointer;
   }
   html {
-    @apply scroll-smooth font-sans;
+    @apply font-sans;
   }
 }
 
