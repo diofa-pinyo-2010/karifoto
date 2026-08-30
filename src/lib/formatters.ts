@@ -14,3 +14,12 @@ export const timeFormatter = new Intl.DateTimeFormat('hu-Hu', {
   hour: 'numeric',
   minute: 'numeric',
 });
+
+export const shortFullDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
+  timeZone: 'Europe/Budapest',
+  month: 'short',
+  day: 'numeric',
+  weekday: 'long',
+  hour: 'numeric',
+  minute: 'numeric',
+});

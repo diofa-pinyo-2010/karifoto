@@ -5,6 +5,7 @@ import { DaysAndTimes } from '@/components/DaysAndTimes';
 import { Step } from '@/components/Step';
 import { LIGHT_PLAY_FEE } from '@/lib/constants';
 import { packages } from '@/lib/data';
+import { shortFullDateFormatter } from '@/lib/formatters';
 import { cn, formatMoney, GroupedSlots } from '@/lib/utils';
 
 export function Booking({
@@ -119,11 +120,10 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
         <div className="text-[11px] tracking-chip text-sage-dim uppercase">
           Foglalás összegzése
         </div>
-        <div className="mt-3 font-display text-[28px] leading-tight text-cream-strong">
+        <div className="mt-3 text-[28px] leading-tight text-cream-strong">
           {ctx.selectedTimeSlot != null
-            ? 'TODO: Ezt javitani'
-            : // ? `${booking.day.weekday}, ${booking.day.label} ${booking.slot}`
-              'Válassz napot és idősávot'}
+            ? `${shortFullDateFormatter.format(ctx.selectedTimeSlot.startTime)}`
+            : 'Válassz napot és idősávot'}
         </div>
         <div className="mt-2 text-sm text-sage-soft">
           {ctx.selectedPackage.name} csomag · {ctx.selectedPackage.sub}
