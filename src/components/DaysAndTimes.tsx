@@ -34,9 +34,10 @@ export function DaysAndTimes({
               <button
                 type="button"
                 key={dayKey}
+                disabled={full}
                 onClick={() => ctx.selectDay(dayKey)}
                 className={cn(
-                  'rounded-2xl border border-ink/18 bg-ink/4 px-4 py-3.5 text-left text-ink transition-colors',
+                  'rounded-2xl border border-ink/18 bg-ink/4 px-4 py-3 text-left text-ink transition-colors disabled:cursor-not-allowed',
                   active && 'border-ink bg-ink text-cream',
                   full && 'opacity-40',
                 )}
@@ -44,7 +45,7 @@ export function DaysAndTimes({
                 <span className="block text-[11px] uppercase opacity-80">
                   {weekDayFormatter.format(daySlots[0].startTime)}
                 </span>
-                <span className="mt-0.5 block text-2xl">
+                <span className="block text-2xl">
                   {shortDateFormatter.format(daySlots[0].startTime)}
                 </span>
                 {full ? (
