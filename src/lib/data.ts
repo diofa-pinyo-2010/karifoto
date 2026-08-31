@@ -305,3 +305,39 @@ export const photoSets: PhotoSet[] = [
     extra: true,
   },
 ];
+
+/** A /coming-soon oldal GYIK-je — az aktuális csomag/díszlet logikára írva. */
+export const comingSoonFaqs = [
+  {
+    q: 'Mikor indul újra az oldal?',
+    a: 'Néhány héten belül — az új foglalórendszerrel együtt. Addig telefonon tudsz időpontot egyeztetni, a helyeket ugyanúgy tartjuk.',
+  },
+  {
+    q: 'Most is lehet időpontot foglalni?',
+    a: 'Igen, telefonon. Hívd Marut a fenti számon: átbeszélitek a csomagot, a díszletet és az időpontot.',
+  },
+  {
+    q: 'Milyen csomagok közül választhatunk?',
+    a: 'Mini (30 perc), Classic (40 perc, két díszlet, átöltözés) és Family (50 perc, két díszlet, fényjáték). A stúdió bérlet minden csomagnál külön tétel — telefonon pontos árat mondunk.',
+  },
+  {
+    q: 'Milyen díszletek lesznek idén?',
+    a: 'Két alapdíszlet: Hófehér (világos, havas hangulat) és Álomkastély (arany fények, mélyzöld falak). A Fényjáték extra a Family csomag része, a többinél felárért kérhető.',
+  },
+  {
+    q: 'Mit vegyünk fel?',
+    a: 'A foglalás után küldünk egy rövid ruhaválasztási segédletet a díszlet színvilágához. Ha bizonytalan vagy, hozz két szettet — a stúdióban van hol átöltözni.',
+  },
+  {
+    q: 'Jöhet a nagymama vagy a kutya?',
+    a: 'Persze. A létszámot és a kisállatot jelezd előre, hogy tudjunk rá időt hagyni — 5 fő fölött és kisállatnál kis felárral számolunk.',
+  },
+  {
+    q: 'Mi van, ha a gyerek beteg lesz?',
+    a: 'A fotózás előtt 48 óráig díjmentesen áthelyezzük egy másik szabad időpontra.',
+  },
+  {
+    q: 'Mikor kapjuk meg a képeket?',
+    a: 'A teljes, letölthető válogatás pár napon belül elkészül, a szerkesztett képeket ezután küldjük. A nyers képeket is átadjuk.',
+  },
+];
