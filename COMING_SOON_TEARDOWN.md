@@ -46,4 +46,4 @@ the homepage is ready to launch, undo this. Delete this file once done.
 - [ ] The old bypass cookie (`coming-soon-bypass`) left in your browser is
       inert once `proxy.ts` is gone — no need to clear it
 - [ ] No need to rotate `COMING_SOON_PREVIEW_TOKEN`; it was never a
-      real secret (only gated *seeing* the homepage early, not any data)
+      real secret (only gated _seeing_ the homepage early, not any data)
