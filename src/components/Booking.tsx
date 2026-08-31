@@ -185,7 +185,7 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             <Row label="Fényjáték extra" value={formatMoney(LIGHT_PLAY_FEE)} />
           ) : null}
           <div className="mt-1.5 flex items-baseline justify-between gap-3.5 border-t border-cream/[.14] pt-3">
-            <span className="text-sm text-[#F1E7D5]">Várható végösszeg</span>
+            <span className="text-sm text-[#F1E7D5]">Összesen</span>
             <span className="font-display text-[28px] leading-none whitespace-nowrap text-gold">
               {formatMoney(ctx.estimatedTotalAmount)}
             </span>

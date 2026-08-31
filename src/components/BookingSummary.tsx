@@ -200,7 +200,7 @@ export function BookingSummary({
           </div>
 
           <div className="mt-4.5 flex items-baseline justify-between gap-4">
-            <span className="text-[15px] text-ink">Várható végösszeg</span>
+            <span className="text-[15px] text-ink">Összesen</span>
             <span className="text-[32px] leading-none whitespace-nowrap text-terracotta sm:text-[42px]">
               {formatMoney(total)}
             </span>
