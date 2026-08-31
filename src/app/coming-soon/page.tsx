@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 
 import { Wordmark } from '@/components/Wordmark';
-import { comingSoonFaqs } from '@/lib/data';
 
 export const metadata: Metadata = {
   title: 'Oldalunk épp megújul · Karifoto',
@@ -13,7 +12,7 @@ export const metadata: Metadata = {
 export default function ComingSoonPage() {
   return (
     <div className="min-h-screen bg-[#0E2620]">
-      <div className="lg:flex lg:min-h-screen">
+      <div className="mb-4 lg:flex lg:min-h-screen">
         {/* KÉP — mobilon sáv, lg-től bal oldali hasáb */}
         <section className="relative h-[clamp(240px,52vw,420px)] overflow-hidden bg-panel lg:h-auto lg:w-[46%] lg:flex-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -27,7 +26,7 @@ export default function ComingSoonPage() {
 
         {/* SZÖVEG */}
         <div className="lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-14 lg:py-20 xl:px-20">
-          <header className="flex items-center justify-center border-b border-cream/[.09] px-[18px] py-5 text-cream sm:px-10 lg:justify-start lg:border-0 lg:p-0 lg:pb-10">
+          <header className="flex items-center justify-center px-[18px] py-5 text-cream sm:px-10 lg:justify-start lg:p-0 lg:pb-10">
             <Wordmark size={22} />
           </header>
 
@@ -52,56 +51,41 @@ export default function ComingSoonPage() {
             </p>
           </section>
 
-          <section className="mx-auto max-w-[720px] px-[18px] pt-[26px] sm:px-10 lg:mx-0 lg:max-w-[440px] lg:px-0">
+          <section className="mx-auto flex max-w-[720px] flex-col gap-6 px-[18px] pt-[26px] sm:flex-row sm:px-10 lg:mx-0 lg:max-w-[440px] lg:px-0">
             <a
               href="tel:+36301086063"
-              className="flex flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-[22px] py-[26px] text-cream transition-colors hover:bg-gold/[.12] lg:items-start"
+              className="flex flex-1 flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-[22px] py-[26px] text-cream transition-colors hover:bg-gold/[.12] lg:items-start"
             >
               <span className="tracking-chip text-sage-dim uppercase">
-                Maru
+                Telefon
               </span>
-              <span className="text-[30px] leading-none whitespace-nowrap text-gold sm:text-[40px]">
+              <span className="text-[22px] leading-none whitespace-nowrap text-gold sm:text-[26px]">
                 +36 30 108 6063
+              </span>
+            </a>
+            <a
+              href="mailto:info@karifoto.hu"
+              className="flex flex-1 flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-[22px] py-[26px] text-cream transition-colors hover:bg-gold/[.12] lg:items-start"
+            >
+              <span className="tracking-chip text-sage-dim uppercase">
+                Email
+              </span>
+              <span className="text-[22px] leading-none whitespace-nowrap text-gold sm:text-[26px]">
+                info@karifoto.hu
               </span>
             </a>
           </section>
         </div>
       </div>
 
-      <section className="mx-auto max-w-[720px] px-[18px] pt-20 pb-14 sm:px-10 sm:pt-24 sm:pb-[90px] lg:max-w-none lg:border-t lg:border-gold/25 lg:pt-32">
-        <h2 className="text-center font-display text-[26px] leading-[1.2] font-medium text-cream-strong sm:text-4xl">
-          Gyakori kérdések
-        </h2>
-
-        <div className="mx-auto mt-[22px] flex max-w-[720px] flex-col gap-3 sm:mt-[30px]">
-          {comingSoonFaqs.map((f) => (
-            <div
-              key={f.q}
-              className="rounded-2xl border border-cream/[.09] bg-[#143329] px-[22px] py-5"
-            >
-              <div className="text-[16.5px] leading-[1.4] text-[#F1E7D5]">
-                {f.q}
-              </div>
-              <div className="mt-2 text-[15px] leading-[1.6] font-light text-pretty text-sage-soft">
-                {f.a}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-[30px] text-center text-[14.5px] leading-[1.6] text-pretty text-sage-dim sm:mt-10">
-          Nem találtad meg a választ? Hívj minket a fenti számon, és segítünk.
-        </div>
-      </section>
-
-      <footer className="border-t border-cream/[.09] px-[18px] pt-[22px] pb-[30px] sm:px-10">
+      {/* <footer className="px-[18px] pt-[22px] pb-[30px] sm:px-10">
         <div className="mx-auto flex max-w-[720px] flex-col items-center gap-2.5 text-center">
           <Wordmark size={18} className="text-[#D8CBB4]" />
           <span className="text-[13px] text-[#6E8478]">
             Karifoto stúdió · Budapest
           </span>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
