@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION } from '@/lib/constants';
 import { RATING } from '@/lib/data';
 
 export function Hero() {
@@ -16,8 +17,9 @@ export function Hero() {
         </h1>
 
         <p className="mx-auto mt-4.5 max-w-140 text-base leading-[1.62] font-light text-pretty text-[#BFCFC6] sm:mt-6.5 sm:text-[18px]">
-          Örökítsd meg velünk az év legszebb pillanatait. A képeket akár 7 napon
-          belül megkaphatod — épp időben a karácsonyi ajándékhoz.
+          Örökítsd meg velünk az év legszebb pillanatait. A képeket akár{' '}
+          {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül
+          megkaphatod — épp időben a karácsonyi ajándékhoz.
         </p>
 
         <div className="mt-6.5 flex flex-wrap items-center justify-center gap-3 sm:mt-9.5 sm:gap-4">

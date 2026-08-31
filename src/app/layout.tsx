@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Jost, Parisienne } from 'next/font/google';
 
 import '@/app/globals.css';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
@@ -25,8 +26,7 @@ const sans = Jost({
 
 export const metadata: Metadata = {
   title: 'Karifoto — karácsonyi családi fotózás Budapesten, 2026-ban is.',
-  description:
-    'Felejthetetlen élmény a díszbe borított stúdióban, retusált képek akár 5 napon belül.',
+  description: `Felejthetetlen élmény a díszbe borított stúdióban, retusált képek akár ${PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül.`,
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
