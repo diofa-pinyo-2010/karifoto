@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'Oldalunk épp megújul · Karifoto',
   description:
     'Aktívan dolgozunk az új foglalórendszeren. Addig is hívj minket: +36 30 108 6063.',
+  robots: { index: false, follow: false },
 };
 
 export default function ComingSoonPage() {
