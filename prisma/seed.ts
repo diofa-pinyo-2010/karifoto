@@ -11,8 +11,8 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-const DAYS_AHEAD = 4;
-const START_HOUR = 9;
+const DAYS_AHEAD = 6;
+const START_HOUR = 10;
 const END_HOUR = 18;
 
 function getBudapestDateParts(date: Date) {
