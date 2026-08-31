@@ -1,5 +1,7 @@
 'use client';
 
+import { FaceSlightlyFrowningIcon } from 'lucide-react';
+
 import { useAppContext } from '@/components/AppContextProvider';
 import { Step } from '@/components/Step';
 import {
@@ -15,6 +17,18 @@ export function DaysAndTimes({
   groupedTimeSlots: GroupedSlots;
 }) {
   const ctx = useAppContext();
+
+  if (groupedTimeSlots.size === 0) {
+    return (
+      <div className="mt-2.25 inline-flex items-center gap-1.75 rounded-full border border-terracotta/30 bg-terracotta/[.07] px-3 py-1.5 text-xs text-[#9C4430]">
+        <FaceSlightlyFrowningIcon
+          strokeWidth={2}
+          className="size-5 opacity-60"
+        />
+        Jelenleg nincsenek szabad időpontjaink, kérjük nézz vissza később.
+      </div>
+    );
+  }
 
   return (
     <>
