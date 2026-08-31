@@ -41,16 +41,23 @@ export function DaysAndTimes({
                   full && 'opacity-40',
                 )}
               >
-                <span className="block text-[11px] tracking-[.16em] uppercase opacity-70">
+                <span className="block text-[11px] uppercase opacity-80">
                   {weekDayFormatter.format(daySlots[0].startTime)}
                 </span>
-                <span className="mt-0.5 block font-display text-2xl">
+                <span className="mt-0.5 block text-2xl">
                   {shortDateFormatter.format(daySlots[0].startTime)}
                 </span>
                 {full ? (
-                  <span className="mt-1 block text-xs opacity-75">BETELT</span>
+                  <span className="mt-1 block text-xs font-semibold text-red-600">
+                    BETELT
+                  </span>
                 ) : (
-                  <span className="mt-1 block text-xs font-medium opacity-75">
+                  <span
+                    className={cn(
+                      'mt-1 block text-xs font-semibold text-lime-600 opacity-75',
+                      active && 'text-cream',
+                    )}
+                  >
                     {`${availableSlots.length} SZABAD`}
                   </span>
                 )}
