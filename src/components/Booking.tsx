@@ -74,7 +74,8 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
   return (
     <div className="mt-7 grid grid-cols-1 gap-6 rounded-[22px] bg-cream p-5 text-ink sm:mt-11 sm:p-8.5 lg:grid-cols-[1.35fr_1fr] lg:gap-8.5">
       <div>
-        <Step n={1} label="Csomag" />
+        <DaysAndTimes groupedTimeSlots={groupedTimeSlots} />
+        <Step n={3} label="Csomag" className="mt-7" />
         <div className="mt-3 flex flex-wrap gap-2.5">
           {packages.map(({ id, name }) => (
             <button
@@ -97,7 +98,7 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
           ))}
         </div>
 
-        <Step n={2} label="Díszlet" className="mt-7" />
+        <Step n={4} label="Díszlet" className="mt-7" />
         <div className="mt-1.75 text-[13px] text-[#4A5F53]">
           {ctx.bothDecorSets
             ? `A ${ctx.selectedPackage.name} csomagban mindkét díszlettel fotózunk.`
@@ -170,7 +171,6 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             </span>
           </button>
         </div>
-        <DaysAndTimes groupedTimeSlots={groupedTimeSlots} />
       </div>
 
       <div className="flex flex-col rounded-[18px] bg-ink p-5 text-[#F1E7D5] sm:p-6.5">

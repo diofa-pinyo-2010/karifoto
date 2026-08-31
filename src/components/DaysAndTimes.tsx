@@ -18,8 +18,8 @@ export function DaysAndTimes({
 
   return (
     <>
-      <Step n={3} label="Nap" className="mt-7" />
-      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+      <Step n={1} label="Nap" />
+      <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
         {Array.from(groupedTimeSlots.entries())
           .slice(0, 6)
           .map(([dayKey, daySlots]) => {
@@ -51,7 +51,7 @@ export function DaysAndTimes({
                   <span className="mt-1 block text-xs opacity-75">BETELT</span>
                 ) : (
                   <span className="mt-1 block text-xs font-medium opacity-75">
-                    {`${availableSlots.length} SZABAD időpont`}
+                    {`${availableSlots.length} SZABAD`}
                   </span>
                 )}
               </button>
@@ -59,8 +59,8 @@ export function DaysAndTimes({
           })}
       </div>
 
-      <Step n={4} label="Idősáv" className="mt-7" />
-      <div className="mt-3 flex flex-wrap gap-2.5">
+      <Step n={2} label="Idősáv" className="mt-7" />
+      <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-4">
         {ctx.timeSlotsForSelectedDay &&
           ctx.timeSlotsForSelectedDay.map(
             ({ id, startTime, revealed, photoShooting }) => {
