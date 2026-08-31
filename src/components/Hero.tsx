@@ -12,12 +12,12 @@ export function Hero() {
         <h1 className="mt-4 font-display text-[38px] leading-[1.05] font-medium text-balance text-cream-strong sm:mt-5.5 sm:text-[78px]">
           Karácsonyi családi fotózás,
           <br />
-          <em className="text-gold italic">amit évekig előveszel</em>
+          <em className="text-gold italic">Budapest szívében</em>
         </h1>
 
         <p className="mx-auto mt-4.5 max-w-140 text-base leading-[1.62] font-light text-pretty text-[#BFCFC6] sm:mt-6.5 sm:text-[18px]">
-          45 perc a díszbe borított stúdiónkban, gyerekbarát tempóban. A képeket
-          5 napon belül megkapod — időben a karácsonyi ajándékhoz.
+          Örökítsd meg velünk az év legszebb pillanatait. A képeket akár 7 napon
+          belül megkaphatod — épp időben a karácsonyi ajándékhoz.
         </p>
 
         <div className="mt-6.5 flex flex-wrap items-center justify-center gap-3 sm:mt-9.5 sm:gap-4">

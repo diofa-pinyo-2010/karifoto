@@ -25,7 +25,7 @@ function SetsOverview() {
         <div className="flex flex-wrap items-end justify-between gap-6.5">
           <div className="max-w-160">
             <div className="text-[11px] tracking-label text-[#7B8C80] uppercase">
-              Díszleteink
+              Épített díszleteink
             </div>
             <h2 className="mt-3.5 font-display text-[31px] font-medium text-ink sm:text-[50px]">
               Idén két díszlet
@@ -41,20 +41,20 @@ function SetsOverview() {
           </div>
           <a
             href="#foglalas"
-            className="btn-cta px-6 py-[18px] text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-[38px]"
+            className="btn-cta px-6 py-4.5 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9.5"
           >
             Szabad időpontok →
           </a>
         </div>
 
-        <div className="mt-7 grid grid-cols-1 gap-3.5 sm:mt-11 sm:grid-cols-3 sm:gap-[18px]">
+        <div className="mt-7 grid grid-cols-1 gap-3.5 sm:mt-11 sm:grid-cols-3 sm:gap-4.5">
           {photoSets.map((s) => (
             <a
               key={s.id}
               href={`#${s.id}`}
               className="flex flex-col gap-3 text-inherit transition-opacity hover:opacity-85"
             >
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] border border-ink/[.12] bg-[#E6D6BE]">
+              <div className="relative aspect-4/3 overflow-hidden rounded-[18px] border border-ink/12 bg-[#E6D6BE]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={s.thumb}
@@ -71,7 +71,7 @@ function SetsOverview() {
                   {s.tagline}
                 </div>
                 {s.extra && (
-                  <div className="mt-[9px] inline-flex items-center gap-[7px] rounded-full border border-terracotta/30 bg-terracotta/[.07] px-3 py-1.5 text-xs text-[#9C4430]">
+                  <div className="mt-2.25 inline-flex items-center gap-1.75 rounded-full border border-terracotta/30 bg-terracotta/[.07] px-3 py-1.5 text-xs text-[#9C4430]">
                     Extra · Family csomag tartalmazza, vagy külön kérhető
                   </div>
                 )}
@@ -90,10 +90,10 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
   return (
     <section
       id={set.id}
-      className={`border-t border-cream/[.08] px-[18px] py-[52px] sm:px-7 sm:py-[88px] ${set.bg}`}
+      className={`border-t border-cream/8 px-4.5 py-13 sm:px-7 sm:py-22 ${set.bg}`}
     >
-      <div className="mx-auto max-w-[1200px]">
-        <div className="grid grid-cols-1 gap-[22px] [grid-template-areas:'head''media''body'] lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-x-11 lg:gap-y-4 lg:[grid-template-areas:'head_media''body_media']">
+      <div className="mx-auto max-w-300">
+        <div className="grid grid-cols-1 gap-5.5 [grid-template-areas:'head''media''body'] lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-x-11 lg:gap-y-4 lg:[grid-template-areas:'head_media''body_media']">
           <div className="[grid-area:head]">
             <div className="eyebrow">Díszlet</div>
             <h2 className="mt-3 font-display text-[34px] font-medium text-cream-strong sm:text-[54px]">
@@ -101,7 +101,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
             </h2>
           </div>
 
-          <div className="relative h-[220px] overflow-hidden rounded-[18px] border border-cream/10 bg-panel [grid-area:media] sm:h-[clamp(220px,34vw,520px)] sm:rounded-3xl">
+          <div className="relative h-55 overflow-hidden rounded-[18px] border border-cream/10 bg-panel [grid-area:media] sm:h-[clamp(220px,34vw,520px)] sm:rounded-3xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={set.hero}
@@ -125,7 +125,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
                   {set.colors.map((c) => (
                     <div
                       key={c.name}
-                      className="flex items-center gap-[9px] rounded-full border border-cream/[.16] bg-cream/[.04] py-2 pr-3.5 pl-[9px]"
+                      className="flex items-center gap-2.25 rounded-full border border-cream/16 bg-cream/4 py-2 pr-3.5 pl-2.25"
                     >
                       <span
                         className="h-4 w-4 rounded-full border border-black/20"
@@ -139,7 +139,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
             )}
 
             {set.extra ? (
-              <div className="mt-[26px] flex max-w-[520px] items-start gap-3 rounded-2xl border border-gold/30 bg-gold/[.08] px-[18px] py-4">
+              <div className="mt-6.5 flex max-w-130 items-start gap-3 rounded-2xl border border-gold/30 bg-gold/8 px-4.5 py-4">
                 <span className="mt-0.5 font-display text-xl leading-none text-gold">
                   ✦
                 </span>
@@ -155,7 +155,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
               <a
                 href="#foglalas"
                 onClick={() => selectDecorSet(set.key ?? 'hofeher')}
-                className="btn-cta mt-[26px] px-6 py-[17px] text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9"
+                className="btn-cta mt-6.5 px-6 py-4.25 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9"
               >
                 Ezt szeretném →
               </a>
@@ -167,14 +167,14 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
           <div className="text-[11px] tracking-chip text-sage-dim uppercase">
             Öltözködési tippek
           </div>
-          <p className="mt-1.5 max-w-[780px] text-[15px] leading-[1.68] font-light text-pretty text-sage-soft sm:text-base">
+          <p className="mt-1.5 max-w-195 text-[15px] leading-[1.68] font-light text-pretty text-sage-soft sm:text-base">
             {set.tips}
           </p>
-          <div className="mt-[18px] grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
+          <div className="mt-4.5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
             {set.shots.map((sh, i) => (
               <div
                 key={i}
-                className="relative aspect-[3/4] overflow-hidden rounded-[14px] border border-cream/10 bg-panel"
+                className="relative aspect-3/4 overflow-hidden rounded-[14px] border border-cream/10 bg-panel"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

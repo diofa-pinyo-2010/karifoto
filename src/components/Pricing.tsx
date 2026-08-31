@@ -12,7 +12,7 @@ export function Pricing() {
       className="mx-auto max-w-300 px-4.5 py-13 sm:px-7 sm:py-20"
     >
       <div className="mb-7 text-center sm:mb-11.5">
-        <div className="eyebrow">Csomagok</div>
+        <div className="eyebrow">Csomagjaink</div>
         <h2 className="mt-3.5 font-display text-[31px] font-medium text-cream-strong sm:text-[50px]">
           Válaszd ki, majd foglalj időpontot
         </h2>
