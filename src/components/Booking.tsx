@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { CircleCheckBigIcon, PlusIcon } from 'lucide-react';
+
 import { useAppContext } from '@/components/AppContextProvider';
 import { DaysAndTimes } from '@/components/DaysAndTimes';
 import { Step } from '@/components/Step';
@@ -75,10 +77,16 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
               type="button"
               onClick={() => ctx.selectPackage(id)}
               className={cn(
-                'rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50',
+                'flex items-center gap-1 rounded-full border border-ink/20 py-3 pr-4.5 pl-3 text-sm text-ink transition-colors hover:border-ink/50',
                 ctx.selectedPackageKey === id && 'border-ink bg-ink text-cream',
               )}
             >
+              {ctx.selectedPackageKey === id ? (
+                <CircleCheckBigIcon className="size-4" />
+              ) : (
+                <PlusIcon className="size-4" />
+              )}
+
               {name}
             </button>
           ))}
@@ -99,10 +107,15 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
                 disabled={disabled}
                 onClick={() => ctx.selectDecorSet(key)}
                 className={cn(
-                  'rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50 disabled:cursor-default disabled:opacity-[.82]',
+                  'flex items-center gap-1 rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-[.72]',
                   selected && 'border-ink bg-ink text-cream',
                 )}
               >
+                {selected ? (
+                  <CircleCheckBigIcon className="size-4" />
+                ) : (
+                  <PlusIcon className="size-4" />
+                )}
                 {name}
               </button>
             );
@@ -118,7 +131,7 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             disabled={ctx.isLightPlayIncluded}
             onClick={ctx.toggleLightPlay}
             className={cn(
-              'mt-3 flex items-center gap-3.25 rounded-2xl border border-dashed border-ink/[.28] px-4.5 py-3.5 text-left text-ink transition-colors hover:border-ink/50 disabled:cursor-default disabled:opacity-[.85]',
+              'mt-3 flex items-center gap-3.25 rounded-2xl border border-dashed border-ink/[.28] px-4.5 py-3.5 text-left text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-[.72]',
               ctx.isLightPlayOn && 'border-solid border-ink bg-ink text-cream',
             )}
           >
