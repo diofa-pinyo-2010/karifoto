@@ -60,7 +60,9 @@ export function CookieConsentBanner() {
             consentModal: {
               title: 'Sütiket használunk',
               description:
-                'Az oldal működéséhez szükséges sütiket mindig használjuk. Az anonim látogatottsági elemzéshez (Microsoft Clarity) a hozzájárulásodat kérjük.',
+                'Weboldalunkon sütiket (cookie-kat) használunk a felhasználói élmény biztosítása, a működés, valamint a statisztikai és marketing célú elemzések érdekében.',
+              // description:
+              //   'Weboldalunkon sütiket (cookie-kat) használunk a felhasználói élmény biztosítása, a működés, valamint a statisztikai és marketing célú elemzések érdekében. Részletes tájékoztatást az Adatkezelési Tájékoztatóban talál. Ön az „Összes elfogadása” gombra kattintva hozzájárul a sütik használatához, vagy a beállítások között részletesen is rendelkezhet róluk.',
               acceptAllBtn: 'Összes elfogadása',
               acceptNecessaryBtn: 'Csak a szükségesek',
               showPreferencesBtn: 'Beállítások',
