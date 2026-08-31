@@ -3,7 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-import { CircleCheckBigIcon, PlusIcon } from 'lucide-react';
+import {
+  CircleCheckBigIcon,
+  PlusIcon,
+  SparkleIcon,
+  SparklesIcon,
+} from 'lucide-react';
 
 import { useAppContext } from '@/components/AppContextProvider';
 import { DaysAndTimes } from '@/components/DaysAndTimes';
@@ -144,7 +149,19 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
               {ctx.isLightPlayOn ? '✓' : '+'}
             </span>
             <span className="flex flex-col gap-0.75">
-              <span className="text-[15px] font-medium">Fényjáték</span>
+              <span className="flex items-center gap-1 text-[15px] font-medium">
+                <span>Fényjáték</span>
+                <span className="rounded-full p-2">
+                  {ctx.isLightPlaySelected || ctx.isLightPlayIncluded ? (
+                    <SparklesIcon
+                      className="animate-pulse fill-gold stroke-white"
+                      strokeWidth={1}
+                    />
+                  ) : (
+                    <SparkleIcon />
+                  )}
+                </span>
+              </span>
               <span className="text-[12.5px] leading-[1.4] opacity-[.72]">
                 {ctx.isLightPlayIncluded
                   ? 'A Family csomag tartalmazza'
@@ -192,7 +209,7 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
           </div>
         </div>
 
-        <div className="mt-5.5 flex flex-col gap-2.5">
+        <div className="mt-auto flex flex-col gap-2.5 pt-6">
           <input
             value={ctx.name}
             onChange={(e) => ctx.setName(e.target.value)}

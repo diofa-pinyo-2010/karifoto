@@ -74,7 +74,7 @@ export function DaysAndTimes({
                   onClick={() => ctx.selectTime(id)}
                   disabled={taken}
                   className={cn(
-                    'rounded-[14px] border border-ink/50 px-5.5 py-3.5 text-[15px] text-ink transition-colors hover:border-ink/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
+                    'rounded-[14px] border border-ink/50 px-8 py-3.5 text-[15px] text-ink transition-colors hover:border-ink/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
                     selected &&
                       'border-terracotta bg-terracotta text-[#FFF4E6]',
                     taken && 'text-terracotta-hover line-through',
