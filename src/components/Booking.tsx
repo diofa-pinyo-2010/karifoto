@@ -26,7 +26,7 @@ export function Booking({
         <div className="text-center">
           <div className="eyebrow">Foglalás · 30 másodperc</div>
           <h2 className="mt-3.5 font-display text-[32px] font-medium text-cream-strong sm:text-[52px]">
-            Válassz időpontot
+            Foglalj időpontot most
           </h2>
           <p className="mx-auto mt-3.5 max-w-130 text-base font-light text-sage-soft">
             A visszaigazolást e-mailben fogjuk elküldeni.
@@ -211,9 +211,11 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             ? 'Foglalás létrehozása…'
             : ctx.canConfirm
               ? 'Tovább'
-              : ctx.selectedTimeSlotId
-                ? 'Add meg a neved és e-mailed'
-                : 'Válassz idősávot'}
+              : !ctx.bothDecorSets && !ctx.selectedDecorSetKey
+                ? 'Válassz díszletet!'
+                : ctx.selectedTimeSlotId
+                  ? 'Add meg a neved és e-mailed'
+                  : 'Válassz idősávot'}
         </button>
 
         {error && (

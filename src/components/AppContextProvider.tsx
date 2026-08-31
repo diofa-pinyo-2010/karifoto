@@ -20,7 +20,7 @@ import { TimeSlotsWithPhotoShooting } from '@/server/time-slots';
  */
 type AppState = {
   selectedPackageKey: PackageKey;
-  selectedDecorSetKey: DecorSetKey;
+  selectedDecorSetKey: DecorSetKey | null;
   selectedDayKey: string | null;
   selectedTimeSlotId: string | null;
   isLightPlaySelected: boolean; // Fényjáték extra (Family csomagban alapból jár)
@@ -72,7 +72,7 @@ export function AppProvider({
 }) {
   const [state, setState] = useState<AppState>({
     selectedPackageKey: 'classic',
-    selectedDecorSetKey: 'hofeher',
+    selectedDecorSetKey: null,
     selectedDayKey: availableTimeSlotsGrouped.keys().next().value ?? null,
     selectedTimeSlotId: null,
     isLightPlaySelected: false,
@@ -95,6 +95,7 @@ export function AppProvider({
     const isLightPlayOn = isLightPlayIncluded || state.isLightPlaySelected;
     const canConfirm =
       !!state.selectedTimeSlotId &&
+      (bothDecorSets || !!state.selectedDecorSetKey) &&
       state.name.trim().length > 1 &&
       state.email.includes('@');
 
@@ -107,7 +108,9 @@ export function AppProvider({
 
     const decorSetLabel = bothDecorSets
       ? SET_ORDER.map((key) => photoShootingSets[key].name).join(' + ')
-      : `${photoShootingSets[state.selectedDecorSetKey].name} díszlet`;
+      : state.selectedDecorSetKey
+        ? `${photoShootingSets[state.selectedDecorSetKey].name} díszlet`
+        : 'Válassz díszletet!';
 
     const estimatedTotalAmount =
       selectedPackage.priceHuf +

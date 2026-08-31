@@ -24,7 +24,7 @@ export type CreateBookingIntentInput = {
   name: string;
   email: string;
   packageKey: PackageKey;
-  decorSetKey: DecorSetKey;
+  decorSetKey: DecorSetKey | null;
   isLightPlaySelected: boolean;
 };
 
@@ -45,6 +45,9 @@ export async function createBookingIntent(
   }
 
   const bothDecorSets = input.packageKey !== 'mini';
+  if (!bothDecorSets && !input.decorSetKey) {
+    return { error: 'Válassz díszletet!.' };
+  }
   const expiresAt = new Date(
     Date.now() + BOOKING_INTENT_TTL_MINUTES * 60 * 1000,
   );
@@ -55,9 +58,10 @@ export async function createBookingIntent(
         name,
         email,
         package: PACKAGE_KEY_TO_ENUM[input.packageKey],
-        decorSet: bothDecorSets
-          ? null
-          : DECOR_SET_KEY_TO_ENUM[input.decorSetKey],
+        decorSet:
+          bothDecorSets || !input.decorSetKey
+            ? null
+            : DECOR_SET_KEY_TO_ENUM[input.decorSetKey],
         isLightPlaySelected: input.isLightPlaySelected,
         expiresAt,
         timeSlotId: input.timeSlotId,
