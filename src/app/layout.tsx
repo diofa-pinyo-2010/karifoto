@@ -24,7 +24,7 @@ const sans = Jost({
 });
 
 export const metadata: Metadata = {
-  title: 'Karifoto — karácsonyi családi fotózás',
+  title: 'Karifoto — karácsonyi családi fotózás Budapesten, 2026-ban is.',
   description:
     'Felejthetetlen élmény a díszbe borított stúdióban, retusált képek akár 5 napon belül.',
 };
