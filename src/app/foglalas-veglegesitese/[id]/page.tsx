@@ -3,7 +3,6 @@ import Link from 'next/link';
 
 import { BookingSummary } from '@/components/BookingSummary';
 import { Wordmark } from '@/components/Wordmark';
-import { BOOKING_INTENT_TTL_MINUTES } from '@/lib/constants';
 import { getBookingIntent } from '@/server/booking-intent';
 
 export const metadata: Metadata = {
@@ -65,8 +64,7 @@ export default async function BookingLightPage({
             vagy már lejárt
           </h1>
           <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
-            Az időpontokat {BOOKING_INTENT_TTL_MINUTES} percig tartjuk — úgy
-            tűnik, ennek már vége. Kezdd újra a foglalást a főoldalról.
+            Kezdd újra a foglalást a főoldalról.
           </p>
           <Link
             href="/"
