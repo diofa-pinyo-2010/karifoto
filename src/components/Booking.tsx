@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { CircleCheckBigIcon, PlusIcon } from 'lucide-react';
+
 import { useAppContext } from '@/components/AppContextProvider';
 import { DaysAndTimes } from '@/components/DaysAndTimes';
 import { Step } from '@/components/Step';
@@ -26,7 +28,7 @@ export function Booking({
         <div className="text-center">
           <div className="eyebrow">Foglalás · 30 másodperc</div>
           <h2 className="mt-3.5 font-display text-[32px] font-medium text-cream-strong sm:text-[52px]">
-            Válassz időpontot
+            Foglalj időpontot most
           </h2>
           <p className="mx-auto mt-3.5 max-w-130 text-base font-light text-sage-soft">
             A visszaigazolást e-mailben fogjuk elküldeni.
@@ -75,10 +77,16 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
               type="button"
               onClick={() => ctx.selectPackage(id)}
               className={cn(
-                'rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50',
+                'flex items-center gap-1 rounded-full border border-ink/20 py-3 pr-4.5 pl-3 text-sm text-ink transition-colors hover:border-ink/50',
                 ctx.selectedPackageKey === id && 'border-ink bg-ink text-cream',
               )}
             >
+              {ctx.selectedPackageKey === id ? (
+                <CircleCheckBigIcon className="size-4" />
+              ) : (
+                <PlusIcon className="size-4" />
+              )}
+
               {name}
             </button>
           ))}
@@ -99,10 +107,15 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
                 disabled={disabled}
                 onClick={() => ctx.selectDecorSet(key)}
                 className={cn(
-                  'rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50 disabled:cursor-default disabled:opacity-[.82]',
+                  'flex items-center gap-1 rounded-full border border-ink/20 px-4.5 py-3 text-sm text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-[.72]',
                   selected && 'border-ink bg-ink text-cream',
                 )}
               >
+                {selected ? (
+                  <CircleCheckBigIcon className="size-4" />
+                ) : (
+                  <PlusIcon className="size-4" />
+                )}
                 {name}
               </button>
             );
@@ -118,7 +131,7 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             disabled={ctx.isLightPlayIncluded}
             onClick={ctx.toggleLightPlay}
             className={cn(
-              'mt-3 flex items-center gap-3.25 rounded-2xl border border-dashed border-ink/[.28] px-4.5 py-3.5 text-left text-ink transition-colors hover:border-ink/50 disabled:cursor-default disabled:opacity-[.85]',
+              'mt-3 flex items-center gap-3.25 rounded-2xl border border-dashed border-ink/[.28] px-4.5 py-3.5 text-left text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-[.72]',
               ctx.isLightPlayOn && 'border-solid border-ink bg-ink text-cream',
             )}
           >
@@ -172,7 +185,7 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             <Row label="Fényjáték extra" value={formatMoney(LIGHT_PLAY_FEE)} />
           ) : null}
           <div className="mt-1.5 flex items-baseline justify-between gap-3.5 border-t border-cream/[.14] pt-3">
-            <span className="text-sm text-[#F1E7D5]">Várható végösszeg</span>
+            <span className="text-sm text-[#F1E7D5]">Összesen</span>
             <span className="font-display text-[28px] leading-none whitespace-nowrap text-gold">
               {formatMoney(ctx.estimatedTotalAmount)}
             </span>
@@ -211,9 +224,11 @@ function Form({ groupedTimeSlots }: { groupedTimeSlots: GroupedSlots }) {
             ? 'Foglalás létrehozása…'
             : ctx.canConfirm
               ? 'Tovább'
-              : ctx.selectedTimeSlotId
-                ? 'Add meg a neved és e-mailed'
-                : 'Válassz idősávot'}
+              : !ctx.bothDecorSets && !ctx.selectedDecorSetKey
+                ? 'Válassz díszletet!'
+                : ctx.selectedTimeSlotId
+                  ? 'Add meg a neved és e-mailed'
+                  : 'Válassz idősávot'}
         </button>
 
         {error && (
