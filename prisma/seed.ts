@@ -78,8 +78,7 @@ async function main() {
     update: {},
     create: {
       email: 'nemethricsi@gmail.com',
-      firstName: 'Ricsi',
-      lastName: 'Németh',
+      name: 'Németh Richárd',
       phoneNumber: '+36 20 936 9932',
     },
   });

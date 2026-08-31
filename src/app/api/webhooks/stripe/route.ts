@@ -85,9 +85,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     );
   }
 
-  const lastName = userFullName.split(' ')[0];
-  const firstName = userFullName.split(' ')[1];
-
   const stripeCustomerId =
     typeof session.customer === 'string'
       ? session.customer
@@ -95,11 +92,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const user = await prisma.user.upsert({
     where: { email: userEmail },
-    update: { firstName, lastName, phoneNumber: userPhoneNumber },
+    update: { name: userFullName, phoneNumber: userPhoneNumber },
     create: {
       email: userEmail,
-      firstName,
-      lastName,
+      name: userFullName,
       phoneNumber: userPhoneNumber,
     },
   });
@@ -157,7 +153,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const bookedTimeString = formatLongDate(startTime);
   const resendRes = await sendBookingConfirmationEmail({
     to: userEmail,
-    name: firstName,
+    name: userFullName,
     bookedTimeString,
   });
   console.log({ resendRes });
