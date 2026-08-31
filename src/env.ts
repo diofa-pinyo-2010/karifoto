@@ -9,6 +9,8 @@ export const env = createEnv({
     STRIPE_SECRET_KEY: z.string().min(1),
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     SZAMLAZZ_API_KEY: z.string().min(1),
+    COMING_SOON_ENABLED: z.stringbool().default(false),
+    COMING_SOON_PREVIEW_TOKEN: z.string().min(16).optional(),
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {
