@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function ComingSoonPage() {
   return (
     <div className="min-h-screen bg-[#0E2620]">
-      <div className="mb-4 lg:flex lg:min-h-screen">
+      <div className="lg:flex lg:min-h-screen">
         {/* KÉP — mobilon sáv, lg-től bal oldali hasáb */}
         <section className="relative h-[clamp(240px,52vw,420px)] overflow-hidden bg-panel lg:h-auto lg:w-[46%] lg:flex-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
