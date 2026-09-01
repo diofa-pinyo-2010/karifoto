@@ -82,7 +82,7 @@ export function CookieConsentBanner() {
                 {
                   title: 'Statisztikai sütik',
                   description:
-                    'A Microsoft Clarity anonim módon mutatja, hogyan használják az oldalt (kattintás, görgetés). Nélkülük is működik minden.',
+                    'Anonim, statisztikai elemzéseket végzünk, hogy növeljük a felhasználói élményt. Segít javítanunk az oldalt, hogy érthetőbb, és könnyebben használható legyen.',
                   linkedCategory: 'analytics',
                 },
               ],
