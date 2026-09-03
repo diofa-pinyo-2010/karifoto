@@ -1,7 +1,10 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useAppContext } from '@/components/AppContextProvider';
-import { photoSets } from '@/lib/data';
+import { PhotoGallery } from '@/components/PhotoGallery';
+import { photoSets, type DecorSetKey } from '@/lib/data';
 
 /** Áttekintő (krém háttéren) + egy szekció díszletenként. */
 export function Sets() {
@@ -49,7 +52,7 @@ function SetsOverview() {
 
         <div className="mt-7 grid grid-cols-1 gap-3.5 sm:mt-11 sm:grid-cols-3 sm:gap-4.5">
           {photoSets.map((s) => (
-            <a
+            <Link
               key={s.id}
               href={`#${s.id}`}
               className="flex flex-col gap-3 text-inherit transition-opacity hover:opacity-85"
@@ -76,11 +79,31 @@ function SetsOverview() {
                   </div>
                 )}
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function SetCta({
+  set,
+  onSelect,
+  className,
+}: {
+  set: (typeof photoSets)[number];
+  onSelect: (key: DecorSetKey) => void;
+  className?: string;
+}) {
+  return (
+    <a
+      href="#foglalas"
+      onClick={() => onSelect(set.key ?? 'hofeher')}
+      className={`btn-cta px-6 py-4.25 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9 ${className ?? ''}`}
+    >
+      Ezt szeretném →
+    </a>
   );
 }
 
@@ -93,100 +116,76 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
       className={`border-t border-cream/8 px-4.5 py-13 sm:px-7 sm:py-22 ${set.bg}`}
     >
       <div className="mx-auto max-w-300">
-        <div className="grid grid-cols-1 gap-5.5 [grid-template-areas:'head''media''body'] lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-x-11 lg:gap-y-4 lg:[grid-template-areas:'head_media''body_media']">
-          <div className="[grid-area:head]">
-            <div className="eyebrow">Díszlet</div>
-            <h2 className="mt-3 font-display text-[34px] font-medium text-cream-strong sm:text-[54px]">
-              {set.name}
-            </h2>
-          </div>
+        <div className="max-w-195">
+          <div className="eyebrow">Díszlet</div>
+          <h2 className="mt-3 font-display text-[34px] font-medium text-cream-strong sm:text-[54px]">
+            {set.name}
+          </h2>
 
-          <div className="relative h-55 overflow-hidden rounded-[18px] border border-cream/10 bg-panel [grid-area:media] sm:h-[clamp(220px,34vw,520px)] sm:rounded-3xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={set.hero}
-              alt={set.heroAlt}
-              loading="lazy"
-              className="absolute inset-0 block h-full w-full object-cover"
-            />
-          </div>
+          <p className="mt-5.5 text-[16px] leading-[1.62] font-light text-pretty text-[#BFCFC6] sm:text-[18px]">
+            {set.desc}
+          </p>
 
-          <div className="[grid-area:body]">
-            <p className="text-[16px] leading-[1.62] font-light text-pretty text-[#BFCFC6] sm:text-[18px]">
-              {set.desc}
-            </p>
-
-            {set.colors != null && (
-              <div className="mt-6">
-                <div className="text-[11px] tracking-chip text-sage-dim uppercase">
-                  Uralkodó színek
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2.5">
-                  {set.colors.map((c) => (
-                    <div
-                      key={c.name}
-                      className="flex items-center gap-2.25 rounded-full border border-cream/16 bg-cream/4 py-2 pr-3.5 pl-2.25"
-                    >
-                      <span
-                        className="h-4 w-4 rounded-full border border-black/20"
-                        style={{ background: c.hex }}
-                      />
-                      <span className="text-sm text-[#D8E2DA]">{c.name}</span>
-                    </div>
-                  ))}
-                </div>
+          {set.colors != null && (
+            <div className="mt-6">
+              <div className="text-[11px] tracking-chip text-sage-dim uppercase">
+                Uralkodó színek
               </div>
-            )}
-
-            {set.extra ? (
-              <div className="mt-6.5 flex max-w-130 items-start gap-3 rounded-2xl border border-gold/30 bg-gold/8 px-4.5 py-4">
-                <span className="mt-0.5 font-display text-xl leading-none text-gold">
-                  ✦
-                </span>
-                <span className="text-[15px] leading-[1.55] font-light text-pretty text-[#E7D9BE]">
-                  Ezt a díszletet a{' '}
-                  <strong className="font-medium text-[#F1E7D5]">
-                    Family csomag tartalmazza
-                  </strong>
-                  , vagy külön kérhető a foglalás során.
-                </span>
+              <div className="mt-3 flex flex-wrap gap-2.5">
+                {set.colors.map((c) => (
+                  <div
+                    key={c.name}
+                    className="flex items-center gap-2.25 rounded-full border border-cream/16 bg-cream/4 py-2 pr-3.5 pl-2.25"
+                  >
+                    <span
+                      className="h-4 w-4 rounded-full border border-black/20"
+                      style={{ background: c.hex }}
+                    />
+                    <span className="text-sm text-[#D8E2DA]">{c.name}</span>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <a
-                href="#foglalas"
-                onClick={() => selectDecorSet(set.key ?? 'hofeher')}
-                className="btn-cta mt-6.5 px-6 py-4.25 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9"
-              >
-                Ezt szeretném →
-              </a>
-            )}
-          </div>
+            </div>
+          )}
+
+          {set.extra ? (
+            <div className="mt-6.5 flex max-w-130 items-start gap-3 rounded-2xl border border-gold/30 bg-gold/8 px-4.5 py-4">
+              <span className="mt-0.5 font-display text-xl leading-none text-gold">
+                ✦
+              </span>
+              <span className="text-[15px] leading-[1.55] font-light text-pretty text-[#E7D9BE]">
+                Ezt a díszletet a{' '}
+                <strong className="font-medium text-[#F1E7D5]">
+                  Family csomag tartalmazza
+                </strong>
+                , vagy külön kérhető a foglalás során.
+              </span>
+            </div>
+          ) : (
+            <SetCta set={set} onSelect={selectDecorSet} className="mt-6.5" />
+          )}
         </div>
 
-        <div className="mt-7 grid grid-cols-1 gap-1.5 sm:mt-12">
-          <div className="text-[11px] tracking-chip text-sage-dim uppercase">
+        <div className="mt-7 sm:mt-12">
+          <PhotoGallery photos={set.gallery} />
+        </div>
+
+        <div className="mt-7 max-w-195 rounded-2xl border border-cream/12 bg-[#1B3B31] px-5 py-5 sm:mt-10 sm:px-7 sm:py-6.5">
+          <div className="text-[11px] tracking-chip text-sage uppercase">
             Öltözködési tippek
           </div>
-          <p className="mt-1.5 max-w-195 text-[15px] leading-[1.68] font-light text-pretty text-sage-soft sm:text-base">
+          <p className="mt-2.5 text-base leading-[1.68] font-light text-pretty text-[#CFDCD4] sm:text-[17px]">
             {set.tips}
           </p>
-          <div className="mt-4.5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
-            {set.shots.map((sh, i) => (
-              <div
-                key={i}
-                className="relative aspect-3/4 overflow-hidden rounded-[14px] border border-cream/10 bg-panel"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={sh.src}
-                  alt={sh.alt}
-                  loading="lazy"
-                  className="absolute inset-0 block h-full w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
         </div>
+
+        {!set.extra && (
+          <SetCta
+            set={set}
+            onSelect={selectDecorSet}
+            className="mt-7 sm:mt-9"
+          />
+        )}
       </div>
     </section>
   );

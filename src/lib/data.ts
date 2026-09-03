@@ -1,6 +1,9 @@
 // Static content. Replace with a CMS / API fetch when the backend lands.
 
+import { Photo } from 'react-photo-album';
+
 import { PACKAGE_PRICES } from '@/lib/constants';
+import { gallery } from '@/lib/fetch-photos';
 import { formatMoney } from '@/lib/utils';
 
 export type Feature = { text: string; ok: boolean; note?: string };
@@ -224,25 +227,14 @@ export type PhotoSet = {
   name: string;
   tagline: string;
   thumb: string;
-  hero: string;
-  heroAlt: string;
   desc: string;
   colors?: SetColor[];
   tips: string;
-  shots: { src: string; alt: string }[];
+  gallery: Photo[];
   bg: string; // section background utility
   /** true = nem alapdíszlet, hanem felárért kérhető extra */
   extra?: boolean;
 };
-
-const SHOTS = [
-  {
-    src: '/images/hofeher-pelda-1.jpg',
-    alt: 'Fehérbe öltözött család a díszletben',
-  },
-  { src: '/images/hofeher-pelda-2.jpg', alt: 'Nagycsalád a karácsonyfa előtt' },
-  { src: '/images/hofeher-pelda-3.jpg', alt: 'Család a fényfüzérek között' },
-];
 
 export type DecorSetKey = 'hofeher' | 'alomkastely';
 
@@ -260,8 +252,6 @@ export const photoSets: PhotoSet[] = [
     name: 'Hófehér',
     tagline: 'Világos, havas hangulat',
     thumb: '/images/diszlet-hofeher.jpg',
-    hero: '/images/hofeher-fo.jpg',
-    heroAlt: 'A Hófehér díszlet kandallóval és havas fenyőkkel',
     desc: 'A már ikonikus díszletünk idén új köntösben és még varázslatosabban vár Benneteket!',
     colors: [
       { name: 'Fehér', hex: '#F4F1EC' },
@@ -269,7 +259,7 @@ export const photoSets: PhotoSet[] = [
       { name: 'Bézs', hex: '#E3D3BC' },
     ],
     tips: 'A világos árnyalatokból összeállított „Hófehér” díszletünkhöz legjobban a világos ruhák illenek: fehér, bézs és pasztell színekből összeállított kombinációk kiválóan mutatnak a képeken. Szintén nagyszerű hatást érhettek el, ha összehangoltan öltöztök, akár otthonos, akár elegáns ruhákban. A világos, mintás pizsamák különösen jól mutatnak a sötétebb, fényjátékos beállításoknál (lásd lentebb). Ne féljetek kreatívnak lenni, így lesz tökéletes az élmény!',
-    shots: SHOTS,
+    gallery: gallery.HOFEHER,
     bg: 'bg-forest',
   },
   {
@@ -278,8 +268,6 @@ export const photoSets: PhotoSet[] = [
     name: 'Álomkastély',
     tagline: 'Arany fények, sötétzöld fal',
     thumb: '/images/diszlet-alomkastely.jpg',
-    hero: '/images/diszlet-alomkastely.jpg',
-    heroAlt: 'Az Álomkastély díszlet arany fényekkel',
     desc: 'Idén egy igazán elegáns és kifinomult, a megszokottól kicsit elrugaszkodott díszlettel készülünk Nektek!',
     colors: [
       { name: 'Fekete', hex: '#161616' },
@@ -287,7 +275,7 @@ export const photoSets: PhotoSet[] = [
       { name: 'Arany', hex: '#D4A95F' },
     ],
     tips: 'A sötét antracit és arany árnyalataiból összeállított "Álomkastély" díszletünkhöz az elegáns viseletek illenek a legjobban, mert ez a díszlet is egy elegánsabb stílust képvisel. Válasszatok ünneplős ruhákat, estélyiket, zakókat és ingeket. Ajánlott színek: fekete, fehér, arany, barna és ezek különböző árnyalatai.',
-    shots: SHOTS,
+    gallery: gallery.ALOMKASTELY,
     bg: 'bg-[#122E26]',
   },
   {
@@ -296,11 +284,9 @@ export const photoSets: PhotoSet[] = [
     name: 'Fényjáték',
     tagline: 'Meleg izzók, meghitt közelik',
     thumb: '/images/diszlet-fenyjatek.jpg',
-    hero: '/images/diszlet-fenyjatek.jpg',
-    heroAlt: 'A Fényjáték díszlet meleg izzófüzérekkel',
     desc: 'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
     tips: 'A stílust 4 éve a "HÓFEHÉR" díszlet ihlette, és idén is a díszlet megújult változatában készítjük a Fényjátékos fotókat.',
-    shots: SHOTS,
+    gallery: gallery.FENYJATEK,
     bg: 'bg-forest',
     extra: true,
   },
