@@ -37,6 +37,7 @@ function renderNextImage(
         position: 'relative',
         aspectRatio: `${width}/${height}`,
       }}
+      className="group cursor-pointer overflow-hidden rounded-lg border border-cream/30"
     >
       <Image
         fill
@@ -45,7 +46,7 @@ function renderNextImage(
         title={title}
         sizes={sizes}
         placeholder={'blurDataURL' in photo ? 'blur' : undefined}
-        className="rounded-lg border border-cream/30 object-cover"
+        className="object-cover opacity-95 transition-all duration-300 ease-out group-hover:scale-108 group-hover:opacity-100"
       />
     </div>
   );
