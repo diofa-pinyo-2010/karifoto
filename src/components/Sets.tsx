@@ -180,7 +180,11 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
         </div>
 
         {!set.extra && (
-          <SetCta set={set} onSelect={selectDecorSet} className="mt-7 sm:mt-9" />
+          <SetCta
+            set={set}
+            onSelect={selectDecorSet}
+            className="mt-7 sm:mt-9"
+          />
         )}
       </div>
     </section>
