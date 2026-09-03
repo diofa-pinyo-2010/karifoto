@@ -1,6 +1,9 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useAppContext } from '@/components/AppContextProvider';
+import { PhotoGallery } from '@/components/PhotoGallery';
 import { photoSets } from '@/lib/data';
 
 /** Áttekintő (krém háttéren) + egy szekció díszletenként. */
@@ -49,7 +52,7 @@ function SetsOverview() {
 
         <div className="mt-7 grid grid-cols-1 gap-3.5 sm:mt-11 sm:grid-cols-3 sm:gap-4.5">
           {photoSets.map((s) => (
-            <a
+            <Link
               key={s.id}
               href={`#${s.id}`}
               className="flex flex-col gap-3 text-inherit transition-opacity hover:opacity-85"
@@ -76,7 +79,7 @@ function SetsOverview() {
                   </div>
                 )}
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -167,25 +170,10 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
           <div className="text-[11px] tracking-chip text-sage-dim uppercase">
             Öltözködési tippek
           </div>
-          <p className="mt-1.5 max-w-195 text-[15px] leading-[1.68] font-light text-pretty text-sage-soft sm:text-base">
+          <p className="mt-1.5 mb-4.5 max-w-195 text-[15px] leading-[1.68] font-light text-pretty text-sage-soft sm:text-base">
             {set.tips}
           </p>
-          <div className="mt-4.5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
-            {set.shots.map((sh, i) => (
-              <div
-                key={i}
-                className="relative aspect-3/4 overflow-hidden rounded-[14px] border border-cream/10 bg-panel"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={sh.src}
-                  alt={sh.alt}
-                  loading="lazy"
-                  className="absolute inset-0 block h-full w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          <PhotoGallery photos={set.gallery} />
         </div>
       </div>
     </section>
