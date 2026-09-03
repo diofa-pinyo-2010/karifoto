@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Oldalunk épp megújul · Karifoto',
+  title: 'Coming soon!',
   description:
     'Aktívan dolgozunk az új foglalórendszeren. Addig is hívj minket: +36 30 108 6063.',
   robots: { index: false, follow: false },
