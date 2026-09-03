@@ -227,8 +227,6 @@ export type PhotoSet = {
   name: string;
   tagline: string;
   thumb: string;
-  hero: string;
-  heroAlt: string;
   desc: string;
   colors?: SetColor[];
   tips: string;
@@ -254,8 +252,6 @@ export const photoSets: PhotoSet[] = [
     name: 'Hófehér',
     tagline: 'Világos, havas hangulat',
     thumb: '/images/diszlet-hofeher.jpg',
-    hero: '/images/hofeher-fo.jpg',
-    heroAlt: 'A Hófehér díszlet kandallóval és havas fenyőkkel',
     desc: 'A már ikonikus díszletünk idén új köntösben és még varázslatosabban vár Benneteket!',
     colors: [
       { name: 'Fehér', hex: '#F4F1EC' },
@@ -272,8 +268,6 @@ export const photoSets: PhotoSet[] = [
     name: 'Álomkastély',
     tagline: 'Arany fények, sötétzöld fal',
     thumb: '/images/diszlet-alomkastely.jpg',
-    hero: '/images/diszlet-alomkastely.jpg',
-    heroAlt: 'Az Álomkastély díszlet arany fényekkel',
     desc: 'Idén egy igazán elegáns és kifinomult, a megszokottól kicsit elrugaszkodott díszlettel készülünk Nektek!',
     colors: [
       { name: 'Fekete', hex: '#161616' },
@@ -290,8 +284,6 @@ export const photoSets: PhotoSet[] = [
     name: 'Fényjáték',
     tagline: 'Meleg izzók, meghitt közelik',
     thumb: '/images/diszlet-fenyjatek.jpg',
-    hero: '/images/diszlet-fenyjatek.jpg',
-    heroAlt: 'A Fényjáték díszlet meleg izzófüzérekkel',
     desc: 'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
     tips: 'A stílust 4 éve a "HÓFEHÉR" díszlet ihlette, és idén is a díszlet megújult változatában készítjük a Fényjátékos fotókat.',
     gallery: gallery.FENYJATEK,

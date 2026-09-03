@@ -1,6 +1,5 @@
 import type { Photo } from 'react-photo-album';
 
-import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
 // --- Local images via static import ---------------------------------------
 // Static imports give you { src, width, height, blurDataURL } automatically,
 // which is exactly what react-photo-album (width/height for the justified
@@ -11,6 +10,7 @@ import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
 // gets processed by the bundler, e.g. a top-level /photos folder or /src/photos.
 // The "@/photos/..." alias below assumes a /photos folder mapped in tsconfig
 // (adjust the path to wherever you actually keep them).
+import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
 import alomkastelyGallery1 from '@/photos/alomkastely-gallery-1.jpg';
 import alomkastelyGallery2 from '@/photos/alomkastely-gallery-2.jpg';
 import alomkastelyGallery3 from '@/photos/alomkastely-gallery-3.jpg';
@@ -20,6 +20,9 @@ import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
 import fenyjatek2 from '@/photos/fenyjatek-gallery-2.jpg';
 import fenyjatek3 from '@/photos/fenyjatek-gallery-3.jpg';
 import fenyjatek4 from '@/photos/fenyjatek-gallery-4.jpg';
+import fenyjatek5 from '@/photos/fenyjatek-gallery-5.jpg';
+import fenyjatek6 from '@/photos/fenyjatek-gallery-6.jpg';
+import hofeherDiszlet from '@/photos/hofeher-diszlet.jpg';
 import hofeherGallery1 from '@/photos/hofeher-gallery-1.jpg';
 import hofeherGallery2 from '@/photos/hofeher-gallery-2.jpg';
 import hofeherGallery3 from '@/photos/hofeher-gallery-3.jpg';
@@ -31,6 +34,7 @@ import type { DecorSet } from '@/generated/prisma/client';
 // we just add an `alt` for accessibility. Order here is the display order.
 export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
   HOFEHER: [
+    { ...hofeherDiszlet, alt: 'Hófehér díszlet' },
     { ...hofeherGallery1, alt: 'Sunset over the beach' },
     { ...hofeherGallery2, alt: 'Misty forest trail' },
     { ...hofeherGallery3, alt: 'Portrait in golden light' },
@@ -41,6 +45,8 @@ export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
     { ...fenyjatek2, alt: 'fenyjatek 2' },
     { ...fenyjatek3, alt: 'fenyjatek 3' },
     { ...fenyjatek4, alt: 'fenyjatek 4' },
+    { ...fenyjatek5, alt: 'fenyjatek 5' },
+    { ...fenyjatek6, alt: 'fenyjatek 6' },
   ],
   ALOMKASTELY: [
     { ...alomkastelyDiszlet, alt: 'álomkastély díszlet' },
