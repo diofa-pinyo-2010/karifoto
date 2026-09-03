@@ -1,5 +1,6 @@
 import type { Photo } from 'react-photo-album';
 
+import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
 // --- Local images via static import ---------------------------------------
 // Static imports give you { src, width, height, blurDataURL } automatically,
 // which is exactly what react-photo-album (width/height for the justified
@@ -42,6 +43,7 @@ export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
     { ...fenyjatek4, alt: 'fenyjatek 4' },
   ],
   ALOMKASTELY: [
+    { ...alomkastelyDiszlet, alt: 'álomkastély díszlet' },
     { ...alomkastelyGallery1, alt: 'alomkastely 1' },
     { ...alomkastelyGallery2, alt: 'alomkastely 2' },
     { ...alomkastelyGallery3, alt: 'alomkastely 3' },
