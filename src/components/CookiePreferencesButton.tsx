@@ -1,11 +1,13 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { CookieIcon } from 'lucide-react';
 import * as CookieConsent from 'vanilla-cookieconsent';
 
 export function CookiePreferencesButton() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function CookiePreferencesButton() {
     };
   }, []);
 
-  if (!visible) {
+  if (!visible || pathname?.startsWith('/foglalas-veglegesitese')) {
     return null;
   }
 
