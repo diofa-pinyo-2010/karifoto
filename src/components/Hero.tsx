@@ -5,23 +5,22 @@ import { RATING } from '@/lib/data';
 
 export function Hero() {
   return (
-    <section className="px-4.5 pt-4 text-center sm:px-7 sm:pt-21.5">
+    <section className="px-4.5 pt-4 text-center sm:px-7 sm:pt-20">
       <div className="mx-auto max-w-225">
         {/* <div className="eyebrow">2026 · Karácsonyi szezon · Budapest</div> */}
 
-        <h1 className="mt-6 font-display text-[44px] leading-[1.05] font-medium text-balance text-cream-strong sm:mt-5.5 sm:text-[78px]">
+        <h1 className="font-display text-[44px] leading-[1.05] font-medium text-balance text-cream-strong sm:mt-5.5 sm:text-[78px]">
           Karácsonyi fotózás
           <br />
           <span className="text-[38px] text-gold">Budapest szívében</span>
         </h1>
 
-        <p className="mx-auto mt-2 max-w-140 text-base leading-[1.62] font-light text-pretty text-[#BFCFC6] sm:mt-6.5 sm:text-[18px]">
-          Örökítsd meg velünk az év legszebb pillanatait legújabb
-          díszleteinkben!
+        <p className="mx-auto mt-2 max-w-140 text-base leading-[1.62] font-light text-pretty text-[#BFCFC6] italic sm:mt-6.5 sm:text-[18px]">
+          Örökítsd meg velünk az év legszebb pillanatait!
         </p>
         <Link
           href="#velemenyek"
-          className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-[13px] text-[#93A99D] underline-offset-4 hover:text-[#93A99D]/90 hover:underline"
+          className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-[13px] text-[#93A99D] underline-offset-4 hover:text-[#93A99D]/90 hover:underline"
         >
           <span>
             <span className="text-gold">★★★★★</span> {RATING.score} a Google-on
