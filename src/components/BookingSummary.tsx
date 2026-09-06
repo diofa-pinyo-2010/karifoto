@@ -84,7 +84,7 @@ export function BookingSummary({
           }
           ariaLabel="Hányan jönnétek"
           unit="fő"
-          // hint="Az 5 fő fölötti vendégekért 5 000 Ft / fő felárat számolunk."
+          // hint="Az 5 fő fölötti vendégekért 5 000 Ft/fő felárat számolunk."
           value={people}
           display={missingPeople ? '–' : String(people)}
           dim={missingPeople}
@@ -105,8 +105,8 @@ export function BookingSummary({
             {missingPeople
               ? 'Legalább 1 fő :)'
               : `Megvan! ${people === 1 ? 'egy' : people} főre készülünk.`}{' '}
-            {people > 5 &&
-              `${formatMoney(EXTRA_FEE_PER_EXTRA_PERSON)}/extra fő`}
+            {people > PERSONS_INCLUDED &&
+              `(${people - PERSONS_INCLUDED} extra fő)`}
           </span>
         </div>
       </section>
@@ -117,7 +117,7 @@ export function BookingSummary({
           label="Hoztok-e kisállatot?"
           ariaLabel="Hoztok-e kisállatot"
           unit="db"
-          hint="Kutya, cica, nyuszi is jöhet — 5 000 Ft / kisállat."
+          // hint="Kutya, cica, nyuszi is jöhet — 5 000 Ft/kisállat."
           value={pets}
           display={String(pets)}
           min={0}

@@ -30,7 +30,7 @@ function SetsOverview() {
             <div className="text-[11px] tracking-label text-[#7B8C80] uppercase">
               Épített díszleteink
             </div>
-            <h2 className="mt-3.5 font-display text-[31px] font-medium text-ink sm:text-[50px]">
+            <h2 className="mt-3.5 font-display text-[31px] leading-none font-medium text-ink sm:text-[50px]">
               Idén két díszlet
               <br />
               várja a családokat

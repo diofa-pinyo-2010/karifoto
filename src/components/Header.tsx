@@ -1,6 +1,9 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { Wordmark } from '@/components/Wordmark';
+import { AlarmClockIcon } from 'lucide-react';
+
+// import { Wordmark } from '@/components/Wordmark';
 
 const nav = [
   { href: '#csomagok', label: 'Csomagok' },
@@ -17,8 +20,16 @@ export function Header() {
           href="/"
           className="mr-auto text-cream transition-opacity hover:opacity-85"
         >
-          <Wordmark size={22} className="sm:hidden" />
-          <Wordmark size={26} className="hidden sm:flex" />
+          {/* <Wordmark size={22} className="sm:hidden" />
+          <Wordmark size={26} className="hidden sm:flex" /> */}
+          <Image
+            src="/images/karifoto-logo-arany.png"
+            alt="Karifoto"
+            width={353}
+            height={146}
+            priority
+            className="h-7 w-auto lg:h-10"
+          />
         </Link>
 
         <nav className="hidden gap-6 text-sm text-[#C9D6CE] md:flex">
@@ -35,9 +46,10 @@ export function Header() {
 
         <a
           href="#foglalas"
-          className="btn-cta px-4.5 py-2.75 text-[13px] whitespace-nowrap shadow-cta-sm sm:px-6 sm:py-3.25 sm:text-sm"
+          className="btn-cta flex items-center gap-2 px-4.5 py-2.75 text-[13px] whitespace-nowrap shadow-cta-sm sm:px-6 sm:py-3.25 sm:text-sm"
         >
-          Időpontot választok
+          <AlarmClockIcon className="size-5 opacity-65" />
+          <span className="tracking-wider">Időpontotok</span>
         </a>
       </div>
     </header>
