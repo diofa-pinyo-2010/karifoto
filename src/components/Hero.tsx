@@ -42,6 +42,12 @@ export function Hero() {
         </div>
 
         <div className="mt-6.5 flex w-full flex-wrap items-center justify-center gap-3 sm:mt-9.5 sm:gap-4">
+          <a
+            href="#foglalas"
+            className="btn-cta w-full px-6.5 py-4.5 text-base font-bold tracking-wider uppercase shadow-cta sm:px-10.5 sm:text-[17px]"
+          >
+            Időpontot foglalok →
+          </a>
           <div className="flex w-full items-center justify-evenly gap-3">
             <a
               href="#csomagok"
@@ -56,12 +62,6 @@ export function Hero() {
               Díszletek
             </a>
           </div>
-          <a
-            href="#foglalas"
-            className="btn-cta w-full px-6.5 py-4.5 text-base font-bold tracking-wider uppercase shadow-cta sm:px-10.5 sm:text-[17px]"
-          >
-            Időpontot foglalok →
-          </a>
         </div>
       </div>
     </section>
