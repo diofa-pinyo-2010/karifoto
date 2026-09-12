@@ -2,11 +2,9 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import {
-  decorSetName,
-  packageName,
-  selectionFromSearchParams,
-} from '@/lib/booking-selection';
+import { BookingFormNew } from '@/components/BookingFormNew';
+import { selectionFromSearchParams } from '@/lib/booking-selection';
+import { formatLongDate } from '@/lib/formatters';
 import { getTimeSlot } from '@/server/time-slots';
 
 export const metadata: Metadata = {
@@ -43,20 +41,18 @@ export default async function BookingFormPage(
       </header>
 
       {isAvailable ? (
-        <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 sm:px-10">
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-base leading-[1.6] font-light text-ink">
-            <dt className="text-cream-muted">Selected package:</dt>
-            <dd>{packageName(selection.packageKey) ?? '—'}</dd>
-            <dt className="text-cream-muted">Selected decor:</dt>
-            <dd>{decorSetName(selection.decorKey) ?? '—'}</dd>
-            <dt className="text-cream-muted">Fényjáték:</dt>
-            <dd>{selection.light ? 'igen' : 'nem'}</dd>
-          </dl>
+        <>
+          <section className="border-b border-ink/12 bg-[#FCF5E8]">
+            <div className="mx-auto max-w-130 px-4.5 pt-5.5 pb-7 sm:px-10">
+              <div className="eyebrow">A foglalásod</div>
+              <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
+                {formatLongDate(timeSlot.startTime)}
+              </div>
+            </div>
+          </section>
 
-          <p className="mt-6 text-base leading-[1.6] font-light text-ink">
-            Form comes here
-          </p>
-        </section>
+          <BookingFormNew timeSlotId={timeSlotId} selection={selection} />
+        </>
       ) : (
         <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 text-center sm:px-10">
           <div className="eyebrow">Foglalás</div>
