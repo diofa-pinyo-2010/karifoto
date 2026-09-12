@@ -104,7 +104,7 @@ export async function createCheckoutSession(
       customer_update: { address: 'auto' },
       phone_number_collection: { enabled: true },
       metadata: { booking_intent_id: bookingIntent.id },
-      success_url: `${origin}/success`,
+      success_url: `${origin}/success/${bookingIntentId}`,
       cancel_url: `${origin}/foglalas-osszegzese/${bookingIntentId}`,
     });
     sessionUrl = session.url;

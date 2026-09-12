@@ -12,7 +12,7 @@ import {
   PERSONS_INCLUDED,
 } from '@/lib/constants';
 import { packages, type PackageKey } from '@/lib/data';
-import { formatLongDate } from '@/lib/formatters';
+import { formatSlotDateTime } from '@/lib/formatters';
 import { formatMoney } from '@/lib/utils';
 import { BookingIntentWithTimeSlot } from '@/server/booking-intent';
 import { createCheckoutSession } from '@/server/stripe';
@@ -45,7 +45,6 @@ export function BookingReview({
   const { base: packageBasePrice, studio: packageStudioFee } =
     PACKAGE_PRICES[bookingIntent.package];
 
-  // A Family csomagban a fényjáték benne van, nincs külön felára.
   const shouldShowLight = bookingIntent.package !== Package.FAMILY;
   const lightFee =
     shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
@@ -61,14 +60,14 @@ export function BookingReview({
 
   return (
     <form action={formAction}>
-      <section className="border-b border-ink/12 bg-[#FCF5E8]">
+      {/* <section className="border-b border-ink/12 bg-[#FCF5E8]">
         <div className="mx-auto max-w-130 px-4.5 pt-5.5 pb-7 sm:px-10">
           <div className="eyebrow">A foglalásod</div>
           <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
             {formatLongDate(bookingIntent.timeSlot.startTime)}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* <section className="mx-auto max-w-130 px-4.5 pt-7.5 sm:px-10">
         <h2 className="font-display text-2xl font-medium text-ink">
@@ -129,6 +128,12 @@ export function BookingReview({
           <div className="eyebrow">Összefoglaló</div>
 
           <div className="mt-3.5 flex flex-col">
+            <div className="flex justify-between gap-4 border-b border-ink/10 py-3">
+              <span className="text-[14.5px] font-bold text-ink">Időpont</span>
+              <span className="text-right text-[14.5px] font-medium text-ink">
+                {formatSlotDateTime(bookingIntent.timeSlot.startTime)}
+              </span>
+            </div>
             <PriceRow
               label={`${PACKAGE_LABEL[bookingIntent.package]} csomag`}
               value={formatMoney(packageBasePrice)}

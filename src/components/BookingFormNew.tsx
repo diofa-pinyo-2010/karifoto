@@ -685,7 +685,7 @@ function Stepper({
           disabled={value <= min}
           onClick={() => onChange(Math.max(min, value - 1))}
         >
-          <MinusIcon />
+          <MinusIcon className="size-7" />
         </InputGroupButton>
       </InputGroupAddon>
       <InputGroupInput
@@ -704,7 +704,7 @@ function Stepper({
           disabled={value >= max}
           onClick={() => onChange(Math.min(max, value + 1))}
         >
-          <PlusIcon />
+          <PlusIcon className="size-7" />
         </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>

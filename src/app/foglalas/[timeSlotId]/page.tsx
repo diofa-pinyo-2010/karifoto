@@ -45,7 +45,7 @@ export default async function BookingFormPage(
         <>
           <section className="border-b border-ink/12 bg-[#FCF5E8]">
             <div className="mx-auto max-w-130 px-4.5 pt-5.5 pb-7 sm:px-10">
-              <div className="eyebrow">A foglalásod</div>
+              <div className="eyebrow">A választott időpont</div>
               <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
                 {formatLongDate(timeSlot.startTime)}
               </div>
