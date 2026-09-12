@@ -2,26 +2,28 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { BookingFormNew } from '@/components/BookingFormNew';
-import { selectionFromSearchParams } from '@/lib/booking-selection';
-import { formatLongDate } from '@/lib/formatters';
-import { getTimeSlot } from '@/server/time-slots';
+import { BookingReview } from '@/components/BookingReview';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { getBookingIntent } from '@/server/booking-intent';
 
 export const metadata: Metadata = {
-  title: 'Foglalás · Karifoto',
+  title: 'Összegzés · Karifoto',
 };
 
-export default async function BookingFormPage(
-  props: PageProps<'/foglalas/[timeSlotId]'>,
+export default async function BookingSummaryPage(
+  props: PageProps<'/foglalas-osszegzese/[bookingIntentId]'>,
 ) {
-  const { timeSlotId } = await props.params;
-  const selection = selectionFromSearchParams(await props.searchParams);
-  const timeSlot = await getTimeSlot(timeSlotId);
-  const isAvailable =
-    timeSlot != null &&
-    timeSlot.photoShooting == null &&
-    timeSlot.revealed &&
-    timeSlot.startTime.getTime() > Date.now();
+  const { bookingIntentId } = await props.params;
+  const bookingIntent = await getBookingIntent(bookingIntentId);
+
+  // Ugyanaz a szabály, mint a createCheckoutSession-ben, hogy ne mutassunk
+  // fizethető összegzést olyan idősávra, amit az action utána visszautasítana.
+  const isBookable =
+    bookingIntent != null &&
+    bookingIntent.status === BookingIntentStatus.PENDING &&
+    bookingIntent.timeSlot.revealed &&
+    bookingIntent.timeSlot.photoShooting == null &&
+    bookingIntent.timeSlot.startTime.getTime() > Date.now();
 
   return (
     <div className="min-h-screen bg-cream pb-33">
@@ -41,26 +43,15 @@ export default async function BookingFormPage(
         </Link>
       </header>
 
-      {isAvailable ? (
-        <>
-          <section className="border-b border-ink/12 bg-[#FCF5E8]">
-            <div className="mx-auto max-w-130 px-4.5 pt-5.5 pb-7 sm:px-10">
-              <div className="eyebrow">A foglalásod</div>
-              <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
-                {formatLongDate(timeSlot.startTime)}
-              </div>
-            </div>
-          </section>
-
-          <BookingFormNew timeSlotId={timeSlotId} selection={selection} />
-        </>
+      {isBookable ? (
+        <BookingReview bookingIntent={bookingIntent} />
       ) : (
         <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 text-center sm:px-10">
           <div className="eyebrow">Foglalás</div>
           <h1 className="mt-3.5 font-display text-[30px] leading-[1.1] font-medium text-pretty text-ink sm:text-[38px]">
-            Ez az időpont már
+            Ez a foglalás nem elérhető,
             <br />
-            nem elérhető
+            vagy az időpont már elkelt
           </h1>
           <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
             Válassz másik időpontot a főoldalon.

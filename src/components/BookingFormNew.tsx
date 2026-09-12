@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { useRef, useState } from 'react';
 import {
   Controller,
   useForm,
@@ -36,7 +37,6 @@ import {
 } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
-  DEPOSIT_AMOUNT,
   LIGHT_PLAY_FEE,
   MAX_PERSONS,
   MAX_PETS,
@@ -52,6 +52,7 @@ import {
   type PackageKey,
 } from '@/lib/data';
 import { formatMoney } from '@/lib/utils';
+import { createBookingIntent } from '@/server/booking-intent';
 
 import type { BookingSelection } from '@/lib/booking-selection';
 
@@ -179,6 +180,10 @@ export function BookingFormNew({
   const decorLocked = packageKey != null && !isSingleDecorPackage;
   const lightLocked = packageKey === LIGHT_INCLUDED_PACKAGE;
 
+  const router = useRouter();
+  const [navigating, setNavigating] = useState(false);
+  const pending = form.formState.isSubmitting || navigating;
+
   const sectionRefs = useRef<Partial<Record<FieldName, HTMLElement | null>>>(
     {},
   );
@@ -211,23 +216,33 @@ export function BookingFormNew({
     });
   }
 
-  function onSubmit(values: BookingFormValues) {
-    const formData = {
+  /**
+   * A Server Action sima async függvény, így a kliensről hívható. A `handleSubmit`
+   * miatt csak sikeres kliensoldali validáció után fut le — `<form action={...}>`
+   * esetén azonnal elindulna, és elveszne a zod-validáció.
+   */
+  async function onSubmit(values: BookingFormValues) {
+    const result = await createBookingIntent({
       timeSlotId,
-      package: values.packageKey,
+      packageKey: values.packageKey!,
       // Csak a Mini csomagnál választ a vendég díszletet, különben mindkettő jár.
-      decorSet: isSingleDecorPackage ? values.decorKey : null,
+      decorSetKey: isSingleDecorPackage ? values.decorKey : null,
       isLightPlaySelected: lightLocked || values.isLightPlaySelected,
-      numberOfPeople: values.numberOfPeople,
+      numberOfGuests: values.numberOfPeople,
       numberOfPets: values.numberOfPets,
-      customerNote: values.customerNote.trim() || null,
+      clientNote: values.customerNote.trim() || null,
       name: values.name.trim(),
       email: values.email.trim(),
-    };
+    });
 
-    // TODO: createCheckoutSession
-    alert(JSON.stringify(formData));
-    console.log('[foglalas] formData', formData);
+    if ('error' in result) {
+      form.setError('root', { message: result.error });
+      return;
+    }
+
+    // A navigáció alatt is letiltva marad a gomb, hogy ne jöjjön létre két intent.
+    setNavigating(true);
+    router.push(`/foglalas-osszegzese/${result.id}`);
   }
 
   return (
@@ -604,34 +619,31 @@ export function BookingFormNew({
       </FieldGroup>
 
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-ink/20 bg-forest/97 px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(20,51,42,.16)] backdrop-blur-xl sm:px-10">
-        <div className="mx-auto flex max-w-180 items-center gap-4">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[11px] tracking-[.16em] text-sage-dim uppercase">
-              Foglaló
-            </span>
-            <span className="text-[26px] leading-none text-cream">
-              {formatMoney(DEPOSIT_AMOUNT)}
-            </span>
-          </div>
+        <div className="mx-auto flex max-w-180 justify-center sm:justify-end">
           <button
             type="submit"
             form="booking-form"
-            disabled={form.formState.isSubmitting}
-            className={`ml-auto max-w-70 flex-1 rounded-full px-5 py-4.25 text-base font-medium transition-colors ${
-              form.formState.isSubmitting
+            disabled={pending}
+            className={`w-full max-w-90 rounded-full px-5 py-4.25 text-base font-medium transition-colors ${
+              pending
                 ? 'cursor-not-allowed bg-cream/12 text-[#7C9083]'
                 : 'bg-terracotta text-[#FFF4E6] shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-terracotta-hover'
             }`}
           >
-            {form.formState.isSubmitting
-              ? 'Feldolgozás…'
-              : 'Foglaló fizetése →'}
+            {pending ? 'Feldolgozás…' : 'Tovább →'}
           </button>
         </div>
-        {form.formState.isSubmitted && !form.formState.isValid && (
-          <div className="mx-auto mt-2.5 max-w-180 text-[13px] text-terracotta">
-            Nézd át a pirossal jelölt mezőket.
+        {form.formState.errors.root != null ? (
+          <div className="mx-auto mt-2.5 max-w-180 text-center text-[13px] text-terracotta sm:text-right">
+            {form.formState.errors.root.message}
           </div>
+        ) : (
+          form.formState.isSubmitted &&
+          !form.formState.isValid && (
+            <div className="mx-auto mt-2.5 max-w-180 text-center text-[13px] text-terracotta sm:text-right">
+              Nézd át a pirossal jelölt mezőket.
+            </div>
+          )
         )}
       </div>
     </form>

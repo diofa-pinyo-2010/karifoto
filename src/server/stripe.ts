@@ -105,7 +105,7 @@ export async function createCheckoutSession(
       phone_number_collection: { enabled: true },
       metadata: { booking_intent_id: bookingIntent.id },
       success_url: `${origin}/success`,
-      cancel_url: `${origin}/foglalas-veglegesitese/${bookingIntentId}`,
+      cancel_url: `${origin}/foglalas-osszegzese/${bookingIntentId}`,
     });
     sessionUrl = session.url;
   } catch {
