@@ -79,10 +79,10 @@ const DECOR_TAGLINES = Object.fromEntries(
  * megkülönböztethető.
  */
 const CHOICE_CARD_CLASS = [
-  'rounded-2xl bg-[#FFFDF8] shadow-[0_1px_3px_rgba(20,51,42,.06)] transition-colors',
+  'rounded-2xl bg-white/62 shadow-[0_1px_3px_rgba(20,51,42,.06)] transition-colors',
   'has-[>[data-slot=field]]:rounded-2xl has-[>[data-slot=field]]:border-ink/20',
   '*:data-[slot=field]:p-4',
-  'has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-cream-strong',
+  'has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-white/80',
   'has-data-checked:border-forest has-data-checked:bg-forest/8 has-data-checked:ring-1 has-data-checked:ring-forest/30',
 ].join(' ');
 
@@ -99,7 +99,7 @@ const SECTION_CLASS = 'scroll-mt-24';
 
 const LEGEND_CLASS = 'font-display text-2xl font-medium text-ink';
 const HINT_CLASS = 'text-base font-light text-cream-muted';
-const TEXT_CONTROL_CLASS = 'h-12 bg-[#FFFDF8] text-base';
+const TEXT_CONTROL_CLASS = 'h-12 bg-white/62 text-base';
 
 const bookingFormSchema = z
   .object({
@@ -596,7 +596,7 @@ export function BookingFormNew({
                 Bármi, amit jó, ha tudunk: babakocsi, allergia, kedvenc pléd,
                 ünnepi szett.
               </FieldDescription>
-              <InputGroup className="bg-[#FFFDF8]">
+              <InputGroup className="bg-white/62">
                 <InputGroupTextarea
                   {...field}
                   id="booking-note"
@@ -618,7 +618,7 @@ export function BookingFormNew({
         />
       </FieldGroup>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-ink/20 bg-forest/97 px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(20,51,42,.16)] backdrop-blur-xl sm:px-10">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-cream/15 bg-forest/78 px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(20,51,42,.16)] backdrop-blur-xl sm:px-10">
         <div className="mx-auto flex max-w-180 justify-center sm:justify-end">
           <button
             type="submit"
@@ -677,7 +677,7 @@ function Stepper({
   return (
     // Az InputGroup `has-disabled:` stílusa a *vezérlő* letiltására való; itt a
     // +/− gomb tiltódik a határértéknél, ezért az egész sáv szürkülne el.
-    <InputGroup className="h-14 border-ink/20 bg-white has-disabled:bg-white has-disabled:opacity-100">
+    <InputGroup className="h-14 border-ink/20 bg-white/62 has-disabled:bg-white/62 has-disabled:opacity-100">
       <InputGroupAddon align="inline-start">
         <InputGroupButton
           size="icon-sm"

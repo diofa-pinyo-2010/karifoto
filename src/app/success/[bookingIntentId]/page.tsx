@@ -36,7 +36,7 @@ export default async function SuccessPage(
       </header>
 
       <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 text-center sm:px-10">
-        <div className="eyebrow">Foglalás</div>
+        <div className="eyebrow">Visszaigazolás</div>
 
         {bookingIntent == null ? (
           <>
@@ -52,12 +52,14 @@ export default async function SuccessPage(
         ) : (
           <>
             <h1 className="mt-3.5 font-display text-[30px] leading-[1.1] font-medium text-pretty text-ink sm:text-[38px]">
-              {isProcessing ? 'Feldolgozzuk a foglalást…' : 'Sikeres foglalás!'}
+              {isProcessing
+                ? 'A foglalás feldolgozás alatt van…'
+                : 'Sikeres foglalás!'}
             </h1>
             <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
               {isProcessing
                 ? 'A fizetés megtörtént, a visszaigazolás pár másodpercen belül megérkezik. Frissítsd az oldalt.'
-                : 'Köszönjük a foglaló befizetését! A visszaigazolást elküldtük e-mailben.'}
+                : `Kedves ${bookingIntent.name}! Köszönjük a foglalást! A visszaigazolást elküldtük e-mailben is.`}
             </p>
 
             <dl className="mx-auto mt-7 max-w-100 rounded-2xl border border-ink/15 bg-[#FFFDF8] px-5 py-1.5 text-left">

@@ -123,9 +123,9 @@ export function BookingReview({
         </Link>
       </section> */}
 
-      <section className="bg-[#FCF5E8]">
+      <section className="bg-white/45 sm:rounded-t-[28px]">
         <div className="mx-auto max-w-130 px-4.5 pt-6 pb-7 sm:px-10">
-          <div className="eyebrow">Összefoglaló</div>
+          <div className="eyebrow-ink">Összefoglaló</div>
 
           <div className="mt-3.5 flex flex-col">
             <div className="flex justify-between gap-4 border-b border-ink/10 py-3">
@@ -217,7 +217,7 @@ export function BookingReview({
         value={bookingIntent.clientNote ?? ''}
       />
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-ink/20 bg-forest/97 px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(20,51,42,.16)] backdrop-blur-xl sm:px-10">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-cream/15 bg-forest/78 px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(20,51,42,.16)] backdrop-blur-xl sm:px-10">
         <div className="mx-auto flex max-w-180 items-center gap-4">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] tracking-[.16em] text-sage-dim uppercase">
