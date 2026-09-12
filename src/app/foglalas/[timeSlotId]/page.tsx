@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { getTimeSlot } from '@/server/time-slots';
-import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Foglalás · Karifoto',

@@ -11,6 +11,13 @@ export const shortDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
   day: 'numeric',
 });
 
+// szeptember 13.
+export const monthDayFormatter = new Intl.DateTimeFormat('hu-Hu', {
+  timeZone: 'Europe/Budapest',
+  month: 'long',
+  day: 'numeric',
+});
+
 // 12:00
 export const timeFormatter = new Intl.DateTimeFormat('hu-Hu', {
   timeZone: 'Europe/Budapest',

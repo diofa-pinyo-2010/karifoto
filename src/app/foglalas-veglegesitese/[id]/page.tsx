@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { BookingSummary } from '@/components/BookingSummary';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { getBookingIntent } from '@/server/booking-intent';
-import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Foglalás részletei · Karifoto',
