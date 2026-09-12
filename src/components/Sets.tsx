@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 
-import { useAppContext } from '@/components/AppContextProvider';
+import { useBookingSelection } from '@/components/BookingSelectionProvider';
 import { PhotoGallery } from '@/components/PhotoGallery';
-import { photoSets, type DecorSetKey } from '@/lib/data';
+import { photoSets } from '@/lib/data';
 
 /** Áttekintő (krém háttéren) + egy szekció díszletenként. */
 export function Sets() {
@@ -89,27 +89,38 @@ function SetsOverview() {
 
 function SetCta({
   set,
-  onSelect,
   className,
 }: {
   set: (typeof photoSets)[number];
-  onSelect: (key: DecorSetKey) => void;
   className?: string;
 }) {
+  const { decorKey, light, selectDecorSet, toggleLight } =
+    useBookingSelection();
+  // A Fényjáték nem díszlet, hanem extra → külön kapcsolóként viselkedik.
+  const selected = set.extra ? light : decorKey === set.key;
+
   return (
     <a
       href="#foglalas"
-      onClick={() => onSelect(set.key ?? 'hofeher')}
+      onClick={() => {
+        if (set.extra) {
+          if (!light) toggleLight();
+        } else if (set.key != null) {
+          selectDecorSet(set.key);
+        }
+      }}
       className={`btn-cta px-6 py-4.25 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9 ${className ?? ''}`}
     >
-      Ezt szeretném →
+      {selected
+        ? 'Kiválasztva ✓'
+        : set.extra
+          ? 'Ezt is kérem →'
+          : 'Ezt szeretném →'}
     </a>
   );
 }
 
 function SetSection({ set }: { set: (typeof photoSets)[number] }) {
-  const { selectDecorSet } = useAppContext();
-
   return (
     <section
       id={set.id}
@@ -148,7 +159,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
             </div>
           )}
 
-          {set.extra ? (
+          {set.extra && (
             <div className="mt-6.5 flex max-w-130 items-start gap-3 rounded-2xl border border-gold/30 bg-gold/8 px-4.5 py-4">
               <span className="mt-0.5 font-display text-xl leading-none text-gold">
                 ✦
@@ -161,9 +172,8 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
                 , vagy külön kérhető a foglalás során.
               </span>
             </div>
-          ) : (
-            <SetCta set={set} onSelect={selectDecorSet} className="mt-6.5" />
           )}
+          <SetCta set={set} className="mt-6.5" />
         </div>
 
         <div className="mt-7 sm:mt-12">
@@ -179,13 +189,7 @@ function SetSection({ set }: { set: (typeof photoSets)[number] }) {
           </p>
         </div>
 
-        {!set.extra && (
-          <SetCta
-            set={set}
-            onSelect={selectDecorSet}
-            className="mt-7 sm:mt-9"
-          />
-        )}
+        {!set.extra && <SetCta set={set} className="mt-7 sm:mt-9" />}
       </div>
     </section>
   );

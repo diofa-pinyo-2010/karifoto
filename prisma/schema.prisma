@@ -65,16 +65,17 @@ model TimeSlot {
 }
 
 model BookingIntent {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status              BookingIntentStatus @default(PENDING)
   name                String
   email               String
   package             Package
   decorSet            DecorSet?
-  isLightPlaySelected Boolean   @default(false)
-  numberOfGuests      Int       @default(0)
-  numberOfPets        Int       @default(0)
+  isLightPlaySelected Boolean             @default(false)
+  numberOfGuests      Int                 @default(0)
+  numberOfPets        Int                 @default(0)
   clientNote          String?
-  expiresAt           DateTime
+  paymentIntent       String? // needed for double payments
 
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @db.Uuid
@@ -122,7 +123,7 @@ model PhotoShooting {
 
 model Payment {
   id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paymentIntent   String
+  paymentIntent   String        @unique
   amountInCents   Int
   currency        Currency      @default(HUF)
   type            PaymentType
@@ -200,6 +201,13 @@ enum PaymentMethod {
   CASH
 }
 
+enum BookingIntentStatus {
+  PENDING
+  CONVERTED
+  CANCELLED
+  PAYMENT_ORPHANED // paid, but the slot was gone – needs a human
+}
+
 enum PhotoShootingStatus {
   PHOTOGRAPHER_SELECTION
   RAW_PHOTOS_UPLOAD
@@ -231,7 +239,6 @@ enum Package {
   MINI
   CLASSIC
   FAMILY
-  PARTY
 }
 
 enum DecorSet {

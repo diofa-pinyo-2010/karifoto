@@ -11,6 +11,13 @@ export const shortDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
   day: 'numeric',
 });
 
+// szeptember 13.
+export const monthDayFormatter = new Intl.DateTimeFormat('hu-Hu', {
+  timeZone: 'Europe/Budapest',
+  month: 'long',
+  day: 'numeric',
+});
+
 // 12:00
 export const timeFormatter = new Intl.DateTimeFormat('hu-Hu', {
   timeZone: 'Europe/Budapest',
@@ -37,4 +44,14 @@ export const dateFormatter = new Intl.DateTimeFormat('hu-HU', {
 
 export const formatLongDate = (date: Date) => {
   return `${dateFormatter.format(date)[0].toUpperCase()}${dateFormatter.format(date).slice(1)} · ${timeFormatter.format(date)}`;
+};
+
+const upperFirst = (text: string) =>
+  `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
+
+// Szeptember 12. Szerda, 12:00
+export const formatSlotDateTime = (date: Date) => {
+  const monthDay = upperFirst(monthDayFormatter.format(date));
+  const weekDay = upperFirst(weekDayFormatter.format(date));
+  return `${monthDay} ${weekDay}, ${timeFormatter.format(date)}`;
 };

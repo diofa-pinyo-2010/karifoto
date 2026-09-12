@@ -1,7 +1,7 @@
 'use server';
 
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
-import { BOOKING_INTENT_TTL_MINUTES } from '@/lib/constants';
+import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { DecorSetKey, PackageKey } from '@/lib/data';
 import { prisma } from '@/lib/prisma';
 
@@ -26,6 +26,9 @@ export type CreateBookingIntentInput = {
   packageKey: PackageKey;
   decorSetKey: DecorSetKey | null;
   isLightPlaySelected: boolean;
+  numberOfGuests: number;
+  numberOfPets: number;
+  clientNote: string | null;
 };
 
 export async function createBookingIntent(
@@ -48,9 +51,40 @@ export async function createBookingIntent(
   if (!bothDecorSets && !input.decorSetKey) {
     return { error: 'Válassz díszletet!.' };
   }
-  const expiresAt = new Date(
-    Date.now() + BOOKING_INTENT_TTL_MINUTES * 60 * 1000,
-  );
+
+  if (
+    !Number.isInteger(input.numberOfGuests) ||
+    input.numberOfGuests < 1 ||
+    input.numberOfGuests > MAX_PERSONS
+  ) {
+    return { error: 'Add meg, hányan jöttök (legalább 1 fő).' };
+  }
+  if (
+    !Number.isInteger(input.numberOfPets) ||
+    input.numberOfPets < 0 ||
+    input.numberOfPets > MAX_PETS
+  ) {
+    return { error: 'Érvénytelen kisállat-szám.' };
+  }
+
+  // A form oldal betöltése óta elkelhetett az idősáv.
+  const timeSlot = await prisma.timeSlot.findUnique({
+    where: { id: input.timeSlotId },
+    select: {
+      startTime: true,
+      revealed: true,
+      photoShooting: { select: { id: true } },
+    },
+  });
+
+  if (
+    timeSlot == null ||
+    timeSlot.revealed === false ||
+    timeSlot.photoShooting != null ||
+    timeSlot.startTime.getTime() <= Date.now()
+  ) {
+    return { error: 'Ez az időpont már nem elérhető. Válassz másikat.' };
+  }
 
   try {
     const intent = await prisma.bookingIntent.create({
@@ -63,7 +97,9 @@ export async function createBookingIntent(
             ? null
             : DECOR_SET_KEY_TO_ENUM[input.decorSetKey],
         isLightPlaySelected: input.isLightPlaySelected,
-        expiresAt,
+        numberOfGuests: input.numberOfGuests,
+        numberOfPets: input.numberOfPets,
+        clientNote: input.clientNote?.trim().slice(0, 500) || null,
         timeSlotId: input.timeSlotId,
       },
       select: { id: true },
@@ -76,7 +112,13 @@ export async function createBookingIntent(
 
 const bookingIntentWithTimeSlot = {
   include: {
-    timeSlot: { select: { startTime: true } },
+    timeSlot: {
+      select: {
+        startTime: true,
+        revealed: true,
+        photoShooting: { select: { id: true } },
+      },
+    },
   },
 } satisfies Prisma.BookingIntentDefaultArgs;
 

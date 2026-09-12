@@ -168,6 +168,11 @@
     @apply text-[11px] tracking-label text-sage uppercase;
   }
 
+  /* Ugyanaz a kisbetűs címke világos háttérre — a sage ott olvashatatlan. */
+  .eyebrow-ink {
+    @apply text-[11px] tracking-label text-cream-muted uppercase;
+  }
+
   .btn-cta {
     @apply inline-block rounded-full bg-terracotta text-center font-medium text-[#FFF4E6] transition-colors hover:bg-terracotta-hover;
   }

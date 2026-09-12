@@ -46,7 +46,7 @@ export function CookiePreferencesButton() {
     };
   }, []);
 
-  if (!visible || pathname?.startsWith('/foglalas-veglegesitese')) {
+  if (!visible || pathname?.startsWith('/foglalas')) {
     return null;
   }
 

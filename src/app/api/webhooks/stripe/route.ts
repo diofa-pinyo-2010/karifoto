@@ -3,12 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 import { env } from '@/env';
-import { formatLongDate } from '@/lib/formatters';
-import { invoiceService } from '@/lib/invoice';
-import { NamedVATRate } from '@/lib/invoice/types';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
-import { sendBookingConfirmationEmail } from '@/lib/resend/booking-confirmation';
 import { stripe } from '@/lib/stripe';
+import { qStashClient } from '@/lib/upstash';
 import { getBookingIntent } from '@/server/booking-intent';
 
 export async function POST(req: NextRequest) {
@@ -31,18 +30,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object;
-      await handleCheckoutCompleted(session);
+  if (await isEventProcessed(event.id)) {
+    console.log('[stripe-webhook] duplicate delivery, skipping', {
+      eventId: event.id,
+      type: event.type,
+    });
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        await handleCheckoutCompleted(session);
+      }
     }
+  } catch (err) {
+    // Drop the idempotency marker, otherwise our own key would turn away every
+    // retry Stripe sends for an event that never finished processing.
+    await releaseEvent(event.id);
+    console.error('[stripe-webhook] handler failed, released for retry', {
+      eventId: event.id,
+      type: event.type,
+      err,
+    });
+    return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log({ session });
   const userEmail = session.customer_details?.email;
   const userFullName = session.customer_details?.name;
   const userPhoneNumber = session.customer_details?.phone;
@@ -51,39 +69,53 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const addressLine1 = session.customer_details?.address?.line1;
   const bookingIntentId = session.metadata?.booking_intent_id;
 
-  if (bookingIntentId == null) {
-    throw new Error(
-      'Cannot find booking intent ID in checkout session metadata.',
-    );
-  }
-
-  const bookingIntent = await getBookingIntent(bookingIntentId);
-
-  if (bookingIntent == null) {
-    throw new Error(
-      'Cannot find booking intent after checkout session completed',
-    );
-  }
-
-  const timeSlotId = bookingIntent.timeSlotId;
-  const clientNote = bookingIntent.clientNote;
-  const selectedPackage = bookingIntent.package;
-
   const paymentIntent =
     typeof session.payment_intent === 'string'
       ? session.payment_intent
       : (session.payment_intent?.id ?? '');
 
-  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-    limit: 10,
-  });
+  if (bookingIntentId == null) {
+    console.error('[stripe-webhook] no booking_intent_id in session metadata', {
+      sessionId: session.id,
+      paymentIntent,
+      email: userEmail,
+      amount: session.amount_total,
+    });
+    return;
+  }
 
   // Create or Update client (customer) in the database
   if (userEmail == null || userFullName == null || userPhoneNumber == null) {
-    throw new Error(
-      'Email, name or phone number is missing, cannot save new client',
+    console.error(
+      '[stripe-webhook] missing customer details, cannot create client',
+      {
+        bookingIntentId,
+        sessionId: session.id,
+        paymentIntent,
+        hasEmail: userEmail != null,
+        hasName: userFullName != null,
+        hasPhone: userPhoneNumber != null,
+      },
     );
+    return;
   }
+
+  const bookingIntent = await getBookingIntent(bookingIntentId);
+
+  if (bookingIntent == null) {
+    console.error('[stripe-webhook] booking intent not found', {
+      bookingIntentId,
+      sessionId: session.id,
+      paymentIntent,
+      email: userEmail,
+      amount: session.amount_total,
+    });
+    return;
+  }
+
+  const timeSlotId = bookingIntent.timeSlotId;
+  const clientNote = bookingIntent.clientNote;
+  const selectedPackage = bookingIntent.package;
 
   const stripeCustomerId =
     typeof session.customer === 'string'
@@ -115,6 +147,29 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     include: { timeSlot: { select: { startTime: true } } },
   });
 
+  if (existingShooting != null && existingShooting.clientId !== client.id) {
+    try {
+      await prisma.bookingIntent.update({
+        where: { id: bookingIntentId },
+        data: { status: BookingIntentStatus.PAYMENT_ORPHANED, paymentIntent },
+      });
+    } catch (err) {
+      console.error(
+        'Could not update Booking Intent with orphaned payment.',
+        err,
+      );
+    }
+    console.error('[stripe-webhook] slot double-sold!', {
+      timeSlotId,
+      bookingIntentId,
+      paymentIntent,
+      winner: existingShooting.clientId,
+      loser: client.id,
+    });
+
+    return; // 200 - no retry, no invoice, no email
+  }
+
   const shooting =
     existingShooting ??
     (await prisma.$transaction(async (tx) => {
@@ -137,101 +192,60 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       return newPhotoShooting;
     }));
 
-  // PhotoShooting was created, delete BookingIntent
+  // PhotoShooting was created, convert the BookingIntent
   try {
-    await prisma.bookingIntent.delete({ where: { id: bookingIntentId } });
+    await prisma.bookingIntent.update({
+      where: { id: bookingIntentId },
+      data: { status: BookingIntentStatus.CONVERTED },
+    });
   } catch (err) {
-    console.error('Could not delete Bookint Intent', err);
+    console.error('Could not convert Booking Intent', err);
   }
 
-  // Notify user (Resend)
-  const startTime = shooting.timeSlot.startTime;
-  if (startTime == null) {
-    // TODO: Should we return here?
-    return;
-  }
-  const bookedTimeString = formatLongDate(startTime);
-  const resendRes = await sendBookingConfirmationEmail({
-    to: userEmail,
-    name: userFullName,
-    bookedTimeString,
-  });
-  console.log({ resendRes });
-
-  // GenerateInvoice and save to db
-  try {
-    if (zip == null || addressLine1 == null || city == null) {
-      throw new Error(
-        '[Billing address]: Address is missing, cannot create invoice.',
-      );
-    }
-
-    const { invoiceNumber, publicUrl } = await invoiceService.generateInvoice({
-      customer: {
-        name: userFullName,
-        zip,
-        city,
-        addressLine1,
-        email: userEmail,
-      },
-      items: lineItems.data.map((item) => {
-        const quantity = item.quantity ?? 1;
-        return {
-          name: item.description ?? 'tétel',
-          quantity,
-          unitPriceGross: item.amount_total / 100,
-          vatRate: NamedVATRate.AAM,
-        };
-      }),
-      comment: paymentIntent,
-    });
-
-    try {
-      const invoice = await prisma.invoice.create({
-        data: {
-          status: 'SETTLED',
-          invoiceNumber,
-          amountInCents: session.amount_total ?? 0,
-          paymentMethod: 'CARD',
-          publicUrl,
-          photoShooting: { connect: { id: shooting.id } },
-        },
-      });
-
-      // Insert Payment into db (idempotent: skip if already recorded for this shooting)
-      const existingPayment = await prisma.payment.findFirst({
-        where: { photoShootingId: shooting.id, paymentIntent },
-      });
-
-      if (existingPayment == null) {
-        await prisma.payment.create({
-          data: {
-            amountInCents: session.amount_total ?? 0,
-            method: 'CARD',
-            paymentIntent,
-            type: 'DEPOSIT',
-            photoShooting: { connect: { id: shooting.id } },
-            invoice: { connect: { id: invoice.id } },
-          },
-        });
-      }
-    } catch (error) {
-      console.error(
-        '[stripe-webhook] invoice was issued at szamlazz.hu but failed to save',
-        {
-          shootingId: shooting.id,
-          paymentIntent,
-          invoiceNumber,
-          error,
-        },
-      );
-    }
-    // TODO: Create Google Calendar entry
-  } catch (error) {
-    console.error('[stripe-webhook] invoice/payment creation failed', {
+  // Kártyás fizetésnél mindig van payment_intent; ha mégsem, a számlázó job üres
+  // stringet írna a Payment.paymentIntent @unique mezőjébe, és a következő ilyen
+  // foglalás ütközne vele. Inkább el sem indítjuk.
+  const canInvoice = paymentIntent !== '';
+  if (!canInvoice) {
+    console.error('[stripe-webhook] no payment intent, skipping invoice job', {
       shootingId: shooting.id,
-      paymentIntent,
-      error,
+      bookingIntentId,
+      sessionId: session.id,
     });
   }
+
+  // Publish email sending and invoice generation to QStash
+  const [emailJob, invoiceJob] = await Promise.all([
+    qStashClient.publishJSON({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-confirmation`,
+      body: { shootingId: shooting.id },
+      retries: 3,
+    }),
+    canInvoice
+      ? qStashClient.publishJSON({
+          url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
+          body: {
+            shootingId: shooting.id,
+            zip,
+            addressLine1,
+            city,
+            userFullName,
+            sessionId: session.id,
+            paymentIntent,
+            amountTotal: session.amount_total,
+          },
+          retries: 5,
+        })
+      : null,
+  ]);
+
+  // TODO: Save the job ids to db?
+  console.log('[stripe-webhook] jobs published', {
+    shootingId: shooting.id,
+    bookingIntentId,
+    emailMessageId: emailJob.messageId,
+    invoiceMessageId: invoiceJob?.messageId ?? null,
+  });
+
+  // TODO: Create Google Calendar entry
 }
