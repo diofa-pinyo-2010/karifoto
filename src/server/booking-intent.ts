@@ -1,7 +1,6 @@
 'use server';
 
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
-import { BOOKING_INTENT_TTL_MINUTES } from '@/lib/constants';
 import { DecorSetKey, PackageKey } from '@/lib/data';
 import { prisma } from '@/lib/prisma';
 
@@ -48,9 +47,6 @@ export async function createBookingIntent(
   if (!bothDecorSets && !input.decorSetKey) {
     return { error: 'Válassz díszletet!.' };
   }
-  const expiresAt = new Date(
-    Date.now() + BOOKING_INTENT_TTL_MINUTES * 60 * 1000,
-  );
 
   try {
     const intent = await prisma.bookingIntent.create({
@@ -63,7 +59,6 @@ export async function createBookingIntent(
             ? null
             : DECOR_SET_KEY_TO_ENUM[input.decorSetKey],
         isLightPlaySelected: input.isLightPlaySelected,
-        expiresAt,
         timeSlotId: input.timeSlotId,
       },
       select: { id: true },

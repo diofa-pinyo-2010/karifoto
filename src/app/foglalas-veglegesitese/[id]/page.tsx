@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { BookingSummary } from '@/components/BookingSummary';
 import { Wordmark } from '@/components/Wordmark';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { getBookingIntent } from '@/server/booking-intent';
 
 export const metadata: Metadata = {
@@ -18,8 +19,7 @@ export default async function BookingLightPage({
   const bookingIntent = await getBookingIntent(id);
   const isValid =
     bookingIntent != null &&
-    bookingIntent.expiresAt > new Date() &&
-    bookingIntent.timeSlot != null;
+    bookingIntent.status === BookingIntentStatus.PENDING;
 
   return (
     <div className="min-h-screen bg-cream pb-33">

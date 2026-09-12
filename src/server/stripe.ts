@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import * as z from 'zod';
 
 import { env } from '@/env';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { DEPOSIT_AMOUNT, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
@@ -48,9 +49,12 @@ export async function createCheckoutSession(
     },
   });
 
-  if (bookingIntent == null || bookingIntent.expiresAt <= new Date()) {
+  if (
+    bookingIntent == null ||
+    bookingIntent.status !== BookingIntentStatus.PENDING
+  ) {
     return {
-      error: 'Ez a foglalás már lejárt. Kezdd újra a foglalást a főoldalról.',
+      error: 'Ez a foglalás nem elérhető. Kezdd újra a foglalást a főoldalról.',
     };
   }
 

@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 import { env } from '@/env';
+import { Prisma } from '@/generated/prisma/client';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { formatLongDate } from '@/lib/formatters';
+import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { invoiceService } from '@/lib/invoice';
 import { NamedVATRate } from '@/lib/invoice/types';
 import { prisma } from '@/lib/prisma';
@@ -31,18 +34,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object;
-      await handleCheckoutCompleted(session);
+  if (await isEventProcessed(event.id)) {
+    console.log('[stripe-webhook] duplicate delivery, skipping', {
+      eventId: event.id,
+      type: event.type,
+    });
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        await handleCheckoutCompleted(session);
+      }
     }
+  } catch (err) {
+    // Drop the idempotency marker, otherwise our own key would turn away every
+    // retry Stripe sends for an event that never finished processing.
+    await releaseEvent(event.id);
+    console.error('[stripe-webhook] handler failed, released for retry', {
+      eventId: event.id,
+      type: event.type,
+      err,
+    });
+    return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log({ session });
   const userEmail = session.customer_details?.email;
   const userFullName = session.customer_details?.name;
   const userPhoneNumber = session.customer_details?.phone;
@@ -51,39 +73,57 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const addressLine1 = session.customer_details?.address?.line1;
   const bookingIntentId = session.metadata?.booking_intent_id;
 
+  const paymentIntent =
+    typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : (session.payment_intent?.id ?? '');
+
   if (bookingIntentId == null) {
-    throw new Error(
-      'Cannot find booking intent ID in checkout session metadata.',
+    console.error('[stripe-webhook] no booking_intent_id in session metadata', {
+      sessionId: session.id,
+      paymentIntent,
+      email: userEmail,
+      amount: session.amount_total,
+    });
+    return;
+  }
+
+  // Create or Update client (customer) in the database
+  if (userEmail == null || userFullName == null || userPhoneNumber == null) {
+    console.error(
+      '[stripe-webhook] missing customer details, cannot create client',
+      {
+        bookingIntentId,
+        sessionId: session.id,
+        paymentIntent,
+        hasEmail: userEmail != null,
+        hasName: userFullName != null,
+        hasPhone: userPhoneNumber != null,
+      },
     );
+    return;
   }
 
   const bookingIntent = await getBookingIntent(bookingIntentId);
 
   if (bookingIntent == null) {
-    throw new Error(
-      'Cannot find booking intent after checkout session completed',
-    );
+    console.error('[stripe-webhook] booking intent not found', {
+      bookingIntentId,
+      sessionId: session.id,
+      paymentIntent,
+      email: userEmail,
+      amount: session.amount_total,
+    });
+    return;
   }
 
   const timeSlotId = bookingIntent.timeSlotId;
   const clientNote = bookingIntent.clientNote;
   const selectedPackage = bookingIntent.package;
 
-  const paymentIntent =
-    typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : (session.payment_intent?.id ?? '');
-
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
     limit: 10,
   });
-
-  // Create or Update client (customer) in the database
-  if (userEmail == null || userFullName == null || userPhoneNumber == null) {
-    throw new Error(
-      'Email, name or phone number is missing, cannot save new client',
-    );
-  }
 
   const stripeCustomerId =
     typeof session.customer === 'string'
@@ -115,6 +155,29 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     include: { timeSlot: { select: { startTime: true } } },
   });
 
+  if (existingShooting != null && existingShooting.clientId !== client.id) {
+    try {
+      await prisma.bookingIntent.update({
+        where: { id: bookingIntentId },
+        data: { status: BookingIntentStatus.PAYMENT_ORPHANED, paymentIntent },
+      });
+    } catch (err) {
+      console.error(
+        'Could not update Booking Intent with orphaned payment.',
+        err,
+      );
+    }
+    console.error('[stripe-webhook] slot double-sold!', {
+      timeSlotId,
+      bookingIntentId,
+      paymentIntent,
+      winner: existingShooting.clientId,
+      loser: client.id,
+    });
+
+    return; // 200 - no retry, no invoice, no email
+  }
+
   const shooting =
     existingShooting ??
     (await prisma.$transaction(async (tx) => {
@@ -137,26 +200,36 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       return newPhotoShooting;
     }));
 
-  // PhotoShooting was created, delete BookingIntent
+  // PhotoShooting was created, convert the BookingIntent
   try {
-    await prisma.bookingIntent.delete({ where: { id: bookingIntentId } });
+    await prisma.bookingIntent.update({
+      where: { id: bookingIntentId },
+      data: { status: BookingIntentStatus.CONVERTED },
+    });
   } catch (err) {
-    console.error('Could not delete Bookint Intent', err);
+    console.error('Could not convert Booking Intent', err);
   }
 
   // Notify user (Resend)
   const startTime = shooting.timeSlot.startTime;
-  if (startTime == null) {
-    // TODO: Should we return here?
-    return;
-  }
   const bookedTimeString = formatLongDate(startTime);
-  const resendRes = await sendBookingConfirmationEmail({
-    to: userEmail,
-    name: userFullName,
-    bookedTimeString,
-  });
-  console.log({ resendRes });
+  try {
+    const resendRes = await sendBookingConfirmationEmail({
+      to: userEmail,
+      name: userFullName,
+      bookedTimeString,
+    });
+    console.log({ resendRes });
+  } catch (error) {
+    // The shooting is already booked — a failed email must not cost us the
+    // invoice below, nor block the whole event from finishing.
+    console.error('[stripe-webhook] could not send confirmation email', {
+      shootingId: shooting.id,
+      bookingIntentId,
+      email: userEmail,
+      error,
+    });
+  }
 
   // GenerateInvoice and save to db
   try {
@@ -186,25 +259,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       comment: paymentIntent,
     });
 
+    // Invoice and Payment go in together: a half-written pair would leave an
+    // Invoice row pointing at a real szamlazz document with nothing paid
+    // against it. Payment.paymentIntent is unique, so a concurrent run that
+    // already recorded this payment rolls the whole thing back.
     try {
-      const invoice = await prisma.invoice.create({
-        data: {
-          status: 'SETTLED',
-          invoiceNumber,
-          amountInCents: session.amount_total ?? 0,
-          paymentMethod: 'CARD',
-          publicUrl,
-          photoShooting: { connect: { id: shooting.id } },
-        },
-      });
+      await prisma.$transaction(async (tx) => {
+        const invoice = await tx.invoice.create({
+          data: {
+            status: 'SETTLED',
+            invoiceNumber,
+            amountInCents: session.amount_total ?? 0,
+            paymentMethod: 'CARD',
+            publicUrl,
+            photoShooting: { connect: { id: shooting.id } },
+          },
+        });
 
-      // Insert Payment into db (idempotent: skip if already recorded for this shooting)
-      const existingPayment = await prisma.payment.findFirst({
-        where: { photoShootingId: shooting.id, paymentIntent },
-      });
-
-      if (existingPayment == null) {
-        await prisma.payment.create({
+        await tx.payment.create({
           data: {
             amountInCents: session.amount_total ?? 0,
             method: 'CARD',
@@ -214,17 +286,27 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
             invoice: { connect: { id: invoice.id } },
           },
         });
-      }
+      });
     } catch (error) {
-      console.error(
-        '[stripe-webhook] invoice was issued at szamlazz.hu but failed to save',
-        {
-          shootingId: shooting.id,
-          paymentIntent,
-          invoiceNumber,
-          error,
-        },
-      );
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        console.warn(
+          '[stripe-webhook] payment already recorded, skipping duplicate',
+          { shootingId: shooting.id, paymentIntent, invoiceNumber },
+        );
+      } else {
+        console.error(
+          '[stripe-webhook] invoice was issued at szamlazz.hu but failed to save',
+          {
+            shootingId: shooting.id,
+            paymentIntent,
+            invoiceNumber,
+            error,
+          },
+        );
+      }
     }
     // TODO: Create Google Calendar entry
   } catch (error) {

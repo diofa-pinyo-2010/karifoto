@@ -11,6 +11,8 @@ export const env = createEnv({
     SZAMLAZZ_API_KEY: z.string().min(1),
     COMING_SOON_ENABLED: z.stringbool().default(false),
     COMING_SOON_PREVIEW_TOKEN: z.string().min(16).optional(),
+    UPSTASH_REDIS_REST_URL: z.string().min(1),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {
@@ -29,6 +31,8 @@ export const env = createEnv({
     SZAMLAZZ_API_KEY: process.env.SZAMLAZZ_API_KEY,
     COMING_SOON_ENABLED: process.env.COMING_SOON_ENABLED,
     COMING_SOON_PREVIEW_TOKEN: process.env.COMING_SOON_PREVIEW_TOKEN,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
     NEXT_PUBLIC_CLARITY_ID: process.env.NEXT_PUBLIC_CLARITY_ID,
