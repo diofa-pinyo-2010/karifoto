@@ -3,15 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 import { env } from '@/env';
-import { Prisma } from '@/generated/prisma/client';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
-import { formatLongDate } from '@/lib/formatters';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
-import { invoiceService } from '@/lib/invoice';
-import { NamedVATRate } from '@/lib/invoice/types';
 import { prisma } from '@/lib/prisma';
-import { sendBookingConfirmationEmail } from '@/lib/resend/booking-confirmation';
 import { stripe } from '@/lib/stripe';
+import { qStashClient } from '@/lib/upstash';
 import { getBookingIntent } from '@/server/booking-intent';
 
 export async function POST(req: NextRequest) {
@@ -121,10 +117,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const clientNote = bookingIntent.clientNote;
   const selectedPackage = bookingIntent.package;
 
-  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-    limit: 10,
-  });
-
   const stripeCustomerId =
     typeof session.customer === 'string'
       ? session.customer
@@ -210,111 +202,32 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error('Could not convert Booking Intent', err);
   }
 
-  // Notify user (Resend)
-  const startTime = shooting.timeSlot.startTime;
-  const bookedTimeString = formatLongDate(startTime);
-  try {
-    const resendRes = await sendBookingConfirmationEmail({
-      to: userEmail,
-      name: userFullName,
-      bookedTimeString,
-    });
-    // TODO: Save this to a table?
-    console.log('Resend email confirm ID: ', resendRes.data?.id);
-  } catch (error) {
-    // The shooting is already booked — a failed email must not cost us the
-    // invoice below, nor block the whole event from finishing.
-    console.error('[stripe-webhook] could not send confirmation email', {
-      shootingId: shooting.id,
-      bookingIntentId,
-      email: userEmail,
-      error,
-    });
-  }
-
-  // GenerateInvoice and save to db
-  try {
-    if (zip == null || addressLine1 == null || city == null) {
-      throw new Error(
-        '[Billing address]: Address is missing, cannot create invoice.',
-      );
-    }
-
-    const { invoiceNumber, publicUrl } = await invoiceService.generateInvoice({
-      customer: {
-        name: userFullName,
+  // Publish email sending and invoice generation to QStash
+  const [emailJob, invoiceJob] = await Promise.all([
+    qStashClient.publishJSON({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-confirmation`,
+      body: { shootingId: shooting.id },
+      retries: 3,
+    }),
+    qStashClient.publishJSON({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
+      body: {
+        shootingId: shooting.id,
         zip,
-        city,
         addressLine1,
-        email: userEmail,
+        city,
+        userFullName,
+        sessionId: session.id,
+        paymentIntent,
+        amountTotal: session.amount_total,
       },
-      items: lineItems.data.map((item) => {
-        const quantity = item.quantity ?? 1;
-        return {
-          name: item.description ?? 'tétel',
-          quantity,
-          unitPriceGross: item.amount_total / 100,
-          vatRate: NamedVATRate.AAM,
-        };
-      }),
-      comment: paymentIntent,
-    });
+      retries: 5,
+    }),
+  ]);
 
-    // Invoice and Payment go in together: a half-written pair would leave an
-    // Invoice row pointing at a real szamlazz document with nothing paid
-    // against it. Payment.paymentIntent is unique, so a concurrent run that
-    // already recorded this payment rolls the whole thing back.
-    try {
-      await prisma.$transaction(async (tx) => {
-        const invoice = await tx.invoice.create({
-          data: {
-            status: 'SETTLED',
-            invoiceNumber,
-            amountInCents: session.amount_total ?? 0,
-            paymentMethod: 'CARD',
-            publicUrl,
-            photoShooting: { connect: { id: shooting.id } },
-          },
-        });
+  // TODO: Save the job ids to db?
+  console.log(emailJob.messageId);
+  console.log(invoiceJob.messageId);
 
-        await tx.payment.create({
-          data: {
-            amountInCents: session.amount_total ?? 0,
-            method: 'CARD',
-            paymentIntent,
-            type: 'DEPOSIT',
-            photoShooting: { connect: { id: shooting.id } },
-            invoice: { connect: { id: invoice.id } },
-          },
-        });
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        console.warn(
-          '[stripe-webhook] payment already recorded, skipping duplicate',
-          { shootingId: shooting.id, paymentIntent, invoiceNumber },
-        );
-      } else {
-        console.error(
-          '[stripe-webhook] invoice was issued at szamlazz.hu but failed to save',
-          {
-            shootingId: shooting.id,
-            paymentIntent,
-            invoiceNumber,
-            error,
-          },
-        );
-      }
-    }
-    // TODO: Create Google Calendar entry
-  } catch (error) {
-    console.error('[stripe-webhook] invoice/payment creation failed', {
-      shootingId: shooting.id,
-      paymentIntent,
-      error,
-    });
-  }
+  // TODO: Create Google Calendar entry
 }
