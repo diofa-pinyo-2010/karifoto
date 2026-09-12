@@ -1,10 +1,10 @@
 'use client';
 
-import { useAppContext } from '@/components/AppContextProvider';
-import { packages } from '@/lib/data';
+import { useBookingSelection } from '@/components/BookingSelectionProvider';
+import { PACKAGE_HIGHLIGHT_BADGE, packages } from '@/lib/data';
 
 export function Pricing() {
-  const { selectedPackageKey, selectPackage } = useAppContext();
+  const { packageKey, selectPackage } = useBookingSelection();
 
   return (
     <section
@@ -20,19 +20,18 @@ export function Pricing() {
 
       <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3">
         {packages.map((p) => {
-          const active = p.id === selectedPackageKey;
           return (
             <div
               key={p.id}
               className={`relative flex h-full flex-col rounded-3xl border px-7 pt-8 pb-7 transition-colors ${
-                active
+                p.highlighted
                   ? 'border-gold/55 bg-panel-active'
                   : 'border-cream/9 bg-panel'
               }`}
             >
-              {p.badge && (
+              {p.highlighted && (
                 <div className="absolute top-4.5 right-4.5 rounded-full bg-terracotta px-3.5 py-1.75 text-[10px] tracking-[.2em] text-[#FFF4E6] uppercase">
-                  {p.badge}
+                  {PACKAGE_HIGHLIGHT_BADGE}
                 </div>
               )}
 
@@ -81,12 +80,12 @@ export function Pricing() {
                 href="#foglalas"
                 onClick={() => selectPackage(p.id)}
                 className={`mt-auto block rounded-full border px-5 py-4 text-center text-[15px] font-medium transition-opacity hover:opacity-90 ${
-                  active
+                  p.highlighted
                     ? 'border-terracotta bg-terracotta text-[#FFF4E6]'
                     : 'border-gold/40 text-gold'
                 }`}
               >
-                Ezt választom
+                {p.id === packageKey ? 'Kiválasztva ✓' : 'Ezt választom'}
               </a>
             </div>
           );

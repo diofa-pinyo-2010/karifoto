@@ -18,10 +18,14 @@ export type Package = {
   priceHuf: number;
   studioFee: string;
   studioFeeHuf: number;
-  badge?: string;
+  /** Vizuálisan kiemelt csomag (keret + badge). Statikus, nem a user választása. */
+  highlighted?: boolean;
   features: Feature[];
   footnotes: string[];
 };
+
+/** A `highlighted: true` csomag badge-e. */
+export const PACKAGE_HIGHLIGHT_BADGE = 'Népszerű';
 
 export type Day = {
   id: string; // ISO date — use this as the API key
@@ -66,7 +70,7 @@ export const packages: Package[] = [
     priceHuf: PACKAGE_PRICES.CLASSIC.base,
     studioFee: `+${formatMoney(PACKAGE_PRICES.CLASSIC.studio)} stúdió bérlet`,
     studioFeeHuf: PACKAGE_PRICES.CLASSIC.studio,
-    badge: 'Népszerű',
+    highlighted: true,
     features: [
       { text: '40 perces fotózás', ok: true },
       {

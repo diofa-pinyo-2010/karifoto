@@ -2,18 +2,22 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import {
+  decorSetName,
+  packageName,
+  selectionFromSearchParams,
+} from '@/lib/booking-selection';
 import { getTimeSlot } from '@/server/time-slots';
 
 export const metadata: Metadata = {
   title: 'Foglalás · Karifoto',
 };
 
-export default async function BookingFormPage({
-  params,
-}: {
-  params: Promise<{ timeSlotId: string }>;
-}) {
-  const { timeSlotId } = await params;
+export default async function BookingFormPage(
+  props: PageProps<'/foglalas/[timeSlotId]'>,
+) {
+  const { timeSlotId } = await props.params;
+  const selection = selectionFromSearchParams(await props.searchParams);
   const timeSlot = await getTimeSlot(timeSlotId);
   const isAvailable =
     timeSlot != null &&
@@ -40,7 +44,16 @@ export default async function BookingFormPage({
 
       {isAvailable ? (
         <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 sm:px-10">
-          <p className="text-base leading-[1.6] font-light text-ink">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-base leading-[1.6] font-light text-ink">
+            <dt className="text-cream-muted">Selected package:</dt>
+            <dd>{packageName(selection.packageKey) ?? '—'}</dd>
+            <dt className="text-cream-muted">Selected decor:</dt>
+            <dd>{decorSetName(selection.decorKey) ?? '—'}</dd>
+            <dt className="text-cream-muted">Fényjáték:</dt>
+            <dd>{selection.light ? 'igen' : 'nem'}</dd>
+          </dl>
+
+          <p className="mt-6 text-base leading-[1.6] font-light text-ink">
             Form comes here
           </p>
         </section>

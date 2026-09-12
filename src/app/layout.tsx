@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Jost, Parisienne } from 'next/font/google';
 
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
+import { InlineScript } from '@/components/InlineScript';
 // import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -61,7 +62,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <InlineScript html={THEME_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <TooltipProvider>{children}</TooltipProvider>

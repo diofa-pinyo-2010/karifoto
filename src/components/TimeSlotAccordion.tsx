@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 
 import { FaceSlightlyFrowningIcon } from 'lucide-react';
 
+import { useBookingSelection } from '@/components/BookingSelectionProvider';
 import {
   Accordion,
   AccordionContent,
@@ -29,6 +32,7 @@ export function TimeSlotAccordion({
 }: {
   groupedTimeSlots: GroupedSlots;
 }) {
+  const { selectionQuery } = useBookingSelection();
   const days = Array.from(groupedTimeSlots.entries());
 
   if (days.length === 0) {
@@ -55,7 +59,7 @@ export function TimeSlotAccordion({
           value={dayKey}
           className="not-last:border-b not-last:border-cream/12"
         >
-          <AccordionTrigger className="items-center px-5 py-4.5 text-sm md:text-base font-black tracking-wide text-cream-strong transition-colors hover:bg-cream/4 **:data-[slot=accordion-trigger-icon]:text-sage-dim sm:px-6.5">
+          <AccordionTrigger className="items-center px-5 py-4.5 text-sm font-black tracking-wide text-cream-strong transition-colors hover:bg-cream/4 **:data-[slot=accordion-trigger-icon]:text-sage-dim sm:px-6.5 md:text-base">
             {formatDayTitle(daySlots[0].startTime)}
           </AccordionTrigger>
           <AccordionContent className="px-5 pt-0 pb-2 sm:px-6.5">
@@ -98,7 +102,7 @@ export function TimeSlotAccordion({
                       </div>
                     ) : (
                       <Link
-                        href={`/foglalas/${id}`}
+                        href={`/foglalas/${id}${selectionQuery}`}
                         className="flex items-center justify-between gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-cream/6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                       >
                         {row}
