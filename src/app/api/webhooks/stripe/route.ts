@@ -219,7 +219,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       name: userFullName,
       bookedTimeString,
     });
-    console.log({ resendRes });
+    // TODO: Save this to a table?
+    console.log('Resend email confirm ID: ', resendRes.data?.id);
   } catch (error) {
     // The shooting is already booked — a failed email must not cost us the
     // invoice below, nor block the whole event from finishing.
