@@ -20,8 +20,6 @@ export function Header() {
           href="/"
           className="mr-auto text-cream transition-opacity hover:opacity-85"
         >
-          {/* <Wordmark size={22} className="sm:hidden" />
-          <Wordmark size={26} className="hidden sm:flex" /> */}
           <Image
             src="/images/karifoto-logo-arany.png"
             alt="Karifoto"

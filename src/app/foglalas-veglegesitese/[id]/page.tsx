@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { BookingSummary } from '@/components/BookingSummary';
-import { Wordmark } from '@/components/Wordmark';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { getBookingIntent } from '@/server/booking-intent';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Foglalás részletei · Karifoto',
@@ -25,7 +25,14 @@ export default async function BookingLightPage({
     <div className="min-h-screen bg-cream pb-33">
       <header className="sticky top-0 z-40 flex items-center gap-3.5 border-b border-ink/12 bg-cream/94 px-4.5 py-4 backdrop-blur-[10px] sm:px-10">
         <Link href="/" className="text-ink transition-opacity hover:opacity-75">
-          <Wordmark size={20} scriptClassName="text-terracotta" />
+          <Image
+            src="/images/karifoto-logo-terrakotta.png"
+            alt="Karifoto"
+            width={353}
+            height={146}
+            priority
+            className="h-7 w-auto lg:h-10"
+          />
         </Link>
         {/* <span className="ml-auto text-[11px] tracking-[.22em] text-[#7B8C80] uppercase">
           2 / 3 · Részletek
