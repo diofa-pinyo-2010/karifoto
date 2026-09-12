@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ComingSoonPage() {
   return (
-    <div className="min-h-screen bg-[#0E2620]">
+    <div className="min-h-screen bg-forest">
       <div className="lg:flex lg:min-h-screen">
         {/* KÉP — mobilon sáv, lg-től bal oldali hasáb */}
         <section className="relative h-[clamp(240px,52vw,420px)] overflow-hidden bg-panel lg:h-auto lg:w-[46%] lg:flex-none">
@@ -36,16 +36,16 @@ export default function ComingSoonPage() {
             />
           </header>
 
-          <section className="mx-auto max-w-[720px] px-4.5 text-center sm:px-10 lg:mx-0 lg:max-w-[560px] lg:px-0 lg:text-left">
-            <div className="mt-5 inline-flex items-center gap-[9px] rounded-full border border-gold/[.34] bg-gold/[.09] px-4 py-2 text-[11.5px] tracking-[.2em] text-gold uppercase lg:mt-0">
+          <section className="mx-auto max-w-180 px-4.5 text-center sm:px-10 lg:mx-0 lg:max-w-140 lg:px-0 lg:text-left">
+            <div className="mt-5 inline-flex items-center gap-2.25 rounded-full border border-gold/34 bg-gold/9 px-4 py-2 text-[11.5px] tracking-[.2em] text-gold uppercase lg:mt-0">
               Hamarosan
             </div>
 
-            <h1 className="mt-[18px] font-display text-[32px] leading-[1.08] font-medium text-balance text-cream-strong sm:text-[50px]">
+            <h1 className="mt-4.5 font-display text-[32px] leading-[1.08] font-medium text-balance text-cream-strong sm:text-[50px]">
               Oldalunk épp megújul!
             </h1>
 
-            <p className="mt-[18px] text-base leading-[1.65] font-light text-pretty text-sage-soft sm:text-[18px]">
+            <p className="mt-4.5 text-base leading-[1.65] font-light text-pretty text-sage-soft sm:text-[18px]">
               Aktívan dolgozunk, hogy a lehető legjobb élményt nyújtsuk Nektek —
               már a foglalás elkezdésétől kezdve, egészen a kész fotók
               átvételéig.
@@ -57,10 +57,10 @@ export default function ComingSoonPage() {
             </p>
           </section>
 
-          <section className="mx-auto flex max-w-[720px] flex-col gap-6 px-4.5 pt-[26px] sm:flex-row sm:px-10 lg:mx-0 lg:max-w-[440px] lg:px-0">
+          <section className="mx-auto flex max-w-180 flex-col gap-6 px-4.5 pt-6.5 sm:flex-row sm:px-10 lg:mx-0 lg:max-w-110 lg:px-0">
             <a
               href="tel:+36301086063"
-              className="flex flex-1 flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-[22px] py-[26px] text-cream transition-colors hover:bg-gold/[.12] lg:items-start"
+              className="flex flex-1 flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-5.5 py-6.5 text-cream transition-colors hover:bg-gold/12 lg:items-start"
             >
               <span className="tracking-chip text-sage-dim uppercase">
                 Telefon
@@ -71,7 +71,7 @@ export default function ComingSoonPage() {
             </a>
             <a
               href="mailto:info@karifoto.hu"
-              className="flex flex-1 flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-[22px] py-[26px] text-cream transition-colors hover:bg-gold/[.12] lg:items-start"
+              className="flex flex-1 flex-col items-center gap-2 rounded-[20px] border border-gold/30 bg-gold/[.07] px-5.5 py-6.5 text-cream transition-colors hover:bg-gold/12 lg:items-start"
             >
               <span className="tracking-chip text-sage-dim uppercase">
                 Email
@@ -85,7 +85,7 @@ export default function ComingSoonPage() {
       </div>
 
       {/* <footer className="px-4.5 pt-[22px] pb-[30px] sm:px-10">
-        <div className="mx-auto flex max-w-[720px] flex-col items-center gap-2.5 text-center">
+        <div className="mx-auto flex max-w-180 flex-col items-center gap-2.5 text-center">
           <Wordmark size={18} className="text-[#D8CBB4]" />
           <span className="text-[13px] text-[#6E8478]">
             Karifoto stúdió · Budapest
