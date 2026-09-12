@@ -9,9 +9,11 @@ import {
   releaseDepositInvoiceClaim,
 } from '@/lib/idempotency';
 import { invoiceService } from '@/lib/invoice';
-import { GeneratedInvoice, NamedVATRate } from '@/lib/invoice/types';
+import { NamedVATRate } from '@/lib/invoice/types';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+
+import type { GeneratedInvoice } from '@/lib/invoice/types';
 
 export const POST = verifySignatureAppRouter(
   async (req: Request) => {
@@ -156,6 +158,11 @@ export const POST = verifySignatureAppRouter(
       ) {
         console.warn(
           '[job:deposit-inv-gen] payment already recorded, skipping',
+          {
+            shootingId,
+            paymentIntent,
+            invoiceNumber: invoice.invoiceNumber,
+          },
         );
         return new Response('already recorded', { status: 200 });
       }

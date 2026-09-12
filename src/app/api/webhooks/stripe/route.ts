@@ -202,6 +202,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error('Could not convert Booking Intent', err);
   }
 
+  // Kártyás fizetésnél mindig van payment_intent; ha mégsem, a számlázó job üres
+  // stringet írna a Payment.paymentIntent @unique mezőjébe, és a következő ilyen
+  // foglalás ütközne vele. Inkább el sem indítjuk.
+  const canInvoice = paymentIntent !== '';
+  if (!canInvoice) {
+    console.error('[stripe-webhook] no payment intent, skipping invoice job', {
+      shootingId: shooting.id,
+      bookingIntentId,
+      sessionId: session.id,
+    });
+  }
+
   // Publish email sending and invoice generation to QStash
   const [emailJob, invoiceJob] = await Promise.all([
     qStashClient.publishJSON({
@@ -209,25 +221,31 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       body: { shootingId: shooting.id },
       retries: 3,
     }),
-    qStashClient.publishJSON({
-      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
-      body: {
-        shootingId: shooting.id,
-        zip,
-        addressLine1,
-        city,
-        userFullName,
-        sessionId: session.id,
-        paymentIntent,
-        amountTotal: session.amount_total,
-      },
-      retries: 5,
-    }),
+    canInvoice
+      ? qStashClient.publishJSON({
+          url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
+          body: {
+            shootingId: shooting.id,
+            zip,
+            addressLine1,
+            city,
+            userFullName,
+            sessionId: session.id,
+            paymentIntent,
+            amountTotal: session.amount_total,
+          },
+          retries: 5,
+        })
+      : null,
   ]);
 
   // TODO: Save the job ids to db?
-  console.log(emailJob.messageId);
-  console.log(invoiceJob.messageId);
+  console.log('[stripe-webhook] jobs published', {
+    shootingId: shooting.id,
+    bookingIntentId,
+    emailMessageId: emailJob.messageId,
+    invoiceMessageId: invoiceJob?.messageId ?? null,
+  });
 
   // TODO: Create Google Calendar entry
 }
