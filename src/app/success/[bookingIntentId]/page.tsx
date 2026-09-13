@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { packages } from '@/lib/data';
 import { formatLongDate } from '@/lib/formatters';
 import { getBookingIntent } from '@/server/booking-intent';
-import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Sikeres foglalás · Karifoto',
