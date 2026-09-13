@@ -43,7 +43,7 @@ export function Reviews() {
               </div>
             </div>
             <div className="mt-4 text-sm tracking-[.16em] text-gold">★★★★★</div>
-            <p className="mt-3 text-[15px] leading-[1.62] font-light text-pretty text-[#C2D2C8]">
+            <p className="mt-3 line-clamp-6 min-h-[6lh] text-[15px] leading-[1.62] font-light text-[#C2D2C8]">
               {r.text}
             </p>
           </Link>
