@@ -68,7 +68,7 @@ export default function BookingLayout({
         </Link>
       </header>
 
-      <main className="relative z-10 mx-auto w-full max-w-152 sm:px-6 sm:pt-10">
+      <main className="relative z-10 mx-auto w-full max-w-4xl sm:px-6 sm:pt-10">
         <div className={PANEL_CLASS}>
           <div className={GLASS_CLASS} />
           {/* A tartalom pozicionált, hogy az üvegréteg fölé kerüljön. */}
