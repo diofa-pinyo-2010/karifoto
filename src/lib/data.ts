@@ -188,6 +188,13 @@ export const reviews = [
     text: 'Nagyon kellemesen telt a fotózás, Niki profi volt és végtelenül kedves :) Pedig nem volt egyszerű dolga a 6 hónapos kislányunkkal :D Szívből ajánlom ❤️',
     href: 'https://maps.app.goo.gl/qW2poJWjruRYk9nb8',
   },
+  {
+    initial: 'M',
+    name: 'Mesehős',
+    when: '9 hónapja · Google',
+    text: 'Első családi fotózásunkat töltöttük náluk a 4 hónapos kislányunkkal. Márk fotózott minket, aki nagyon kedves, türelmes és segítőkész volt. Jövőre ugyanitt, ugyanekkor egy évvel idősebb kislánnyal térünk vissza hozzátok :)',
+    href: 'https://maps.app.goo.gl/ZJzpCWSu3s34YDjV6',
+  },
 ];
 
 export const faqs = [
