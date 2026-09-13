@@ -12,7 +12,10 @@ export function Footer() {
           priority
           className="h-7 w-auto lg:h-10"
         />
-        <span>Budapest, VI. kerület · hello@karifoto.hu</span>
+        <span>
+          <a href="tel:+36301086063">+36 30 108 6063</a> ·{' '}
+          <a href="mailto:info@karifoto.hu">info@karifoto.hu</a>
+        </span>
       </div>
     </footer>
   );
