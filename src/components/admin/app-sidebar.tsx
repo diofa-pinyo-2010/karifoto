@@ -32,7 +32,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip="Home Page"
+              tooltip="Karifoto landing"
               render={
                 <Link
                   href="/"
@@ -41,7 +41,7 @@ export function AppSidebar() {
               }
             >
               <Home />
-              <span className="font-semibold">Home Page</span>
+              <span className="font-semibold">Karifoto landing</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
