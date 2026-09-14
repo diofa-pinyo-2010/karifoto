@@ -6,6 +6,12 @@ the `@/lib/prisma` singleton, `sendTemplatedEmail`, Upstash Redis, and the
 existing `AppSidebar` layout. This is not a generic tutorial — every snippet
 below targets this codebase's actual conventions.
 
+Two phases: **Phase 1** (steps 1–14 below) is `/admin` — staff auth plus
+`SUPERADMIN`/`EDITOR` authorization — and is buildable now. **Phase 2** (its
+own section at the end) is the client-facing `/client/*` portal — captured
+here as an agreed design, not yet built, so Phase 1 doesn't paint us into a
+corner (e.g. cookie naming, session table shape).
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -25,8 +31,10 @@ below targets this codebase's actual conventions.
   - [11. Protect the Existing Admin Layout](#11-protect-the-existing-admin-layout)
   - [12. Floating Admin Button](#12-floating-admin-button)
   - [13. Admin Verification Email](#13-admin-verification-email)
+  - [14. Role-Based Authorization (SUPERADMIN vs EDITOR)](#14-role-based-authorization-superadmin-vs-editor)
 - [Authentication Flow](#authentication-flow)
 - [Security Features](#security-features)
+- [Phase 2 (later): Client Portal (`/client/*`)](#phase-2-later-client-portal-client)
 
 ---
 
@@ -36,19 +44,23 @@ below targets this codebase's actual conventions.
 - Staff-only: only `User`s with a `StaffProfile` row can log in — your own
   account (`nemethricsi@gmail.com`) is already seeded as `SUPERADMIN` in
   [prisma/seed.ts](../../prisma/seed.ts), so there's nothing to bootstrap.
+- Two roles, already migrated: `SUPERADMIN` (full access) and `EDITOR`
+  (photographers/editors — limited, mostly read-only access), see
+  [step 14](#14-role-based-authorization-superadmin-vs-editor).
 - 30-day sessions, hashed tokens in DB, 15-minute magic links.
 - Route protection: `src/proxy.ts` (fast, cookie-existence only) +
-  `verifySession()` in the admin layout (real DB check).
+  `verifySession()` in the admin layout (real DB check) +
+  per-page role checks for `SUPERADMIN`-only sections.
 
 ## What already exists vs. what's new
 
-| | |
-|---|---|
-| **Already in the repo — reuse, don't recreate** | `User`, `StaffProfile`, `Session`, `MagicLinkToken` models ([prisma/schema.prisma](../../prisma/schema.prisma)); `@/lib/prisma` singleton; `@/lib/resend/index.ts` + `send-templated-email.ts`; `src/proxy.ts` (coming-soon gate); `src/app/admin/layout.tsx` + `AppSidebar`; `src/env.ts` |
-| **New files this guide adds** | `src/lib/token.ts`, `src/lib/session.ts`, `src/lib/auth.ts`, `src/lib/dal.ts`, `src/lib/resend/admin-verification.ts`, `src/server/admin-auth.ts`, `src/app/admin/login/**`, `src/components/FloatingAdminButton.tsx` |
+|                                                 |                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Already in the repo — reuse, don't recreate** | `User`, `StaffProfile`, `Session`, `MagicLinkToken` models ([prisma/schema.prisma](../../prisma/schema.prisma)), including the migrated `StaffProfileRole` enum (`SUPERADMIN` \| `EDITOR`, default `EDITOR`); `@/lib/prisma` singleton; `@/lib/resend/index.ts` + `send-templated-email.ts`; `src/proxy.ts` (coming-soon gate); `src/app/admin/layout.tsx` + `AppSidebar`; `src/env.ts` |
+| **New files this guide adds**                   | `src/lib/token.ts`, `src/lib/session.ts`, `src/lib/auth.ts`, `src/lib/dal.ts`, `src/lib/admin-nav.ts`, `src/lib/resend/admin-verification.ts`, `src/server/admin-auth.ts`, `src/app/admin/login/**`, `src/components/FloatingAdminButton.tsx`                                                                                                                                           |
 
-Two repo-specific corrections worth calling out up front, since a generic
-version of this guide gets both wrong here:
+Three repo-specific corrections worth calling out up front, since a generic
+version of this guide gets all three wrong here:
 
 1. **`src/proxy.ts` already exists** and handles the coming-soon gate on `/`.
    Don't replace it — extend the one exported `proxy()` function and matcher.
@@ -58,6 +70,10 @@ version of this guide gets both wrong here:
    are returned as `{ error: '<Hungarian string>' }`, matching
    [src/server/booking-intent.ts](../../src/server/booking-intent.ts) and
    [src/server/stripe.ts](../../src/server/stripe.ts).
+3. **`isPhotographer`/`isEditor` are not authorization flags.** They only
+   decide who's eligible to be assigned as a `PhotoShooting`'s photographer or
+   editor. Authorization is `StaffProfile.role` alone — see
+   [step 14](#14-role-based-authorization-superadmin-vs-editor).
 
 ## Architecture
 
@@ -65,7 +81,8 @@ version of this guide gets both wrong here:
 src/
 ├── lib/
 │   ├── auth.ts                    # new: createSession()
-│   ├── dal.ts                     # new: getSession(), verifySession()
+│   ├── dal.ts                     # new: getSession(), verifySession() (accepts allowed roles)
+│   ├── admin-nav.ts               # new: ADMIN_NAV_ITEMS — single source of truth for nav + route roles
 │   ├── session.ts                 # new: cookie name/options, TTL constants
 │   ├── token.ts                   # new: token generation & hashing
 │   ├── prisma.ts                  # existing — reused as-is
@@ -91,10 +108,10 @@ src/
                 └── route.ts        # new (GET handler)
 ```
 
-`StaffProfile.role` (`SUPERADMIN` / `ADMIN`) and `isPhotographer`/`isEditor`
-already exist in the schema but aren't used for authorization here — any row
-with a `StaffProfile` can log in to `/admin`. Add role checks later if you
-need to restrict specific admin pages.
+Any row with a `StaffProfile` — either role — can _log in_ to `/admin`; steps
+1–13 (auth) don't distinguish `SUPERADMIN` from `EDITOR` at all. What each
+role can then _see and do_ inside `/admin` is a separate, later concern,
+covered in [step 14](#14-role-based-authorization-superadmin-vs-editor).
 
 ---
 
@@ -227,7 +244,7 @@ export const verifySession = cache(async () => {
 ```
 
 `cache()` dedupes calls within one request. `getSession()` checks token
-validity *and* `staffProfile` existence, so a customer `User` (created by the
+validity _and_ `staffProfile` existence, so a customer `User` (created by the
 Stripe webhook on checkout) can never pass this check even with a forged
 cookie shaped right.
 
@@ -291,7 +308,7 @@ export const config = {
 };
 ```
 
-This is the fast, edge-compatible check (cookie *existence* only). Real
+This is the fast, edge-compatible check (cookie _existence_ only). Real
 validation happens in `verifySession()` server-side (step 11) — the cookie
 could be stale or forged, and only the DB check catches that.
 
@@ -518,7 +535,11 @@ export async function GET(request: NextRequest) {
   const { raw, expiresAt } = await createSession(magicLinkToken.userId);
 
   const response = NextResponse.redirect(new URL('/admin', request.url));
-  response.cookies.set(SESSION_COOKIE_NAME, raw, sessionCookieOptions(expiresAt));
+  response.cookies.set(
+    SESSION_COOKIE_NAME,
+    raw,
+    sessionCookieOptions(expiresAt),
+  );
 
   return response;
 }
@@ -546,11 +567,15 @@ import {
 } from '@/components/ui/sidebar';
 
 export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
-  const { user } = await verifySession();
+  const { user, staffProfile } = await verifySession();
 
   return (
     <SidebarProvider>
-      <AppSidebar userName={user.name} onLogout={logout} />
+      <AppSidebar
+        userName={user.name}
+        role={staffProfile.role}
+        onLogout={logout}
+      />
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
           <SidebarTrigger />
@@ -563,7 +588,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
 }
 ```
 
-Wire `userName`/`onLogout` into `AppSidebar`'s footer (a `<form action={onLogout}>` with a submit button), same shape as its existing nav items. Note `/admin/login` itself is *outside* this layout (it's a sibling route under `src/app/admin/login/`, not nested under a layout that calls `verifySession()`) — otherwise the login page would redirect-loop against itself.
+Wire `userName`/`onLogout` into `AppSidebar`'s footer (a `<form action={onLogout}>` with a submit button), same shape as its existing nav items. `role` is new — see [step 14](#14-role-based-authorization-superadmin-vs-editor) for what `AppSidebar` does with it. Note `/admin/login` itself is _outside_ this layout (it's a sibling route under `src/app/admin/login/`, not nested under a layout that calls `verifySession()`) — otherwise the login page would redirect-loop against itself.
 
 ### 12. Floating Admin Button
 
@@ -645,6 +670,175 @@ export function sendAdminVerificationEmail({
 
 Create the actual template in the Resend dashboard and drop its real ID in.
 
+### 14. Role-Based Authorization (SUPERADMIN vs EDITOR)
+
+`StaffProfile.role` is already migrated to `SUPERADMIN` | `EDITOR` (default
+`EDITOR`) in `prisma/schema.prisma`. `isPhotographer`/`isEditor` stay out of
+this entirely — they only gate who can be assigned to a `PhotoShooting`, not
+what they can see in `/admin`.
+
+Current scope, decided for this repo (revisit if requirements grow):
+
+- **Page-level only.** A nav item/route is either visible+reachable for a
+  role or it isn't. No row-level filtering (an `EDITOR` sees the same
+  `PhotoShooting` rows a `SUPERADMIN` does) and no field-level PII hiding —
+  both roles see identical data on shared pages, for now.
+- **Unauthorized direct navigation** (an `EDITOR` hitting a `SUPERADMIN`-only
+  URL) redirects to `/admin/bookings`, the same target `verifySession()`
+  already uses as the "safe default" page.
+- **One config drives both** the sidebar nav and the route guard, so a page
+  can't be reachable without appearing in the nav, or vice versa.
+
+#### Single source of truth: `src/lib/admin-nav.ts`
+
+```ts
+// src/lib/admin-nav.ts
+import { CalendarDays, Settings } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+import { StaffProfileRole } from '@/generated/prisma/enums';
+
+export type AdminNavItem = {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  allowedRoles: readonly StaffProfileRole[];
+};
+
+const ALL_STAFF = [
+  StaffProfileRole.SUPERADMIN,
+  StaffProfileRole.EDITOR,
+] as const;
+
+export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
+  {
+    title: 'Foglalások',
+    href: '/admin/bookings',
+    icon: CalendarDays,
+    allowedRoles: ALL_STAFF,
+  },
+  {
+    title: 'Beállítások',
+    href: '/admin/settings',
+    icon: Settings,
+    allowedRoles: ALL_STAFF,
+  },
+  // Future SUPERADMIN-only example:
+  // { title: 'Finance', href: '/admin/finance', icon: Wallet, allowedRoles: [StaffProfileRole.SUPERADMIN] },
+];
+```
+
+Adding a restricted page later is a one-line change here, not a new
+permissions concept.
+
+#### `AppSidebar` filters by role
+
+`AppSidebar` is a client component, so the role has to come down as a prop
+from the (server) layout — it can't call `verifySession()` itself.
+
+```tsx
+// src/components/admin/app-sidebar.tsx
+'use client';
+
+import { usePathname } from 'next/navigation';
+
+import { StaffProfileRole } from '@/generated/prisma/enums';
+import { ADMIN_NAV_ITEMS } from '@/lib/admin-nav';
+// ...existing Sidebar* imports...
+
+type AppSidebarProps = {
+  role: StaffProfileRole;
+  // ...existing userName/onLogout props...
+};
+
+export function AppSidebar({ role }: AppSidebarProps) {
+  const pathname = usePathname();
+  const visibleItems = ADMIN_NAV_ITEMS.filter((item) =>
+    item.allowedRoles.includes(role),
+  );
+
+  return (
+    // ...existing Sidebar markup, but map over `visibleItems` instead of the
+    // old inline `items` array...
+  );
+}
+```
+
+#### Guarding the route itself: `requireNavAccess()` in the DAL
+
+Hiding the nav item is cosmetic — a role-gated page must still refuse the
+`EDITOR` who navigates there directly. Add this to `src/lib/dal.ts` alongside
+`getSession()`/`verifySession()` from step 5:
+
+```ts
+// src/lib/dal.ts (addition)
+import { ADMIN_NAV_ITEMS } from '@/lib/admin-nav';
+
+// Use in a specific /admin/<page>.tsx that needs restricting beyond
+// "any staff member." Looks up its own required roles from the same
+// ADMIN_NAV_ITEMS list AppSidebar renders from — one list, two consumers.
+export async function requireNavAccess(href: string) {
+  const session = await verifySession();
+
+  const navItem = ADMIN_NAV_ITEMS.find((item) => item.href === href);
+  if (navItem && !navItem.allowedRoles.includes(session.staffProfile.role)) {
+    redirect('/admin/bookings');
+  }
+
+  return session;
+}
+```
+
+Usage in a future restricted page:
+
+```tsx
+// src/app/admin/finance/page.tsx (future)
+import { requireNavAccess } from '@/lib/dal';
+
+export default async function FinancePage() {
+  await requireNavAccess('/admin/finance');
+  // ...
+}
+```
+
+`/admin/bookings` and `/admin/settings` don't need this call today — both
+roles are allowed, so plain `verifySession()` (already required for every
+admin page, step 11) is sufficient. Add the `requireNavAccess()` call the
+day a page's `allowedRoles` stops being `ALL_STAFF`.
+
+#### Readonly content within a shared page (forward-looking)
+
+No concrete page needs this yet (settings and bookings are simple lists for
+both roles today) — this is the pattern to reach for when one shows up, not
+something to build preemptively:
+
+```tsx
+const { staffProfile } = await verifySession();
+const canEdit = staffProfile.role === StaffProfileRole.SUPERADMIN;
+
+return canEdit ? (
+  <EditableField value={value} />
+) : (
+  <StaticField value={value} />
+);
+```
+
+The UI branch is cosmetic. **Whatever Server Action performs the actual
+mutation must independently re-check the role** — an `EDITOR` can call a
+Server Action directly regardless of what the page renders for them:
+
+```ts
+// inside the relevant 'use server' file
+const { staffProfile } = await verifySession();
+if (staffProfile.role !== StaffProfileRole.SUPERADMIN) {
+  return { error: 'Nincs jogosultságod ehhez a művelethez.' };
+}
+```
+
+Don't build a generic `<ReadOnlyField>`/permissions-matrix abstraction until
+a second real page needs this — one page's worth of `canEdit` branching
+doesn't earn it yet.
+
 ---
 
 ## Authentication Flow
@@ -680,15 +874,125 @@ admin/layout.tsx calls verifySession() -> real DB check, staffProfile confirmed
 
 ## Security Features
 
-| Feature | Implementation |
-|---|---|
-| No passwords | Magic links only |
-| Hashed tokens | SHA-256; raw token only ever in email link / cookie |
-| Rate limiting | Redis `SET NX EX` — atomic, no TOCTOU window |
-| Token expiration | 15 min magic links, 30 day sessions |
-| One-time tokens | Atomic `updateMany` claim prevents replay |
-| httpOnly + secure cookies | XSS-resistant, `sameSite: lax` |
-| No user enumeration | Identical response for known/unknown emails |
-| Staff-only access | Requires `staffProfile` relation, checked in `getSession()` |
-| Dual protection | `proxy.ts` (edge, cookie existence) + `verifySession()` (server, real DB check) |
-| Request dedup | `cache()` around `getSession()`/`verifySession()` |
+| Feature                   | Implementation                                                                                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No passwords              | Magic links only                                                                                                                                                                |
+| Hashed tokens             | SHA-256; raw token only ever in email link / cookie                                                                                                                             |
+| Rate limiting             | Redis `SET NX EX` — atomic, no TOCTOU window                                                                                                                                    |
+| Token expiration          | 15 min magic links, 30 day sessions                                                                                                                                             |
+| One-time tokens           | Atomic `updateMany` claim prevents replay                                                                                                                                       |
+| httpOnly + secure cookies | XSS-resistant, `sameSite: lax`                                                                                                                                                  |
+| No user enumeration       | Identical response for known/unknown emails                                                                                                                                     |
+| Staff-only access         | Requires `staffProfile` relation, checked in `getSession()`                                                                                                                     |
+| Dual protection           | `proxy.ts` (edge, cookie existence) + `verifySession()` (server, real DB check)                                                                                                 |
+| Request dedup             | `cache()` around `getSession()`/`verifySession()`                                                                                                                               |
+| Role-based authorization  | `StaffProfile.role` (`SUPERADMIN`/`EDITOR`) gates page access via `requireNavAccess()`; UI hiding is never the only check — mutating Server Actions re-check role independently |
+
+---
+
+## Phase 2 (later): Client Portal (`/client/*`)
+
+Not being built now. This section records the design agreed on so Phase 1
+doesn't make choices (cookie naming, session table shape) that would have to
+be undone later — it's not a step-by-step guide like the sections above, and
+some details are explicitly left open.
+
+### Two new route families, one new cookie
+
+- **`/client/{clientProfileId}/`** — public. Deliberately protected only by
+  the `clientProfileId` UUID being unguessable, not by any session check.
+  Clients are meant to share this ("check our photos!"), so it shows the
+  gallery / eventual memorial page and nothing sensitive. No cookie required,
+  ever, for this route.
+- **`/client/{clientProfileId}/shooting/{photoShootingId}/details`** —
+  gated: payments, invoices. Requires `client_session` **or** `admin_session`
+  — no role restriction beyond being staff; `EDITOR` sees this too, same as
+  `SUPERADMIN` (unlike `/admin/finance`, which is `SUPERADMIN`-only).
+- **The "I selected the images, I'm ready" action** — gated, `client_session`
+  **only**, not reachable via `admin_session` even though staff can view
+  `/details`. This maps directly onto the existing `PhotoShootingStatus`
+  enum: the action is a `USER_SELECTION → FINAL_PHOTOS_UPLOAD` transition,
+  no new model needed.
+
+### The rule that makes the public page safe to share
+
+The public gallery URL and the link that grants `client_session` must never
+be the same value, and visiting the gallery must never silently issue the
+cookie. If it did, sharing the gallery link — the entire point of that page —
+would also hand out access to that client's payments, invoices, and the
+selection-confirm action to anyone the client shares it with.
+
+So `clientProfileId` in the URL is not a credential — it only ever unlocks
+the public gallery. The `client_session` cookie is granted by a **separate**,
+privately-emailed link carrying its own token:
+`/client/{clientProfileId}/?token=<raw>` (or a dedicated verification route,
+mirroring [step 10](#10-magic-link-verification-route): hash the token, look
+it up, set the cookie once. Sent automatically once, right after booking
+confirmation — not requested via a login form the way admin's magic link is.
+
+### One cookie for both staff roles, a second one for clients — not three
+
+Per [step 14](#14-role-based-authorization-superadmin-vs-editor)'s reasoning:
+a cookie *name* can't itself carry authorization — the token inside it is
+what's looked up against the `Session` table regardless of what the cookie
+is called — so staff stays on a single `admin_session` for both
+`SUPERADMIN` and `EDITOR`. A separate `editor_session` would just create a
+second, staleness-prone place role lives (promote someone and their old
+cookie name would lie about their access until they re-login).
+
+Clients get a genuinely different cookie, `client_session`, because they're
+a structurally different relation (`owner.clientProfile`, not
+`owner.staffProfile`), have no role concept, and need a much longer-lived
+session than a 30-day admin one.
+
+Reuses the same `Session` table (already keyed to `User`, which already
+carries an optional `clientProfile` alongside `staffProfile`) — a
+`getClientSession()` alongside `getSession()` in the DAL, discriminated by
+`owner.clientProfile != null` the same way admin is discriminated by
+`owner.staffProfile != null`.
+
+### One `User`, two profiles — no conflict
+
+A `SUPERADMIN`/`EDITOR` who books a shooting under their own email (e.g. for
+testing) ends up with both a `StaffProfile` and a `ClientProfile` on the same
+`User` row — the Stripe webhook upserts `User` by email, so it finds the
+existing staff `User` and just adds a `ClientProfile`, rather than creating a
+second user. That person can then hold an `admin_session` and a
+`client_session` at the same time with no conflict:
+
+- `Session` has no uniqueness constraint on `userId`, so the same `User` can
+  own two independent `Session` rows (one per cookie) simultaneously.
+- Different cookie names (`admin_session` / `client_session`) mean the
+  browser stores both without either overwriting the other.
+- `getSession()` only ever looks at `owner.staffProfile`; the Phase 2
+  `getClientSession()` only ever looks at `owner.clientProfile`. Neither
+  check leaks into the other, so holding both profiles never grants more
+  than either session type would on its own.
+
+### Decisions
+
+- **`EDITOR` sees `/details` too.** The OR-gate is "any staff," full stop —
+  unlike `/admin/finance`, there's no `SUPERADMIN`-only carve-out for a
+  client's payments/invoices. Staff supporting a client by phone/email needs
+  this regardless of role.
+- **The bootstrap token is reusable, not single-use.** It's not a
+  `MagicLinkToken`-shaped one-time claim — no `usedAt`, long expiry (e.g. a
+  year), and clicking the same emailed link again just re-sets the cookie.
+  This was chosen over single-use deliberately: single-use means losing the
+  cookie (cleared browser, new device) permanently locks the client out with
+  no self-serve way back in, and building a "resend my portal link" recovery
+  flow isn't worth doing for v1. The accepted tradeoff: whoever holds that
+  email holds access — if the client forwards it, they forward access too.
+  Mitigate with a line in the email itself (something like "this link is
+  personal to you — don't forward it"), not with product logic.
+- **Row-scoping is mandatory, not optional.** A valid `client_session`
+  proves *a* client is logged in, not that they're *this* client — every
+  `/client/*` data fetch must check `owner.clientProfile.id` against the
+  `clientProfileId` in the URL (and `photoShootingId` against that same
+  client), or one client could swap the URL segment and read another
+  client's payments. `requireNavAccess()` doesn't need this today (admin
+  pages aren't per-resource), but this is the one place Phase 2 needs a
+  check Phase 1 doesn't.
+
+This section stays prose-and-decisions, not code, until Phase 2 is actually
+scheduled.
