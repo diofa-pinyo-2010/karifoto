@@ -92,6 +92,25 @@ async function main() {
     },
   });
 
+  const editorUser = await prisma.user.upsert({
+    where: { email: 'izmuvek@gmail.com' },
+    update: {},
+    create: {
+      email: 'izmuvek@gmail.com',
+      name: 'Izmuvek',
+      phoneNumber: '+36 20 000 0000',
+    },
+  });
+
+  await prisma.staffProfile.upsert({
+    where: { userId: editorUser.id },
+    update: {},
+    create: {
+      userId: editorUser.id,
+      role: 'EDITOR',
+    },
+  });
+
   await prisma.timeSlot.createMany({
     data: buildUpcomingTimeSlots(),
   });
