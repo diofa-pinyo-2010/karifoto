@@ -5,11 +5,20 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { verifySession } from '@/lib/dal';
+import { logout } from '@/server/admin-auth';
 
-export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
+export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
+  const { user, staffProfile } = await verifySession();
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar
+        userName={user.name}
+        userEmail={user.email}
+        role={staffProfile.role}
+        onLogout={logout}
+      />
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
           <SidebarTrigger />

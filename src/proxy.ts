@@ -2,10 +2,24 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { env } from '@/env';
+import { SESSION_COOKIE_NAME } from '@/lib/session';
 
 const BYPASS_COOKIE = 'coming-soon-bypass';
 
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/admin')) {
+    const isLoginRoute =
+      pathname === '/admin/login' || pathname.startsWith('/admin/login/');
+    const hasSessionCookie = request.cookies.has(SESSION_COOKIE_NAME);
+
+    if (!isLoginRoute && !hasSessionCookie) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+    return NextResponse.next();
+  }
+
   if (!env.COMING_SOON_ENABLED || !env.COMING_SOON_PREVIEW_TOKEN) {
     return NextResponse.next();
   }
@@ -32,5 +46,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/',
+  matcher: ['/', '/admin/:path*'],
 };
