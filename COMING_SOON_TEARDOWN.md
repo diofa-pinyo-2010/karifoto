@@ -1,5 +1,7 @@
 # Coming-soon teardown checklist
 
+- [ ] Change back the `NEXT_PUBLIC_SITE_URL` on Vercel to `https://karifoto.hu`
+
 Context: while the real homepage (`src/app/page.tsx`) was still in progress, `/`
 was rewritten to `src/app/coming-soon/page.tsx` for all visitors via a proxy,
 gated by `COMING_SOON_ENABLED`. A secret `?preview=<token>` query param set a
