@@ -67,7 +67,7 @@ export function AdminUser({ name, email, role, onLogout }: AdminUserProps) {
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-start gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="rounded-md shrink-0">
+                  <Avatar className="shrink-0 rounded-md">
                     <AvatarFallback className="rounded-md">
                       {initial}
                     </AvatarFallback>
