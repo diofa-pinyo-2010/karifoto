@@ -933,7 +933,7 @@ confirmation — not requested via a login form the way admin's magic link is.
 ### One cookie for both staff roles, a second one for clients — not three
 
 Per [step 14](#14-role-based-authorization-superadmin-vs-editor)'s reasoning:
-a cookie *name* can't itself carry authorization — the token inside it is
+a cookie _name_ can't itself carry authorization — the token inside it is
 what's looked up against the `Session` table regardless of what the cookie
 is called — so staff stays on a single `admin_session` for both
 `SUPERADMIN` and `EDITOR`. A separate `editor_session` would just create a
@@ -986,7 +986,7 @@ second user. That person can then hold an `admin_session` and a
   Mitigate with a line in the email itself (something like "this link is
   personal to you — don't forward it"), not with product logic.
 - **Row-scoping is mandatory, not optional.** A valid `client_session`
-  proves *a* client is logged in, not that they're *this* client — every
+  proves _a_ client is logged in, not that they're _this_ client — every
   `/client/*` data fetch must check `owner.clientProfile.id` against the
   `clientProfileId` in the URL (and `photoShootingId` against that same
   client), or one client could swap the URL segment and read another
