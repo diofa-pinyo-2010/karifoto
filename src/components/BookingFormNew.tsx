@@ -337,7 +337,7 @@ export function BookingFormNew({
               </FieldLegend>
               <FieldDescription className={HINT_CLASS}>
                 {decorLocked
-                  ? 'Ebben a csomagban mindkét díszletben fotózunk — nincs mit választani.'
+                  ? 'Ebben a csomagban mindkét díszletben fotózunk.'
                   : 'A Mini csomaghoz egy díszletet választhatsz.'}
               </FieldDescription>
 
