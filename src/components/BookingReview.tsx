@@ -129,8 +129,8 @@ export function BookingReview({
 
           <div className="mt-3.5 flex flex-col">
             <div className="flex justify-between gap-4 border-b border-ink/10 py-3">
-              <span className="text-[14.5px] font-bold text-ink">Időpont</span>
-              <span className="text-right text-[14.5px] font-medium text-ink">
+              <span className="text-lg font-bold text-ink">Időpont</span>
+              <span className="text-right text-lg font-medium text-ink">
                 {formatSlotDateTime(bookingIntent.timeSlot.startTime)}
               </span>
             </div>
@@ -170,16 +170,16 @@ export function BookingReview({
           </div>
 
           <div className="mt-4.5 flex items-baseline justify-between gap-4">
-            <span className="text-[15px] text-ink">Összesen</span>
-            <span className="text-[32px] leading-none whitespace-nowrap text-terracotta sm:text-[42px]">
+            <span className="text-muted-foreground">Összesen</span>
+            <span className="text-lg leading-none whitespace-nowrap text-muted-foreground sm:text-xl">
               {formatMoney(total)}
             </span>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-130 px-4.5 pt-7.5 sm:px-10">
-        <div className="flex items-start gap-3.25 rounded-[18px] border border-terracotta/26 bg-terracotta/6 p-4.5">
+      <section className="mx-auto max-w-130 px-4.5 py-7.5 sm:px-10">
+        <div className="flex items-start gap-3.25 rounded-[18px] border border-terracotta/26 bg-terracotta/20 p-4.5">
           <span className="mt-0.5 font-display text-xl leading-none text-terracotta">
             ✦
           </span>
@@ -193,7 +193,7 @@ export function BookingReview({
             levonásra kerül.
           </span>
         </div>
-        <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-[#7B8C80]">
+        <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-muted-foreground">
           A fizetés biztonságos Stripe oldalon történik, bankkártya adataidat
           nem látjuk. A fizetés gombbal elfogadod az{' '}
           <a href="#0">Általános Szerződési Feltételeket</a>.
