@@ -1,3 +1,10 @@
+# Kötelező Git-szabályok
+
+- A `main` branchre tilos commitolni.
+- A `main` branchre tilos pusholni, közvetlenül vagy force push használatával is.
+- A módosításokat külön munkabranchen kell elkészíteni; a `main` branchre kizárólag pull requestet (PR-t) szabad létrehozni. A PR-t önállóan nem szabad merge-elni.
+- Commit és push előtt mindig ellenőrizni kell az aktuális branchet és a művelet célbranchét.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
