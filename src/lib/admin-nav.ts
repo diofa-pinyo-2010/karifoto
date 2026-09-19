@@ -1,4 +1,4 @@
-import { CalendarDays, Settings } from 'lucide-react';
+import { Settings, SpotlightIcon } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
 
@@ -18,9 +18,9 @@ const ALL_STAFF = [
 
 export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   {
-    title: 'Foglalások',
+    title: 'Következő fotózások',
     href: '/admin/bookings',
-    icon: CalendarDays,
+    icon: SpotlightIcon,
     allowedRoles: ALL_STAFF,
   },
   {
