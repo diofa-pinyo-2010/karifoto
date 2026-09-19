@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/table';
 import { DecorSet, Package } from '@/generated/prisma/client';
 import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
-import { fetchPhotoShootings } from '@/server/photo-shootings';
 import { shortFullDateFormatter } from '@/lib/formatters';
+import { fetchPhotoShootings } from '@/server/photo-shootings';
 
 const packageNameById = Object.fromEntries(
   packages.map((p) => [p.id, p.name]),
@@ -33,7 +33,7 @@ export default async function BookingsPage() {
   const photoShootings = await fetchPhotoShootings();
 
   return (
-    <div className="flex flex-col gap-4 max-w-5xl overflow-auto">
+    <div className="flex max-w-5xl flex-col gap-4 overflow-auto">
       <h1 className="text-lg font-semibold">Következő fotózások</h1>
       <Table>
         <TableHeader>
