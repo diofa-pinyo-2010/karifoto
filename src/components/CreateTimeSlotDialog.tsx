@@ -15,28 +15,39 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+  FieldContent,
+  FieldDescription,
+  FieldTitle,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { createTimeSlot } from '@/server/time-slots';
 
-const DEFAULT_TIME = '10:00';
+const DEFAULT_TIME = '09:00';
 
 export function CreateTimeSlotDialog() {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState(DEFAULT_TIME);
+  const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function reset() {
     setDate(undefined);
     setTime(DEFAULT_TIME);
+    setRevealed(false);
     setError(null);
   }
 
@@ -51,7 +62,7 @@ export function CreateTimeSlotDialog() {
     startTime.setHours(hours, minutes, 0, 0);
 
     startTransition(async () => {
-      const result = await createTimeSlot(startTime);
+      const result = await createTimeSlot(startTime, revealed);
       if ('error' in result) {
         setError(result.error);
         return;
@@ -103,12 +114,33 @@ export function CreateTimeSlotDialog() {
             onChange={(event) => setTime(event.target.value)}
           />
         </Field>
+        <FieldLabel htmlFor="time-slot-revealed">
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldTitle>Legyen SZABAD?</FieldTitle>
+              <FieldDescription>
+                Itt megadhatod, hogy a főoldalon Szabadnak mutassuk az idősávot,
+                vagy Foglaltnak.
+              </FieldDescription>
+            </FieldContent>
+            <Switch
+              id="time-slot-revealed"
+              checked={revealed}
+              onCheckedChange={(checked) => setRevealed(checked)}
+            />
+          </Field>
+        </FieldLabel>
 
         {error != null && <FieldError>{error}</FieldError>}
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={pending}>
-            {pending ? 'Mentés…' : 'Létrehozás'}
+          <Button
+            onClick={handleSubmit}
+            disabled={pending}
+            size="lg"
+            className="w-full"
+          >
+            {pending ? <Spinner /> : 'Létrehozás'}
           </Button>
         </DialogFooter>
       </DialogContent>
