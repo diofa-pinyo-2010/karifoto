@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { CalendarOffIcon, CalendarPlusIcon, CameraIcon } from 'lucide-react';
 
+import { DeleteTimeSlotButton } from '@/components/DeleteTimeSlotButton';
 import { RevealedSwitch } from '@/components/RevealedSwitch';
 import {
   Accordion,
@@ -42,7 +43,7 @@ export default async function AdminTimeSlotsPage() {
                 <ul className="flex flex-col gap-3">
                   {slots.map(({ id, revealed, startTime, photoShooting }) => {
                     return (
-                      <li key={id}>
+                      <li key={id} className="flex items-center gap-2">
                         <Item variant="outline">
                           <ItemMedia>
                             {photoShooting != null ? (
@@ -69,7 +70,9 @@ export default async function AdminTimeSlotsPage() {
                             </ItemTitle>
                             <ItemDescription>
                               {photoShooting != null ? (
-                                <Link href={`/admin/photo-shootings/${id}`}>
+                                <Link
+                                  href={`/admin/photo-shootings/${photoShooting.id}`}
+                                >
                                   {photoShooting.client.owner.name}
                                 </Link>
                               ) : (
@@ -85,6 +88,10 @@ export default async function AdminTimeSlotsPage() {
                             />
                           </ItemActions>
                         </Item>
+                        <DeleteTimeSlotButton
+                          timeSlotId={id}
+                          disabled={photoShooting != null}
+                        />
                       </li>
                     );
                   })}

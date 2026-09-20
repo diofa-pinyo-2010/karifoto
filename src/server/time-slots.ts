@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 
@@ -37,4 +39,33 @@ export async function getTimeSlot(
     where: { id },
     ...timeSlotsWithPhotoShootingInclude,
   });
+}
+
+export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
+  try {
+    await prisma.timeSlot.update({ where: { id }, data: { revealed } });
+  } catch (error) {
+    console.error(error);
+  }
+
+  revalidatePath('/admin/time-slots');
+}
+
+export async function deleteTimeSlot(id: string) {
+  const taken = await prisma.timeSlot.findFirst({
+    where: { id, photoShooting: { isNot: null } },
+    select: { id: true },
+  });
+
+  if (taken != null) {
+    return;
+  }
+
+  try {
+    await prisma.timeSlot.delete({ where: { id } });
+  } catch (error) {
+    console.error(error);
+  }
+
+  revalidatePath('/admin/time-slots');
 }
