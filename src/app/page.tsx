@@ -10,7 +10,7 @@ import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
 import { Video } from '@/components/Video';
 import { getSession } from '@/lib/dal';
-import { groupSlotsByDay } from '@/lib/utils';
+import { groupTimeSlotsByDay } from '@/lib/utils';
 import { fetchTimeSlots } from '@/server/time-slots';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,10 @@ export default async function Home() {
     getSession(),
     fetchTimeSlots(),
   ]);
-  const groups = groupSlotsByDay(availableTimeSlots);
+  const groups = groupTimeSlotsByDay(
+    availableTimeSlots,
+    (slot) => slot.startTime,
+  );
 
   return (
     <BookingSelectionProvider>

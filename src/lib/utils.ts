@@ -1,8 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { TimeSlotsWithPhotoShooting } from '@/server/time-slots';
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -21,20 +19,23 @@ const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 });
 
-export const groupSlotsByDay = (slots: TimeSlotsWithPhotoShooting[]) => {
-  const groups = new Map<string, TimeSlotsWithPhotoShooting[]>();
+export const groupTimeSlotsByDay = <T>(
+  items: T[],
+  getDate: (item: T) => Date,
+): Map<string, T[]> => {
+  const groups = new Map<string, T[]>();
 
-  for (const slot of slots) {
-    const dayKey = dayKeyFormatter.format(slot.startTime);
+  for (const item of items) {
+    const dayKey = dayKeyFormatter.format(getDate(item));
     const daySlots = groups.get(dayKey);
     if (daySlots) {
-      daySlots.push(slot);
+      daySlots.push(item);
     } else {
-      groups.set(dayKey, [slot]);
+      groups.set(dayKey, [item]);
     }
   }
 
   return groups;
 };
 
-export type GroupedSlots = ReturnType<typeof groupSlotsByDay>;
+export type GroupedSlots<T> = Map<string, T[]>;

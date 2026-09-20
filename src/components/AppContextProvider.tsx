@@ -11,7 +11,8 @@ import {
   SET_ORDER,
 } from '@/lib/data';
 import { GroupedSlots } from '@/lib/utils';
-import { TimeSlotsWithPhotoShooting } from '@/server/time-slots';
+
+import type { TimeSlotsWithPhotoShooting } from '@/server/time-slots';
 
 /**
  * 1. STATE  —  KIZÁRÓLAG a user választásai. Primitívek.
@@ -46,7 +47,9 @@ type AppContextApi = AppState & {
   isLightPlayOn: boolean;
   bothDecorSets: boolean;
   selectedPackage: (typeof packages)[number];
-  timeSlotsForSelectedDay: ReturnType<GroupedSlots['get']> | null;
+  timeSlotsForSelectedDay: ReturnType<
+    GroupedSlots<TimeSlotsWithPhotoShooting>['get']
+  > | null;
   decorSets: DecorSet[];
   decorSetLabel: string;
   estimatedTotalAmount: number;
@@ -68,7 +71,7 @@ export function AppProvider({
   availableTimeSlotsGrouped,
 }: {
   children: React.ReactNode;
-  availableTimeSlotsGrouped: GroupedSlots;
+  availableTimeSlotsGrouped: GroupedSlots<TimeSlotsWithPhotoShooting>;
 }) {
   const [state, setState] = useState<AppState>({
     selectedPackageKey: 'classic',

@@ -4,6 +4,8 @@
 import { TimeSlotAccordion } from '@/components/TimeSlotAccordion';
 import { GroupedSlots } from '@/lib/utils';
 
+import type { TimeSlotsWithPhotoShooting } from '@/server/time-slots';
+
 // import {
 //   CircleCheckBigIcon,
 //   PlusIcon,
@@ -23,7 +25,7 @@ import { GroupedSlots } from '@/lib/utils';
 export function Booking({
   groupedTimeSlots,
 }: {
-  groupedTimeSlots: GroupedSlots;
+  groupedTimeSlots: GroupedSlots<TimeSlotsWithPhotoShooting>;
 }) {
   return (
     <section

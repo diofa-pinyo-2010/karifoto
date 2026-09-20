@@ -11,10 +11,12 @@ import {
 } from '@/lib/formatters';
 import { cn, type GroupedSlots } from '@/lib/utils';
 
+import type { TimeSlotsWithPhotoShooting } from '@/server/time-slots';
+
 export function DaysAndTimes({
   groupedTimeSlots,
 }: {
-  groupedTimeSlots: GroupedSlots;
+  groupedTimeSlots: GroupedSlots<TimeSlotsWithPhotoShooting>;
 }) {
   const ctx = useAppContext();
 

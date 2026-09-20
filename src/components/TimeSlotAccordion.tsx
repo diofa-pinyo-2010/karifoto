@@ -18,6 +18,7 @@ import {
   weekDayFormatter,
 } from '@/lib/formatters';
 import { capitalize, cn, type GroupedSlots } from '@/lib/utils';
+import { type TimeSlotsWithPhotoShooting } from '@/server/time-slots';
 
 // SZEPTEMBER 13., VASÁRNAP
 const formatDayTitle = (date: Date) =>
@@ -30,7 +31,7 @@ const formatSlotLabel = (date: Date) =>
 export function TimeSlotAccordion({
   groupedTimeSlots,
 }: {
-  groupedTimeSlots: GroupedSlots;
+  groupedTimeSlots: GroupedSlots<TimeSlotsWithPhotoShooting>;
 }) {
   const { selectionQuery } = useBookingSelection();
   const days = Array.from(groupedTimeSlots.entries());
