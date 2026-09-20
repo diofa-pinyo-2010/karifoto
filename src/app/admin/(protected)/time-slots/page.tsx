@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { CalendarOffIcon, CalendarPlusIcon, CameraIcon } from 'lucide-react';
+
 import { RevealedSwitch } from '@/components/RevealedSwitch';
 import {
   Accordion,
@@ -12,10 +14,11 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
+  ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
-import { formatLongDate, timeFormatter } from '@/lib/formatters';
-import { groupByDay } from '@/lib/utils';
+import { monthDayFormatter, timeFormatter } from '@/lib/formatters';
+import { cn, groupByDay } from '@/lib/utils';
 import { fetchTimeSlots } from '@/server/time-slots';
 
 export default async function AdminTimeSlotsPage() {
@@ -32,8 +35,8 @@ export default async function AdminTimeSlotsPage() {
         {days.map(([dayKey, slots]) => {
           return (
             <AccordionItem key={dayKey} value={dayKey}>
-              <AccordionTrigger className="text-lg">
-                {formatLongDate(slots[0].startTime)}
+              <AccordionTrigger className="text-lg text-primary">
+                {monthDayFormatter.format(slots[0].startTime)}
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="flex flex-col gap-3">
@@ -41,8 +44,27 @@ export default async function AdminTimeSlotsPage() {
                     return (
                       <li key={id}>
                         <Item variant="outline">
+                          <ItemMedia>
+                            {photoShooting != null ? (
+                              <div className="rounded-full bg-primary p-1">
+                                <CameraIcon className="text-primary-foreground" />
+                              </div>
+                            ) : revealed ? (
+                              <div className="rounded-full bg-muted p-1">
+                                <CalendarPlusIcon className="text-accent-foreground" />
+                              </div>
+                            ) : (
+                              <div className="rounded-full bg-muted p-1">
+                                <CalendarOffIcon className="text-muted-foreground/50" />
+                              </div>
+                            )}
+                          </ItemMedia>
                           <ItemContent>
-                            <ItemTitle>
+                            <ItemTitle
+                              className={cn(
+                                !revealed && 'text-muted-foreground',
+                              )}
+                            >
                               {timeFormatter.format(startTime)}
                             </ItemTitle>
                             <ItemDescription>
@@ -51,7 +73,7 @@ export default async function AdminTimeSlotsPage() {
                                   {photoShooting.client.owner.name}
                                 </Link>
                               ) : (
-                                'nincs még foglalva'
+                                'szabad'
                               )}
                             </ItemDescription>
                           </ItemContent>
