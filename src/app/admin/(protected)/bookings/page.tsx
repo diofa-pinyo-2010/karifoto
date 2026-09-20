@@ -18,6 +18,7 @@ import {
 import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
 import { timeFormatter } from '@/lib/formatters';
 import { fetchPhotoShootings } from '@/server/photo-shootings';
+import { groupByDay } from '@/lib/utils';
 
 const packageNameById = Object.fromEntries(
   packages.map((p) => [p.id, p.name]),
@@ -45,6 +46,11 @@ const SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> = {
 
 export default async function BookingsPage() {
   const photoShootings = await fetchPhotoShootings();
+
+  const groupedShootings = groupByDay(
+    photoShootings,
+    (ps) => ps.timeSlot.startTime,
+  );
 
   return (
     <div className="mx-auto flex w-full flex-col gap-3 lg:w-3xl">

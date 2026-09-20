@@ -19,7 +19,7 @@ const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 });
 
-export const groupTimeSlotsByDay = <T>(
+export const groupByDay = <T>(
   items: T[],
   getDate: (item: T) => Date,
 ): Map<string, T[]> => {
