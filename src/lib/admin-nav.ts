@@ -1,4 +1,8 @@
-import { Settings, SpotlightIcon } from 'lucide-react';
+import {
+  SpotlightIcon,
+  BetweenHorizonalStartIcon,
+  SettingsIcon,
+} from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
 
@@ -37,9 +41,15 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     label: 'Csak admin',
     items: [
       {
+        title: 'Idősávok',
+        href: '/admin/time-slots',
+        icon: BetweenHorizonalStartIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
+      {
         title: 'Beállítások',
         href: '/admin/settings',
-        icon: Settings,
+        icon: SettingsIcon,
         allowedRoles: [StaffProfileRole.SUPERADMIN],
       },
     ],
