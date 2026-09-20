@@ -4,7 +4,11 @@ import { Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 
 const timeSlotsWithPhotoShootingInclude = {
-  include: { photoShooting: { select: { id: true } } },
+  include: {
+    photoShooting: {
+      select: { id: true, client: { select: { owner: true } } },
+    },
+  },
 } satisfies Prisma.TimeSlotDefaultArgs;
 
 export type TimeSlotsWithPhotoShooting = Prisma.TimeSlotGetPayload<
