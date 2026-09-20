@@ -12,13 +12,14 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { ADMIN_NAV_ITEMS } from '@/lib/admin-nav';
+import { ADMIN_NAV_GROUPS } from '@/lib/admin-nav';
 
 import type { StaffProfileRole } from '@/generated/prisma/enums';
 
@@ -37,9 +38,10 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
-  const visibleItems = ADMIN_NAV_ITEMS.filter((item) =>
-    item.allowedRoles.includes(role),
-  );
+  const visibleGroups = ADMIN_NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => item.allowedRoles.includes(role)),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <Sidebar collapsible="icon">
@@ -62,29 +64,32 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    tooltip={item.title}
-                    render={
-                      <Link
-                        href={item.href}
-                        onClick={() => isMobile && setOpenMobile(false)}
-                      />
-                    }
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {visibleGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      isActive={pathname === item.href}
+                      tooltip={item.title}
+                      render={
+                        <Link
+                          href={item.href}
+                          onClick={() => isMobile && setOpenMobile(false)}
+                        />
+                      }
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <AdminUser
