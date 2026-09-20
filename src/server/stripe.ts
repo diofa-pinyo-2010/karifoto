@@ -58,10 +58,7 @@ export async function createCheckoutSession(
     };
   }
 
-  if (
-    bookingIntent.timeSlot.revealed === false ||
-    bookingIntent.timeSlot.photoShooting != null
-  ) {
+  if (bookingIntent.timeSlot.photoShooting != null) {
     return {
       error: 'Ez az időpont már nem elérhető. Kérlek, válassz másikat.',
     };

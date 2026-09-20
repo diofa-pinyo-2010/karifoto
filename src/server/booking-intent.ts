@@ -79,7 +79,6 @@ export async function createBookingIntent(
 
   if (
     timeSlot == null ||
-    timeSlot.revealed === false ||
     timeSlot.photoShooting != null ||
     timeSlot.startTime.getTime() <= Date.now()
   ) {
