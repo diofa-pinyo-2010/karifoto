@@ -16,11 +16,11 @@ import {
   Package,
   PhotoShootingStatus,
 } from '@/generated/prisma/client';
+import { UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
 import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { groupByDay } from '@/lib/utils';
 import { fetchPhotoShootings } from '@/server/photo-shootings';
-import { UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
 
 const packageNameById = Object.fromEntries(
   packages.map((p) => [p.id, p.name]),
