@@ -48,7 +48,12 @@ export default async function AdminTimeSlotsPage() {
                   {slots.map(({ id, revealed, startTime, photoShooting }) => {
                     return (
                       <li key={id} className="flex items-center gap-2">
-                        <Item variant="outline">
+                        <Item
+                          variant="outline"
+                          className={cn(
+                            photoShooting != null && 'bg-primary/5',
+                          )}
+                        >
                           <ItemMedia>
                             {photoShooting != null ? (
                               <div className="rounded-full bg-primary p-1">
