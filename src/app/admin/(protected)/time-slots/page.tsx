@@ -38,10 +38,14 @@ export default async function AdminTimeSlotsPage() {
       </div>
       <Accordion multiple={false} defaultValue={[days[0][0]]}>
         {days.map(([dayKey, slots]) => {
+          const numberOfBookedSlots = slots.filter(
+            (slot) => slot.photoShooting != null,
+          ).length;
           return (
             <AccordionItem key={dayKey} value={dayKey}>
               <AccordionTrigger className="text-lg text-primary">
-                {monthDayFormatter.format(slots[0].startTime)}
+                {monthDayFormatter.format(slots[0].startTime)}{' '}
+                {numberOfBookedSlots > 0 && `(${numberOfBookedSlots} fotózás)`}
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="flex flex-col gap-3">
