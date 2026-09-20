@@ -108,6 +108,8 @@ async function main() {
     create: {
       userId: editorUser.id,
       role: 'EDITOR',
+      isPhotographer: true,
+      isEditor: true,
     },
   });
 
