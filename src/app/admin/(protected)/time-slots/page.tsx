@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { CalendarOffIcon, CalendarPlusIcon, CameraIcon } from 'lucide-react';
 
+import { CreateTimeSlotDialog } from '@/components/CreateTimeSlotDialog';
 import { DeleteTimeSlotButton } from '@/components/DeleteTimeSlotButton';
 import { RevealedSwitch } from '@/components/RevealedSwitch';
 import {
@@ -29,9 +30,12 @@ export default async function AdminTimeSlotsPage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
-      <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        Idősávok
-      </h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
+          Idősávok
+        </h1>
+        <CreateTimeSlotDialog />
+      </div>
       <Accordion multiple={false} defaultValue={[days[0][0]]}>
         {days.map(([dayKey, slots]) => {
           return (
