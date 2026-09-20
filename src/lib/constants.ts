@@ -41,3 +41,5 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_SOFTWARE: -1,
   EXPENSE_OTHER: -1,
 };
+
+export const UPCOMING_SHOOTINGS_TO_SHOW = 10;
