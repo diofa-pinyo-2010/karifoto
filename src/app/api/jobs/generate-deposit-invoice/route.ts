@@ -3,6 +3,8 @@ import z from 'zod';
 
 import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
+import { LedgerEntryCategory } from '@/generated/prisma/enums';
+import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import {
   claimDepositInvoice,
   confirmDepositInvoice,
@@ -26,7 +28,7 @@ export const POST = verifySignatureAppRouter(
         userFullName: z.string().min(1),
         sessionId: z.string().min(1),
         paymentIntent: z.string(),
-        amountTotal: z.number().nullable(),
+        amountTotal: z.number().nonnegative().nullable(),
       })
       .safeParse(await req.json());
 
@@ -48,11 +50,11 @@ export const POST = verifySignatureAppRouter(
       amountTotal,
     } = parsed.data;
 
-    const existingPayment = await prisma.payment.findUnique({
+    const existingLedgerEntry = await prisma.ledgerEntry.findUnique({
       where: { paymentIntent },
       select: { invoice: { select: { invoiceNumber: true } } },
     });
-    if (existingPayment != null) {
+    if (existingLedgerEntry != null) {
       return new Response('already invoiced', { status: 200 });
     }
 
@@ -125,7 +127,7 @@ export const POST = verifySignatureAppRouter(
     // can fail, so no retry ever re-issues it.
     await confirmDepositInvoice(shootingId, invoice.invoiceNumber);
 
-    // Invoice and Payment go in together: a half-written pair would leave an
+    // Invoice and LedgerEntry go in together: a half-written pair would leave an
     // Invoice row pointing at a real szamlazz document with nothing paid against it.
     try {
       await prisma.$transaction(async (tx) => {
@@ -140,12 +142,14 @@ export const POST = verifySignatureAppRouter(
           },
         });
 
-        await tx.payment.create({
+        const category = LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT;
+        await tx.ledgerEntry.create({
           data: {
-            amountInCents: amountTotal ?? 0,
+            category,
+            amountInCents:
+              (amountTotal ?? 0) * LEDGER_ENTRY_CATEGORY_SIGN[category],
             method: 'CARD',
             paymentIntent,
-            type: 'DEPOSIT',
             photoShooting: { connect: { id: shootingId } },
             invoice: { connect: { id: invoiceInDb.id } },
           },
@@ -157,7 +161,7 @@ export const POST = verifySignatureAppRouter(
         error.code === 'P2002'
       ) {
         console.warn(
-          '[job:deposit-inv-gen] payment already recorded, skipping',
+          '[job:deposit-inv-gen] ledger entry already recorded, skipping',
           {
             shootingId,
             paymentIntent,

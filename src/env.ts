@@ -17,6 +17,7 @@ export const env = createEnv({
     QSTASH_TOKEN: z.string().min(1),
     QSTASH_CURRENT_SIGNING_KEY: z.string().min(1),
     QSTASH_NEXT_SIGNING_KEY: z.string().min(1),
+    SUMUP_API_KEY: z.string().min(1),
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {
@@ -41,6 +42,7 @@ export const env = createEnv({
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     QSTASH_DEV: process.env.QSTASH_DEV,
+    SUMUP_API_KEY: process.env.SUMUP_API_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
     NEXT_PUBLIC_CLARITY_ID: process.env.NEXT_PUBLIC_CLARITY_ID,
