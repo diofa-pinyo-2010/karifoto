@@ -20,6 +20,7 @@ import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { groupByDay } from '@/lib/utils';
 import { fetchPhotoShootings } from '@/server/photo-shootings';
+import { UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
 
 const packageNameById = Object.fromEntries(
   packages.map((p) => [p.id, p.name]),
@@ -69,7 +70,7 @@ export default async function BookingsPage() {
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        Következő fotózások
+        A következő (max) {UPCOMING_SHOOTINGS_TO_SHOW} fotózás
       </h1>
       {days.map(([dayKey, dayPhotoShootings]) => {
         return (
