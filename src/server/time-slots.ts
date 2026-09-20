@@ -54,6 +54,7 @@ export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
 
 export async function createTimeSlot(
   startTime: Date,
+  revealed: boolean = false,
 ): Promise<{ id: string } | { error: string }> {
   if (Number.isNaN(startTime.getTime()) || startTime.getTime() <= Date.now()) {
     return { error: 'Érvénytelen időpont.' };
@@ -65,7 +66,7 @@ export async function createTimeSlot(
 
   try {
     const slot = await prisma.timeSlot.create({
-      data: { startTime, endTime },
+      data: { startTime, endTime, revealed },
     });
     revalidatePath('/admin/time-slots');
     return { id: slot.id };
