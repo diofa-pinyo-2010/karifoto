@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -32,18 +33,31 @@ import {
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { packages, photoShootingSets, SET_ORDER } from '@/lib/data';
 import { shortFullDateFormatter } from '@/lib/formatters';
+import { createRemoteBookingIntent } from '@/server/remote-booking';
 
 const NOTE_MAX_LENGTH = 500;
 const DEFAULT_TIME = '09:00';
-
-function onSubmit(values: RemoteBookingFormValues) {
-  console.log(values);
-}
 
 export function RemoteBookingForm() {
   const { form, isSingleDecorPackage, lightLocked } = useRemoteBookingForm();
   const [time, setTime] = useState(DEFAULT_TIME);
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  async function onSubmit(values: RemoteBookingFormValues) {
+    const result = await createRemoteBookingIntent({
+      startTime: values.startTime,
+      name: values.name,
+      email: values.email,
+      packageKey: values.packageKey!,
+      decorSetKey: isSingleDecorPackage ? values.decorKey : null,
+      isLightPlaySelected: values.isLightPlaySelected,
+      numberOfGuests: values.numberOfPeople,
+      numberOfPets: values.numberOfPets,
+      clientNote: values.customerNote.trim() || null,
+    });
+
+    form.setError('root', { message: result.error });
+  }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
@@ -59,7 +73,7 @@ export function RemoteBookingForm() {
                 >
                   {field.value
                     ? shortFullDateFormatter.format(field.value)
-                    : 'Válassz időpontot.'}
+                    : 'Válassz időpontot!'}
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -288,10 +302,16 @@ export function RemoteBookingForm() {
         <Button
           type="submit"
           size="lg"
+          disabled={form.formState.isSubmitting}
           className="mx-auto flex w-full lg:w-3xl"
         >
-          Foglalás rögzítése
+          {form.formState.isSubmitting ? <Spinner /> : 'Foglalás rögzítése'}
         </Button>
+        {form.formState.errors.root != null && (
+          <p className="mx-auto mt-2 max-w-3xl text-center text-sm text-destructive">
+            {form.formState.errors.root.message}
+          </p>
+        )}
       </div>
     </form>
   );

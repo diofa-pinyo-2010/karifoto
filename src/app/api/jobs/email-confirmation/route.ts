@@ -61,7 +61,7 @@ export const POST = verifySignatureAppRouter(
       await markEmailSent(parsed.data.shootingId);
 
       // TODO: Save this to a table?
-      console.log('[job:email-confirmation] sent', {
+      console.log('[job:email-confirmation] email sent successfully', {
         shootingId: parsed.data.shootingId,
         resendId: data.id,
       });

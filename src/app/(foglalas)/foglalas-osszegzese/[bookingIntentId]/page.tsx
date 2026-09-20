@@ -20,7 +20,6 @@ export default async function BookingSummaryPage(
   const isBookable =
     bookingIntent != null &&
     bookingIntent.status === BookingIntentStatus.PENDING &&
-    bookingIntent.timeSlot.revealed &&
     bookingIntent.timeSlot.photoShooting == null &&
     bookingIntent.timeSlot.startTime.getTime() > Date.now();
 
