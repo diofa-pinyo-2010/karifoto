@@ -10,6 +10,7 @@ import {
   ItemDescription,
   ItemTitle,
 } from '@/components/ui/item';
+import { Separator } from '@/components/ui/separator';
 import {
   DecorSet,
   Package,
@@ -17,9 +18,8 @@ import {
 } from '@/generated/prisma/client';
 import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
-import { fetchPhotoShootings } from '@/server/photo-shootings';
 import { groupByDay } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
+import { fetchPhotoShootings } from '@/server/photo-shootings';
 
 const packageNameById = Object.fromEntries(
   packages.map((p) => [p.id, p.name]),
@@ -68,7 +68,7 @@ export default async function BookingsPage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
-      <h1 className="text-lg lg:text-2xl font-semibold text-muted-foreground">
+      <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
         Következő fotózások
       </h1>
       {days.map(([dayKey, dayPhotoShootings]) => {
