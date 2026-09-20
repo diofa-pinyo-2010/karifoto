@@ -99,9 +99,9 @@ model PhotoShooting {
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @unique @db.Uuid
 
-  payments Payment[]
-  invoices Invoice[]
-  status   PhotoShootingStatus @default(PHOTOGRAPHER_SELECTION)
+  ledgerEntries LedgerEntry[]
+  invoices      Invoice[]
+  status        PhotoShootingStatus @default(PHOTOGRAPHER_SELECTION)
 
   photographer   StaffProfile? @relation("Photographer", fields: [photographerId], references: [id])
   photographerId String?       @db.Uuid
@@ -121,17 +121,19 @@ model PhotoShooting {
   @@index([editorId])
 }
 
-model Payment {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paymentIntent   String        @unique
-  amountInCents   Int
-  currency        Currency      @default(HUF)
-  type            PaymentType
-  method          PaymentMethod
-  photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
-  photoShootingId String        @db.Uuid
-  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
-  invoiceId       String        @unique @db.Uuid
+model LedgerEntry {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category      LedgerEntryCategory
+  amountInCents Int
+  currency      Currency            @default(HUF)
+  method        PaymentMethod
+  paymentIntent String?             @unique
+
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+  invoiceId String?  @unique @db.Uuid
+
+  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String?        @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -140,16 +142,17 @@ model Payment {
 }
 
 model Invoice {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  invoiceNumber   String        @unique
-  publicUrl       String
-  paymentMethod   PaymentMethod
-  amountInCents   Int
-  currency        Currency      @default(HUF)
-  status          InvoiceStatus @default(WAITING_FOR_PAYMENT)
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceNumber String        @unique
+  publicUrl     String
+  paymentMethod PaymentMethod
+  amountInCents Int
+  currency      Currency      @default(HUF)
+  status        InvoiceStatus @default(WAITING_FOR_PAYMENT)
+  ledgerEntry   LedgerEntry?
+
   photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
   photoShootingId String        @db.Uuid
-  payment         Payment?
 
   stornoOf      Invoice? @relation("StornoInvoice", fields: [stornoOfId], references: [id])
   stornoOfId    String?  @unique @db.Uuid
@@ -188,17 +191,24 @@ enum StaffProfileRole {
   EDITOR
 }
 
-enum PaymentType {
-  DEPOSIT
-  BALANCE
-  EXTRA
-  OTHER
-}
-
 enum PaymentMethod {
   CARD
   TRANSFER // or WIRE?
   CASH
+}
+
+enum LedgerEntryCategory {
+  INCOME_CLIENT_PAYMENT_DEPOSIT
+  INCOME_CLIENT_PAYMENT_BALANCE
+  INCOME_CLIENT_PAYMENT_EXTRA
+  INCOME_OTHER
+
+  EXPENSE_PHOTOGRAPHER_FEE
+  EXPENSE_EDITOR_FEE
+  EXPENSE_EQUIPMENT
+  EXPENSE_RENT
+  EXPENSE_SOFTWARE
+  EXPENSE_OTHER
 }
 
 enum BookingIntentStatus {

@@ -1,3 +1,5 @@
+import { LedgerEntryCategory } from '@/generated/prisma/enums';
+
 export const SITE_NAME = 'Karifoto';
 
 export const LIGHT_PLAY_FEE = 15000_00;
@@ -23,4 +25,19 @@ export const PACKAGE_PRICES = {
     base: 59000_00,
     studio: 12000_00,
   },
+};
+
+// LedgerEntry.amountInCents is signed: positive = income, negative = expense.
+// Callers pass a positive raw amount; this maps it to the correct sign.
+export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
+  INCOME_CLIENT_PAYMENT_DEPOSIT: 1,
+  INCOME_CLIENT_PAYMENT_BALANCE: 1,
+  INCOME_CLIENT_PAYMENT_EXTRA: 1,
+  INCOME_OTHER: 1,
+  EXPENSE_PHOTOGRAPHER_FEE: -1,
+  EXPENSE_EDITOR_FEE: -1,
+  EXPENSE_EQUIPMENT: -1,
+  EXPENSE_RENT: -1,
+  EXPENSE_SOFTWARE: -1,
+  EXPENSE_OTHER: -1,
 };
