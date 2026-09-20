@@ -10,7 +10,7 @@ const photoShootingWithClientInclude = {
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 
-export type PhotoShootingWithClient = Prisma.PhotoShootingGetPayload<
+type PhotoShootingWithClient = Prisma.PhotoShootingGetPayload<
   typeof photoShootingWithClientInclude
 >;
 
