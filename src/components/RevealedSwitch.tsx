@@ -3,7 +3,7 @@
 import { useOptimistic, useTransition } from 'react';
 
 import { Switch } from '@/components/ui/switch';
-import { updateTimeSlotRevealed } from '@/server/update-time-slot-revelaled';
+import { updateTimeSlotRevealed } from '@/server/time-slots';
 
 export function RevealedSwitch({
   timeSlotId,

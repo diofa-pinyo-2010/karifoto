@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Home } from 'lucide-react';
+import { TreePineIcon } from 'lucide-react';
 
 import { AdminUser } from '@/components/admin/admin-user';
 import {
@@ -49,6 +49,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              size="lg"
               tooltip="Karifoto landing"
               render={
                 <Link
@@ -57,8 +58,13 @@ export function AppSidebar({
                 />
               }
             >
-              <Home />
-              <span className="font-semibold">Karifoto landing</span>
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <TreePineIcon className="size-4" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none">
+                <span className="font-medium">Karifoto landing</span>
+                {/* <span className="">v1.0.0</span> */}
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
