@@ -214,7 +214,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     });
   }
 
-  // Publish email sending and invoice generation to QStash
+  // Publish email sending and invoice generation, and Google Event Creation to QStash
   const [emailJob, invoiceJob] = await Promise.all([
     qStashClient.publishJSON({
       url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-confirmation`,
@@ -237,6 +237,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
           retries: 5,
         })
       : null,
+    qStashClient.publishJSON({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event`,
+      body: { shootingId: shooting.id },
+      retries: 3,
+    }),
   ]);
 
   // TODO: Save the job ids to db?

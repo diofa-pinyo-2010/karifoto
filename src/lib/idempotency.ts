@@ -9,6 +9,8 @@ const eventKey = (eventId: string) => `stripe_evt:${eventId}`;
 const emailConfirmKey = (shootingId: string) =>
   `email_confirmation:${shootingId}`;
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
+// const googleCalendarEventKey = (shootingId: string) =>
+//   `google_cal_evt:${shootingId}`;
 
 /**
  * Atomically marks an event as processed.
