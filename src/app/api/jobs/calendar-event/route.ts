@@ -52,11 +52,20 @@ export const POST = verifySignatureAppRouter(
         endTime,
       });
 
-      // Temporary log - remove
-      console.log(
-        '[job:calendar-event] API response',
-        JSON.stringify(event, null, 2),
-      );
+      if (!event.id) {
+        // QStash will retry if there is no ID, but there will be :)
+        throw new Error('Google Calendar API did not return an event ID');
+      }
+
+      await prisma.bookingCalendarEvent.create({
+        data: {
+          photoShootingId: photoShooting.id,
+          calendarId: env.GOOGLE_CALENDAR_ID,
+          eventId: event.id,
+          status: 'created',
+          lastSyncedAt: new Date(),
+        },
+      });
 
       console.log('[job:calendar-event] event created successfully', {
         shootingId: parsed.data.shootingId,
