@@ -4,8 +4,18 @@ import { revalidatePath } from 'next/cache';
 
 import * as z from 'zod';
 
-import { PhotoShooting, PhotoShootingStatus } from '@/generated/prisma/client';
+import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
+
+const photoShootingWithTimeSlotInclude = {
+  include: {
+    timeSlot: { select: { startTime: true } },
+  },
+} satisfies Prisma.PhotoShootingDefaultArgs;
+
+type PhotoShootingWithTimeSlot = Prisma.PhotoShootingGetPayload<
+  typeof photoShootingWithTimeSlotInclude
+>;
 
 export async function fetchPhotographers() {
   return prisma.staffProfile.findMany({
@@ -31,17 +41,22 @@ const PhotoShootingUpdateSchema = z.object({
 type PhotoShootingUpdateInput = z.infer<typeof PhotoShootingUpdateSchema>;
 
 function resolveStatus(
-  current: PhotoShooting,
+  current: PhotoShootingWithTimeSlot,
   updates: PhotoShootingUpdateInput,
+  now = new Date(),
 ): PhotoShootingStatus {
   const merged = { ...current, ...updates };
 
-  if (merged.status === 'CLOSED') {
+  if (merged.closedAt != null) {
     return PhotoShootingStatus.CLOSED;
   }
 
   if (merged.photographerId == null) {
     return PhotoShootingStatus.PHOTOGRAPHER_SELECTION;
+  }
+
+  if (merged.timeSlot.startTime > now) {
+    return PhotoShootingStatus.WAITING_FOR_THE_DATE;
   }
 
   if (merged.rawImagesUrl == null) {
@@ -71,6 +86,7 @@ export async function updatePhotoShooting(
   try {
     const current = await prisma.photoShooting.findUniqueOrThrow({
       where: { id },
+      ...photoShootingWithTimeSlotInclude,
     });
 
     const status = resolveStatus(current, parsed.data);
@@ -93,4 +109,10 @@ export async function updatePhotoShootingField(
   value: string | null,
 ): Promise<{ error: string } | void> {
   return updatePhotoShooting(shootingId, { [field]: value });
+}
+
+export async function recalculatePhotoShootingStatus(
+  shootingId: string,
+): Promise<{ error: string } | void> {
+  return updatePhotoShooting(shootingId, {});
 }
