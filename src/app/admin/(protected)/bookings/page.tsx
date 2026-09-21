@@ -12,39 +12,14 @@ import {
 } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import {
-  DecorSet,
-  Package,
-  PhotoShootingStatus,
-} from '@/generated/prisma/client';
-import { UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
-import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
+  DECOR_SET_LABEL,
+  PACKAGE_LABEL,
+  PHOTO_SHOOTING_STATUS_LABEL,
+  UPCOMING_SHOOTINGS_TO_SHOW,
+} from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { groupByDay } from '@/lib/utils';
 import { fetchPhotoShootings } from '@/server/photo-shootings';
-
-const packageNameById = Object.fromEntries(
-  packages.map((p) => [p.id, p.name]),
-) as Record<PackageKey, string>;
-
-const PACKAGE_LABEL: Record<Package, string> = {
-  [Package.MINI]: packageNameById.mini,
-  [Package.CLASSIC]: packageNameById.classic,
-  [Package.FAMILY]: packageNameById.family,
-};
-
-const DECOR_SET_LABEL: Record<DecorSet, string> = {
-  [DecorSet.HOFEHER]: photoShootingSets.hofeher.name,
-  [DecorSet.ALOMKASTELY]: photoShootingSets.alomkastely.name,
-};
-
-const SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> = {
-  PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
-  RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése',
-  USER_SELECTION: 'Ügyfél válogatás',
-  FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
-  COMPLETED: 'Teljesített',
-  CLOSED: 'Bezárt',
-};
 
 export default async function BookingsPage() {
   const photoShootings = await fetchPhotoShootings();
@@ -87,7 +62,7 @@ export default async function BookingsPage() {
                     <Link href={`/admin/photo-shootings/${shooting.id}`}>
                       <ItemContent className="gap-2">
                         <Badge variant="secondary">
-                          {SHOOTING_STATUS_LABEL[shooting.status]}
+                          {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
                         </Badge>
                         <ItemTitle>
                           {timeFormatter.format(shooting.timeSlot.startTime)}{' '}

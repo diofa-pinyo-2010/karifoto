@@ -30,3 +30,34 @@ export async function fetchPhotoShootings(): Promise<
     ...photoShootingWithClientInclude,
   });
 }
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const photoShootingDetailInclude = {
+  include: {
+    client: { include: { owner: true } },
+    timeSlot: true,
+    photographer: { include: { owner: true } },
+    editor: { include: { owner: true } },
+    ledgerEntries: {
+      include: { invoice: true },
+      orderBy: { createdAt: 'asc' },
+    },
+  },
+} satisfies Prisma.PhotoShootingDefaultArgs;
+
+export type PhotoShootingDetail = Prisma.PhotoShootingGetPayload<
+  typeof photoShootingDetailInclude
+>;
+
+export async function getPhotoShooting(
+  id: string,
+): Promise<PhotoShootingDetail | null> {
+  if (!UUID_RE.test(id)) return null;
+
+  return prisma.photoShooting.findUnique({
+    where: { id },
+    ...photoShootingDetailInclude,
+  });
+}
