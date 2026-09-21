@@ -113,6 +113,8 @@ model PhotoShooting {
   finalImagesUrl String?
   clientNote     String?
 
+  closedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -220,6 +222,7 @@ enum BookingIntentStatus {
 
 enum PhotoShootingStatus {
   PHOTOGRAPHER_SELECTION
+  WAITING_FOR_THE_DATE
   RAW_PHOTOS_UPLOAD
   USER_SELECTION
   EDITOR_SELECTION

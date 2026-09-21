@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   DECOR_SET_LABEL,
   PACKAGE_LABEL,
+  PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
   UPCOMING_SHOOTINGS_TO_SHOW,
 } from '@/lib/constants';
@@ -61,7 +62,14 @@ export default async function BookingsPage() {
                   render={
                     <Link href={`/admin/photo-shootings/${shooting.id}`}>
                       <ItemContent className="gap-2">
-                        <Badge variant="secondary">
+                        <Badge
+                          variant="secondary"
+                          className={
+                            PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[
+                              shooting.status
+                            ]
+                          }
+                        >
                           {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
                         </Badge>
                         <ItemTitle>

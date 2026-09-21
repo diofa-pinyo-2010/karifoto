@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Jost, Parisienne } from 'next/font/google';
+import {
+  Cormorant_Garamond,
+  Jost,
+  Parisienne,
+  Geist_Mono,
+} from 'next/font/google';
 
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
@@ -30,6 +35,12 @@ const sans = Jost({
   variable: '--font-jost',
 });
 
+const mono = Geist_Mono({
+  subsets: ['latin-ext'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-geist-mono',
+});
+
 export const metadata: Metadata = {
   title: {
     template: `%s | ${SITE_NAME} Karácsonyi fotózás Budapesten 🎄`,
@@ -57,6 +68,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         display.variable,
         script.variable,
         sans.variable,
+        mono.variable,
         'font-sans',
       )}
       suppressHydrationWarning

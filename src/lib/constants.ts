@@ -66,6 +66,7 @@ export const DECOR_SET_LABEL: Record<DecorSet, string> = {
 export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
   {
     PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
+    WAITING_FOR_THE_DATE: 'Várunk a fotózásra',
     RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése',
     USER_SELECTION: 'Ügyfél válogatás',
     EDITOR_SELECTION: 'Szerkesztő kiválasztása',
@@ -74,6 +75,33 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
     COMPLETED: 'Teljesített',
     CLOSED: 'Bezárt',
   };
+
+// Bg opacity/text-lightness pairs mirror the `destructive` Badge variant
+// (bg-*/10 + darker text in light mode, bg-*/20 + lighter text in dark mode) —
+// lighter text on a dim background reads better in dark mode than the light-mode shade.
+const IN_PROGRESS_BADGE_CLASSNAME =
+  'bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400 border border-yellow-500/80 dark:border-yellow-500/40 uppercase font-mono font-medium';
+
+const NOTHING_TO_DO_BADGE_CLASSNAME =
+  'bg-green-500/10 text-green-600 dark:bg-green-500/20 border border-green-500/80 dark:border-green-500/40 dark:text-green-400 uppercase font-mono font-medium';
+
+export const PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME: Record<
+  PhotoShootingStatus,
+  string
+> = {
+  PHOTOGRAPHER_SELECTION: IN_PROGRESS_BADGE_CLASSNAME,
+  RAW_PHOTOS_UPLOAD: IN_PROGRESS_BADGE_CLASSNAME,
+  USER_SELECTION: IN_PROGRESS_BADGE_CLASSNAME,
+  EDITOR_SELECTION: IN_PROGRESS_BADGE_CLASSNAME,
+  FINAL_PHOTOS_UPLOAD: IN_PROGRESS_BADGE_CLASSNAME,
+  WAITING_FOR_PAYMENT: IN_PROGRESS_BADGE_CLASSNAME,
+
+  WAITING_FOR_THE_DATE: NOTHING_TO_DO_BADGE_CLASSNAME,
+  COMPLETED: NOTHING_TO_DO_BADGE_CLASSNAME,
+
+  CLOSED:
+    'bg-red-500/10 text-red-600 dark:bg-red-500/20 border border-red-500/80 dark:border-red-500/40 dark:text-red-400 uppercase font-mono font-medium',
+};
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   CARD: 'Bankkártya',
