@@ -1,7 +1,9 @@
 import Link from 'next/link';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLinkIcon } from 'lucide-react';
 
+import { EditableComboboxField } from '@/components/EditableComboboxField';
+import { EditableTextField } from '@/components/EditableTextField';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,12 +23,13 @@ import {
   PAYMENT_METHOD_LABEL,
   PHOTO_SHOOTING_STATUS_LABEL,
 } from '@/lib/constants';
+import { dateFormatter, timeFormatter } from '@/lib/formatters';
+import { capitalize, cn, formatMoney } from '@/lib/utils';
 import {
-  dateFormatter,
-  shortFullDateFormatter,
-  timeFormatter,
-} from '@/lib/formatters';
-import { capitalize, formatMoney } from '@/lib/utils';
+  fetchPhotographers,
+  fetchEditors,
+  updatePhotoShootingField,
+} from '@/server/admin';
 import { getPhotoShooting } from '@/server/photo-shootings';
 
 function formatAmount(amountInCents: number, currency: Currency): string {
@@ -37,14 +40,24 @@ function formatAmount(amountInCents: number, currency: Currency): string {
 function DetailRow({
   label,
   value,
+  fullWidth = false,
 }: {
   label: string;
   value: React.ReactNode;
+  /** Lets the value take up the row's remaining width instead of hugging its content. */
+  fullWidth?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-right text-sm font-medium">{value}</span>
+      <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
+      <span
+        className={cn(
+          'text-right text-sm font-medium',
+          fullWidth && 'min-w-0 flex-1',
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -56,6 +69,16 @@ export default async function PhotoShootingDetailPage({
 }) {
   const { id } = await params;
   const shooting = await getPhotoShooting(id);
+  const photographers = await fetchPhotographers();
+  const editors = await fetchEditors();
+  const photographerItems = photographers.map((p) => ({
+    value: p.id,
+    label: p.owner.name,
+  }));
+  const editorItems = editors.map((e) => ({
+    value: e.id,
+    label: e.owner.name,
+  }));
 
   const backButton = (
     <Button
@@ -82,7 +105,15 @@ export default async function PhotoShootingDetailPage({
     );
   }
 
-  const { client, timeSlot, photographer, editor, ledgerEntries } = shooting;
+  const {
+    client,
+    timeSlot,
+    photographer,
+    editor,
+    ledgerEntries,
+    rawImagesUrl,
+    finalImagesUrl,
+  } = shooting;
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
@@ -150,29 +181,61 @@ export default async function PhotoShootingDetailPage({
         <DetailRow
           label="Fotós"
           value={
-            photographer ? (
-              <a href={`tel:${photographer.owner.phoneNumber}`}>
-                {photographer.owner.name} ({photographer.owner.phoneNumber})
-              </a>
-            ) : (
-              'Nincs kiválasztva'
-            )
+            <EditableComboboxField
+              value={
+                photographer
+                  ? { value: photographer.id, label: photographer.owner.name }
+                  : null
+              }
+              displayValue={
+                photographer && (
+                  <p>
+                    {photographer.owner.name} ({' '}
+                    <a
+                      href={`tel:${photographer.owner.phoneNumber}`}
+                      className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                    >
+                      {photographer.owner.phoneNumber}
+                    </a>{' '}
+                    )
+                  </p>
+                )
+              }
+              items={photographerItems}
+              placeholder="Válassz fotóst!"
+              onSave={updatePhotoShootingField.bind(
+                null,
+                shooting.id,
+                'photographerId',
+              )}
+            />
           }
         />
         <DetailRow
-          label="PicDrop - Nyers képek"
+          label="Nyers képek"
+          fullWidth
           value={
-            shooting.rawImagesUrl ? (
-              <a
-                href={shooting.rawImagesUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Megnyitás
-              </a>
-            ) : (
-              '-'
-            )
+            <EditableTextField
+              value={rawImagesUrl}
+              displayValue={
+                rawImagesUrl && (
+                  <a
+                    href={rawImagesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                  >
+                    PicDrop
+                    <ExternalLinkIcon className="size-4" />
+                  </a>
+                )
+              }
+              onSave={updatePhotoShootingField.bind(
+                null,
+                shooting.id,
+                'rawImagesUrl',
+              )}
+            />
           }
         />
       </div>
@@ -183,29 +246,59 @@ export default async function PhotoShootingDetailPage({
         <DetailRow
           label="Szerkesztő"
           value={
-            editor ? (
-              <a href={`tel:${editor.owner.phoneNumber}`}>
-                {editor.owner.name} ({editor.owner.phoneNumber})
-              </a>
-            ) : (
-              'Nincs kiválasztva'
-            )
+            <EditableComboboxField
+              value={
+                editor ? { value: editor.id, label: editor.owner.name } : null
+              }
+              displayValue={
+                editor && (
+                  <p>
+                    {editor.owner.name}({' '}
+                    <a
+                      href={`tel:${editor.owner.phoneNumber}`}
+                      className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                    >
+                      {editor.owner.phoneNumber}
+                    </a>{' '}
+                    )
+                  </p>
+                )
+              }
+              items={editorItems}
+              placeholder="Válassz editort!"
+              onSave={updatePhotoShootingField.bind(
+                null,
+                shooting.id,
+                'editorId',
+              )}
+            />
           }
         />
         <DetailRow
-          label="PicDrop - Végleges képek"
+          label="Végleges képek"
+          fullWidth
           value={
-            shooting.finalImagesUrl ? (
-              <a
-                href={shooting.finalImagesUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Megnyitás
-              </a>
-            ) : (
-              '-'
-            )
+            <EditableTextField
+              value={finalImagesUrl}
+              displayValue={
+                finalImagesUrl && (
+                  <a
+                    href={finalImagesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                  >
+                    PicDrop
+                    <ExternalLinkIcon className="size-4" />
+                  </a>
+                )
+              }
+              onSave={updatePhotoShootingField.bind(
+                null,
+                shooting.id,
+                'finalImagesUrl',
+              )}
+            />
           }
         />
       </div>
@@ -224,11 +317,10 @@ export default async function PhotoShootingDetailPage({
               <Item key={entry.id} variant="outline">
                 <ItemContent>
                   <ItemTitle>
-                    {LEDGER_ENTRY_CATEGORY_LABEL[entry.category]} ·{' '}
-                    {formatAmount(entry.amountInCents, entry.currency)}
+                    {formatAmount(entry.amountInCents, entry.currency)} ·{' '}
+                    {LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}
                   </ItemTitle>
                   <ItemDescription>
-                    {shortFullDateFormatter.format(entry.createdAt)} ·{' '}
                     {PAYMENT_METHOD_LABEL[entry.method]}
                   </ItemDescription>
                 </ItemContent>

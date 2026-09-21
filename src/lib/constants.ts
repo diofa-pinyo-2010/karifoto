@@ -68,7 +68,9 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
     PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
     RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése',
     USER_SELECTION: 'Ügyfél válogatás',
+    EDITOR_SELECTION: 'Szerkesztő kiválasztása',
     FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
+    WAITING_FOR_PAYMENT: 'Hiányzó befizetés',
     COMPLETED: 'Teljesített',
     CLOSED: 'Bezárt',
   };
