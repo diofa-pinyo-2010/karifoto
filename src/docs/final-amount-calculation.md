@@ -361,12 +361,13 @@ Yes exactly, you already have that section at the bottom. So the pricing section
 So the pricing section would show:
 
 Package price
-Extra people charge (if any)
-Extra pets charge (if any)
-Extra edited images charge (if any)
-Extra retouched images charge (if any)
-Discounts / deductions (from `adjustments`)
-Total charges
-Remaining amount (total charges − total paid from ledger entries)
+
+- Extra people charge (if any)
+- Extra pets charge (if any)
+- Extra edited images charge (if any)
+- Extra retouched images charge (if any)
+- Discounts / deductions (from `adjustments`)
+- Total charges
+- Remaining amount (total charges − total paid from ledger entries)
 
 Clean separation: pricing section = what they owe, ledger section = what they paid. Does that match what you had in mind?
