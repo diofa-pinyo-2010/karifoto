@@ -322,3 +322,51 @@ async function updatePhotoShooting(
   });
 }
 ```
+
+---
+
+### Add Pricing section to the bottom of the page
+
+If `pricing` and `adjustments` aren't included yet in `getPhotoShooting`, we'd need to add them to that query first. Then the section itself would look something like:
+
+```tsx
+<Separator />
+
+<div className="flex flex-col gap-3">
+  <h3 className="text-lg font-medium">Pénzügyek</h3>
+  <div className="rounded-lg border px-4">
+    <DetailRow
+      label="Csomag ára"
+      value={formatAmount(shooting.pricing.packagePriceInCents, 'HUF')}
+    />
+    <DetailRow
+      label="Extra személyek"
+      value={formatAmount(extraPeople * shooting.pricing.extraPeopleRateInCents, 'HUF')}
+    />
+    {/* ... more rows ... */}
+    <DetailRow
+      label="Remaining amount"
+      value={formatAmount(remainingAmount, 'HUF')}
+    />
+  </div>
+</div>
+```
+
+Where `remainingAmount` comes from calling `calculateRemainingAmount` directly in the page since it's a pure function.
+
+---
+
+Yes exactly, you already have that section at the bottom. So the pricing section would be purely about the charges side — what the client owes in total — and the ledger entries section below it already covers the payments side.
+
+So the pricing section would show:
+
+Package price
+Extra people charge (if any)
+Extra pets charge (if any)
+Extra edited images charge (if any)
+Extra retouched images charge (if any)
+Discounts / deductions (from `adjustments`)
+Total charges
+Remaining amount (total charges − total paid from ledger entries)
+
+Clean separation: pricing section = what they owe, ledger section = what they paid. Does that match what you had in mind?
