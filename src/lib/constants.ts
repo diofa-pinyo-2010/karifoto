@@ -1,4 +1,10 @@
-import { LedgerEntryCategory } from '@/generated/prisma/enums';
+import {
+  DecorSet,
+  LedgerEntryCategory,
+  Package,
+  PaymentMethod,
+  PhotoShootingStatus,
+} from '@/generated/prisma/enums';
 
 export const SITE_NAME = 'Karifoto';
 
@@ -45,3 +51,44 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
 export const UPCOMING_SHOOTINGS_TO_SHOW = 10;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;
+
+export const PACKAGE_LABEL: Record<Package, string> = {
+  MINI: 'Mini',
+  CLASSIC: 'Classic',
+  FAMILY: 'Family',
+};
+
+export const DECOR_SET_LABEL: Record<DecorSet, string> = {
+  HOFEHER: 'Hófehér',
+  ALOMKASTELY: 'Álomkastély',
+};
+
+export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
+  {
+    PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
+    RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése',
+    USER_SELECTION: 'Ügyfél válogatás',
+    FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
+    COMPLETED: 'Teljesített',
+    CLOSED: 'Bezárt',
+  };
+
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  CARD: 'Bankkártya',
+  TRANSFER: 'Átutalás',
+  CASH: 'Készpénz',
+};
+
+export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
+  {
+    INCOME_CLIENT_PAYMENT_DEPOSIT: 'Előleg',
+    INCOME_CLIENT_PAYMENT_BALANCE: 'Egyenleg',
+    INCOME_CLIENT_PAYMENT_EXTRA: 'Extra díj',
+    INCOME_OTHER: 'Egyéb bevétel',
+    EXPENSE_PHOTOGRAPHER_FEE: 'Fotós díja',
+    EXPENSE_EDITOR_FEE: 'Szerkesztő díja',
+    EXPENSE_EQUIPMENT: 'Eszköz',
+    EXPENSE_RENT: 'Bérleti díj',
+    EXPENSE_SOFTWARE: 'Szoftver',
+    EXPENSE_OTHER: 'Egyéb kiadás',
+  };

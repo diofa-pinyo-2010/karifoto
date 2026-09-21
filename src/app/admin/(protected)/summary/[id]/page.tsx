@@ -2,26 +2,10 @@ import { CheckCircle2Icon } from 'lucide-react';
 
 import { SendDepositRequestButton } from '@/components/SendDepositRequestButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { DecorSet, Package } from '@/generated/prisma/client';
-import { packages, photoShootingSets, type PackageKey } from '@/lib/data';
+import { DECOR_SET_LABEL, PACKAGE_LABEL } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { wasEmailSent } from '@/lib/idempotency';
 import { getBookingIntent } from '@/server/booking-intent';
-
-const packageNameById = Object.fromEntries(
-  packages.map((p) => [p.id, p.name]),
-) as Record<PackageKey, string>;
-
-const PACKAGE_LABEL: Record<Package, string> = {
-  [Package.MINI]: packageNameById.mini,
-  [Package.CLASSIC]: packageNameById.classic,
-  [Package.FAMILY]: packageNameById.family,
-};
-
-const DECOR_SET_LABEL: Record<DecorSet, string> = {
-  [DecorSet.HOFEHER]: photoShootingSets.hofeher.name,
-  [DecorSet.ALOMKASTELY]: photoShootingSets.alomkastely.name,
-};
 
 export default async function RemoteBookingSummaryPage({
   params,
