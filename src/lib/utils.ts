@@ -39,3 +39,28 @@ export const groupByDay = <T>(
 };
 
 export type GroupedSlots<T> = Map<string, T[]>;
+
+function formatGoogleCalendarDate(date: Date): string {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+export function generateAddToGoogleCalendarLink({
+  title,
+  description,
+  startTime,
+  endTime,
+}: {
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime: Date;
+}) {
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${formatGoogleCalendarDate(startTime)}/${formatGoogleCalendarDate(endTime)}`,
+    ...(description && { details: description }),
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}

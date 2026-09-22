@@ -115,12 +115,29 @@ model PhotoShooting {
 
   closedAt DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @default(now()) @updatedAt
+  calendarEvent BookingCalendarEvent?
 
   @@index([clientId])
   @@index([photographerId])
   @@index([editorId])
+}
+
+model BookingCalendarEvent {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  photoShootingId String        @unique @db.Uuid
+  photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
+
+  provider     String   @default("google")
+  calendarId   String
+  eventId      String
+  status       String // created | updated | failed
+  lastSyncedAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model LedgerEntry {
