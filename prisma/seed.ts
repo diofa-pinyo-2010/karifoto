@@ -121,6 +121,7 @@ async function main() {
       role: 'MEMBER',
       isPhotographer: true,
       isEditor: true,
+      isDefaultEditor: true,
       nickname: 'Fincsi',
     },
   });
