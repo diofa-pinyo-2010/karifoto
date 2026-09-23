@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const userEmail = session.customer_details?.email;
-  const invoicingName = session.customer_details?.name;
+  const invoicingName = session.customer_details?.individual_name;
   const userPhoneNumber = session.customer_details?.phone;
   const zip = session.customer_details?.address?.postal_code;
   const city = session.customer_details?.address?.city;
