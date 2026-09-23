@@ -28,15 +28,15 @@ model User {
 }
 
 model StaffProfile {
-  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  owner           User             @relation(fields: [userId], references: [id])
-  userId          String           @unique @db.Uuid
-  role            StaffProfileRole @default(MEMBER)
-  nickname        String?
-  isPhotographer  Boolean          @default(false)
-  isEditor        Boolean          @default(false)
-  photoShootings  PhotoShooting[]  @relation("Photographer")
-  editingSessions PhotoShooting[]  @relation("Editor")
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner          User             @relation(fields: [userId], references: [id])
+  userId         String           @unique @db.Uuid
+  role           StaffProfileRole @default(MEMBER)
+  nickname       String
+  isPhotographer Boolean          @default(false)
+  isEditor       Boolean          @default(false)
+  photoShootings PhotoShooting[]  @relation("Photographer")
+  editings       PhotoShooting[]  @relation("Editor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -256,7 +256,6 @@ model Session {
 
 enum StaffProfileRole {
   SUPERADMIN
-  EDITOR
   MEMBER
 }
 
