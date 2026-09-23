@@ -13,9 +13,10 @@ import {
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
 } from '@/lib/constants';
+import { sendDiscordNotification } from '@/lib/discord';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
-import { stripe } from '@/lib/stripe';
+import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
 import { getBookingIntent } from '@/server/booking-intent';
 
@@ -149,7 +150,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const existingShooting = await prisma.photoShooting.findUnique({
     where: { timeSlotId },
-    include: { timeSlot: { select: { startTime: true } } },
+    include: {
+      timeSlot: { select: { startTime: true } },
+      client: { include: { owner: { select: { name: true } } } },
+    },
   });
 
   if (existingShooting != null && existingShooting.clientId !== client.id) {
@@ -159,7 +163,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         data: { status: BookingIntentStatus.PAYMENT_ORPHANED, paymentIntent },
       });
     } catch (err) {
-      // TODO: Report this to Discorsd or Sentry
       console.error(
         'Could not update Booking Intent with orphaned payment.',
         err,
@@ -171,6 +174,33 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       paymentIntent,
       winner: existingShooting.clientId,
       loser: client.id,
+    });
+
+    // The winner's own payment isn't invoiced yet at this point (that job runs
+    // async via QStash), so its ledger entry may not exist — link when we can.
+    const winnerLedgerEntry = await prisma.ledgerEntry.findFirst({
+      where: { photoShootingId: existingShooting.id },
+      select: { paymentIntent: true },
+    });
+    const winnerName = existingShooting.client.owner.name;
+    const winnerLabel =
+      winnerLedgerEntry?.paymentIntent != null
+        ? `[${winnerName}](${stripePaymentIntentUrl(winnerLedgerEntry.paymentIntent)})`
+        : winnerName;
+    const loserLabel =
+      paymentIntent !== ''
+        ? `[${userFullName}](${stripePaymentIntentUrl(paymentIntent)})`
+        : userFullName;
+
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        'Ugyanaz az idősáv duplán lett eladva!',
+        `TimeSlot ID: ${timeSlotId}`,
+        `Booking intent ID: ${bookingIntentId}`,
+        `Sikeres foglalás (Stripe): ${winnerLabel}`,
+        `Sikertelen foglalás (Stripe): ${loserLabel}`,
+      ].join('\n'),
     });
 
     return; // 200 - no retry, no invoice, no email
