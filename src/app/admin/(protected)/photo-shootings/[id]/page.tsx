@@ -269,7 +269,7 @@ export default async function PhotoShootingDetailPage({
               <EditableComboboxField
                 value={
                   photographer
-                    ? { value: photographer.id, label: photographer.owner.name }
+                    ? { value: photographer.id, label: photographer.nickname }
                     : null
                 }
                 displayValue={
@@ -387,7 +387,7 @@ export default async function PhotoShootingDetailPage({
             value={
               <EditableComboboxField
                 value={
-                  editor ? { value: editor.id, label: editor.owner.name } : null
+                  editor ? { value: editor.id, label: editor.nickname } : null
                 }
                 displayValue={
                   editor && (
