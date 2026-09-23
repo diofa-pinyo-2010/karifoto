@@ -80,8 +80,9 @@ model BookingIntent {
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @db.Uuid
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @default(now()) @updatedAt
+  adjustments PriceAdjustment[]
 
   @@index([timeSlotId])
 }
@@ -118,10 +119,57 @@ model PhotoShooting {
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @default(now()) @updatedAt
   calendarEvent BookingCalendarEvent?
+  pricing       PhotoShootingPricing?
+  adjustments   PriceAdjustment[]
 
   @@index([clientId])
   @@index([photographerId])
   @@index([editorId])
+}
+
+model PhotoShootingPricing {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String        @unique @db.Uuid
+
+  packagePriceInCents          Int
+  packageStudioPriceInCents    Int
+  lightPlayPriceInCents        Int
+  packageEditedImagesAllowance Int
+
+  extraPeopleThreshold   Int
+  extraPeopleRateInCents Int
+  extraPetRateInCents    Int
+
+  extraEditedImageRateInCents    Int
+  extraRetouchedImageRateInCents Int
+
+  totalEditedImages    Int @default(0)
+  totalRetouchedImages Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model PriceAdjustment {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          PriceAdjustmentType
+  amountInCents Int
+  reason        String?
+
+  // One of these will be set, the other null
+  bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id])
+  bookingIntentId String?        @db.Uuid
+
+  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String?        @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([photoShootingId])
+  @@index([bookingIntentId])
 }
 
 model BookingCalendarEvent {
@@ -259,6 +307,11 @@ enum InvoiceStatus {
   WAITING_FOR_PAYMENT
   SETTLED
   REFUNDED
+}
+
+enum PriceAdjustmentType {
+  DISCOUNT
+  DEDUCTION
 }
 
 enum Package {

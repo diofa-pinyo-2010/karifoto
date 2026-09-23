@@ -6,6 +6,7 @@ import { TrashIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from '@/components/ui/toast';
 import { deleteTimeSlot } from '@/server/time-slots';
 
 export function DeleteTimeSlotButton({
@@ -19,9 +20,16 @@ export function DeleteTimeSlotButton({
   const [, startTransition] = useTransition();
 
   function handleDelete() {
+    setLoading(true);
     startTransition(async () => {
-      setLoading(true);
-      await deleteTimeSlot(timeSlotId);
+      try {
+        const result = await deleteTimeSlot(timeSlotId);
+        if (result != null && 'error' in result) {
+          toast.add({ title: result.error, type: 'error' });
+        }
+      } finally {
+        setLoading(false);
+      }
     });
   }
 

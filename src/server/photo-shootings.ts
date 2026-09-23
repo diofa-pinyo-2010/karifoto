@@ -44,6 +44,8 @@ const photoShootingDetailInclude = {
       include: { invoice: true },
       orderBy: { createdAt: 'asc' },
     },
+    pricing: true,
+    adjustments: true,
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 

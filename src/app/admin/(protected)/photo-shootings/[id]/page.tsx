@@ -16,14 +16,17 @@ import {
   ItemTitle,
 } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
-import { Currency } from '@/generated/prisma/client';
+import { Currency, PaymentMethod } from '@/generated/prisma/client';
 import {
+  booleanToYesNo,
+  DECOR_SET_COMBOBOX_ITEMS,
   DECOR_SET_LABEL,
   LEDGER_ENTRY_CATEGORY_LABEL,
   PACKAGE_LABEL,
   PAYMENT_METHOD_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
+  YES_NO_COMBOBOX_ITEMS,
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { capitalize, cn, formatMoney } from '@/lib/utils';
@@ -34,6 +37,7 @@ import {
   updatePhotoShootingField,
 } from '@/server/admin';
 import { getPhotoShooting } from '@/server/photo-shootings';
+import { calculateRemainingAmount } from '@/server/pricing';
 
 function formatAmount(amountInCents: number, currency: Currency): string {
   if (currency === 'HUF') return formatMoney(amountInCents);
@@ -96,7 +100,7 @@ export default async function PhotoShootingDetailPage({
     </Button>
   );
 
-  if (shooting == null) {
+  if (shooting == null || shooting.pricing == null) {
     return (
       <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
         {backButton}
@@ -116,7 +120,23 @@ export default async function PhotoShootingDetailPage({
     ledgerEntries,
     rawImagesUrl,
     finalImagesUrl,
+    pricing,
+    adjustments,
+    isLightPlaySelected,
+    decorSet,
   } = shooting;
+
+  const extraPeople = Math.max(
+    0,
+    shooting.numberOfGuests - pricing.extraPeopleThreshold,
+  );
+
+  const remainingAmount = calculateRemainingAmount({
+    pricing,
+    shooting,
+    adjustments,
+    ledgerEntries,
+  });
 
   return (
     <div className="mx-auto flex w-full flex-col gap-10 lg:w-3xl">
@@ -160,7 +180,7 @@ export default async function PhotoShootingDetailPage({
             }
           />
           <DetailRow label="E-mail cím" value={client.owner.email} />
-          <DetailRow label="Megjegyzés" value={shooting.clientNote ?? '-'} />
+          <DetailRow label="Megjegyzés" value={shooting.clientNote ?? '–'} />
         </div>
       </div>
 
@@ -171,20 +191,69 @@ export default async function PhotoShootingDetailPage({
         <div className="rounded-lg border px-4">
           <DetailRow label="Csomag" value={PACKAGE_LABEL[shooting.package]} />
           <DetailRow
-            label="Dekor"
-            value={shooting.decorSet ? DECOR_SET_LABEL[shooting.decorSet] : '-'}
+            label="Díszlet"
+            value={
+              <EditableComboboxField
+                value={
+                  decorSet
+                    ? { value: decorSet, label: DECOR_SET_LABEL[decorSet] }
+                    : null
+                }
+                items={DECOR_SET_COMBOBOX_ITEMS}
+                placeholder="Válassz díszletet!"
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'decorSet',
+                )}
+                emptyLabel="–"
+              />
+            }
           />
           <DetailRow
             label="Fényjáték"
-            value={shooting.isLightPlaySelected ? 'Igen' : 'Nem'}
+            value={
+              <EditableComboboxField
+                value={{
+                  label: booleanToYesNo(isLightPlaySelected),
+                  value: booleanToYesNo(isLightPlaySelected),
+                }}
+                items={YES_NO_COMBOBOX_ITEMS}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'isLightPlaySelected',
+                )}
+              />
+            }
           />
           <DetailRow
             label="Vendégek száma"
-            value={String(shooting.numberOfGuests)}
+            value={
+              <EditableTextField
+                type="number"
+                inputMode="numeric"
+                value={String(shooting.numberOfGuests)}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'numberOfGuests',
+                )}
+              />
+            }
           />
           <DetailRow
             label="Kisállatok száma"
-            value={String(shooting.numberOfPets)}
+            value={
+              <EditableTextField
+                value={String(shooting.numberOfPets)}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'numberOfPets',
+                )}
+              />
+            }
           />
         </div>
       </div>
@@ -228,6 +297,65 @@ export default async function PhotoShootingDetailPage({
             }
           />
           <DetailRow
+            label="Csomag ára"
+            value={formatAmount(pricing.packagePriceInCents, 'HUF')}
+          />
+          <DetailRow
+            label="Studio bérlet"
+            value={formatAmount(pricing.packageStudioPriceInCents, 'HUF')}
+          />
+          <DetailRow
+            label="Fényjáték ára"
+            value={formatAmount(
+              Number(isLightPlaySelected) * pricing.lightPlayPriceInCents,
+              'HUF',
+            )}
+          />
+          <DetailRow
+            label={`Extra személyek (${extraPeople})`}
+            value={formatAmount(
+              extraPeople * pricing.extraPeopleRateInCents,
+              'HUF',
+            )}
+          />
+          <DetailRow
+            label={`Kis kedvencek (${shooting.numberOfPets})`}
+            value={formatAmount(
+              shooting.numberOfPets * pricing.extraPetRateInCents,
+              'HUF',
+            )}
+          />
+        </div>
+        <div className="rounded-lg border px-4">
+          {ledgerEntries.map((ledgerEntry) => {
+            return (
+              <DetailRow
+                key={ledgerEntry.id}
+                label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.invoice?.paymentMethod as PaymentMethod]})`}
+                value={formatAmount(
+                  ledgerEntry.category.startsWith('INCOME')
+                    ? ledgerEntry.amountInCents * -1
+                    : ledgerEntry.amountInCents,
+                  ledgerEntry.currency,
+                )}
+              />
+            );
+          })}
+        </div>
+        <div className="rounded-lg border px-4">
+          <DetailRow
+            label="Fizetendő még"
+            value={formatAmount(remainingAmount, 'HUF')}
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-medium">Utómunka</h3>
+        <div className="rounded-lg border px-4">
+          <DetailRow
             label="Nyers képek (PicDrop URL)"
             fullWidth
             value={
@@ -254,14 +382,6 @@ export default async function PhotoShootingDetailPage({
               />
             }
           />
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">Utómunka</h3>
-        <div className="rounded-lg border px-4">
           <DetailRow
             label="Szerkesztő"
             value={

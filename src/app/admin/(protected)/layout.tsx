@@ -5,6 +5,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { Toaster } from '@/components/ui/toast';
 import { verifySession } from '@/lib/dal';
 import { logout } from '@/server/admin-auth';
 
@@ -26,6 +27,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
         </header>
         <div className="flex flex-1 flex-col p-4">{children}</div>
       </SidebarInset>
+      <Toaster />
     </SidebarProvider>
   );
 }
