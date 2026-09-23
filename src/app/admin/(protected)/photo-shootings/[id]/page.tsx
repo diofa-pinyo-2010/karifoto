@@ -44,7 +44,7 @@ function formatAmount(amountInCents: number, currency: Currency): string {
   return `${(amountInCents / 100).toLocaleString('hu-HU')} ${currency}`;
 }
 
-function DetailRow({
+export function DetailRow({
   label,
   value,
   fullWidth = false,
@@ -392,7 +392,7 @@ export default async function PhotoShootingDetailPage({
                 displayValue={
                   editor && (
                     <p>
-                      {editor.nickname}({' '}
+                      {editor.nickname} ({' '}
                       <a
                         href={`tel:${editor.owner.phoneNumber}`}
                         className="text-blue-600 underline underline-offset-4 dark:text-blue-300"

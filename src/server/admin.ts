@@ -40,8 +40,43 @@ export async function fetchPhotographers() {
 export async function fetchEditors() {
   return prisma.staffProfile.findMany({
     where: { isEditor: true },
-    select: { id: true, nickname: true },
+    select: {
+      id: true,
+      nickname: true,
+      isDefaultEditor: true,
+      owner: { select: { name: true } },
+    },
   });
+}
+
+const SetDefaultEditorSchema = z.uuid().nullable();
+
+export async function setDefaultEditor(
+  staffProfileId: string | null,
+): Promise<{ error: string } | void> {
+  const parsed = SetDefaultEditorSchema.safeParse(staffProfileId);
+  if (!parsed.success) {
+    return { error: 'Érvénytelen adat.' };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.staffProfile.updateMany({
+        where: { isDefaultEditor: true },
+        data: { isDefaultEditor: false },
+      });
+      if (parsed.data != null) {
+        await tx.staffProfile.update({
+          where: { id: parsed.data },
+          data: { isDefaultEditor: true },
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return { error: 'Nem sikerült menteni a módosítást.' };
+  }
+  revalidatePath('/admin/settings');
 }
 
 const PhotoShootingUpdateSchema = z.object({
