@@ -23,7 +23,6 @@ import { StaffProfileRole } from '@/generated/prisma/enums';
 
 const ROLE_LABELS: Record<StaffProfileRole, string> = {
   [StaffProfileRole.SUPERADMIN]: 'Admin',
-  [StaffProfileRole.EDITOR]: 'Editor',
   [StaffProfileRole.MEMBER]: 'Member',
 };
 

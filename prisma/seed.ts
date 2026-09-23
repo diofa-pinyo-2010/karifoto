@@ -89,6 +89,7 @@ async function main() {
     create: {
       userId: user.id,
       role: 'SUPERADMIN',
+      nickname: 'Ricsi',
     },
   });
 
@@ -120,6 +121,7 @@ async function main() {
       role: 'MEMBER',
       isPhotographer: true,
       isEditor: true,
+      nickname: 'Íz',
     },
   });
 
@@ -131,6 +133,7 @@ async function main() {
       role: 'MEMBER',
       isPhotographer: true,
       isEditor: true,
+      nickname: 'Feri',
     },
   });
 

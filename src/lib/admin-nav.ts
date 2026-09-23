@@ -23,7 +23,6 @@ export type AdminNavGroup = {
 
 const ALL_STAFF = [
   StaffProfileRole.SUPERADMIN,
-  StaffProfileRole.EDITOR,
   StaffProfileRole.MEMBER,
 ] as const;
 
