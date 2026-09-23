@@ -103,7 +103,8 @@ At booking creation — snapshot everything
 await prisma.photoShootingPricing.create({
   data: {
     photoShootingId: shooting.id,
-    packagePriceInCents: PACKAGE_PRICES[shooting.package],
+    packagePriceInCents: PACKAGE_PRICES[shooting.package].base,
+    packageStudioPriceInCents: PACKAGE_PRICES[shooting.package].studio,
     packageEditedImagesAllowance: PACKAGE_EDITED_ALLOWANCE[shooting.package],
     extraPeopleThreshold: PRICING_CONFIG.extraPeopleThreshold,
     extraPeopleRateInCents: PRICING_CONFIG.extraPeopleRateInCents,

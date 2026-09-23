@@ -46,7 +46,7 @@ export const POST = verifySignatureAppRouter(
         description: `
         Ügyfél üzenete: ${photoShooting.clientNote}
 
-        Díszlet: ${photoShooting.decorSet ? photoShooting.decorSet : '-'}
+        Díszlet: ${photoShooting.decorSet ? photoShooting.decorSet : '–'}
       `,
         startTime,
         endTime,

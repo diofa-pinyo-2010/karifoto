@@ -80,7 +80,7 @@ export default async function BookingsPage() {
                         <ItemDescription>
                           {` 
                         ${PACKAGE_LABEL[shooting.package]} 
-                      • Dekor: ${shooting.decorSet ? DECOR_SET_LABEL[shooting.decorSet] : '-'}
+                      • Dekor: ${shooting.decorSet ? DECOR_SET_LABEL[shooting.decorSet] : '–'}
                       • Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
                       • ${shooting.numberOfGuests} fő
                       • ${shooting.numberOfPets} kedvenc

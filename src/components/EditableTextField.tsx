@@ -8,6 +8,8 @@ type EditableTextFieldProps = {
   value: string | null;
   placeholder?: string;
   emptyLabel?: string;
+  type?: 'text' | 'email' | 'number' | 'tel';
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   displayValue?: React.ReactNode;
   onSave: (value: string | null) => Promise<{ error: string } | void>;
 };
@@ -15,7 +17,9 @@ type EditableTextFieldProps = {
 export function EditableTextField({
   value,
   placeholder,
-  emptyLabel = '-',
+  emptyLabel = '–',
+  type = 'text',
+  inputMode,
   displayValue,
   onSave,
 }: EditableTextFieldProps) {
@@ -27,6 +31,8 @@ export function EditableTextField({
       renderInput={({ value: draft, onChange }) => (
         <Field>
           <Input
+            type={type}
+            inputMode={inputMode}
             value={draft ?? ''}
             placeholder={placeholder}
             onChange={(event) => onChange(event.target.value)}

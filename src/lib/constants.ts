@@ -6,7 +6,20 @@ import {
   PhotoShootingStatus,
 } from '@/generated/prisma/enums';
 
+import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
+
 export const SITE_NAME = 'Karifoto';
+
+export const YES_NO_VALUES = ['IGEN', 'NEM'] as const;
+export type YesNoValue = (typeof YES_NO_VALUES)[number];
+
+export const YES_NO_COMBOBOX_ITEMS: ComboboxFieldItem[] = YES_NO_VALUES.map(
+  (value) => ({ label: value, value }),
+);
+
+export function booleanToYesNo(value: boolean): YesNoValue {
+  return value ? 'IGEN' : 'NEM';
+}
 
 export const LIGHT_PLAY_FEE = 15000_00;
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
@@ -15,6 +28,8 @@ export const MAX_PERSONS = 8;
 export const MAX_PETS = 8;
 export const PERSONS_INCLUDED = 5;
 export const DEPOSIT_AMOUNT = 10000_00;
+export const EXTRA_EDIT_PER_IMAGE = 2000_00;
+export const EXTRA_RETOUCH_PER_IMAGE = 3000_00;
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 
@@ -22,14 +37,17 @@ export const PACKAGE_PRICES = {
   MINI: {
     base: 39000_00,
     studio: 6000_00,
+    editedImagesAllowance: 10,
   },
   CLASSIC: {
     base: 49000_00,
     studio: 9000_00,
+    editedImagesAllowance: 15,
   },
   FAMILY: {
     base: 59000_00,
     studio: 12000_00,
+    editedImagesAllowance: 20,
   },
 };
 
@@ -62,6 +80,10 @@ export const DECOR_SET_LABEL: Record<DecorSet, string> = {
   HOFEHER: 'Hófehér',
   ALOMKASTELY: 'Álomkastély',
 };
+
+export const DECOR_SET_COMBOBOX_ITEMS: ComboboxFieldItem[] = Object.entries(
+  DECOR_SET_LABEL,
+).map(([value, label]) => ({ value, label }));
 
 export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
   {
@@ -112,7 +134,7 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
 export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
   {
     INCOME_CLIENT_PAYMENT_DEPOSIT: 'Előleg',
-    INCOME_CLIENT_PAYMENT_BALANCE: 'Egyenleg',
+    INCOME_CLIENT_PAYMENT_BALANCE: 'Fennmaradó befizetés',
     INCOME_CLIENT_PAYMENT_EXTRA: 'Extra díj',
     INCOME_OTHER: 'Egyéb bevétel',
     EXPENSE_PHOTOGRAPHER_FEE: 'Fotós díja',

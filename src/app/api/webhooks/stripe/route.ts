@@ -4,6 +4,15 @@ import Stripe from 'stripe';
 
 import { env } from '@/env';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
+import {
+  EXTRA_EDIT_PER_IMAGE,
+  EXTRA_FEE_PER_EXTRA_PERSON,
+  EXTRA_FEE_PER_PET,
+  EXTRA_RETOUCH_PER_IMAGE,
+  LIGHT_PLAY_FEE,
+  PACKAGE_PRICES,
+  PERSONS_INCLUDED,
+} from '@/lib/constants';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
@@ -132,16 +141,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     },
   });
 
-  // TODO: Do we need a transaction here?
-  // const [] = await prisma.$transaction(async (tx) => {})
-
   const client = await prisma.clientProfile.upsert({
     where: { userId: user.id },
     update: { stripeCustomerId },
     create: { userId: user.id, stripeCustomerId },
   });
 
-  // Insert Photoshooting into db (idempotent: timeSlotId is unique)
   const existingShooting = await prisma.photoShooting.findUnique({
     where: { timeSlotId },
     include: { timeSlot: { select: { startTime: true } } },
@@ -154,6 +159,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         data: { status: BookingIntentStatus.PAYMENT_ORPHANED, paymentIntent },
       });
     } catch (err) {
+      // TODO: Report this to Discorsd or Sentry
       console.error(
         'Could not update Booking Intent with orphaned payment.',
         err,
@@ -182,8 +188,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
           decorSet: bookingIntent.decorSet,
           numberOfGuests: bookingIntent.numberOfGuests,
           numberOfPets: bookingIntent.numberOfPets,
+          isLightPlaySelected: bookingIntent.isLightPlaySelected,
         },
         include: { timeSlot: { select: { startTime: true } } },
+      });
+      await tx.photoShootingPricing.create({
+        data: {
+          photoShootingId: newPhotoShooting.id,
+          packagePriceInCents: PACKAGE_PRICES[selectedPackage].base,
+          packageStudioPriceInCents: PACKAGE_PRICES[selectedPackage].studio,
+          lightPlayPriceInCents: LIGHT_PLAY_FEE,
+          packageEditedImagesAllowance:
+            PACKAGE_PRICES[selectedPackage].editedImagesAllowance,
+          extraPeopleThreshold: PERSONS_INCLUDED,
+          extraPeopleRateInCents: EXTRA_FEE_PER_EXTRA_PERSON,
+          extraPetRateInCents: EXTRA_FEE_PER_PET,
+          extraEditedImageRateInCents: EXTRA_EDIT_PER_IMAGE,
+          extraRetouchedImageRateInCents: EXTRA_RETOUCH_PER_IMAGE,
+        },
       });
       await tx.timeSlot.update({
         where: { id: timeSlotId },
@@ -194,9 +216,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // PhotoShooting was created, convert the BookingIntent
   try {
-    await prisma.bookingIntent.update({
-      where: { id: bookingIntentId },
-      data: { status: BookingIntentStatus.CONVERTED },
+    await prisma.$transaction(async (tx) => {
+      await tx.bookingIntent.update({
+        where: { id: bookingIntentId },
+        data: { status: BookingIntentStatus.CONVERTED },
+      });
+      await tx.priceAdjustment.updateMany({
+        where: { bookingIntentId },
+        data: {
+          bookingIntentId: null,
+          photoShootingId: shooting.id,
+        },
+      });
     });
   } catch (err) {
     console.error('Could not convert Booking Intent', err);
