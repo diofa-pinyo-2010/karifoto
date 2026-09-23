@@ -279,6 +279,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const shooting =
     existingShooting ??
     (await prisma.$transaction(async (tx) => {
+      const defaultEditor = await tx.staffProfile.findFirst({
+        where: { isDefaultEditor: true },
+        select: { id: true },
+      });
+
       const newPhotoShooting = await tx.photoShooting.create({
         data: {
           client: { connect: { id: client.id } },
@@ -289,6 +294,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
           numberOfGuests: bookingIntent.numberOfGuests,
           numberOfPets: bookingIntent.numberOfPets,
           isLightPlaySelected: bookingIntent.isLightPlaySelected,
+          editor:
+            defaultEditor != null
+              ? { connect: { id: defaultEditor.id } }
+              : undefined,
         },
         include: { timeSlot: { select: { startTime: true } } },
       });
