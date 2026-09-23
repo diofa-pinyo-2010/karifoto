@@ -707,7 +707,7 @@ export type AdminNavItem = {
 
 const ALL_STAFF = [
   StaffProfileRole.SUPERADMIN,
-  StaffProfileRole.EDITOR,
+  StaffProfileRole.MEMBER,
 ] as const;
 
 export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
