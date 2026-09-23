@@ -100,6 +100,9 @@ export async function createCheckoutSession(
       billing_address_collection: 'required',
       customer_update: { address: 'auto' },
       phone_number_collection: { enabled: true },
+      name_collection: {
+        individual: { enabled: true, optional: false },
+      },
       metadata: { booking_intent_id: bookingIntent.id },
       success_url: `${origin}/success/${bookingIntentId}`,
       cancel_url: `${origin}/foglalas-osszegzese/${bookingIntentId}`,

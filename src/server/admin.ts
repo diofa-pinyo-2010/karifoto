@@ -33,14 +33,14 @@ type PhotoShootingWithTimeSlot = Prisma.PhotoShootingGetPayload<
 export async function fetchPhotographers() {
   return prisma.staffProfile.findMany({
     where: { isPhotographer: true },
-    select: { id: true, owner: { select: { name: true } } },
+    select: { id: true, nickname: true },
   });
 }
 
 export async function fetchEditors() {
   return prisma.staffProfile.findMany({
     where: { isEditor: true },
-    select: { id: true, owner: { select: { name: true } } },
+    select: { id: true, nickname: true },
   });
 }
 
