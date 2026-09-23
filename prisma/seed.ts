@@ -98,7 +98,7 @@ async function main() {
     update: {},
     create: {
       email: 'izmuvek@gmail.com',
-      name: 'Izmuvek',
+      name: 'Íz Művek',
       phoneNumber: '+36 20 000 0000',
     },
   });
@@ -108,7 +108,7 @@ async function main() {
     update: {},
     create: {
       email: 'vagoferi.email@gmail.com',
-      name: 'Izmuvek',
+      name: 'Vágó Ferenc',
       phoneNumber: '+36 20 000 0001',
     },
   });
@@ -121,7 +121,7 @@ async function main() {
       role: 'MEMBER',
       isPhotographer: true,
       isEditor: true,
-      nickname: 'Íz',
+      nickname: 'Fincsi',
     },
   });
 
