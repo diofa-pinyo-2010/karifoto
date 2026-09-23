@@ -5,6 +5,7 @@ import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
+import { sendDiscordNotification } from '@/lib/discord';
 import {
   claimDepositInvoice,
   confirmDepositInvoice,
@@ -13,7 +14,7 @@ import {
 import { invoiceService } from '@/lib/invoice';
 import { NamedVATRate } from '@/lib/invoice/types';
 import { prisma } from '@/lib/prisma';
-import { stripe } from '@/lib/stripe';
+import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 
 import type { GeneratedInvoice } from '@/lib/invoice/types';
 
@@ -22,10 +23,7 @@ export const POST = verifySignatureAppRouter(
     const parsed = z
       .object({
         shootingId: z.uuid(),
-        zip: z.string().nullable().optional(),
-        addressLine1: z.string().nullable().optional(),
-        city: z.string().nullable().optional(),
-        userFullName: z.string().min(1),
+        bookingIntentId: z.uuid(),
         sessionId: z.string().min(1),
         paymentIntent: z.string(),
         amountTotal: z.number().nonnegative().nullable(),
@@ -41,10 +39,7 @@ export const POST = verifySignatureAppRouter(
 
     const {
       shootingId,
-      zip,
-      addressLine1,
-      city,
-      userFullName,
+      bookingIntentId,
       sessionId,
       paymentIntent,
       amountTotal,
@@ -58,7 +53,10 @@ export const POST = verifySignatureAppRouter(
       return new Response('already invoiced', { status: 200 });
     }
 
-    if (zip == null || addressLine1 == null || city == null) {
+    const billingAddress = await prisma.billingAddress.findUnique({
+      where: { bookingIntentId },
+    });
+    if (billingAddress == null) {
       return new Response('billing address missing', {
         status: 489,
         headers: { 'Upstash-NonRetryable-Error': 'true' },
@@ -97,10 +95,10 @@ export const POST = verifySignatureAppRouter(
     try {
       invoice = await invoiceService.generateInvoice({
         customer: {
-          name: userFullName,
-          zip,
-          city,
-          addressLine1,
+          name: billingAddress.name,
+          zip: billingAddress.zip,
+          city: billingAddress.city,
+          addressLine1: billingAddress.addressLine1,
           email: photoShooting.client.owner.email,
         },
         items: lineItems.data.map((item) => {
@@ -119,6 +117,14 @@ export const POST = verifySignatureAppRouter(
       console.error('[job:deposit-inv-gen] szamlazz failed', {
         shootingId,
         error,
+      });
+      await sendDiscordNotification({
+        type: 'error',
+        content: [
+          '**Nem sikerült a számla generálása (szamlazz.hu hiba)**',
+          `Shooting ID: ${shootingId}`,
+          `Payment Intent: [${paymentIntent}](${stripePaymentIntentUrl(paymentIntent)})`,
+        ].join('\n'),
       });
       throw error;
     }
@@ -178,6 +184,15 @@ export const POST = verifySignatureAppRouter(
         invoiceNumber: invoice.invoiceNumber,
         publicUrl: invoice.publicUrl,
         error,
+      });
+      await sendDiscordNotification({
+        type: 'error',
+        content: [
+          '**Számla kiállítva a szamlazz.hu-n, de nem sikerült elmenteni a DB-be!**',
+          `Shooting ID: ${shootingId}`,
+          `Payment Intent: [${paymentIntent}](${stripePaymentIntentUrl(paymentIntent)})`,
+          `Számla: [${invoice.invoiceNumber}](${invoice.publicUrl})`,
+        ].join('\n'),
       });
       throw error; // -> 500 -> DLQ for manual repair
     }

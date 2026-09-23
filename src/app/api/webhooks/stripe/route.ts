@@ -358,10 +358,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
           url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
           body: {
             shootingId: shooting.id,
-            zip,
-            addressLine1,
-            city,
-            invoicingName,
+            bookingIntentId,
             sessionId: session.id,
             paymentIntent,
             amountTotal: session.amount_total,
