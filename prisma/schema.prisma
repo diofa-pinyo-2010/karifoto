@@ -49,6 +49,8 @@ model ClientProfile {
   stripeCustomerId String
   photoShootings   PhotoShooting[]
 
+  billingAddresses BillingAddress[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -81,11 +83,31 @@ model BookingIntent {
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @db.Uuid
 
+  billingAddress BillingAddress?
+
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @default(now()) @updatedAt
   adjustments PriceAdjustment[]
 
   @@index([timeSlotId])
+}
+
+model BillingAddress {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  zip          String
+  city         String
+  addressLine1 String
+
+  bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id], onDelete: SetNull)
+  bookingIntentId String?        @unique @db.Uuid
+
+  clientProfile   ClientProfile? @relation(fields: [clientProfileId], references: [id], onDelete: SetNull)
+  clientProfileId String?        @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([clientProfileId])
 }
 
 model PhotoShooting {
@@ -117,11 +139,12 @@ model PhotoShooting {
 
   closedAt DateTime?
 
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @default(now()) @updatedAt
   calendarEvent BookingCalendarEvent?
   pricing       PhotoShootingPricing?
   adjustments   PriceAdjustment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([clientId])
   @@index([photographerId])

@@ -107,6 +107,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         hasPhone: userPhoneNumber != null,
       },
     );
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        '**Nem kaptunk customer adatokat a Stripe-tól!**',
+        `Booking intent ID: ${bookingIntentId}`,
+        `Checkout Session ID: ${session.id}`,
+        `Payment Intent: ${paymentIntent}`,
+        `User email: ${userEmail}`,
+        `User name: ${userFullName}`,
+        `User phone number: ${userPhoneNumber}`,
+      ].join('\n'),
+    });
     return;
   }
 
@@ -119,6 +131,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       paymentIntent,
       email: userEmail,
       amount: session.amount_total,
+    });
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        '**Nem találjuk a Booking Intent-et a DB-ben**',
+        `Booking intent ID: ${bookingIntentId}`,
+        `Checkout Session ID: ${session.id}`,
+        `Payment Intent: ${paymentIntent}`,
+        `User email: ${userEmail}`,
+      ].join('\n'),
     });
     return;
   }
@@ -147,6 +169,53 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     update: { stripeCustomerId },
     create: { userId: user.id, stripeCustomerId },
   });
+
+  // Best-effort — used for invoicing (via bookingIntent) and analytics (via
+  // clientProfile), neither of which should block the booking itself.
+  if (zip != null && city != null && addressLine1 != null) {
+    try {
+      await prisma.billingAddress.create({
+        data: {
+          zip,
+          city,
+          addressLine1,
+          bookingIntent: { connect: { id: bookingIntentId } },
+          clientProfile: { connect: { id: client.id } },
+        },
+      });
+    } catch (err) {
+      console.error('[stripe-webhook] could not save billing address', {
+        bookingIntentId,
+        clientId: client.id,
+        err,
+      });
+      await sendDiscordNotification({
+        type: 'warning',
+        content: [
+          '**Nem sikerült elmenteni a számlázási címet**',
+          `Booking intent ID: ${bookingIntentId}`,
+          `ClientProfile ID: ${client.id}`,
+        ].join('\n'),
+      });
+    }
+  } else {
+    console.error('[stripe-webhook] missing billing address fields', {
+      bookingIntentId,
+      hasZip: zip != null,
+      hasCity: city != null,
+      hasAddressLine1: addressLine1 != null,
+    });
+    await sendDiscordNotification({
+      type: 'warning',
+      content: [
+        '**Hiányzó számlázási cím adatok a Stripe-tól**',
+        `Booking intent ID: ${bookingIntentId}`,
+        `Van zip: ${zip != null}`,
+        `Van város: ${city != null}`,
+        `Van cím: ${addressLine1 != null}`,
+      ].join('\n'),
+    });
+  }
 
   const existingShooting = await prisma.photoShooting.findUnique({
     where: { timeSlotId },
@@ -195,7 +264,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await sendDiscordNotification({
       type: 'error',
       content: [
-        'Ugyanaz az idősáv duplán lett eladva!',
+        '**Ugyanaz az idősáv duplán lett eladva!**',
         `TimeSlot ID: ${timeSlotId}`,
         `Booking intent ID: ${bookingIntentId}`,
         `Sikeres foglalás (Stripe): ${winnerLabel}`,
@@ -222,6 +291,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         },
         include: { timeSlot: { select: { startTime: true } } },
       });
+      // Create a snapshot about the current prices (like if it was an order)
       await tx.photoShootingPricing.create({
         data: {
           photoShootingId: newPhotoShooting.id,
