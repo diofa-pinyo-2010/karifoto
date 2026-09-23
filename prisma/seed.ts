@@ -102,11 +102,32 @@ async function main() {
     },
   });
 
+  const editorUser2 = await prisma.user.upsert({
+    where: { email: 'vagoferi.email@gmail.com' },
+    update: {},
+    create: {
+      email: 'vagoferi.email@gmail.com',
+      name: 'Izmuvek',
+      phoneNumber: '+36 20 000 0001',
+    },
+  });
+
   await prisma.staffProfile.upsert({
     where: { userId: editorUser.id },
     update: {},
     create: {
       userId: editorUser.id,
+      role: 'EDITOR',
+      isPhotographer: true,
+      isEditor: true,
+    },
+  });
+
+  await prisma.staffProfile.upsert({
+    where: { userId: editorUser2.id },
+    update: {},
+    create: {
+      userId: editorUser2.id,
       role: 'EDITOR',
       isPhotographer: true,
       isEditor: true,
