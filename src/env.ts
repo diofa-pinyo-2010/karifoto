@@ -21,6 +21,7 @@ export const env = createEnv({
     GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().min(1),
     GOOGLE_PRIVATE_KEY: z.string().min(1),
     GOOGLE_CALENDAR_ID: z.string().min(1),
+    DISCORD_WEBHOOK_URL: z.url(),
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {
@@ -49,6 +50,7 @@ export const env = createEnv({
     GOOGLE_SERVICE_ACCOUNT_EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
     GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID,
+    DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
     NEXT_PUBLIC_CLARITY_ID: process.env.NEXT_PUBLIC_CLARITY_ID,
