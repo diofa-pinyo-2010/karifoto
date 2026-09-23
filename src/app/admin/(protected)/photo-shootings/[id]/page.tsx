@@ -80,11 +80,11 @@ export default async function PhotoShootingDetailPage({
   const editors = await fetchEditors();
   const photographerItems = photographers.map((p) => ({
     value: p.id,
-    label: p.owner.name,
+    label: p.nickname,
   }));
   const editorItems = editors.map((e) => ({
     value: e.id,
-    label: e.owner.name,
+    label: e.nickname,
   }));
 
   const backButton = (
@@ -275,7 +275,7 @@ export default async function PhotoShootingDetailPage({
                 displayValue={
                   photographer && (
                     <p>
-                      {photographer.owner.name} ({' '}
+                      {photographer.nickname} ({' '}
                       <a
                         href={`tel:${photographer.owner.phoneNumber}`}
                         className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
@@ -392,7 +392,7 @@ export default async function PhotoShootingDetailPage({
                 displayValue={
                   editor && (
                     <p>
-                      {editor.owner.name}({' '}
+                      {editor.nickname}({' '}
                       <a
                         href={`tel:${editor.owner.phoneNumber}`}
                         className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
