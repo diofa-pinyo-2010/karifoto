@@ -22,7 +22,7 @@ export default async function SettingsPage() {
             <EditableComboboxField
               value={
                 defaultEditor
-                  ? { value: defaultEditor.id, label: defaultEditor.owner.name }
+                  ? { value: defaultEditor.id, label: defaultEditor.nickname }
                   : null
               }
               items={editors.map((editor) => ({

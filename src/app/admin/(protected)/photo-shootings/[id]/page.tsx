@@ -80,11 +80,11 @@ export default async function PhotoShootingDetailPage({
   const editors = await fetchEditors();
   const photographerItems = photographers.map((p) => ({
     value: p.id,
-    label: p.nickname,
+    label: p.owner.name,
   }));
   const editorItems = editors.map((e) => ({
     value: e.id,
-    label: e.nickname,
+    label: e.owner.name,
   }));
 
   const backButton = (
@@ -269,7 +269,7 @@ export default async function PhotoShootingDetailPage({
               <EditableComboboxField
                 value={
                   photographer
-                    ? { value: photographer.id, label: photographer.nickname }
+                    ? { value: photographer.id, label: photographer.owner.name }
                     : null
                 }
                 displayValue={
@@ -387,7 +387,7 @@ export default async function PhotoShootingDetailPage({
             value={
               <EditableComboboxField
                 value={
-                  editor ? { value: editor.id, label: editor.nickname } : null
+                  editor ? { value: editor.id, label: editor.owner.name } : null
                 }
                 displayValue={
                   editor && (
