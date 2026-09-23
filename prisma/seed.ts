@@ -92,7 +92,7 @@ async function main() {
     },
   });
 
-  const editorUser = await prisma.user.upsert({
+  const memberUser = await prisma.user.upsert({
     where: { email: 'izmuvek@gmail.com' },
     update: {},
     create: {
@@ -102,7 +102,7 @@ async function main() {
     },
   });
 
-  const editorUser2 = await prisma.user.upsert({
+  const memberUser2 = await prisma.user.upsert({
     where: { email: 'vagoferi.email@gmail.com' },
     update: {},
     create: {
@@ -113,22 +113,22 @@ async function main() {
   });
 
   await prisma.staffProfile.upsert({
-    where: { userId: editorUser.id },
+    where: { userId: memberUser.id },
     update: {},
     create: {
-      userId: editorUser.id,
-      role: 'EDITOR',
+      userId: memberUser.id,
+      role: 'MEMBER',
       isPhotographer: true,
       isEditor: true,
     },
   });
 
   await prisma.staffProfile.upsert({
-    where: { userId: editorUser2.id },
+    where: { userId: memberUser2.id },
     update: {},
     create: {
-      userId: editorUser2.id,
-      role: 'EDITOR',
+      userId: memberUser2.id,
+      role: 'MEMBER',
       isPhotographer: true,
       isEditor: true,
     },
