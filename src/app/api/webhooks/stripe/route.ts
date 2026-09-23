@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const userEmail = session.customer_details?.email;
-  const userFullName = session.customer_details?.name;
+  const invoicingName = session.customer_details?.name;
   const userPhoneNumber = session.customer_details?.phone;
   const zip = session.customer_details?.address?.postal_code;
   const city = session.customer_details?.address?.city;
@@ -95,7 +95,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // Create or Update client (customer) in the database
-  if (userEmail == null || userFullName == null || userPhoneNumber == null) {
+  if (userEmail == null || invoicingName == null || userPhoneNumber == null) {
     console.error(
       '[stripe-webhook] missing customer details, cannot create client',
       {
@@ -103,7 +103,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         sessionId: session.id,
         paymentIntent,
         hasEmail: userEmail != null,
-        hasName: userFullName != null,
+        hasName: invoicingName != null,
         hasPhone: userPhoneNumber != null,
       },
     );
@@ -115,7 +115,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         `Checkout Session ID: ${session.id}`,
         `Payment Intent: ${paymentIntent}`,
         `User email: ${userEmail}`,
-        `User name: ${userFullName}`,
+        `User invoicing name: ${invoicingName}`,
         `User phone number: ${userPhoneNumber}`,
       ].join('\n'),
     });
@@ -156,10 +156,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const user = await prisma.user.upsert({
     where: { email: userEmail },
-    update: { name: userFullName, phoneNumber: userPhoneNumber },
+    update: { phoneNumber: userPhoneNumber },
     create: {
       email: userEmail,
-      name: userFullName,
+      name: bookingIntent.name,
       phoneNumber: userPhoneNumber,
     },
   });
@@ -176,6 +176,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     try {
       await prisma.billingAddress.create({
         data: {
+          name: invoicingName,
           zip,
           city,
           addressLine1,
@@ -258,8 +259,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         : winnerName;
     const loserLabel =
       paymentIntent !== ''
-        ? `[${userFullName}](${stripePaymentIntentUrl(paymentIntent)})`
-        : userFullName;
+        ? `[${bookingIntent.name}](${stripePaymentIntentUrl(paymentIntent)})`
+        : bookingIntent.name;
 
     await sendDiscordNotification({
       type: 'error',
@@ -360,7 +361,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
             zip,
             addressLine1,
             city,
-            userFullName,
+            invoicingName,
             sessionId: session.id,
             paymentIntent,
             amountTotal: session.amount_total,

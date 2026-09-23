@@ -94,6 +94,7 @@ model BookingIntent {
 
 model BillingAddress {
   id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String // invoicing name from Stripe checkout — can differ from the client's own name
   zip          String
   city         String
   addressLine1 String
