@@ -15,6 +15,7 @@
   },
   "rules": {
     "react/react-in-jsx-scope": "off",
+    "no-underscore-dangle": ["warn", { "allow": ["_count"] }],
     "import/no-unassigned-import": [
       "warn",
       { "allow": ["**/*.css", "dotenv/config"] }

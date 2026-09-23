@@ -76,20 +76,33 @@ export async function createTimeSlot(
   }
 }
 
-export async function deleteTimeSlot(id: string) {
-  const taken = await prisma.timeSlot.findFirst({
-    where: { id, photoShooting: { isNot: null } },
-    select: { id: true },
+export async function deleteTimeSlot(
+  id: string,
+): Promise<{ error: string } | void> {
+  const slot = await prisma.timeSlot.findUnique({
+    where: { id },
+    select: {
+      photoShooting: { select: { id: true } },
+      _count: { select: { bookingIntents: true } },
+    },
   });
 
-  if (taken != null) {
-    return;
+  if (slot?.photoShooting != null) {
+    return { error: 'Ez az idősáv már foglalt, nem törölhető.' };
+  }
+
+  if (slot != null && slot._count.bookingIntents > 0) {
+    return {
+      error:
+        'Ehhez az idősávhoz BookingIntent (foglalási szándék) tartozik, ezért nem törölhető.',
+    };
   }
 
   try {
     await prisma.timeSlot.delete({ where: { id } });
   } catch (error) {
     console.error(error);
+    return { error: 'Nem sikerült törölni az idősávot. Próbáld újra.' };
   }
 
   revalidatePath('/admin/time-slots');
