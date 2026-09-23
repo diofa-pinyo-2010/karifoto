@@ -31,7 +31,8 @@ model StaffProfile {
   id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   owner           User             @relation(fields: [userId], references: [id])
   userId          String           @unique @db.Uuid
-  role            StaffProfileRole @default(EDITOR)
+  role            StaffProfileRole @default(MEMBER)
+  nickname        String?
   isPhotographer  Boolean          @default(false)
   isEditor        Boolean          @default(false)
   photoShootings  PhotoShooting[]  @relation("Photographer")
@@ -256,6 +257,7 @@ model Session {
 enum StaffProfileRole {
   SUPERADMIN
   EDITOR
+  MEMBER
 }
 
 enum PaymentMethod {
