@@ -110,7 +110,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await sendDiscordNotification({
       type: 'error',
       content: [
-        '**Nem kaptunk customer adatokat a Stripe-tól!**',
+        '**Nem kaptunk customer adatokat a Stripe-tól!**\n',
         `Booking intent ID: ${bookingIntentId}`,
         `Checkout Session ID: ${session.id}`,
         `Payment Intent: ${paymentIntent}`,
@@ -135,7 +135,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await sendDiscordNotification({
       type: 'error',
       content: [
-        '**Nem találjuk a Booking Intent-et a DB-ben**',
+        '**Nem találjuk a Booking Intent-et a DB-ben**\n',
         `Booking intent ID: ${bookingIntentId}`,
         `Checkout Session ID: ${session.id}`,
         `Payment Intent: ${paymentIntent}`,
@@ -170,8 +170,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     create: { userId: user.id, stripeCustomerId },
   });
 
-  // Best-effort — used for invoicing (via bookingIntent) and analytics (via
-  // clientProfile), neither of which should block the booking itself.
   if (zip != null && city != null && addressLine1 != null) {
     try {
       await prisma.billingAddress.create({
@@ -193,7 +191,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       await sendDiscordNotification({
         type: 'warning',
         content: [
-          '**Nem sikerült elmenteni a számlázási címet**',
+          '**Nem sikerült elmenteni a számlázási címet**\n',
           `Booking intent ID: ${bookingIntentId}`,
           `ClientProfile ID: ${client.id}`,
         ].join('\n'),
@@ -209,7 +207,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await sendDiscordNotification({
       type: 'warning',
       content: [
-        '**Hiányzó számlázási cím adatok a Stripe-tól**',
+        '**Hiányzó számlázási cím adatok a Stripe-tól**\n',
         `Booking intent ID: ${bookingIntentId}`,
         `Van zip: ${zip != null}`,
         `Van város: ${city != null}`,
@@ -265,7 +263,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await sendDiscordNotification({
       type: 'error',
       content: [
-        '**Ugyanaz az idősáv duplán lett eladva!**',
+        '**Ugyanaz az idősáv duplán lett eladva!**\n',
         `TimeSlot ID: ${timeSlotId}`,
         `Booking intent ID: ${bookingIntentId}`,
         `Sikeres foglalás (Stripe): ${winnerLabel}`,

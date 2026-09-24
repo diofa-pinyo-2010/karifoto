@@ -121,7 +121,7 @@ export const POST = verifySignatureAppRouter(
       await sendDiscordNotification({
         type: 'error',
         content: [
-          '**Nem sikerült a számla generálása (szamlazz.hu hiba)**',
+          '**Nem sikerült a számla generálása (szamlazz.hu hiba)**\n',
           `Shooting ID: ${shootingId}`,
           `Payment Intent: [${paymentIntent}](${stripePaymentIntentUrl(paymentIntent)})`,
         ].join('\n'),
@@ -188,7 +188,7 @@ export const POST = verifySignatureAppRouter(
       await sendDiscordNotification({
         type: 'error',
         content: [
-          '**Számla kiállítva a szamlazz.hu-n, de nem sikerült elmenteni a DB-be!**',
+          '**Számla kiállítva a szamlazz.hu-n, de nem sikerült elmenteni a DB-be!**\n',
           `Shooting ID: ${shootingId}`,
           `Payment Intent: [${paymentIntent}](${stripePaymentIntentUrl(paymentIntent)})`,
           `Számla: [${invoice.invoiceNumber}](${invoice.publicUrl})`,
