@@ -86,7 +86,9 @@ export function AddPriceAdjustmentDialog({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="price-adjustment-reason">Indoklás</FieldLabel>
+          <FieldLabel htmlFor="price-adjustment-reason">
+            Indoklás (megjelenhet az oldalon)
+          </FieldLabel>
           <Textarea
             id="price-adjustment-reason"
             value={reason}
