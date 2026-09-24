@@ -1,6 +1,8 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { STUDIO_ADDRESS } from '@/lib/constants';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -62,6 +64,7 @@ export function generateAddToGoogleCalendarLink({
     text: title,
     dates: `${formatGoogleCalendarDate(startTime)}/${formatGoogleCalendarDate(endTime)}`,
     ...(description && { details: description }),
+    location: STUDIO_ADDRESS,
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
