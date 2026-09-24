@@ -91,12 +91,20 @@ export async function createCheckoutSession(
         {
           price_data: {
             currency: 'huf',
-            product_data: { name: 'Fotózás előleg' },
+            product_data: {
+              name: 'Fotózás előleg',
+              // description: 'product_data.description example',
+              // images: ['https://picsum.photos/seed/karifoto/400/400'],
+            },
             unit_amount: DEPOSIT_AMOUNT,
           },
           quantity: 1,
         },
       ],
+      custom_text: {
+        // submit: { message: 'submit custom text' },
+        // after_submit: { message: 'after_submit custom text' },
+      },
       billing_address_collection: 'required',
       customer_update: { address: 'auto' },
       phone_number_collection: { enabled: true },
@@ -108,7 +116,8 @@ export async function createCheckoutSession(
       cancel_url: `${origin}/foglalas-osszegzese/${bookingIntentId}`,
     });
     sessionUrl = session.url;
-  } catch {
+  } catch (error) {
+    console.error(error);
     return {
       error:
         'Nem sikerült kapcsolódni a fizetési szolgáltatóhoz, próbáld újra.',
