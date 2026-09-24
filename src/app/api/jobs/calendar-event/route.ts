@@ -44,9 +44,8 @@ export const POST = verifySignatureAppRouter(
       const event = await createCalendarEvent({
         title: `📸 ${photoShooting.client.owner.name} - ${photoShooting.package}`,
         description: `
-        Ügyfél üzenete: ${photoShooting.clientNote}
-
-        Díszlet: ${photoShooting.decorSet ? photoShooting.decorSet : '–'}
+        Fotózás oldala az adminon:
+        ${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${photoShooting.id}
       `,
         startTime,
         endTime,

@@ -2,6 +2,7 @@ import { JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 
 import { env } from '@/env';
+import { STUDIO_ADDRESS } from '@/lib/constants';
 
 const auth = new JWT({
   email: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -27,6 +28,7 @@ export async function createCalendarEvent({
     requestBody: {
       summary: title,
       description,
+      location: STUDIO_ADDRESS,
       start: { dateTime: startTime.toISOString() },
       end: { dateTime: endTime.toISOString() },
     },
@@ -54,6 +56,7 @@ export async function updateCalendarEvent({
     requestBody: {
       summary: title,
       description,
+      location: STUDIO_ADDRESS,
       start: { dateTime: startTime.toISOString() },
       end: { dateTime: endTime.toISOString() },
     },
