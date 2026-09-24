@@ -12,8 +12,10 @@ import { createBookingIntentDiscount } from '@/server/price-adjustments';
 
 export function AddPriceAdjustmentDialog({
   bookingIntentId,
+  disabled,
 }: {
   bookingIntentId: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState('');
@@ -61,7 +63,11 @@ export function AddPriceAdjustmentDialog({
         setOpen(nextOpen);
         if (!nextOpen) reset();
       }}
-      trigger={<Button size="lg">Kedvezmény hozzáadása</Button>}
+      trigger={
+        <Button size="lg" disabled={disabled}>
+          Kedvezmény hozzáadása
+        </Button>
+      }
       title="Kedvezmény hozzáadása"
       description="Az összeg forintban értendő, és levonásra kerül a végösszegből."
     >

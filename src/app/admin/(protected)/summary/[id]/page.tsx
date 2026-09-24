@@ -103,7 +103,10 @@ export default async function RemoteBookingSummaryPage({
         </div>
       )}
 
-      <AddPriceAdjustmentDialog bookingIntentId={id} />
+      <AddPriceAdjustmentDialog
+        bookingIntentId={id}
+        disabled={isBookingIntentConverted}
+      />
 
       {isBookingIntentConverted && (
         <Alert>
