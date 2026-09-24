@@ -19,7 +19,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
-import { monthDayFormatter, timeFormatter } from '@/lib/formatters';
+import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { cn, groupByDay } from '@/lib/utils';
 import { fetchTimeSlots } from '@/server/time-slots';
 
@@ -44,7 +44,7 @@ export default async function AdminTimeSlotsPage() {
           return (
             <AccordionItem key={dayKey} value={dayKey}>
               <AccordionTrigger className="text-lg text-primary">
-                {monthDayFormatter.format(slots[0].startTime)}{' '}
+                {dateFormatter.format(slots[0].startTime)}{' '}
                 {numberOfBookedSlots > 0 && `(${numberOfBookedSlots} fotózás)`}
               </AccordionTrigger>
               <AccordionContent>
