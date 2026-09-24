@@ -108,6 +108,9 @@ export default async function PhotoShootingDetailPage({
           Fotózás részletei
         </h1>
         <p className="text-muted-foreground">Ez a fotózás nem található.</p>
+        <p className="text-muted-foreground">
+          shooting == null || shooting.pricing == null
+        </p>
       </div>
     );
   }
@@ -156,12 +159,12 @@ export default async function PhotoShootingDetailPage({
             action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
           />
         </div>
-        <h1 className="text-2xl font-semibold text-primary lg:text-4xl dark:text-primary-foreground">
-          {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
-          {timeFormatter.format(timeSlot.startTime)}
+        <h1 className="text-3xl font-semibold text-primary lg:text-4xl dark:text-primary-foreground">
+          {client.owner.name}
         </h1>
         <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">
-          {client.owner.name}
+          {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
+          {timeFormatter.format(timeSlot.startTime)}
         </h2>
       </div>
 
