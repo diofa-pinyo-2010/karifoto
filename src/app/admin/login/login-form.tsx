@@ -12,9 +12,10 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { REDIRECT_URL_PARAM } from '@/lib/session';
 import { requestMagicLink } from '@/server/admin-auth';
 
-export function LoginForm() {
+export function LoginForm({ redirectUrl }: { redirectUrl: string | null }) {
   const [state, action, pending] = useActionState(requestMagicLink, undefined);
 
   return (
@@ -24,6 +25,13 @@ export function LoginForm() {
           <CardContent>
             <form action={action}>
               <FieldGroup>
+                {redirectUrl && (
+                  <input
+                    type="hidden"
+                    name={REDIRECT_URL_PARAM}
+                    value={redirectUrl}
+                  />
+                )}
                 <div className="flex flex-col items-center gap-2 text-center">
                   <h1 className="text-2xl font-semibold">Admin belépés</h1>
                   <p className="text-balance text-muted-foreground">

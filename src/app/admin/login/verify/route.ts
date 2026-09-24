@@ -3,7 +3,12 @@ import type { NextRequest } from 'next/server';
 
 import { createSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { SESSION_COOKIE_NAME, sessionCookieOptions } from '@/lib/session';
+import {
+  REDIRECT_URL_PARAM,
+  SESSION_COOKIE_NAME,
+  sanitizeAdminRedirect,
+  sessionCookieOptions,
+} from '@/lib/session';
 import { hashToken } from '@/lib/token';
 
 export async function GET(request: NextRequest) {
@@ -40,7 +45,12 @@ export async function GET(request: NextRequest) {
 
   const { raw, expiresAt } = await createSession(magicLinkToken.userId);
 
-  const response = NextResponse.redirect(new URL('/admin', request.url));
+  const redirectUrl =
+    sanitizeAdminRedirect(
+      request.nextUrl.searchParams.get(REDIRECT_URL_PARAM),
+    ) ?? '/admin';
+
+  const response = NextResponse.redirect(new URL(redirectUrl, request.url));
   response.cookies.set(
     SESSION_COOKIE_NAME,
     raw,
