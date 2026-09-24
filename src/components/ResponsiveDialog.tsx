@@ -55,7 +55,7 @@ export function ResponsiveDialog({
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
       <DrawerTrigger render={trigger} />
       <DrawerContent>
         <DrawerHeader className="text-left">

@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 
+import { BadgePercentIcon } from 'lucide-react';
+
 import { ResponsiveDialog } from '@/components/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
@@ -64,7 +66,8 @@ export function AddPriceAdjustmentDialog({
         if (!nextOpen) reset();
       }}
       trigger={
-        <Button size="lg" disabled={disabled}>
+        <Button size="lg" disabled={disabled} variant="secondary">
+          <BadgePercentIcon />
           Kedvezmény hozzáadása
         </Button>
       }

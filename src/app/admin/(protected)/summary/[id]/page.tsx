@@ -91,7 +91,7 @@ export default async function RemoteBookingSummaryPage({
               </span>
               <div className="flex items-center gap-3">
                 <span className="text-right text-sm font-medium">
-                  -{formatMoney(adjustment.amountInCents)}
+                  - {formatMoney(adjustment.amountInCents)}
                 </span>
                 <DeletePriceAdjustmentButton
                   priceAdjustmentId={adjustment.id}
