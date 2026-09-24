@@ -182,7 +182,7 @@ model PriceAdjustment {
   id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type          PriceAdjustmentType
   amountInCents Int
-  reason        String?
+  reason        String
 
   // One of these will be set, the other null
   bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id], onDelete: Cascade)
