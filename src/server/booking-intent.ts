@@ -118,6 +118,7 @@ const bookingIntentWithTimeSlot = {
         photoShooting: { select: { id: true } },
       },
     },
+    adjustments: { orderBy: { createdAt: 'asc' } },
   },
 } satisfies Prisma.BookingIntentDefaultArgs;
 

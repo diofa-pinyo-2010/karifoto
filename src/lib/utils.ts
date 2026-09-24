@@ -9,6 +9,8 @@ export const formatMoney = (cents: number) => {
   return `${new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(cents / 100)} Ft`;
 };
 
+export const hufToCents = (huf: number) => Math.round(huf) * 100;
+
 export const capitalize = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);
 

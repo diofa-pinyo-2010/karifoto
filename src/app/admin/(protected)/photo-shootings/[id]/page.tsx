@@ -327,6 +327,13 @@ export default async function PhotoShootingDetailPage({
               'HUF',
             )}
           />
+          {adjustments.map((adjustment) => (
+            <DetailRow
+              key={adjustment.id}
+              label={adjustment.reason}
+              value={formatAmount(adjustment.amountInCents * -1, 'HUF')}
+            />
+          ))}
         </div>
         <div className="rounded-lg border px-4">
           {ledgerEntries.map((ledgerEntry) => {

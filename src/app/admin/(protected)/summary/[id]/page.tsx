@@ -1,10 +1,13 @@
 import { CheckCircle2Icon } from 'lucide-react';
 
+import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
+import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { SendDepositRequestButton } from '@/components/SendDepositRequestButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DECOR_SET_LABEL, PACKAGE_LABEL } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { wasEmailSent } from '@/lib/idempotency';
+import { formatMoney } from '@/lib/utils';
 import { getBookingIntent } from '@/server/booking-intent';
 
 export default async function RemoteBookingSummaryPage({
@@ -75,6 +78,36 @@ export default async function RemoteBookingSummaryPage({
           value={bookingIntent.clientNote ?? '—'}
         />
       </div>
+
+      {bookingIntent.adjustments.length > 0 && (
+        <div className="rounded-lg border px-4">
+          {bookingIntent.adjustments.map((adjustment) => (
+            <div
+              key={adjustment.id}
+              className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0"
+            >
+              <span className="text-sm text-muted-foreground">
+                {adjustment.reason}
+              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-right text-sm font-medium">
+                  - {formatMoney(adjustment.amountInCents)}
+                </span>
+                <DeletePriceAdjustmentButton
+                  priceAdjustmentId={adjustment.id}
+                  bookingIntentId={id}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <AddPriceAdjustmentDialog
+        bookingIntentId={id}
+        disabled={isBookingIntentConverted}
+      />
+
       {isBookingIntentConverted && (
         <Alert>
           <CheckCircle2Icon />
