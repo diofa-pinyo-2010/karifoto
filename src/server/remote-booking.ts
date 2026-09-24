@@ -2,11 +2,16 @@
 
 import { redirect } from 'next/navigation';
 
+import { prisma } from '@/lib/prisma';
 import {
   createBookingIntent,
   type CreateBookingIntentInput,
 } from '@/server/booking-intent';
-import { createTimeSlot, deleteTimeSlot } from '@/server/time-slots';
+import {
+  createTimeSlot,
+  deleteTimeSlot,
+  updateTimeSlotRevealed,
+} from '@/server/time-slots';
 
 export type CreateRemoteBookingIntentInput = Omit<
   CreateBookingIntentInput,
@@ -18,20 +23,35 @@ export type CreateRemoteBookingIntentInput = Omit<
 export async function createRemoteBookingIntent(
   input: CreateRemoteBookingIntentInput,
 ): Promise<{ error: string }> {
-  // `revealed: false` keeps the slot off the public "free" listing — it still
-  // shows up as taken, so no one else can book it.
-  const timeSlot = await createTimeSlot(input.startTime, false);
-  if ('error' in timeSlot) {
-    return timeSlot;
+  // Reuse an existing free slot at this start time (whatever its revealed
+  // status) instead of creating a duplicate one.
+  const existingTimeSlot = await prisma.timeSlot.findFirst({
+    where: { startTime: input.startTime, photoShooting: null },
+  });
+
+  let timeSlotId: string;
+  if (existingTimeSlot != null) {
+    // `revealed: false` keeps the slot off the public "free" listing — it still
+    // shows up as taken, so no one else can book it.
+    await updateTimeSlotRevealed(existingTimeSlot.id, false);
+    timeSlotId = existingTimeSlot.id;
+  } else {
+    const timeSlot = await createTimeSlot(input.startTime, false);
+    if ('error' in timeSlot) {
+      return timeSlot;
+    }
+    timeSlotId = timeSlot.id;
   }
 
   const bookingIntent = await createBookingIntent({
     ...input,
-    timeSlotId: timeSlot.id,
+    timeSlotId,
   });
 
   if ('error' in bookingIntent) {
-    await deleteTimeSlot(timeSlot.id);
+    if (existingTimeSlot == null) {
+      await deleteTimeSlot(timeSlotId);
+    }
     return bookingIntent;
   }
 
