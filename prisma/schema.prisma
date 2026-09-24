@@ -185,10 +185,10 @@ model PriceAdjustment {
   reason        String?
 
   // One of these will be set, the other null
-  bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id])
+  bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id], onDelete: Cascade)
   bookingIntentId String?        @db.Uuid
 
-  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id])
+  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id], onDelete: Cascade)
   photoShootingId String?        @db.Uuid
 
   createdAt DateTime @default(now())
