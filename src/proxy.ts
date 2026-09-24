@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { env } from '@/env';
-import { SESSION_COOKIE_NAME } from '@/lib/session';
+import { REDIRECT_URL_PARAM, SESSION_COOKIE_NAME } from '@/lib/session';
 
 const BYPASS_COOKIE = 'coming-soon-bypass';
 
@@ -15,7 +15,12 @@ export function proxy(request: NextRequest) {
     const hasSessionCookie = request.cookies.has(SESSION_COOKIE_NAME);
 
     if (!isLoginRoute && !hasSessionCookie) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
+      const loginUrl = new URL('/admin/login', request.url);
+      loginUrl.searchParams.set(
+        REDIRECT_URL_PARAM,
+        pathname + request.nextUrl.search,
+      );
+      return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();
   }

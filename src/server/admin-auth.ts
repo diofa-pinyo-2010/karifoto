@@ -8,7 +8,12 @@ import * as z from 'zod';
 import { env } from '@/env';
 import { prisma } from '@/lib/prisma';
 import { sendAdminVerificationEmail } from '@/lib/resend/admin-verification';
-import { MAGIC_LINK_TTL_SECONDS, SESSION_COOKIE_NAME } from '@/lib/session';
+import {
+  MAGIC_LINK_TTL_SECONDS,
+  REDIRECT_URL_PARAM,
+  SESSION_COOKIE_NAME,
+  sanitizeAdminRedirect,
+} from '@/lib/session';
 import { generateToken, hashToken } from '@/lib/token';
 import { redis } from '@/lib/upstash';
 
@@ -33,6 +38,7 @@ export async function requestMagicLink(
   }
 
   const email = parsed.data.email.toLowerCase().trim();
+  const redirectUrl = sanitizeAdminRedirect(formData.get('redirectUrl'));
 
   const user = await prisma.user.findUnique({
     where: { email },
@@ -53,12 +59,19 @@ export async function requestMagicLink(
         data: { userId: user.id, tokenHash: hash, expiresAt },
       });
 
-      const verifyUrl = `${env.NEXT_PUBLIC_SITE_URL}/admin/login/verify?token=${raw}`;
+      const verifyUrl = new URL(
+        '/admin/login/verify',
+        env.NEXT_PUBLIC_SITE_URL,
+      );
+      verifyUrl.searchParams.set('token', raw);
+      if (redirectUrl) {
+        verifyUrl.searchParams.set(REDIRECT_URL_PARAM, redirectUrl);
+      }
 
       await sendAdminVerificationEmail({
         to: email,
         name: user.name,
-        verifyUrl,
+        verifyUrl: verifyUrl.toString(),
       });
     }
   }
