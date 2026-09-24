@@ -2,12 +2,15 @@ import { redis } from '@/lib/upstash';
 
 // Stripe could resend the event within 96 hours
 export const EVENT_TTL = 96 * 60 * 60; // 96 hours in seconds
+const REMINDER_TTL = 48 * 60 * 60; // 48 hours in seconds
 const DEPOSIT_INVOICE_CLAIM_TTL = 10 * 60; // 10 minutes
 const DEPOSIT_INVOICE_ISSUED_TTL = 30 * 24 * 60 * 60; // 30 days
 
 const eventKey = (eventId: string) => `stripe_evt:${eventId}`;
 const emailConfirmKey = (shootingId: string) =>
   `email_confirmation:${shootingId}`;
+const reminderKey = (shootingId: string, dayKey: string) =>
+  `reminder_on_the_day:${shootingId}:${dayKey}`;
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
 // const googleCalendarEventKey = (shootingId: string) =>
 //   `google_cal_evt:${shootingId}`;
@@ -82,6 +85,35 @@ export const markEmailSent = async (shootingId: string): Promise<void> => {
 };
 
 /** Short-lived "I'm working on it". Throws if Redis is unreachable — the job must retry, never guess. */
+/** Pure read — does NOT claim. Fail-open: a duplicate reminder beats a missed one. */
+export const wasReminderSent = async (
+  shootingId: string,
+  dayKey: string,
+): Promise<boolean> => {
+  try {
+    return (await redis.exists(reminderKey(shootingId, dayKey))) === 1;
+  } catch (error) {
+    console.error(`Error checking reminder claim: ${shootingId}`, error);
+    return false;
+  }
+};
+
+/** Written only after Resend accepted. Never throws — the email already went out. */
+export const markReminderSent = async (
+  shootingId: string,
+  dayKey: string,
+): Promise<void> => {
+  try {
+    await redis.set(
+      reminderKey(shootingId, dayKey),
+      `sent_at:${new Date().toISOString()}`,
+      { ex: REMINDER_TTL },
+    );
+  } catch (error) {
+    console.error(`Error marking reminder sent: ${shootingId}`, error);
+  }
+};
+
 export const claimDepositInvoice = async (
   shootingId: string,
 ): Promise<boolean> => {

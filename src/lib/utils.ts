@@ -23,6 +23,9 @@ const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 });
 
+// e.g. 2026-12-13, for grouping/comparing by Budapest-local calendar day
+export const getBudapestDayKey = (date: Date) => dayKeyFormatter.format(date);
+
 export const groupByDay = <T>(
   items: T[],
   getDate: (item: T) => Date,
@@ -30,7 +33,7 @@ export const groupByDay = <T>(
   const groups = new Map<string, T[]>();
 
   for (const item of items) {
-    const dayKey = dayKeyFormatter.format(getDate(item));
+    const dayKey = getBudapestDayKey(getDate(item));
     const daySlots = groups.get(dayKey);
     if (daySlots) {
       daySlots.push(item);
