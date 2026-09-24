@@ -128,6 +128,8 @@ function resolveStatus({
     return PhotoShootingStatus.WAITING_FOR_THE_DATE;
   }
 
+  // TODO: Waiting for Balance payment here
+
   if (merged.rawImagesUrl == null) {
     return PhotoShootingStatus.RAW_PHOTOS_UPLOAD;
   }

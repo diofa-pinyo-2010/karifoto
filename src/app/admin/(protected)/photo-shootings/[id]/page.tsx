@@ -373,6 +373,7 @@ export default async function PhotoShootingDetailPage({
             value={
               <EditableTextField
                 value={rawImagesUrl}
+                placeholder="https://www.picdrop.com..."
                 inputMode="url"
                 displayValue={
                   rawImagesUrl && (
@@ -432,6 +433,7 @@ export default async function PhotoShootingDetailPage({
             value={
               <EditableTextField
                 value={finalImagesUrl}
+                placeholder="https://www.picdrop.com..."
                 inputMode="url"
                 displayValue={
                   finalImagesUrl && (

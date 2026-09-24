@@ -36,6 +36,8 @@ export function EditableTextField({
             value={draft ?? ''}
             placeholder={placeholder}
             onChange={(event) => onChange(event.target.value)}
+            // oxlint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
           />
         </Field>
       )}
