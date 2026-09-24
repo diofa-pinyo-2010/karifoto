@@ -3,8 +3,6 @@ import z from 'zod';
 
 import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
-import { LedgerEntryCategory } from '@/generated/prisma/enums';
-import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import { sendDiscordNotification } from '@/lib/discord';
 import {
   claimDepositInvoice,
@@ -45,11 +43,29 @@ export const POST = verifySignatureAppRouter(
       amountTotal,
     } = parsed.data;
 
-    const existingLedgerEntry = await prisma.ledgerEntry.findUnique({
+    const ledgerEntry = await prisma.ledgerEntry.findUnique({
       where: { paymentIntent },
-      select: { invoice: { select: { invoiceNumber: true } } },
+      select: { id: true, invoiceId: true },
     });
-    if (existingLedgerEntry != null) {
+    if (ledgerEntry == null) {
+      console.error(
+        '[job:generate-deposit-invoice] ledger entry missing, cannot attach invoice',
+        { shootingId, paymentIntent },
+      );
+      await sendDiscordNotification({
+        type: 'error',
+        content: [
+          '**Hiányzó LedgerEntry — a számlát nem tudjuk hozzákapcsolni!**\n',
+          `Shooting ID: ${shootingId}`,
+          `Payment Intent: [${paymentIntent}](${stripePaymentIntentUrl(paymentIntent)})`,
+        ].join('\n'),
+      });
+      return new Response('ledger entry missing', {
+        status: 489,
+        headers: { 'Upstash-NonRetryable-Error': 'true' },
+      });
+    }
+    if (ledgerEntry.invoiceId != null) {
       return new Response('already invoiced', { status: 200 });
     }
 
@@ -90,7 +106,6 @@ export const POST = verifySignatureAppRouter(
       return new Response('already issued', { status: 200 });
     }
 
-    // GenerateInvoice and save to db
     let invoice: GeneratedInvoice;
     try {
       invoice = await invoiceService.generateInvoice({
@@ -133,8 +148,6 @@ export const POST = verifySignatureAppRouter(
     // can fail, so no retry ever re-issues it.
     await confirmDepositInvoice(shootingId, invoice.invoiceNumber);
 
-    // Invoice and LedgerEntry go in together: a half-written pair would leave an
-    // Invoice row pointing at a real szamlazz document with nothing paid against it.
     try {
       await prisma.$transaction(async (tx) => {
         const invoiceInDb = await tx.invoice.create({
@@ -148,17 +161,9 @@ export const POST = verifySignatureAppRouter(
           },
         });
 
-        const category = LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT;
-        await tx.ledgerEntry.create({
-          data: {
-            category,
-            amountInCents:
-              (amountTotal ?? 0) * LEDGER_ENTRY_CATEGORY_SIGN[category],
-            method: 'CARD',
-            paymentIntent,
-            photoShooting: { connect: { id: shootingId } },
-            invoice: { connect: { id: invoiceInDb.id } },
-          },
+        await tx.ledgerEntry.update({
+          where: { id: ledgerEntry.id },
+          data: { invoice: { connect: { id: invoiceInDb.id } } },
         });
       });
     } catch (error) {
@@ -167,7 +172,7 @@ export const POST = verifySignatureAppRouter(
         error.code === 'P2002'
       ) {
         console.warn(
-          '[job:deposit-inv-gen] ledger entry already recorded, skipping',
+          '[job:deposit-inv-gen] ledger entry already attached, skipping',
           {
             shootingId,
             paymentIntent,
