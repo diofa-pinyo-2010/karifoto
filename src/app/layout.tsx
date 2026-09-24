@@ -10,6 +10,7 @@ import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { InlineScript } from '@/components/InlineScript';
 import { Providers } from '@/components/Providers';
+import { ThemeScope } from '@/components/ThemeScope';
 // import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 import {
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
@@ -17,7 +18,8 @@ import {
 } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
+// A sötét mód csak az adminban él — ne fusson le publikus oldalon.
+const THEME_SCRIPT = `(function(){try{if(!location.pathname.startsWith('/admin'))return;var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
 
 const display = Cormorant_Garamond({
   subsets: ['latin-ext'],
@@ -77,6 +79,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <InlineScript html={THEME_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        <ThemeScope />
         <Providers>{children}</Providers>
         <CookieConsentBanner />
         {/* <CookiePreferencesButton /> */}
