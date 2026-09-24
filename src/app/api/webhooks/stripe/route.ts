@@ -3,12 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 import { env } from '@/env';
-import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { Prisma } from '@/generated/prisma/client';
+import {
+  BookingIntentStatus,
+  LedgerEntryCategory,
+} from '@/generated/prisma/enums';
 import {
   EXTRA_EDIT_PER_IMAGE,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   EXTRA_RETOUCH_PER_IMAGE,
+  LEDGER_ENTRY_CATEGORY_SIGN,
   LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
@@ -341,26 +346,55 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error('Could not convert Booking Intent', err);
   }
 
-  // Kártyás fizetésnél mindig van payment_intent; ha mégsem, a számlázó job üres
-  // stringet írna a Payment.paymentIntent @unique mezőjébe, és a következő ilyen
-  // foglalás ütközne vele. Inkább el sem indítjuk.
-  const canInvoice = paymentIntent !== '';
-  if (!canInvoice) {
-    console.error('[stripe-webhook] no payment intent, skipping invoice job', {
-      shootingId: shooting.id,
-      bookingIntentId,
-      sessionId: session.id,
-    });
+  // Kártyás fizetésnél mindig van payment_intent; ha mégsem, egy üres string
+  // kerülne a LedgerEntry.paymentIntent @unique mezőjébe, és a következő ilyen
+  // foglalás ütközne vele. Inkább sem a ledger bejegyzést, sem a számlázó jobot
+  // nem indítjuk el.
+  const hasPaymentIntent = paymentIntent !== '';
+  if (!hasPaymentIntent) {
+    console.error(
+      '[stripe-webhook] no payment intent, skipping ledger entry and invoice job',
+      { shootingId: shooting.id, bookingIntentId, sessionId: session.id },
+    );
+  } else {
+    // Money has actually moved at this point — record it regardless of whether
+    // invoicing (a 3rd-party call) succeeds. The invoice job
+    // attaches the Invoice to this row later; it never creates the row itself.
+    try {
+      const category = LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT;
+      await prisma.ledgerEntry.create({
+        data: {
+          category,
+          amountInCents:
+            (session.amount_total ?? 0) * LEDGER_ENTRY_CATEGORY_SIGN[category],
+          method: 'CARD',
+          paymentIntent,
+          photoShooting: { connect: { id: shooting.id } },
+        },
+      });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        console.warn(
+          '[stripe-webhook] ledger entry already recorded (retry), skipping',
+          { shootingId: shooting.id, paymentIntent },
+        );
+      } else {
+        throw err;
+      }
+    }
   }
 
   // Publish email sending and invoice generation, and Google Event Creation to QStash
-  const [emailJob, invoiceJob] = await Promise.all([
+  const [emailJob, invoiceJob, calendarEventJob] = await Promise.all([
     qStashClient.publishJSON({
       url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-confirmation`,
       body: { shootingId: shooting.id },
       retries: 3,
     }),
-    canInvoice
+    hasPaymentIntent
       ? qStashClient.publishJSON({
           url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
           body: {
@@ -386,7 +420,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     bookingIntentId,
     emailMessageId: emailJob.messageId,
     invoiceMessageId: invoiceJob?.messageId ?? null,
+    calendarMessageId: calendarEventJob.messageId,
   });
-
-  // TODO: Create Google Calendar entry
 }

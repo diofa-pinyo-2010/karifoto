@@ -246,6 +246,8 @@ export default async function PhotoShootingDetailPage({
             label="Kisállatok száma"
             value={
               <EditableTextField
+                type="number"
+                inputMode="numeric"
                 value={String(shooting.numberOfPets)}
                 onSave={updatePhotoShootingField.bind(
                   null,
