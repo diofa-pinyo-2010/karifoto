@@ -370,6 +370,7 @@ export default async function PhotoShootingDetailPage({
             value={
               <EditableTextField
                 value={rawImagesUrl}
+                inputMode="url"
                 displayValue={
                   rawImagesUrl && (
                     <a
@@ -428,6 +429,7 @@ export default async function PhotoShootingDetailPage({
             value={
               <EditableTextField
                 value={finalImagesUrl}
+                inputMode="url"
                 displayValue={
                   finalImagesUrl && (
                     <a

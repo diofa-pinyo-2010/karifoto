@@ -245,6 +245,7 @@ export function RemoteBookingForm() {
               <Input
                 id="remote-booking-people"
                 type="number"
+                inputMode="numeric"
                 min={1}
                 max={MAX_PERSONS}
                 value={field.value}
