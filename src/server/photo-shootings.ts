@@ -106,6 +106,20 @@ export async function changeTimeOfPhotoShooting({
   newStartTime: Date;
 }): Promise<{ error: string } | void> {
   await verifySession();
+
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { id: shootingId },
+    select: { timeSlot: { select: { startTime: true } } },
+  });
+  if (shooting == null) {
+    return { error: 'Ez a fotózás nem található.' };
+  }
+  // Same time — nothing to move. Without this, the lookup below skips the
+  // shooting's own (taken) slot and would create a duplicate one.
+  if (shooting.timeSlot.startTime.getTime() === newStartTime.getTime()) {
+    return;
+  }
+
   // 1. Check if there is an exising timeslot without photoshooting
   // 2. Create a new one if there is not
   const res = await getOrCreateTimeSlot(newStartTime);
@@ -123,9 +137,8 @@ export async function changeTimeOfPhotoShooting({
     console.error(error);
     return { error: 'Nem sikerült módosítani az időpontot. Próbáld újra.' };
   }
-  // 4. Update the CONVERTED BookingIntent with the new time slot ????
 
-  // 5. Update the existing BookingCalendarEvent
-  // 6. Send an email to the user about the update
+  // 4. Update the existing BookingCalendarEvent
+  // 5. Send an email to the user about the update
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
 }

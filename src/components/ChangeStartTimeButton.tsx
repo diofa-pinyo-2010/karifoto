@@ -81,6 +81,8 @@ export function ChangeStartTimeButton({
   function handleOpenChange(opened: boolean) {
     setIsOpen(opened);
     if (opened) {
+      // Drop any unsaved pick from a previous (cancelled) open.
+      setStartTime(currentStartTime);
       setSaveError(null);
       loadDay(currentStartTime);
     }
@@ -227,13 +229,17 @@ export function ChangeStartTimeButton({
             variant="default"
             size="lg"
             onClick={handleConfirm}
-            disabled={isSaving}
+            disabled={
+              isSaving || startTime.getTime() === currentStartTime.getTime()
+            }
           >
             {isSaving ? (
               <>
                 {' '}
                 <Spinner /> Várj...{' '}
               </>
+            ) : startTime.getTime() === currentStartTime.getTime() ? (
+              'Válassz új időpontot'
             ) : (
               'Mentés'
             )}
