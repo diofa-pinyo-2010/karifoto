@@ -84,6 +84,8 @@ model BookingIntent {
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @db.Uuid
 
+  photoShooting PhotoShooting?
+
   billingAddress BillingAddress?
 
   createdAt   DateTime          @default(now())
@@ -124,6 +126,9 @@ model PhotoShooting {
 
   timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   timeSlotId String   @unique @db.Uuid
+
+  bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id])
+  bookingIntentId String?        @unique @db.Uuid
 
   ledgerEntries LedgerEntry[]
   invoices      Invoice[]

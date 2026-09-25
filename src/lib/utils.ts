@@ -1,7 +1,9 @@
 import { clsx, type ClassValue } from 'clsx';
+import { addDays, format, parseISO } from 'date-fns';
+import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
-import { STUDIO_ADDRESS } from '@/lib/constants';
+import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,7 +19,7 @@ export const capitalize = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);
 
 const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
@@ -25,6 +27,11 @@ const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
 
 // e.g. 2026-12-13, for grouping/comparing by Budapest-local calendar day
 export const getBudapestDayKey = (date: Date) => dayKeyFormatter.format(date);
+
+// The instant a Budapest wall clock shows `time` (HH:mm) on `dayKey`
+// (yyyy-MM-dd) — independent of the browser's timezone.
+export const fromBudapestDayAndTime = (dayKey: string, time: string) =>
+  fromZonedTime(`${dayKey}T${time}:00`, STUDIO_TZ);
 
 export const groupByDay = <T>(
   items: T[],
@@ -71,4 +78,27 @@ export function generateAddToGoogleCalendarLink({
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+/**
+ * Use it with `lt` because `end` is the firs moment of the next day.
+ * @example
+ * ```ts
+ * const times = await prisma.shooting.findMany({
+ *   where: {
+ *     timeSlot: { startTime: { gte: start, lt: end } }
+ *   }
+ * })
+ * ```
+ */
+export function dayBounds(datetime: Date) {
+  // 1. Which calendar day is this moment in the studio's timezone?
+  const day = formatInTimeZone(datetime, STUDIO_TZ, 'yyyy-MM-dd');
+  const nextDay = format(addDays(parseISO(day), 1), 'yyyy-MM-dd');
+
+  // 2. Midnight at the start of that day, and midnight at the start of the next
+  return {
+    start: fromZonedTime(`${day}T00:00:00`, STUDIO_TZ),
+    end: fromZonedTime(`${nextDay}T00:00:00`, STUDIO_TZ),
+  };
 }

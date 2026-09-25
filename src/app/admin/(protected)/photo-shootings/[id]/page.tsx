@@ -168,7 +168,10 @@ export default async function PhotoShootingDetailPage({
             {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
             {timeFormatter.format(timeSlot.startTime)}
           </h2>
-          <ChangeStartTimeButton currentStartTime={timeSlot.startTime} />
+          <ChangeStartTimeButton
+            currentStartTime={timeSlot.startTime}
+            shootingId={shooting.id}
+          />
         </div>
       </div>
 

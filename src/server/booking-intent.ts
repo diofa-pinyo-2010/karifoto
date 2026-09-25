@@ -118,6 +118,11 @@ const bookingIntentWithTimeSlot = {
         photoShooting: { select: { id: true } },
       },
     },
+    // Set once converted. Its time slot is the current one — the intent's own
+    // `timeSlot` keeps the originally booked time if the shooting was moved.
+    photoShooting: {
+      select: { timeSlot: { select: { startTime: true } } },
+    },
     adjustments: { orderBy: { createdAt: 'asc' } },
   },
 } satisfies Prisma.BookingIntentDefaultArgs;

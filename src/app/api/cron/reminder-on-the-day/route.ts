@@ -3,7 +3,7 @@ import { formatLongDate } from '@/lib/formatters';
 import { markReminderSent, wasReminderSent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { sendReminderOnTheDayEmail } from '@/lib/resend/reminder-on-the-day';
-import { getBudapestDayKey } from '@/lib/utils';
+import { dayBounds, getBudapestDayKey } from '@/lib/utils';
 
 function isAuthorized(req: Request): boolean {
   return req.headers.get('authorization') === `Bearer ${env.CRON_SECRET}`;
@@ -17,14 +17,12 @@ export async function GET(req: Request) {
   try {
     const now = new Date();
     const todayKey = getBudapestDayKey(now);
-    // Wide DB window, exact match happens below — avoids UTC/CET offset math.
-    const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const { start: gte, end: lt } = dayBounds(now);
 
     const candidates = await prisma.photoShooting.findMany({
       where: {
         status: { notIn: ['CLOSED', 'COMPLETED'] },
-        timeSlot: { startTime: { gte: windowStart, lt: windowEnd } },
+        timeSlot: { startTime: { gte, lt } },
       },
       include: {
         timeSlot: { select: { startTime: true } },

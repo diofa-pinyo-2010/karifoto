@@ -1,33 +1,35 @@
+import { STUDIO_TZ } from '@/lib/constants';
+
 // szerda
 export const weekDayFormatter = new Intl.DateTimeFormat('hu-Hu', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   weekday: 'long',
 });
 
 // dec. 1.
 export const shortDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   month: 'short',
   day: 'numeric',
 });
 
 // szeptember 13.
 export const monthDayFormatter = new Intl.DateTimeFormat('hu-Hu', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   month: 'long',
   day: 'numeric',
 });
 
 // 12:00
 export const timeFormatter = new Intl.DateTimeFormat('hu-Hu', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   hour: 'numeric',
   minute: '2-digit',
 });
 
 // 09:00 — zero-padded, for <input type="time"> values
 export const timeInputFormatter = new Intl.DateTimeFormat('hu-HU', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   hour: '2-digit',
   minute: '2-digit',
   hourCycle: 'h23',
@@ -35,7 +37,7 @@ export const timeInputFormatter = new Intl.DateTimeFormat('hu-HU', {
 
 // nov. 1., vasárnap 10:00
 export const shortFullDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
   month: 'short',
   day: 'numeric',
   weekday: 'long',
