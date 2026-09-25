@@ -45,6 +45,7 @@ export default async function RemoteBookingSummaryPage({
           label="Időpont"
           value={shortFullDateFormatter.format(
             // The shooting may have been rescheduled — show its current time.
+            // The bi holds the original date intentionally
             bookingIntent.photoShooting?.timeSlot.startTime ??
               bookingIntent.timeSlot.startTime,
           )}
