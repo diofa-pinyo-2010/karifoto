@@ -2,6 +2,8 @@
 
 import { useRef, useState, useTransition } from 'react';
 
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { Clock2Icon, RefreshCcwIcon, RotateCcwIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -29,9 +31,9 @@ import {
 import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { PACKAGE_LABEL } from '@/lib/constants';
+import { PACKAGE_LABEL, STUDIO_TZ } from '@/lib/constants';
 import { timeInputFormatter } from '@/lib/formatters';
-import { cn } from '@/lib/utils';
+import { cn, fromBudapestDayAndTime, getBudapestDayKey } from '@/lib/utils';
 import {
   changeTimeOfPhotoShooting,
   getPhotoShootingsForDay,
@@ -57,8 +59,9 @@ export function ChangeStartTimeButton({
   const [saveError, setSaveError] = useState<string | null>(null);
   const latestRequest = useRef(0);
 
+  // `date` must already be a Budapest-anchored instant, so `dayBounds` on the
+  // server picks the studio's calendar day.
   function loadDay(date: Date) {
-    handleCalendarSelect(date);
     setError(null);
     const requestId = ++latestRequest.current;
     startLoading(async () => {
@@ -83,10 +86,20 @@ export function ChangeStartTimeButton({
     }
   }
 
+  // The Calendar works in browser-local dates: the picked date's local
+  // y/m/d is the day the admin clicked. Combine it with the Budapest time.
   function handleCalendarSelect(date: Date) {
-    const next = new Date(date);
-    next.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+    const next = fromBudapestDayAndTime(
+      format(date, 'yyyy-MM-dd'),
+      timeInputFormatter.format(startTime),
+    );
     setStartTime(next);
+    loadDay(next);
+  }
+
+  function handleTimeChange(time: string) {
+    if (!time) return;
+    setStartTime(fromBudapestDayAndTime(getBudapestDayKey(startTime), time));
   }
 
   function handleConfirm() {
@@ -130,8 +143,8 @@ export function ChangeStartTimeButton({
             <CardContent>
               <Calendar
                 mode="single"
-                selected={startTime}
-                onSelect={loadDay}
+                selected={toZonedTime(startTime, STUDIO_TZ)}
+                onSelect={handleCalendarSelect}
                 required
                 className="w-full"
               />
@@ -145,14 +158,7 @@ export function ChangeStartTimeButton({
                       id="startTime"
                       type="time"
                       value={timeInputFormatter.format(startTime)}
-                      onChange={(e) => {
-                        const [hours, mins] = e.target.value
-                          .split(':')
-                          .map(Number);
-                        const next = new Date(startTime);
-                        next.setHours(hours, mins, 0, 0);
-                        setStartTime(next);
-                      }}
+                      onChange={(e) => handleTimeChange(e.target.value)}
                     />
                     <InputGroupAddon>
                       <Clock2Icon className="text-muted-foreground" />

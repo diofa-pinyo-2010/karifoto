@@ -28,6 +28,11 @@ const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
 // e.g. 2026-12-13, for grouping/comparing by Budapest-local calendar day
 export const getBudapestDayKey = (date: Date) => dayKeyFormatter.format(date);
 
+// The instant a Budapest wall clock shows `time` (HH:mm) on `dayKey`
+// (yyyy-MM-dd) — independent of the browser's timezone.
+export const fromBudapestDayAndTime = (dayKey: string, time: string) =>
+  fromZonedTime(`${dayKey}T${time}:00`, STUDIO_TZ);
+
 export const groupByDay = <T>(
   items: T[],
   getDate: (item: T) => Date,

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { Prisma } from '@/generated/prisma/client';
 import { APP_URLS, UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
+import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
 import { dayBounds } from '@/lib/utils';
@@ -85,6 +86,7 @@ export async function getPhotoShootingsForDay(
   date: Date,
   excludeShootingId?: string,
 ) {
+  await verifySession();
   const { start, end } = dayBounds(date);
   return prisma.photoShooting.findMany({
     where: {
@@ -103,6 +105,7 @@ export async function changeTimeOfPhotoShooting({
   shootingId: string;
   newStartTime: Date;
 }): Promise<{ error: string } | void> {
+  await verifySession();
   // 1. Check if there is an exising timeslot without photoshooting
   // 2. Create a new one if there is not
   const res = await getOrCreateTimeSlot(newStartTime);
