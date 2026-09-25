@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/input-group';
 import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from '@/components/ui/toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PACKAGE_LABEL, STUDIO_TZ } from '@/lib/constants';
 import { shortFullDateFormatter, timeInputFormatter } from '@/lib/formatters';
@@ -52,6 +53,10 @@ export function ChangeStartTimeButton({
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [startTime, setStartTime] = useState<Date>(currentStartTime);
+  // Month shown by the Calendar — controlled, otherwise it opens on today.
+  const [month, setMonth] = useState(() =>
+    toZonedTime(currentStartTime, STUDIO_TZ),
+  );
   const [shootings, setShootings] = useState<PhotoShootingsForDay[]>();
   const [isLoading, startLoading] = useTransition();
   const [isSaving, startSaving] = useTransition();
@@ -78,13 +83,19 @@ export function ChangeStartTimeButton({
     });
   }
 
+  // Back to the shooting's current time: selection, shown month and day list.
+  function resetToCurrent() {
+    setStartTime(currentStartTime);
+    setMonth(toZonedTime(currentStartTime, STUDIO_TZ));
+    loadDay(currentStartTime);
+  }
+
   function handleOpenChange(opened: boolean) {
     setIsOpen(opened);
     if (opened) {
       // Drop any unsaved pick from a previous (cancelled) open.
-      setStartTime(currentStartTime);
       setSaveError(null);
-      loadDay(currentStartTime);
+      resetToCurrent();
     }
   }
 
@@ -117,6 +128,11 @@ export function ChangeStartTimeButton({
           return;
         }
         setIsOpen(false);
+        toast.add({
+          title: 'Időpont módosítva',
+          description: `Új időpont: ${shortFullDateFormatter.format(startTime)}. Az ügyfelet e-mailben értesítjük.`,
+          type: 'success',
+        });
       } catch (e) {
         console.error(e);
         setSaveError('Nem sikerült módosítani az időpontot. Próbáld újra.');
@@ -147,6 +163,8 @@ export function ChangeStartTimeButton({
                 mode="single"
                 selected={toZonedTime(startTime, STUDIO_TZ)}
                 onSelect={handleCalendarSelect}
+                month={month}
+                onMonthChange={setMonth}
                 required
                 className="w-full"
               />
@@ -173,10 +191,7 @@ export function ChangeStartTimeButton({
                 <p className="font-bold">
                   {shortFullDateFormatter.format(startTime)}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setStartTime(currentStartTime)}
-                >
+                <Button variant="outline" onClick={resetToCurrent}>
                   <RotateCcwIcon />
                   Reset
                 </Button>
