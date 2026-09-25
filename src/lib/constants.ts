@@ -146,3 +146,8 @@ export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
     EXPENSE_SOFTWARE: 'Szoftver',
     EXPENSE_OTHER: 'Egyéb kiadás',
   };
+
+export const APP_URLS = {
+  photoShootingAdminPage: (shootingId: string) =>
+    `/admin/photo-shootings/${shootingId}`,
+};

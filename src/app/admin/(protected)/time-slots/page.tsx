@@ -19,6 +19,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
+import { APP_URLS } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { cn, groupByDay } from '@/lib/utils';
 import { fetchTimeSlots } from '@/server/time-slots';
@@ -84,7 +85,9 @@ export default async function AdminTimeSlotsPage() {
                             <ItemDescription>
                               {photoShooting != null ? (
                                 <Link
-                                  href={`/admin/photo-shootings/${photoShooting.id}`}
+                                  href={APP_URLS.photoShootingAdminPage(
+                                    photoShooting.id,
+                                  )}
                                 >
                                   {photoShooting.client.owner.name}
                                 </Link>
