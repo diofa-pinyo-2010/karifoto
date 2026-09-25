@@ -169,7 +169,7 @@ export function ChangeStartTimeButton({
                 </Field>
               </FieldGroup>
 
-              <div className="flex items-center gap-2 w-full justify-between mt-3">
+              <div className="mt-3 flex w-full items-center justify-between gap-2">
                 <p className="font-bold">
                   {shortFullDateFormatter.format(startTime)}
                 </p>
