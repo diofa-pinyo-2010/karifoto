@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
 import { APP_URLS, UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
+import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
 
 const photoShootingWithClientInclude = {
@@ -138,7 +140,24 @@ export async function changeTimeOfPhotoShooting({
     return { error: 'Nem sikerült módosítani az időpontot. Próbáld újra.' };
   }
 
-  // 4. Update the existing BookingCalendarEvent
+  // 4. Move the Google Calendar event. The new time is already saved, so a
+  // publish failure is logged, not returned to the admin.
+  try {
+    await qStashClient.publishJSON({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event-reschedule`,
+      body: { shootingId },
+      retries: 3,
+    });
+  } catch (error) {
+    console.error(
+      '[changeTimeOfPhotoShooting] failed to publish calendar job',
+      {
+        shootingId,
+        error,
+      },
+    );
+  }
+
   // 5. Send an email to the user about the update
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
 }
