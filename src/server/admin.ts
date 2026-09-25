@@ -13,7 +13,7 @@ import {
   PriceAdjustment,
   Prisma,
 } from '@/generated/prisma/client';
-import { PACKAGE_PRICES, YES_NO_VALUES } from '@/lib/constants';
+import { APP_URLS, PACKAGE_PRICES, YES_NO_VALUES } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { calculateRemainingAmount } from '@/server/pricing';
 
@@ -222,7 +222,7 @@ export async function updatePhotoShooting(
     return { error: 'Nem sikerült menteni a módosítást.' };
   }
 
-  revalidatePath(`/admin/photo-shootings/${id}`);
+  revalidatePath(APP_URLS.photoShootingAdminPage(id));
 }
 
 export async function updatePhotoShootingField(

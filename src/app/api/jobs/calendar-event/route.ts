@@ -2,6 +2,7 @@ import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import z from 'zod';
 
 import { env } from '@/env';
+import { APP_URLS } from '@/lib/constants';
 import { createCalendarEvent } from '@/lib/google-calendar';
 import { prisma } from '@/lib/prisma';
 
@@ -45,7 +46,7 @@ export const POST = verifySignatureAppRouter(
         title: `📸 ${photoShooting.client.owner.name} - ${photoShooting.package}`,
         description: `
         Fotózás oldala az adminon:
-        ${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${photoShooting.id}
+        ${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(photoShooting.id)}
       `,
         startTime,
         endTime,

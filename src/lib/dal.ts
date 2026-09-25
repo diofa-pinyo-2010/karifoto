@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { cache } from 'react';
 
 import { ADMIN_NAV_ITEMS } from '@/lib/admin-nav';
+import { APP_URLS } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { SESSION_COOKIE_NAME } from '@/lib/session';
 import { hashToken } from '@/lib/token';
@@ -55,7 +56,7 @@ export async function requireNavAccess(href: string) {
   }
 
   if (!navItem.allowedRoles.includes(session.staffProfile.role)) {
-    redirect('/admin/bookings');
+    redirect(APP_URLS.upcomingShootings);
   }
 
   return session;

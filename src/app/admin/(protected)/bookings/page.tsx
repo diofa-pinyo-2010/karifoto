@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import {
+  APP_URLS,
   DECOR_SET_LABEL,
   PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
@@ -20,10 +21,10 @@ import {
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { groupByDay } from '@/lib/utils';
-import { fetchPhotoShootings } from '@/server/photo-shootings';
+import { fetchUpcomingPhotoShootings } from '@/server/photo-shootings';
 
 export default async function BookingsPage() {
-  const photoShootings = await fetchPhotoShootings();
+  const photoShootings = await fetchUpcomingPhotoShootings();
 
   const groupedShootings = groupByDay(
     photoShootings,
@@ -60,7 +61,7 @@ export default async function BookingsPage() {
                   key={shooting.id}
                   variant="outline"
                   render={
-                    <Link href={`/admin/photo-shootings/${shooting.id}`}>
+                    <Link href={APP_URLS.photoShootingAdminPage(shooting.id)}>
                       <ItemContent className="gap-2">
                         <Badge
                           variant="secondary"

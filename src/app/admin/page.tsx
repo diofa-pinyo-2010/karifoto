@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
 
+import { APP_URLS } from '@/lib/constants';
+
 export default function AdminPage() {
-  redirect('/admin/bookings');
+  redirect(APP_URLS.upcomingShootings);
 }

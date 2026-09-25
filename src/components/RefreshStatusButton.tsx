@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 
-import { RefreshCcwIcon } from 'lucide-react';
+import { RotateCwIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -32,14 +32,12 @@ export function RefreshStatusButton({ action }: RefreshStatusButtonProps) {
       <TooltipTrigger
         render={
           <Button
-            size="icon"
+            size="icon-lg"
             variant="outline"
             disabled={isPending}
             onClick={handleClick}
           >
-            <RefreshCcwIcon
-              className={isPending ? 'animate-spin' : undefined}
-            />
+            <RotateCwIcon className={isPending ? 'animate-spin' : undefined} />
           </Button>
         }
       />
