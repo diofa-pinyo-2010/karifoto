@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
 import { APP_URLS, UPCOMING_SHOOTINGS_TO_SHOW } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
+import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
 
 const photoShootingWithClientInclude = {
@@ -106,6 +108,20 @@ export async function changeTimeOfPhotoShooting({
   newStartTime: Date;
 }): Promise<{ error: string } | void> {
   await verifySession();
+
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { id: shootingId },
+    select: { timeSlot: { select: { startTime: true } } },
+  });
+  if (shooting == null) {
+    return { error: 'Ez a fotózás nem található.' };
+  }
+  // Same time — nothing to move. Without this, the lookup below skips the
+  // shooting's own (taken) slot and would create a duplicate one.
+  if (shooting.timeSlot.startTime.getTime() === newStartTime.getTime()) {
+    return;
+  }
+
   // 1. Check if there is an exising timeslot without photoshooting
   // 2. Create a new one if there is not
   const res = await getOrCreateTimeSlot(newStartTime);
@@ -123,9 +139,40 @@ export async function changeTimeOfPhotoShooting({
     console.error(error);
     return { error: 'Nem sikerült módosítani az időpontot. Próbáld újra.' };
   }
-  // 4. Update the CONVERTED BookingIntent with the new time slot ????
 
-  // 5. Update the existing BookingCalendarEvent
-  // 6. Send an email to the user about the update
+  // 4. Move the Google Calendar event and email the client. The new time is
+  // already saved, so a publish failure is logged, not returned to the admin.
+  const jobs = [
+    {
+      name: 'calendar-event-reschedule',
+      body: { shootingId },
+    },
+    {
+      name: 'email-reschedule',
+      body: {
+        shootingId,
+        oldStartTime: shooting.timeSlot.startTime.toISOString(),
+      },
+    },
+  ];
+  const results = await Promise.allSettled(
+    jobs.map(({ name, body }) =>
+      qStashClient.publishJSON({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/${name}`,
+        body,
+        retries: 3,
+      }),
+    ),
+  );
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      console.error('[changeTimeOfPhotoShooting] failed to publish job', {
+        job: jobs[i].name,
+        shootingId,
+        error: result.reason,
+      });
+    }
+  });
+
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
 }

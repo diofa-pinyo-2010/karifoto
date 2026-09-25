@@ -6,7 +6,7 @@ import { formatLongDate } from '@/lib/formatters';
 import { markEmailSent, wasEmailSent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { sendBookingConfirmationEmail } from '@/lib/resend/booking-confirmation';
-import { generateAddToGoogleCalendarLink } from '@/lib/utils';
+import { generateClientShootingCalendarLink } from '@/lib/utils';
 
 export const POST = verifySignatureAppRouter(
   async (req: Request) => {
@@ -24,7 +24,7 @@ export const POST = verifySignatureAppRouter(
     const photoShooting = await prisma.photoShooting.findUnique({
       where: { id: parsed.data.shootingId },
       include: {
-        timeSlot: { select: { startTime: true } },
+        timeSlot: { select: { startTime: true, endTime: true } },
         client: { select: { owner: { select: { email: true, name: true } } } },
       },
     });
@@ -46,15 +46,10 @@ export const POST = verifySignatureAppRouter(
     }
 
     const bookedTimeString = formatLongDate(photoShooting.timeSlot.startTime);
-    const endTime = new Date(photoShooting.timeSlot.startTime);
-    endTime.setHours(endTime.getHours() + 1);
-    const addToGoogleCalendarLink = generateAddToGoogleCalendarLink({
-      title: 'Karifoto • Karácsonyi fotózás 🎄',
-      description:
-        'Ez a naptáresemény csak a te kényelmedet szolgálja, a Karifoto csapata nem tudja módosítani. Ha megváltozna az időpontod, új linket fogunk küldeni, ezt pedig neked kell törölnöd.',
-      startTime: photoShooting.timeSlot.startTime,
-      endTime,
-    });
+    const addToGoogleCalendarLink = generateClientShootingCalendarLink(
+      photoShooting.timeSlot.startTime,
+      photoShooting.timeSlot.endTime,
+    );
 
     try {
       const { data, error } = await sendBookingConfirmationEmail({

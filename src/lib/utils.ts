@@ -80,6 +80,20 @@ export function generateAddToGoogleCalendarLink({
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
+// The "add to my calendar" link sent to clients in booking/reschedule emails.
+export function generateClientShootingCalendarLink(
+  startTime: Date,
+  endTime: Date,
+) {
+  return generateAddToGoogleCalendarLink({
+    title: 'Karifoto • Karácsonyi fotózás 🎄',
+    description:
+      'Ez a naptáresemény csak a te kényelmedet szolgálja, a Karifoto csapata nem tudja módosítani. Ha megváltozna az időpontod, új linket fogunk küldeni, ezt pedig neked kell törölnöd.',
+    startTime,
+    endTime,
+  });
+}
+
 /**
  * Use it with `lt` because `end` is the firs moment of the next day.
  * @example

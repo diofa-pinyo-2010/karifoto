@@ -14,6 +14,7 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
 } from 'lucide-react';
+import { hu } from 'react-day-picker/locale';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 
@@ -23,7 +24,7 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = 'label',
   buttonVariant = 'ghost',
-  locale,
+  locale = hu,
   formatters,
   components,
   ...props

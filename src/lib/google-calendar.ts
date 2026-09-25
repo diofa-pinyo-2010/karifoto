@@ -71,3 +71,26 @@ export async function deleteCalendarEvent(eventId: string) {
     eventId,
   });
 }
+
+// Moves the event only — unlike `updateCalendarEvent` this keeps the title,
+// description and any manual edits made in Google Calendar.
+export async function rescheduleCalendarEvent({
+  eventId,
+  startTime,
+  endTime,
+}: {
+  eventId: string;
+  startTime: Date;
+  endTime: Date;
+}) {
+  const response = await calendar.events.patch({
+    calendarId: env.GOOGLE_CALENDAR_ID,
+    eventId,
+    requestBody: {
+      start: { dateTime: startTime.toISOString() },
+      end: { dateTime: endTime.toISOString() },
+    },
+  });
+
+  return response.data;
+}

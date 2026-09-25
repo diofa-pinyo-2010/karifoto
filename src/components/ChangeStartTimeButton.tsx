@@ -4,8 +4,25 @@ import { useRef, useState, useTransition } from 'react';
 
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { Clock2Icon, RefreshCcwIcon, RotateCcwIcon } from 'lucide-react';
+import {
+  BadgeQuestionMarkIcon,
+  Clock2Icon,
+  RefreshCcwIcon,
+  RotateCcwIcon,
+} from 'lucide-react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -30,9 +47,10 @@ import {
 } from '@/components/ui/input-group';
 import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from '@/components/ui/toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PACKAGE_LABEL, STUDIO_TZ } from '@/lib/constants';
-import { timeInputFormatter } from '@/lib/formatters';
+import { shortFullDateFormatter, timeInputFormatter } from '@/lib/formatters';
 import { cn, fromBudapestDayAndTime, getBudapestDayKey } from '@/lib/utils';
 import {
   changeTimeOfPhotoShooting,
@@ -52,12 +70,18 @@ export function ChangeStartTimeButton({
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [startTime, setStartTime] = useState<Date>(currentStartTime);
+  // Month shown by the Calendar — controlled, otherwise it opens on today.
+  const [month, setMonth] = useState(() =>
+    toZonedTime(currentStartTime, STUDIO_TZ),
+  );
   const [shootings, setShootings] = useState<PhotoShootingsForDay[]>();
   const [isLoading, startLoading] = useTransition();
   const [isSaving, startSaving] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const latestRequest = useRef(0);
+
+  const isDirty = startTime.getTime() !== currentStartTime.getTime();
 
   // `date` must already be a Budapest-anchored instant, so `dayBounds` on the
   // server picks the studio's calendar day.
@@ -78,11 +102,19 @@ export function ChangeStartTimeButton({
     });
   }
 
+  // Back to the shooting's current time: selection, shown month and day list.
+  function resetToCurrent() {
+    setStartTime(currentStartTime);
+    setMonth(toZonedTime(currentStartTime, STUDIO_TZ));
+    loadDay(currentStartTime);
+  }
+
   function handleOpenChange(opened: boolean) {
     setIsOpen(opened);
     if (opened) {
+      // Drop any unsaved pick from a previous (cancelled) open.
       setSaveError(null);
-      loadDay(currentStartTime);
+      resetToCurrent();
     }
   }
 
@@ -115,6 +147,11 @@ export function ChangeStartTimeButton({
           return;
         }
         setIsOpen(false);
+        toast.add({
+          title: 'Időpont módosítva',
+          description: `Új időpont: ${shortFullDateFormatter.format(startTime)}. Az ügyfelet e-mailben értesítjük.`,
+          type: 'success',
+        });
       } catch (e) {
         console.error(e);
         setSaveError('Nem sikerült módosítani az időpontot. Próbáld újra.');
@@ -145,6 +182,8 @@ export function ChangeStartTimeButton({
                 mode="single"
                 selected={toZonedTime(startTime, STUDIO_TZ)}
                 onSelect={handleCalendarSelect}
+                month={month}
+                onMonthChange={setMonth}
                 required
                 className="w-full"
               />
@@ -167,14 +206,15 @@ export function ChangeStartTimeButton({
                 </Field>
               </FieldGroup>
 
-              <Button
-                className="mt-3"
-                variant="outline"
-                onClick={() => setStartTime(currentStartTime)}
-              >
-                <RotateCcwIcon />
-                Reset
-              </Button>
+              <div className="mt-3 flex w-full items-center justify-between gap-2">
+                <p className="font-bold">
+                  {shortFullDateFormatter.format(startTime)}
+                </p>
+                <Button variant="outline" onClick={resetToCurrent}>
+                  <RotateCcwIcon />
+                  Reset
+                </Button>
+              </div>
             </CardFooter>
           </Card>
 
@@ -223,21 +263,12 @@ export function ChangeStartTimeButton({
               {saveError}
             </p>
           )}
-          <Button
-            variant="default"
-            size="lg"
-            onClick={handleConfirm}
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <>
-                {' '}
-                <Spinner /> Várj...{' '}
-              </>
-            ) : (
-              'Mentés'
-            )}
-          </Button>
+          <SubmitButtonWithAlertDialog
+            onConfirm={handleConfirm}
+            disabled={isSaving || !isDirty}
+            buttonLabel={isDirty ? 'Mentés' : 'Válassz új időpontot'}
+            isLoading={isSaving}
+          />
           <DrawerClose
             render={
               <Button variant="ghost" size="lg" disabled={isSaving}>
@@ -248,5 +279,56 @@ export function ChangeStartTimeButton({
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
+  );
+}
+
+interface SubmitButtonWithAlertDialogProps {
+  onConfirm: () => void;
+  disabled: boolean;
+  isLoading: boolean;
+  buttonLabel: string;
+}
+
+function SubmitButtonWithAlertDialog({
+  onConfirm,
+  disabled,
+  isLoading,
+  buttonLabel,
+}: SubmitButtonWithAlertDialogProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger
+        render={
+          <Button variant="default" size="lg" disabled={disabled}>
+            {isLoading ? <Spinner /> : buttonLabel}
+          </Button>
+        }
+      />
+      <AlertDialogContent size="sm" overlayClassName="bg-black/40">
+        <AlertDialogHeader>
+          <AlertDialogMedia>
+            <BadgeQuestionMarkIcon />
+          </AlertDialogMedia>
+          <AlertDialogTitle>Biztos vagy benne?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Megváltoztatjuk a fotózás időpontját, és erről egy email-t küldünk
+            az ügyfélnek.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Mégse</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              setOpen(false);
+              onConfirm();
+            }}
+          >
+            Mentés & Küldés
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
