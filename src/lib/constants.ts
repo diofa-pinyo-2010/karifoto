@@ -8,6 +8,8 @@ import {
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
 
+export const STUDIO_TZ = 'Europe/Budapest';
+
 export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
@@ -71,6 +73,10 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
 export const UPCOMING_SHOOTINGS_TO_SHOW = 10;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;
+
+// A PENDING BookingIntent touched within this window may still have a live
+// Stripe Checkout session (default expiry: 24h), so its slot counts as held.
+export const PENDING_INTENT_HOLD_HOURS = 24;
 
 export const PACKAGE_LABEL: Record<Package, string> = {
   MINI: 'Mini',

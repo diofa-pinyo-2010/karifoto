@@ -1,3 +1,4 @@
+import { STUDIO_TZ } from '@/lib/constants';
 import { EVENT_TTL } from '@/lib/idempotency';
 import { redis } from '@/lib/upstash';
 
@@ -10,7 +11,7 @@ const hungarianFormatter = new Intl.DateTimeFormat('hu-HU', {
   weekday: 'long',
   hour: '2-digit',
   minute: '2-digit',
-  timeZone: 'Europe/Budapest',
+  timeZone: STUDIO_TZ,
 });
 
 const weekday = new Intl.DateTimeFormat('hu-HU', {
