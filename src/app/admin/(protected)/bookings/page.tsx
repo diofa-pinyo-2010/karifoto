@@ -20,10 +20,10 @@ import {
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { groupByDay } from '@/lib/utils';
-import { fetchPhotoShootings } from '@/server/photo-shootings';
+import { fetchUpcomingPhotoShootings } from '@/server/photo-shootings';
 
 export default async function BookingsPage() {
-  const photoShootings = await fetchPhotoShootings();
+  const photoShootings = await fetchUpcomingPhotoShootings();
 
   const groupedShootings = groupByDay(
     photoShootings,

@@ -15,13 +15,13 @@ type PhotoShootingWithClient = Prisma.PhotoShootingGetPayload<
   typeof photoShootingWithClientInclude
 >;
 
-export async function fetchPhotoShootings(): Promise<
+export async function fetchUpcomingPhotoShootings(): Promise<
   PhotoShootingWithClient[]
 > {
   return prisma.photoShooting.findMany({
     where: {
       AND: {
-        timeSlot: { startTime: { gte: new Date() } },
+        timeSlot: { endTime: { gte: new Date() } },
         status: { notIn: ['COMPLETED', 'CLOSED'] },
       },
     },
