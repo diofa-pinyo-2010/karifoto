@@ -44,7 +44,9 @@ export default async function RemoteBookingSummaryPage({
         <SummaryRow
           label="Időpont"
           value={shortFullDateFormatter.format(
-            bookingIntent.timeSlot.startTime,
+            // The shooting may have been rescheduled — show its current time.
+            bookingIntent.photoShooting?.timeSlot.startTime ??
+              bookingIntent.timeSlot.startTime,
           )}
         />
         <SummaryRow label="Név" value={bookingIntent.name} />

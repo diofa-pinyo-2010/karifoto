@@ -291,6 +291,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         data: {
           client: { connect: { id: client.id } },
           timeSlot: { connect: { id: timeSlotId } },
+          bookingIntent: { connect: { id: bookingIntentId } },
           package: selectedPackage,
           clientNote,
           decorSet: bookingIntent.decorSet,

@@ -72,7 +72,11 @@ export default async function SuccessPage(
             <dl className="mx-auto mt-7 max-w-100 rounded-2xl border border-ink/15 bg-[#FFFDF8] px-5 py-1.5 text-left">
               <SuccessRow
                 label="Időpont"
-                value={formatLongDate(bookingIntent.timeSlot.startTime)}
+                value={formatLongDate(
+                  // A fotózás időpontja átkerülhetett — azt mutatjuk.
+                  bookingIntent.photoShooting?.timeSlot.startTime ??
+                    bookingIntent.timeSlot.startTime,
+                )}
               />
               <SuccessRow
                 label="Csomag"
