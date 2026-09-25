@@ -18,6 +18,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Currency, PaymentMethod } from '@/generated/prisma/client';
 import {
+  APP_URLS,
   booleanToYesNo,
   DECOR_SET_COMBOBOX_ITEMS,
   DECOR_SET_LABEL,
@@ -51,7 +52,6 @@ export function DetailRow({
 }: {
   label: string;
   value: React.ReactNode;
-  /** Lets the value take up the row's remaining width instead of hugging its content. */
   fullWidth?: boolean;
 }) {
   return (
@@ -93,7 +93,7 @@ export default async function PhotoShootingDetailPage({
       size="lg"
       className="w-fit"
       nativeButton={false}
-      render={<Link href="/admin/bookings" />}
+      render={<Link href={APP_URLS.upcomingShootings} />}
     >
       <ArrowLeft />
       Vissza a fotózásokhoz

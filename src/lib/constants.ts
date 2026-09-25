@@ -150,4 +150,5 @@ export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
 export const APP_URLS = {
   photoShootingAdminPage: (shootingId: string) =>
     `/admin/photo-shootings/${shootingId}`,
+  upcomingShootings: '/admin/bookings',
 };

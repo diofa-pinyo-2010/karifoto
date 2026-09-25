@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
+import { APP_URLS } from '@/lib/constants';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -32,7 +33,7 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     items: [
       {
         title: 'Következő fotózások',
-        href: '/admin/bookings',
+        href: APP_URLS.upcomingShootings,
         icon: SpotlightIcon,
         allowedRoles: ALL_STAFF,
       },
