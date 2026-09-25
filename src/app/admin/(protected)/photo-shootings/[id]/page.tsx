@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { ArrowLeft, ExternalLinkIcon } from 'lucide-react';
 
+import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
@@ -162,10 +163,13 @@ export default async function PhotoShootingDetailPage({
         <h1 className="text-3xl font-semibold text-primary lg:text-4xl dark:text-primary-foreground">
           {client.owner.name}
         </h1>
-        <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">
-          {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
-          {timeFormatter.format(timeSlot.startTime)}
-        </h2>
+        <div className="item-center flex flex-col gap-2 lg:flex-row">
+          <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">
+            {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
+            {timeFormatter.format(timeSlot.startTime)}
+          </h2>
+          <ChangeStartTimeButton currentStartTime={timeSlot.startTime} />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">

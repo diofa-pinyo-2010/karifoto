@@ -25,6 +25,14 @@ export const timeFormatter = new Intl.DateTimeFormat('hu-Hu', {
   minute: '2-digit',
 });
 
+// 09:00 — zero-padded, for <input type="time"> values
+export const timeInputFormatter = new Intl.DateTimeFormat('hu-HU', {
+  timeZone: 'Europe/Budapest',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
 // nov. 1., vasárnap 10:00
 export const shortFullDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
   timeZone: 'Europe/Budapest',
