@@ -140,24 +140,39 @@ export async function changeTimeOfPhotoShooting({
     return { error: 'Nem sikerült módosítani az időpontot. Próbáld újra.' };
   }
 
-  // 4. Move the Google Calendar event. The new time is already saved, so a
-  // publish failure is logged, not returned to the admin.
-  try {
-    await qStashClient.publishJSON({
-      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event-reschedule`,
+  // 4. Move the Google Calendar event and email the client. The new time is
+  // already saved, so a publish failure is logged, not returned to the admin.
+  const jobs = [
+    {
+      name: 'calendar-event-reschedule',
       body: { shootingId },
-      retries: 3,
-    });
-  } catch (error) {
-    console.error(
-      '[changeTimeOfPhotoShooting] failed to publish calendar job',
-      {
+    },
+    {
+      name: 'email-reschedule',
+      body: {
         shootingId,
-        error,
+        oldStartTime: shooting.timeSlot.startTime.toISOString(),
       },
-    );
-  }
+    },
+  ];
+  const results = await Promise.allSettled(
+    jobs.map(({ name, body }) =>
+      qStashClient.publishJSON({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/${name}`,
+        body,
+        retries: 3,
+      }),
+    ),
+  );
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      console.error('[changeTimeOfPhotoShooting] failed to publish job', {
+        job: jobs[i].name,
+        shootingId,
+        error: result.reason,
+      });
+    }
+  });
 
-  // 5. Send an email to the user about the update
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
 }

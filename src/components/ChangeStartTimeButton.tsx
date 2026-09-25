@@ -32,7 +32,7 @@ import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PACKAGE_LABEL, STUDIO_TZ } from '@/lib/constants';
-import { timeInputFormatter } from '@/lib/formatters';
+import { shortFullDateFormatter, timeInputFormatter } from '@/lib/formatters';
 import { cn, fromBudapestDayAndTime, getBudapestDayKey } from '@/lib/utils';
 import {
   changeTimeOfPhotoShooting,
@@ -169,14 +169,18 @@ export function ChangeStartTimeButton({
                 </Field>
               </FieldGroup>
 
-              <Button
-                className="mt-3"
-                variant="outline"
-                onClick={() => setStartTime(currentStartTime)}
-              >
-                <RotateCcwIcon />
-                Reset
-              </Button>
+              <div className="flex items-center gap-2 w-full justify-between mt-3">
+                <p className="font-bold">
+                  {shortFullDateFormatter.format(startTime)}
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setStartTime(currentStartTime)}
+                >
+                  <RotateCcwIcon />
+                  Reset
+                </Button>
+              </div>
             </CardFooter>
           </Card>
 

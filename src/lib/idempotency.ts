@@ -12,6 +12,9 @@ const emailConfirmKey = (shootingId: string) =>
 const reminderKey = (shootingId: string, dayKey: string) =>
   `reminder_on_the_day:${shootingId}:${dayKey}`;
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
+// Both times in the key: a later, different reschedule gets its own email.
+const rescheduleEmailKey = (shootingId: string, oldTime: Date, newTime: Date) =>
+  `reschedule_email:${shootingId}:${oldTime.toISOString()}:${newTime.toISOString()}`;
 // const googleCalendarEventKey = (shootingId: string) =>
 //   `google_cal_evt:${shootingId}`;
 
@@ -111,6 +114,43 @@ export const markReminderSent = async (
     );
   } catch (error) {
     console.error(`Error marking reminder sent: ${shootingId}`, error);
+  }
+};
+
+/** Pure read — does NOT claim. Fail-open: a duplicate email beats a missing one. */
+export const wasRescheduleEmailSent = async (
+  shootingId: string,
+  oldTime: Date,
+  newTime: Date,
+): Promise<boolean> => {
+  try {
+    return (
+      (await redis.exists(rescheduleEmailKey(shootingId, oldTime, newTime))) ===
+      1
+    );
+  } catch (error) {
+    console.error(
+      `Error checking reschedule email claim: ${shootingId}`,
+      error,
+    );
+    return false;
+  }
+};
+
+/** Written only after Resend accepted. Never throws — the email already went out. */
+export const markRescheduleEmailSent = async (
+  shootingId: string,
+  oldTime: Date,
+  newTime: Date,
+): Promise<void> => {
+  try {
+    await redis.set(
+      rescheduleEmailKey(shootingId, oldTime, newTime),
+      `sent_at:${new Date().toISOString()}`,
+      { ex: EVENT_TTL },
+    );
+  } catch (error) {
+    console.error(`Error marking reschedule email sent: ${shootingId}`, error);
   }
 };
 
