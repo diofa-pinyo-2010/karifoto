@@ -3,6 +3,7 @@ import {
   BetweenHorizonalStartIcon,
   SettingsIcon,
   PhoneIcon,
+  MailIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -52,6 +53,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         title: 'Telefonos foglalás',
         href: '/admin/remote-booking',
         icon: PhoneIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
+      {
+        title: 'E-mail sablonok',
+        href: '/admin/email-previews',
+        icon: MailIcon,
         allowedRoles: [StaffProfileRole.SUPERADMIN],
       },
       {

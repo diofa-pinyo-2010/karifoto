@@ -8,6 +8,8 @@ import {
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
 
+export const BASE_URL_PROD = 'https://karifoto.hu';
+
 export const STUDIO_TZ = 'Europe/Budapest';
 
 export const SITE_NAME = 'Karifoto';

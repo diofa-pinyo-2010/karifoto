@@ -1,4 +1,6 @@
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
+import AdminLoginEmail, { ADMIN_LOGIN_SUBJECT } from '@/emails/AdminLogin';
+import { BASE_URL_PROD } from '@/lib/constants';
+import { sendReactEmail } from '@/lib/resend/send-react-email';
 
 type SendAdminVerificationEmailParams = {
   to: string;
@@ -11,9 +13,14 @@ export function sendAdminVerificationEmail({
   name,
   verifyUrl,
 }: SendAdminVerificationEmailParams) {
-  return sendTemplatedEmail({
+  return sendReactEmail({
+    type: 'ADMIN_LOGIN',
     to,
-    template: 'ADMIN_LOGIN',
-    variables: { NAME: name, VERIFY_URL: verifyUrl },
+    subject: ADMIN_LOGIN_SUBJECT,
+    react: AdminLoginEmail({
+      name,
+      verifyUrl,
+      baseUrl: BASE_URL_PROD,
+    }),
   });
 }

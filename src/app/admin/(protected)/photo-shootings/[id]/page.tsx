@@ -183,7 +183,7 @@ export default async function PhotoShootingDetailPage({
 
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-medium">Ügyfél</h3>
-        <div className="rounded-lg border px-4">
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Telefon"
             value={
@@ -204,7 +204,7 @@ export default async function PhotoShootingDetailPage({
 
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-medium">Részletek</h3>
-        <div className="rounded-lg border px-4">
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow label="Csomag" value={PACKAGE_LABEL[shooting.package]} />
           <DetailRow
             label="Díszlet"
@@ -280,7 +280,7 @@ export default async function PhotoShootingDetailPage({
 
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-medium">A fotózás napja</h3>
-        <div className="rounded-lg border px-4">
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Fotós"
             value={
@@ -351,7 +351,7 @@ export default async function PhotoShootingDetailPage({
             />
           ))}
         </div>
-        <div className="rounded-lg border px-4">
+        <div className="rounded-lg border bg-card px-4">
           {ledgerEntries.map((ledgerEntry) => {
             return (
               <DetailRow
@@ -367,7 +367,7 @@ export default async function PhotoShootingDetailPage({
             );
           })}
         </div>
-        <div className="rounded-lg border px-4">
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Fizetendő még"
             value={formatAmount(remainingAmount, 'HUF')}
@@ -379,7 +379,7 @@ export default async function PhotoShootingDetailPage({
 
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-medium">Utómunka</h3>
-        <div className="rounded-lg border px-4">
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Nyers képek (PicDrop URL)"
             fullWidth
@@ -483,7 +483,7 @@ export default async function PhotoShootingDetailPage({
         ) : (
           <ItemGroup>
             {ledgerEntries.map((entry) => (
-              <Item key={entry.id} variant="outline">
+              <Item key={entry.id} variant="outline" className="bg-card">
                 <ItemContent>
                   <ItemTitle>
                     {formatAmount(entry.amountInCents, entry.currency)} ·{' '}
@@ -496,7 +496,7 @@ export default async function PhotoShootingDetailPage({
                 {entry.invoice && (
                   <ItemActions>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       nativeButton={false}
                       render={
                         <a
@@ -526,7 +526,7 @@ export default async function PhotoShootingDetailPage({
         ) : (
           <ItemGroup>
             {sentEmails.map((email) => (
-              <Item key={email.id} variant="outline">
+              <Item key={email.id} variant="outline" className="bg-card">
                 <ItemContent>
                   <ItemTitle>
                     {shortFullDateFormatter.format(email.sentAt)}
@@ -535,7 +535,7 @@ export default async function PhotoShootingDetailPage({
                 </ItemContent>
                 <ItemActions>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     nativeButton={false}
                     render={
                       <a
