@@ -57,6 +57,7 @@ export const POST = verifySignatureAppRouter(
         name: photoShooting.client.owner.name,
         bookedTimeString,
         addToGoogleCalendarLink,
+        shootingId: photoShooting.id,
       });
 
       if (error != null) {

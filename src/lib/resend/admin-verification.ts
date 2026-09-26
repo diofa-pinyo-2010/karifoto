@@ -16,5 +16,6 @@ export function sendAdminVerificationEmail({
     to,
     templateId: ADMIN_LOGIN,
     variables: { NAME: name, VERIFY_URL: verifyUrl },
+    tags: [{ name: 'type', value: 'ADMIN_LOGIN' }],
   });
 }

@@ -5,12 +5,14 @@ type ReminderOnTheDayEmailParams = {
   to: string;
   name: string;
   bookedTimeString: string;
+  shootingId: string;
 };
 
 export function sendReminderOnTheDayEmail({
   to,
   name,
   bookedTimeString,
+  shootingId,
 }: ReminderOnTheDayEmailParams) {
   return sendTemplatedEmail({
     to,
@@ -19,5 +21,9 @@ export function sendReminderOnTheDayEmail({
       NAME: name,
       BOOKED_TIME: bookedTimeString,
     },
+    tags: [
+      { name: 'type', value: 'REMINDER_ON_THE_DAY' },
+      { name: 'shootingId', value: shootingId },
+    ],
   });
 }

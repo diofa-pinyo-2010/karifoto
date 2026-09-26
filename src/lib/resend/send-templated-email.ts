@@ -6,6 +6,7 @@ type SendTemplatedEmailParams = {
   variables?: Record<string, string | number>;
   from?: string;
   subject?: string;
+  tags?: { name: string; value: string }[];
 };
 
 export async function sendTemplatedEmail({
@@ -14,11 +15,13 @@ export async function sendTemplatedEmail({
   variables,
   from,
   subject,
+  tags,
 }: SendTemplatedEmailParams) {
   return resend.emails.send({
     to,
     from,
     subject,
     template: { id: templateId, variables },
+    tags,
   });
 }

@@ -7,6 +7,7 @@ type RescheduleNotificationEmailParams = {
   bookedTimeString: string;
   oldTimeString: string;
   addToGoogleCalendarLink: string;
+  shootingId: string;
 };
 
 export function sendRescheduleNotificationEmail({
@@ -15,6 +16,7 @@ export function sendRescheduleNotificationEmail({
   bookedTimeString,
   oldTimeString,
   addToGoogleCalendarLink,
+  shootingId,
 }: RescheduleNotificationEmailParams) {
   return sendTemplatedEmail({
     to,
@@ -25,5 +27,9 @@ export function sendRescheduleNotificationEmail({
       OLD_TIME: oldTimeString,
       ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
     },
+    tags: [
+      { name: 'type', value: 'RESCHEDULE_NOTIFICATION' },
+      { name: 'shootingId', value: shootingId },
+    ],
   });
 }

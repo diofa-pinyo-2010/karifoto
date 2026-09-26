@@ -7,6 +7,7 @@ type DepositRequestEmailParams = {
   bookedTimeString: string;
   summaryUrl: string;
   depositAmount: string;
+  bookingIntentId: string;
 };
 
 export function sendDepositRequestEmail({
@@ -15,6 +16,7 @@ export function sendDepositRequestEmail({
   bookedTimeString,
   depositAmount,
   summaryUrl,
+  bookingIntentId,
 }: DepositRequestEmailParams) {
   return sendTemplatedEmail({
     to,
@@ -25,5 +27,9 @@ export function sendDepositRequestEmail({
       DEPOSIT_AMOUNT: depositAmount,
       SUMMARY_URL: summaryUrl,
     },
+    tags: [
+      { name: 'type', value: 'DEPOSIT_REQUEST' },
+      { name: 'bookingIntentId', value: bookingIntentId },
+    ],
   });
 }

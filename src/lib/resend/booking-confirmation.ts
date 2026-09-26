@@ -6,6 +6,7 @@ type SendBookingConfirmationEmailParams = {
   name: string;
   bookedTimeString: string;
   addToGoogleCalendarLink: string;
+  shootingId: string;
 };
 
 export function sendBookingConfirmationEmail({
@@ -13,6 +14,7 @@ export function sendBookingConfirmationEmail({
   name,
   bookedTimeString,
   addToGoogleCalendarLink,
+  shootingId,
 }: SendBookingConfirmationEmailParams) {
   return sendTemplatedEmail({
     to,
@@ -22,5 +24,9 @@ export function sendBookingConfirmationEmail({
       BOOKED_TIME: bookedTimeString,
       ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
     },
+    tags: [
+      { name: 'type', value: 'CLIENT_BOOKING_CONFIRMATION' },
+      { name: 'shootingId', value: shootingId },
+    ],
   });
 }
