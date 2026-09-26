@@ -10,7 +10,8 @@ export const CLIENT_EMAIL_TEMPLATES = {
 
 // Internal emails — never recorded (ADMIN_LOGIN carries a live login token).
 export const ADMIN_EMAIL_TEMPLATES = {
-  ADMIN_LOGIN: '3ae95ee3-b1e0-4fd9-a90c-c3b2c7777b4d',
+  // using react.email for this
+  // ADMIN_LOGIN: '3ae95ee3-b1e0-4fd9-a90c-c3b2c7777b4d',
 } as const;
 
 export const RESEND_EMAIL_TEMPLATES = {
