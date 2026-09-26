@@ -1,4 +1,3 @@
-import { RESEND_EMAIL_TEMPLATES } from '@/lib/resend/email-templates';
 import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
 
 type DepositRequestEmailParams = {
@@ -20,7 +19,7 @@ export function sendDepositRequestEmail({
 }: DepositRequestEmailParams) {
   return sendTemplatedEmail({
     to,
-    templateId: RESEND_EMAIL_TEMPLATES.DEPOSIT_REQUEST,
+    template: 'DEPOSIT_REQUEST',
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,

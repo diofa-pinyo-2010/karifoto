@@ -1,4 +1,3 @@
-import { RESEND_EMAIL_TEMPLATES } from '@/lib/resend/email-templates';
 import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
 
 type SendBookingConfirmationEmailParams = {
@@ -18,7 +17,7 @@ export function sendBookingConfirmationEmail({
 }: SendBookingConfirmationEmailParams) {
   return sendTemplatedEmail({
     to,
-    templateId: RESEND_EMAIL_TEMPLATES.CLIENT_BOOKING_CONFIRMATION,
+    template: 'CLIENT_BOOKING_CONFIRMATION',
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,

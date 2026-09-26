@@ -12,6 +12,7 @@
     "db:studio": "prisma studio --port 5555 --browser none",
     "dev": "next dev",
     "dev:qstash": "pnpm dlx @upstash/qstash-cli dev",
+    "email:types": "tsx scripts/generate-email-types.ts && oxfmt src/lib/resend/email-template-variables.generated.ts",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
