@@ -1,4 +1,4 @@
-import { REMINDER_ON_THE_DAY } from '@/lib/resend/email-templates';
+import { RESEND_EMAIL_TEMPLATES } from '@/lib/resend/email-templates';
 import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
 
 type ReminderOnTheDayEmailParams = {
@@ -16,7 +16,7 @@ export function sendReminderOnTheDayEmail({
 }: ReminderOnTheDayEmailParams) {
   return sendTemplatedEmail({
     to,
-    templateId: REMINDER_ON_THE_DAY,
+    templateId: RESEND_EMAIL_TEMPLATES.REMINDER_ON_THE_DAY,
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,

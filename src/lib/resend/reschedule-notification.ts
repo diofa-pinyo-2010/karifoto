@@ -1,4 +1,4 @@
-import { RESCHEDULE_NOTIFICATION } from '@/lib/resend/email-templates';
+import { RESEND_EMAIL_TEMPLATES } from '@/lib/resend/email-templates';
 import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
 
 type RescheduleNotificationEmailParams = {
@@ -20,7 +20,7 @@ export function sendRescheduleNotificationEmail({
 }: RescheduleNotificationEmailParams) {
   return sendTemplatedEmail({
     to,
-    templateId: RESCHEDULE_NOTIFICATION,
+    templateId: RESEND_EMAIL_TEMPLATES.RESCHEDULE_NOTIFICATION,
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,

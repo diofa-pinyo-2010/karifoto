@@ -1,4 +1,4 @@
-import { ADMIN_LOGIN } from '@/lib/resend/email-templates';
+import { RESEND_EMAIL_TEMPLATES } from '@/lib/resend/email-templates';
 import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
 
 type SendAdminVerificationEmailParams = {
@@ -14,7 +14,7 @@ export function sendAdminVerificationEmail({
 }: SendAdminVerificationEmailParams) {
   return sendTemplatedEmail({
     to,
-    templateId: ADMIN_LOGIN,
+    templateId: RESEND_EMAIL_TEMPLATES.ADMIN_LOGIN,
     variables: { NAME: name, VERIFY_URL: verifyUrl },
     tags: [{ name: 'type', value: 'ADMIN_LOGIN' }],
   });
