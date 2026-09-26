@@ -30,7 +30,12 @@ import {
   PHOTO_SHOOTING_STATUS_LABEL,
   YES_NO_COMBOBOX_ITEMS,
 } from '@/lib/constants';
-import { dateFormatter, timeFormatter } from '@/lib/formatters';
+import {
+  dateFormatter,
+  shortFullDateFormatter,
+  timeFormatter,
+} from '@/lib/formatters';
+import { resendEmailUrl } from '@/lib/resend';
 import { capitalize, cn, formatMoney } from '@/lib/utils';
 import {
   fetchPhotographers,
@@ -128,6 +133,7 @@ export default async function PhotoShootingDetailPage({
     adjustments,
     isLightPlaySelected,
     decorSet,
+    sentEmails,
   } = shooting;
 
   const extraPeople = Math.max(
@@ -490,7 +496,6 @@ export default async function PhotoShootingDetailPage({
                 {entry.invoice && (
                   <ItemActions>
                     <Button
-                      size="sm"
                       variant="outline"
                       nativeButton={false}
                       render={
@@ -503,9 +508,48 @@ export default async function PhotoShootingDetailPage({
                       }
                     >
                       Számla
+                      <ExternalLinkIcon />
                     </Button>
                   </ItemActions>
                 )}
+              </Item>
+            ))}
+          </ItemGroup>
+        )}
+      </div>
+      <div className="flex flex-col gap-3">
+        <h2 className="text-base font-semibold">Elküldött email-ek</h2>
+        {sentEmails.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nincsenek még elküldött email-ek.
+          </p>
+        ) : (
+          <ItemGroup>
+            {sentEmails.map((email) => (
+              <Item key={email.id} variant="outline">
+                <ItemContent>
+                  <ItemTitle>
+                    {shortFullDateFormatter.format(email.sentAt)}
+                  </ItemTitle>
+                  <ItemDescription>{email.subject}</ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Button
+                    variant="outline"
+                    nativeButton={false}
+                    render={
+                      <a
+                        href={resendEmailUrl(email.resendId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Resend"
+                      />
+                    }
+                  >
+                    Resend
+                    <ExternalLinkIcon />
+                  </Button>
+                </ItemActions>
               </Item>
             ))}
           </ItemGroup>

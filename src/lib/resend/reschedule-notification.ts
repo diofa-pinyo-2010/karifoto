@@ -1,5 +1,4 @@
-import { RESCHEDULE_NOTIFICATION } from '@/lib/resend/email-templates';
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
+import { sendClientEmail } from '@/lib/resend/send-client-email';
 
 type RescheduleNotificationEmailParams = {
   to: string;
@@ -7,6 +6,8 @@ type RescheduleNotificationEmailParams = {
   bookedTimeString: string;
   oldTimeString: string;
   addToGoogleCalendarLink: string;
+  shootingId: string;
+  clientId: string;
 };
 
 export function sendRescheduleNotificationEmail({
@@ -15,15 +16,20 @@ export function sendRescheduleNotificationEmail({
   bookedTimeString,
   oldTimeString,
   addToGoogleCalendarLink,
+  shootingId,
+  clientId,
 }: RescheduleNotificationEmailParams) {
-  return sendTemplatedEmail({
+  return sendClientEmail({
     to,
-    templateId: RESCHEDULE_NOTIFICATION,
+    clientId,
+    photoShootingId: shootingId,
+    template: 'RESCHEDULE_NOTIFICATION',
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,
       OLD_TIME: oldTimeString,
       ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
     },
+    tags: [{ name: 'shootingId', value: shootingId }],
   });
 }

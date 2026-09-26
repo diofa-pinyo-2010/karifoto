@@ -1,5 +1,4 @@
-import { DEPOSIT_REQUEST } from '@/lib/resend/email-templates';
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
+import { sendClientEmail } from '@/lib/resend/send-client-email';
 
 type DepositRequestEmailParams = {
   to: string;
@@ -7,6 +6,7 @@ type DepositRequestEmailParams = {
   bookedTimeString: string;
   summaryUrl: string;
   depositAmount: string;
+  bookingIntentId: string;
 };
 
 export function sendDepositRequestEmail({
@@ -15,15 +15,17 @@ export function sendDepositRequestEmail({
   bookedTimeString,
   depositAmount,
   summaryUrl,
+  bookingIntentId,
 }: DepositRequestEmailParams) {
-  return sendTemplatedEmail({
+  return sendClientEmail({
     to,
-    templateId: DEPOSIT_REQUEST,
+    template: 'DEPOSIT_REQUEST',
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,
       DEPOSIT_AMOUNT: depositAmount,
       SUMMARY_URL: summaryUrl,
     },
+    tags: [{ name: 'bookingIntentId', value: bookingIntentId }],
   });
 }

@@ -1,6 +1,21 @@
-export const ADMIN_LOGIN = '3ae95ee3-b1e0-4fd9-a90c-c3b2c7777b4d';
-export const CLIENT_BOOKING_CONFIRMATION =
-  '148937ac-7724-4722-961c-ade112c94217';
-export const DEPOSIT_REQUEST = 'e60cdfa1-af80-4b3d-8335-4a13fed05b7b';
-export const REMINDER_ON_THE_DAY = 'd58a824b-3f75-44e7-87b2-4d5947c1ac34';
-export const RESCHEDULE_NOTIFICATION = 'e4a1216e-7f26-4c99-9214-1dabe746ea20';
+import type { EmailType } from '@/generated/prisma/client';
+
+// Emails sent to clients — every send is recorded in `SentEmail`.
+export const CLIENT_EMAIL_TEMPLATES = {
+  CLIENT_BOOKING_CONFIRMATION: '148937ac-7724-4722-961c-ade112c94217',
+  DEPOSIT_REQUEST: 'e60cdfa1-af80-4b3d-8335-4a13fed05b7b',
+  REMINDER_ON_THE_DAY: 'd58a824b-3f75-44e7-87b2-4d5947c1ac34',
+  RESCHEDULE_NOTIFICATION: 'e4a1216e-7f26-4c99-9214-1dabe746ea20',
+} satisfies Record<EmailType, string>;
+
+// Internal emails — never recorded (ADMIN_LOGIN carries a live login token).
+export const ADMIN_EMAIL_TEMPLATES = {
+  ADMIN_LOGIN: '3ae95ee3-b1e0-4fd9-a90c-c3b2c7777b4d',
+} as const;
+
+export const RESEND_EMAIL_TEMPLATES = {
+  ...CLIENT_EMAIL_TEMPLATES,
+  ...ADMIN_EMAIL_TEMPLATES,
+};
+
+export type EmailTemplate = keyof typeof RESEND_EMAIL_TEMPLATES;

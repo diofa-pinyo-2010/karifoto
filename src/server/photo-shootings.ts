@@ -53,6 +53,16 @@ const photoShootingDetailInclude = {
     },
     pricing: true,
     adjustments: true,
+    sentEmails: {
+      select: {
+        id: true,
+        subject: true,
+        resendId: true,
+        sentAt: true,
+        to: true,
+      },
+      orderBy: { sentAt: 'desc' },
+    },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 

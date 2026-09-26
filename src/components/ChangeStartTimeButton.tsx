@@ -97,7 +97,7 @@ export function ChangeStartTimeButton({
       } catch (e) {
         console.error(e);
         if (requestId === latestRequest.current)
-          setError('Could not load bookings');
+          setError('Nem tudjuk betölteni a foglalásokat.');
       }
     });
   }
@@ -228,7 +228,7 @@ export function ChangeStartTimeButton({
                   <p className="mb-2 text-red-700 dark:text-red-400">{error}</p>
                 )}
                 {isLoading && <Spinner />}
-                {!isLoading && shootings.length === 0 && (
+                {!isLoading && !error && shootings.length === 0 && (
                   <p className="text-muted-foreground">
                     Nincs még foglalás erre a napra.
                   </p>

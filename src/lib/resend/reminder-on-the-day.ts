@@ -1,23 +1,29 @@
-import { REMINDER_ON_THE_DAY } from '@/lib/resend/email-templates';
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
+import { sendClientEmail } from '@/lib/resend/send-client-email';
 
 type ReminderOnTheDayEmailParams = {
   to: string;
   name: string;
   bookedTimeString: string;
+  shootingId: string;
+  clientId: string;
 };
 
 export function sendReminderOnTheDayEmail({
   to,
   name,
   bookedTimeString,
+  shootingId,
+  clientId,
 }: ReminderOnTheDayEmailParams) {
-  return sendTemplatedEmail({
+  return sendClientEmail({
     to,
-    templateId: REMINDER_ON_THE_DAY,
+    clientId,
+    photoShootingId: shootingId,
+    template: 'REMINDER_ON_THE_DAY',
     variables: {
       NAME: name,
       BOOKED_TIME: bookedTimeString,
     },
+    tags: [{ name: 'shootingId', value: shootingId }],
   });
 }

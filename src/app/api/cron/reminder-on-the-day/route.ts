@@ -44,6 +44,8 @@ export async function GET(req: Request) {
           to: shooting.client.owner.email,
           name: shooting.client.owner.name,
           bookedTimeString: formatLongDate(shooting.timeSlot.startTime),
+          shootingId: shooting.id,
+          clientId: shooting.clientId,
         });
 
         if (error != null) {

@@ -25,6 +25,7 @@ export const POST = verifySignatureAppRouter(
     const bookingIntent = await prisma.bookingIntent.findUnique({
       where: { id: parsed.data.bookingIntentId },
       select: {
+        id: true,
         name: true,
         email: true,
         timeSlot: { select: { startTime: true } },
@@ -55,6 +56,7 @@ export const POST = verifySignatureAppRouter(
         name: bookingIntent.name,
         to: bookingIntent.email,
         summaryUrl: `${env.NEXT_PUBLIC_SITE_URL}/foglalas-osszegzese/${parsed.data.bookingIntentId}`,
+        bookingIntentId: bookingIntent.id,
       });
 
       if (error != null) {
@@ -65,7 +67,6 @@ export const POST = verifySignatureAppRouter(
 
       await markEmailSent(parsed.data.bookingIntentId);
 
-      // TODO: Save this to a table?
       console.log('[job:deposit-request] email sent successfully.', {
         shootingId: parsed.data.bookingIntentId,
         resendId: data.id,
