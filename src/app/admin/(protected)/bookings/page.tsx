@@ -60,6 +60,7 @@ export default async function BookingsPage() {
                 <Item
                   key={shooting.id}
                   variant="outline"
+                  className="bg-card"
                   render={
                     <Link href={APP_URLS.photoShootingAdminPage(shooting.id)}>
                       <ItemContent className="gap-2">
