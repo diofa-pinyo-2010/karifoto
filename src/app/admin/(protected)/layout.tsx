@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
           <SidebarTrigger />
           <ThemeToggle />
         </header>
-        <div className="flex flex-1 flex-col p-4">{children}</div>
+        <div className="flex flex-1 flex-col p-4 pb-8">{children}</div>
       </SidebarInset>
       <Toaster />
     </SidebarProvider>
