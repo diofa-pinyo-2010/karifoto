@@ -26,8 +26,9 @@ export default async function EmailPreviewPage(
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <div className="flex flex-col gap-2">
         <Button
-          variant="link"
-          className="self-start px-0"
+          variant="outline"
+          className="self-start"
+          size="lg"
           nativeButton={false}
           render={<Link href="/admin/email-previews" />}
         >

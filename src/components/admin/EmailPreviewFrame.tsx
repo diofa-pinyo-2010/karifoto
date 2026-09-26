@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { MonitorIcon, SmartphoneIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import { cn } from '@/lib/utils';
 
 const VIEWPORTS = {
@@ -21,20 +22,21 @@ export function EmailPreviewFrame({ html }: { html: string }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2">
-        {(Object.keys(VIEWPORTS) as Viewport[]).map((key) => {
-          const { label, icon: Icon } = VIEWPORTS[key];
-          return (
-            <Button
-              key={key}
-              variant={viewport === key ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewport(key)}
-            >
-              <Icon />
-              {label}
-            </Button>
-          );
-        })}
+        <ButtonGroup>
+          {(Object.keys(VIEWPORTS) as Viewport[]).map((key) => {
+            const { label, icon: Icon } = VIEWPORTS[key];
+            return (
+              <Button
+                key={key}
+                variant={viewport === key ? 'default' : 'outline'}
+                onClick={() => setViewport(key)}
+              >
+                <Icon />
+                {label}
+              </Button>
+            );
+          })}
+        </ButtonGroup>
       </div>
       {/* sandbox without allow-scripts: the email can't run code, but
           allow-same-origin lets us read its height to avoid a scrollbar. */}
