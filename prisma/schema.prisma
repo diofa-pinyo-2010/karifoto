@@ -51,6 +51,7 @@ model ClientProfile {
   photoShootings   PhotoShooting[]
 
   billingAddresses BillingAddress[]
+  sentEmails       SentEmail[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -150,8 +151,9 @@ model PhotoShooting {
   pricing       PhotoShootingPricing?
   adjustments   PriceAdjustment[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @default(now()) @updatedAt
+  sentEmails SentEmail[]
 
   @@index([clientId])
   @@index([photographerId])
@@ -259,6 +261,30 @@ model Invoice {
   @@index([photoShootingId])
 }
 
+model SentEmail {
+  id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resendId String    @unique
+  type     EmailType
+  to       String
+  subject   String
+  variables Json   @default("{}")
+
+  client   ClientProfile? @relation(fields: [clientId], references: [id])
+  clientId String?        @db.Uuid
+
+  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String?        @db.Uuid
+
+  sentAt DateTime @default(now()) @db.Timestamptz()
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([clientId])
+  @@index([photoShootingId])
+}
+
+// Auth
 model MagicLinkToken {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   owner     User      @relation(fields: [userId], references: [id])
@@ -354,4 +380,12 @@ enum Package {
 enum DecorSet {
   HOFEHER
   ALOMKASTELY
+}
+
+// Client emails only — admin emails are never recorded in SentEmail.
+enum EmailType {
+  CLIENT_BOOKING_CONFIRMATION
+  DEPOSIT_REQUEST
+  REMINDER_ON_THE_DAY
+  RESCHEDULE_NOTIFICATION
 }

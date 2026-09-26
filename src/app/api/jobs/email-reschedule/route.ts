@@ -69,6 +69,7 @@ export const POST = verifySignatureAppRouter(
           endTime,
         ),
         shootingId: photoShooting.id,
+        clientId: photoShooting.clientId,
       });
 
       if (error != null) {

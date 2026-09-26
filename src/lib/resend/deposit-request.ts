@@ -1,4 +1,4 @@
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
+import { sendClientEmail } from '@/lib/resend/send-client-email';
 
 type DepositRequestEmailParams = {
   to: string;
@@ -17,7 +17,7 @@ export function sendDepositRequestEmail({
   summaryUrl,
   bookingIntentId,
 }: DepositRequestEmailParams) {
-  return sendTemplatedEmail({
+  return sendClientEmail({
     to,
     template: 'DEPOSIT_REQUEST',
     variables: {

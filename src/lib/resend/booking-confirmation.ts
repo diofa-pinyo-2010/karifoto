@@ -1,4 +1,4 @@
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
+import { sendClientEmail } from '@/lib/resend/send-client-email';
 
 type SendBookingConfirmationEmailParams = {
   to: string;
@@ -6,6 +6,7 @@ type SendBookingConfirmationEmailParams = {
   bookedTimeString: string;
   addToGoogleCalendarLink: string;
   shootingId: string;
+  clientId: string;
 };
 
 export function sendBookingConfirmationEmail({
@@ -14,9 +15,12 @@ export function sendBookingConfirmationEmail({
   bookedTimeString,
   addToGoogleCalendarLink,
   shootingId,
+  clientId,
 }: SendBookingConfirmationEmailParams) {
-  return sendTemplatedEmail({
+  return sendClientEmail({
     to,
+    clientId,
+    photoShootingId: shootingId,
     template: 'CLIENT_BOOKING_CONFIRMATION',
     variables: {
       NAME: name,

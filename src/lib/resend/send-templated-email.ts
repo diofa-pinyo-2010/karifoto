@@ -1,10 +1,12 @@
-import { RESEND_EMAIL_TEMPLATES } from '@/lib/resend/email-templates';
+import {
+  RESEND_EMAIL_TEMPLATES,
+  type EmailTemplate,
+} from '@/lib/resend/email-templates';
 import { resend } from '@/lib/resend/index';
 
-import type { EmailType } from '@/generated/prisma/client';
 import type { EmailTemplateVariables } from '@/lib/resend/email-template-variables.generated';
 
-type SendTemplatedEmailParams<T extends EmailType> = {
+export type SendTemplatedEmailParams<T extends EmailTemplate> = {
   to: string | string[];
   template: T;
   variables: EmailTemplateVariables[T];
@@ -13,7 +15,8 @@ type SendTemplatedEmailParams<T extends EmailType> = {
   tags?: { name: string; value: string }[];
 };
 
-export async function sendTemplatedEmail<T extends EmailType>({
+// Low-level send, records nothing. Client emails go through `sendClientEmail`.
+export async function sendTemplatedEmail<T extends EmailTemplate>({
   to,
   template,
   variables,
