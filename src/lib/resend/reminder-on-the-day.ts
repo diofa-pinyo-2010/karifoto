@@ -20,9 +20,6 @@ export function sendReminderOnTheDayEmail({
       NAME: name,
       BOOKED_TIME: bookedTimeString,
     },
-    tags: [
-      { name: 'type', value: 'REMINDER_ON_THE_DAY' },
-      { name: 'shootingId', value: shootingId },
-    ],
+    tags: [{ name: 'shootingId', value: shootingId }],
   });
 }

@@ -26,6 +26,6 @@ export async function sendTemplatedEmail<T extends EmailType>({
     from,
     subject,
     template: { id: RESEND_EMAIL_TEMPLATES[template], variables },
-    tags,
+    tags: [{ name: 'type', value: template }, ...(tags ?? [])],
   });
 }

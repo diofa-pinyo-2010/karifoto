@@ -26,9 +26,6 @@ export function sendRescheduleNotificationEmail({
       OLD_TIME: oldTimeString,
       ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
     },
-    tags: [
-      { name: 'type', value: 'RESCHEDULE_NOTIFICATION' },
-      { name: 'shootingId', value: shootingId },
-    ],
+    tags: [{ name: 'shootingId', value: shootingId }],
   });
 }

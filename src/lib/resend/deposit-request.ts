@@ -26,9 +26,6 @@ export function sendDepositRequestEmail({
       DEPOSIT_AMOUNT: depositAmount,
       SUMMARY_URL: summaryUrl,
     },
-    tags: [
-      { name: 'type', value: 'DEPOSIT_REQUEST' },
-      { name: 'bookingIntentId', value: bookingIntentId },
-    ],
+    tags: [{ name: 'bookingIntentId', value: bookingIntentId }],
   });
 }

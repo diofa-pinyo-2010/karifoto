@@ -23,9 +23,6 @@ export function sendBookingConfirmationEmail({
       BOOKED_TIME: bookedTimeString,
       ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
     },
-    tags: [
-      { name: 'type', value: 'CLIENT_BOOKING_CONFIRMATION' },
-      { name: 'shootingId', value: shootingId },
-    ],
+    tags: [{ name: 'shootingId', value: shootingId }],
   });
 }
