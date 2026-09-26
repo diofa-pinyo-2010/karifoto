@@ -1,4 +1,4 @@
-import AdminLoginEmail from '@/emails/AdminLogin';
+import AdminLoginEmail, { ADMIN_LOGIN_SUBJECT } from '@/emails/AdminLogin';
 import { BASE_URL_PROD } from '@/lib/constants';
 import { sendReactEmail } from '@/lib/resend/send-react-email';
 
@@ -16,7 +16,7 @@ export function sendAdminVerificationEmail({
   return sendReactEmail({
     type: 'ADMIN_LOGIN',
     to,
-    subject: '🔓 Bejelentkezési link',
+    subject: ADMIN_LOGIN_SUBJECT,
     react: AdminLoginEmail({
       name,
       verifyUrl,

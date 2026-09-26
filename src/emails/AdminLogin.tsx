@@ -12,6 +12,8 @@ import {
   CodeInline,
 } from 'react-email';
 
+export const ADMIN_LOGIN_SUBJECT = '🔓 Bejelentkezési link';
+
 type AdminLoginEmailProps = {
   name: string;
   verifyUrl: string;
@@ -26,7 +28,9 @@ export default function AdminLoginEmail({
   return (
     <Html lang="hu">
       <Tailwind>
-        <Head />
+        <Head>
+          <title>{ADMIN_LOGIN_SUBJECT}</title>
+        </Head>
         <Body className="m-0 font-sans sm:bg-[#f5f5f5] sm:py-8">
           <Container className="max-w-140 rounded-lg bg-white px-6 py-8">
             <Img
