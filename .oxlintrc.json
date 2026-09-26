@@ -32,6 +32,12 @@
       }
     ]
   },
+  "overrides": [
+    {
+      "files": ["src/components/ui/**"],
+      "rules": { "jsx-a11y/prefer-tag-over-role": "off" }
+    }
+  ],
   "env": {
     "builtin": true
   }
