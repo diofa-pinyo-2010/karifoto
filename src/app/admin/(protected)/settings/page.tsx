@@ -15,7 +15,7 @@ export default async function SettingsPage() {
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
         Beállítások
       </h1>
-      <div className="rounded-lg border px-4">
+      <div className="rounded-lg border bg-card px-4">
         <DetailRow
           label="Alapértelmezett szerkesztő"
           value={

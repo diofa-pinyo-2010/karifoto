@@ -184,6 +184,20 @@
   }
 }
 
+/*
+ * Az admin rendszerfontokat használ, a márkafontok csak a publikus oldalé.
+ * Az `admin` osztályt a gyökér layout inline scriptje és a ThemeScope teszi a
+ * <html>-re (így a portálos dialógusok/tooltipek is megkapják). Szándékosan
+ * nincs @layer-ben: a next/font változó-osztálya is layer nélküli, és a
+ * `html.admin` specificitása ezt felülírja. A `--font-sans`-t is felül kell
+ * írni, mert a `:root`-on már feloldott Jost értéket öröklik a leszármazottak
+ * (pl. `font-heading`).
+ */
+html.admin {
+  --font-jost: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: var(--font-jost);
+}
+
 @layer components {
   .eyebrow {
     @apply text-[11px] tracking-label text-sage uppercase;

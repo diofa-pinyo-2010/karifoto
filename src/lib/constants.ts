@@ -4,6 +4,7 @@ import {
   Package,
   PaymentMethod,
   PhotoShootingStatus,
+  PriceAdjustmentType,
 } from '@/generated/prisma/enums';
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
@@ -93,6 +94,12 @@ export const DECOR_SET_LABEL: Record<DecorSet, string> = {
   HOFEHER: 'Hófehér',
   ALOMKASTELY: 'Álomkastély',
 };
+
+export const PRICE_ADJUSTMENT_TYPE_LABEL: Record<PriceAdjustmentType, string> =
+  {
+    DISCOUNT: 'Kedvezmény',
+    DEDUCTION: 'Fizetés eltérés',
+  };
 
 export const DECOR_SET_COMBOBOX_ITEMS: ComboboxFieldItem[] = Object.entries(
   DECOR_SET_LABEL,

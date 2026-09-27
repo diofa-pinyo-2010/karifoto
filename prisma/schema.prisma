@@ -192,9 +192,8 @@ model PriceAdjustment {
   id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type          PriceAdjustmentType
   amountInCents Int
-  reason        String
-  publicLabel   String?
-  internalNote  String?
+  publicLabel   String
+  internalNote  String
 
   createdBy   StaffProfile @relation(fields: [createdById], references: [id])
   createdById String       @db.Uuid

@@ -9,13 +9,15 @@ const STORAGE_KEY = 'theme';
  * A sötét mód csak az adminban él. Kliensoldali navigációnál (pl. adminból
  * kilépve) a route-váltás nem futtatja újra a gyökér layout inline scriptjét,
  * ezért itt is el kell távolítani a `.dark` osztályt, különben a publikus
- * oldalakon ragadna.
+ * oldalakon ragadna. Ugyanígy kapcsoljuk az `admin` osztályt (rendszerfontok).
  */
 export function ThemeScope() {
   const pathname = usePathname();
 
   useLayoutEffect(() => {
-    if (!pathname.startsWith('/admin')) {
+    const isAdmin = pathname.startsWith('/admin');
+    document.documentElement.classList.toggle('admin', isAdmin);
+    if (!isAdmin) {
       document.documentElement.classList.remove('dark');
       return;
     }

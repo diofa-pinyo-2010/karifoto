@@ -6,28 +6,51 @@ import { BadgePercentIcon } from 'lucide-react';
 
 import { ResponsiveDialog } from '@/components/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import { createBookingIntentDiscount } from '@/server/price-adjustments';
+import { toast } from '@/components/ui/toast';
+import { PriceAdjustmentType } from '@/generated/prisma/enums';
+import { PRICE_ADJUSTMENT_TYPE_LABEL } from '@/lib/constants';
+import {
+  createPriceAdjustment,
+  type PriceAdjustmentTarget,
+} from '@/server/price-adjustments';
 
 export function AddPriceAdjustmentDialog({
-  bookingIntentId,
+  target,
+  defaultType,
   disabled,
+  title,
+  triggerLabel,
 }: {
-  bookingIntentId: string;
+  target: PriceAdjustmentTarget;
+  defaultType: PriceAdjustmentType;
   disabled?: boolean;
+  title: string;
+  triggerLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [type, setType] = useState<PriceAdjustmentType>(defaultType);
   const [amount, setAmount] = useState('');
-  const [reason, setReason] = useState('');
+  const [publicLabel, setPublicLabel] = useState('');
+  const [internalNote, setInternalNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function reset() {
+    setType(defaultType);
     setAmount('');
-    setReason('');
+    setPublicLabel('');
+    setInternalNote('');
     setError(null);
   }
 
@@ -37,17 +60,19 @@ export function AddPriceAdjustmentDialog({
       setError('Add meg az összeget forintban.');
       return;
     }
-    if (reason.trim().length < 2) {
-      setError('Add meg a kedvezmény indoklását.');
+    if (publicLabel.trim().length < 2 || internalNote.trim().length < 2) {
+      setError('Add meg a tétel publikus nevét és indoklását.');
       return;
     }
 
     startTransition(async () => {
-      const result = await createBookingIntentDiscount(
-        bookingIntentId,
+      const result = await createPriceAdjustment({
+        target,
+        type,
         amountHuf,
-        reason,
-      );
+        publicLabel,
+        internalNote,
+      });
       if ('error' in result) {
         setError(result.error);
         return;
@@ -55,6 +80,7 @@ export function AddPriceAdjustmentDialog({
 
       setOpen(false);
       reset();
+      toast.add({ title: `${PRICE_ADJUSTMENT_TYPE_LABEL[type]} hozzáadva!` });
     });
   }
 
@@ -68,13 +94,36 @@ export function AddPriceAdjustmentDialog({
       trigger={
         <Button size="lg" disabled={disabled} variant="secondary">
           <BadgePercentIcon />
-          Kedvezmény hozzáadása
+          {triggerLabel}
         </Button>
       }
-      title="Kedvezmény hozzáadása"
+      title={title}
       description="Az összeg forintban értendő, és levonásra kerül a végösszegből."
     >
       <div className="flex flex-col gap-4">
+        <FieldSet>
+          <FieldLegend>Típus</FieldLegend>
+          <RadioGroup
+            value={type}
+            onValueChange={(value) => setType(value as PriceAdjustmentType)}
+          >
+            {Object.values(PriceAdjustmentType).map((option) => (
+              <FieldLabel
+                key={option}
+                htmlFor={`price-adjustment-type-${option}`}
+              >
+                <Field orientation="horizontal">
+                  {PRICE_ADJUSTMENT_TYPE_LABEL[option]}
+                  <RadioGroupItem
+                    value={option}
+                    id={`price-adjustment-type-${option}`}
+                  />
+                </Field>
+              </FieldLabel>
+            ))}
+          </RadioGroup>
+        </FieldSet>
+
         <Field>
           <FieldLabel htmlFor="price-adjustment-amount">Összeg (Ft)</FieldLabel>
           <Input
@@ -89,13 +138,25 @@ export function AddPriceAdjustmentDialog({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="price-adjustment-reason">
-            Indoklás (megjelenhet az oldalon)
+          <FieldLabel htmlFor="price-adjustment-public-label">
+            Nyilvános megnevezés (pl. összesítőben megjelenhet)
+          </FieldLabel>
+          <Input
+            type="text"
+            id="price-adjustment-public-label"
+            value={publicLabel}
+            onChange={(event) => setPublicLabel(event.target.value)}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="price-adjustment-internal-note">
+            Indoklás (csak admin)
           </FieldLabel>
           <Textarea
-            id="price-adjustment-reason"
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
+            id="price-adjustment-internal-note"
+            value={internalNote}
+            onChange={(event) => setInternalNote(event.target.value)}
           />
         </Field>
 

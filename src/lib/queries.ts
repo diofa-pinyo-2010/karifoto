@@ -94,7 +94,7 @@ const photoShootingDetailInclude = {
       orderBy: { createdAt: 'asc' },
     },
     pricing: true,
-    adjustments: true,
+    adjustments: { include: { createdBy: { select: { nickname: true } } } },
     sentEmails: {
       select: {
         id: true,

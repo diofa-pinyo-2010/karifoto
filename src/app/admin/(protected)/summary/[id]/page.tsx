@@ -1,6 +1,7 @@
 import { CheckCircle2Icon } from 'lucide-react';
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
+import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { SendDepositRequestButton } from '@/components/SendDepositRequestButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -89,16 +90,22 @@ export default async function RemoteBookingSummaryPage({
               key={adjustment.id}
               className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0"
             >
-              <span className="text-sm text-muted-foreground">
-                {adjustment.reason}
-              </span>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-muted-foreground">
+                  {adjustment.publicLabel}
+                </p>
+                <AdjustmentNoteTooltip
+                  note={adjustment.internalNote}
+                  nickname={adjustment.createdBy.nickname}
+                />
+              </div>
               <div className="flex items-center gap-3">
                 <span className="text-right text-sm font-medium">
                   - {formatMoney(adjustment.amountInCents)}
                 </span>
                 <DeletePriceAdjustmentButton
                   priceAdjustmentId={adjustment.id}
-                  bookingIntentId={id}
+                  target={{ bookingIntentId: id }}
                 />
               </div>
             </div>
@@ -107,7 +114,10 @@ export default async function RemoteBookingSummaryPage({
       )}
 
       <AddPriceAdjustmentDialog
-        bookingIntentId={id}
+        title="Kedvezmény hozzáadása"
+        triggerLabel="Kedvezmény hozzáadása"
+        defaultType="DISCOUNT"
+        target={{ bookingIntentId: id }}
         disabled={isBookingIntentConverted}
       />
 
