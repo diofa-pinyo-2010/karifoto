@@ -13,8 +13,9 @@ import {
 } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-// A sötét mód csak az adminban él — ne fusson le publikus oldalon.
-const THEME_SCRIPT = `(function(){try{if(!location.pathname.startsWith('/admin'))return;var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
+// Az `admin` osztály (rendszerfontok) és a sötét mód csak az adminban él —
+// a sötét mód ne fusson le publikus oldalon.
+const THEME_SCRIPT = `(function(){try{var a=location.pathname.startsWith('/admin');document.documentElement.classList.toggle('admin',a);if(!a)return;var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
 
 // Self-hosted (src/fonts) so dev/build never depends on reaching Google Fonts.
 // Files are the official google/fonts variable TTFs, weight-limited and
