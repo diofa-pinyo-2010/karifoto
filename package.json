@@ -10,6 +10,7 @@
     "db:reset": "prisma migrate reset --force && prisma db seed",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio --port 5555 --browser none",
+    "db:validate": "prisma validate",
     "dev": "next dev",
     "dev:qstash": "pnpm dlx @upstash/qstash-cli dev",
     "email:dev": "email dev --dir src/emails --port 3001",
