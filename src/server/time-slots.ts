@@ -2,47 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { Prisma } from '@/generated/prisma/client';
 import { TIME_SLOT_DURATION_MINUTES } from '@/lib/constants';
+import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
-const timeSlotsWithPhotoShootingInclude = {
-  include: {
-    photoShooting: {
-      select: { id: true, client: { select: { owner: true } } },
-    },
-  },
-} satisfies Prisma.TimeSlotDefaultArgs;
-
-export type TimeSlotsWithPhotoShooting = Prisma.TimeSlotGetPayload<
-  typeof timeSlotsWithPhotoShootingInclude
->;
-
-export async function fetchTimeSlots(): Promise<TimeSlotsWithPhotoShooting[]> {
-  const slots = await prisma.timeSlot.findMany({
-    where: { startTime: { gte: new Date() } },
-    orderBy: { startTime: 'asc' },
-    ...timeSlotsWithPhotoShootingInclude,
-  });
-
-  return slots;
-}
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export async function getTimeSlot(
-  id: string,
-): Promise<TimeSlotsWithPhotoShooting | null> {
-  if (!UUID_RE.test(id)) return null;
-
-  return prisma.timeSlot.findUnique({
-    where: { id },
-    ...timeSlotsWithPhotoShootingInclude,
-  });
-}
-
 export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
+  await verifySession();
+
   try {
     await prisma.timeSlot.update({ where: { id }, data: { revealed } });
   } catch (error) {
@@ -56,6 +22,8 @@ export async function createTimeSlot(
   startTime: Date,
   revealed: boolean = false,
 ): Promise<{ id: string } | { error: string }> {
+  await verifySession();
+
   if (Number.isNaN(startTime.getTime()) || startTime.getTime() <= Date.now()) {
     return { error: 'Érvénytelen időpont.' };
   }
@@ -79,6 +47,8 @@ export async function createTimeSlot(
 export async function deleteTimeSlot(
   id: string,
 ): Promise<{ error: string } | void> {
+  await verifySession();
+
   const slot = await prisma.timeSlot.findUnique({
     where: { id },
     select: {

@@ -37,6 +37,7 @@ import {
   shortFullDateFormatter,
   timeFormatter,
 } from '@/lib/formatters';
+import { getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
 import { capitalize, cn, formatMoney } from '@/lib/utils';
 import {
@@ -45,7 +46,6 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShootingField,
 } from '@/server/admin';
-import { getPhotoShooting } from '@/server/photo-shootings';
 import { calculateRemainingAmount } from '@/server/pricing';
 
 function formatAmount(amountInCents: number, currency: Currency): string {

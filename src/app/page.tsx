@@ -10,15 +10,15 @@ import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
 import { Video } from '@/components/Video';
 import { getSession } from '@/lib/dal';
+import { fetchTimeSlotsPublic } from '@/lib/queries';
 import { groupByDay } from '@/lib/utils';
-import { fetchTimeSlots } from '@/server/time-slots';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const [session, availableTimeSlots] = await Promise.all([
     getSession(),
-    fetchTimeSlots(),
+    fetchTimeSlotsPublic(),
   ]);
   const groups = groupByDay(availableTimeSlots, (slot) => slot.startTime);
 

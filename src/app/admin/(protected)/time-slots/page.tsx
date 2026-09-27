@@ -21,11 +21,11 @@ import {
 } from '@/components/ui/item';
 import { APP_URLS } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
+import { fetchTimeSlotsAdmin } from '@/lib/queries';
 import { cn, groupByDay } from '@/lib/utils';
-import { fetchTimeSlots } from '@/server/time-slots';
 
 export default async function AdminTimeSlotsPage() {
-  const timeSlots = await fetchTimeSlots();
+  const timeSlots = await fetchTimeSlotsAdmin();
   const groupedDays = groupByDay(timeSlots, (slot) => slot.startTime);
   const days = Array.from(groupedDays.entries());
 

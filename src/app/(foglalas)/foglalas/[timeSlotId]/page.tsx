@@ -4,7 +4,7 @@ import { BookingFormNew } from '@/components/BookingFormNew';
 import { BookingUnavailable } from '@/components/BookingUnavailable';
 import { selectionFromSearchParams } from '@/lib/booking-selection';
 import { formatLongDate } from '@/lib/formatters';
-import { getTimeSlot } from '@/server/time-slots';
+import { getTimeSlot } from '@/lib/queries';
 
 export const metadata: Metadata = {
   title: 'Foglalás · Karifoto',
