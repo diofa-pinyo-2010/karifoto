@@ -13,7 +13,13 @@ import {
   PriceAdjustment,
   Prisma,
 } from '@/generated/prisma/client';
-import { APP_URLS, PACKAGE_PRICES, YES_NO_VALUES } from '@/lib/constants';
+import {
+  APP_URLS,
+  PACKAGE_PRICES,
+  UUID_RE,
+  YES_NO_VALUES,
+} from '@/lib/constants';
+import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 import { calculateRemainingAmount } from '@/server/pricing';
 
@@ -31,6 +37,8 @@ type PhotoShootingWithTimeSlot = Prisma.PhotoShootingGetPayload<
 >;
 
 export async function fetchPhotographers() {
+  await verifySession();
+
   return prisma.staffProfile.findMany({
     where: { isPhotographer: true },
     select: { id: true, nickname: true, owner: { select: { name: true } } },
@@ -38,6 +46,8 @@ export async function fetchPhotographers() {
 }
 
 export async function fetchEditors() {
+  await verifySession();
+
   return prisma.staffProfile.findMany({
     where: { isEditor: true },
     select: {
@@ -54,6 +64,8 @@ const SetDefaultEditorSchema = z.uuid().nullable();
 export async function setDefaultEditor(
   staffProfileId: string | null,
 ): Promise<{ error: string } | void> {
+  await verifySession();
+
   const parsed = SetDefaultEditorSchema.safeParse(staffProfileId);
   if (!parsed.success) {
     return { error: 'Érvénytelen adat.' };
@@ -160,6 +172,12 @@ export async function updatePhotoShooting(
   id: string,
   updates: PhotoShootingUpdateInput,
 ): Promise<{ error: string } | void> {
+  await verifySession();
+
+  if (!UUID_RE.test(id)) {
+    return { error: 'Érvénytelen PhotoShooting ID.' };
+  }
+
   const parsed = PhotoShootingUpdateSchema.safeParse(updates);
   if (!parsed.success) {
     return { error: 'Érvénytelen URL vagy adat.' };

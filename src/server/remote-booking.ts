@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import {
   createBookingIntent,
@@ -19,6 +20,8 @@ export type CreateRemoteBookingIntentInput = Omit<
 export async function createRemoteBookingIntent(
   input: CreateRemoteBookingIntentInput,
 ): Promise<{ error: string }> {
+  await verifySession();
+
   const timeSlot = await getOrCreateTimeSlot(input.startTime);
   if ('error' in timeSlot) {
     return timeSlot;

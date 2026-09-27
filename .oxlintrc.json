@@ -18,7 +18,7 @@
     "no-underscore-dangle": ["warn", { "allow": ["_count"] }],
     "import/no-unassigned-import": [
       "warn",
-      { "allow": ["**/*.css", "dotenv/config"] }
+      { "allow": ["**/*.css", "dotenv/config", "server-only"] }
     ],
     "no-restricted-imports": [
       "error",

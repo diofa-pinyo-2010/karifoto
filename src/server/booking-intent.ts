@@ -1,7 +1,7 @@
 'use server';
 
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
-import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
+import { MAX_PERSONS, MAX_PETS, UUID_RE } from '@/lib/constants';
 import { DecorSetKey, PackageKey } from '@/lib/data';
 import { prisma } from '@/lib/prisma';
 
@@ -15,9 +15,6 @@ const DECOR_SET_KEY_TO_ENUM: Record<DecorSetKey, DecorSet> = {
   hofeher: DecorSet.HOFEHER,
   alomkastely: DecorSet.ALOMKASTELY,
 };
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type CreateBookingIntentInput = {
   timeSlotId: string;

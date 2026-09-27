@@ -16,6 +16,9 @@ export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
 
+export const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const YES_NO_VALUES = ['IGEN', 'NEM'] as const;
 export type YesNoValue = (typeof YES_NO_VALUES)[number];
 

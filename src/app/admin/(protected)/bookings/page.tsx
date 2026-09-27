@@ -20,8 +20,8 @@ import {
   UPCOMING_SHOOTINGS_TO_SHOW,
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
+import { fetchUpcomingPhotoShootings } from '@/lib/queries';
 import { groupByDay } from '@/lib/utils';
-import { fetchUpcomingPhotoShootings } from '@/server/photo-shootings';
 
 export default async function BookingsPage() {
   const photoShootings = await fetchUpcomingPhotoShootings();

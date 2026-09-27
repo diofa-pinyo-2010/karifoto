@@ -1,11 +1,14 @@
 'use server';
 
 import { env } from '@/env';
+import { verifySession } from '@/lib/dal';
 import { qStashClient } from '@/lib/upstash';
 
 export async function sendDepositRequest(
   bookingIntentId: string,
 ): Promise<{ error: string } | { success: true }> {
+  await verifySession();
+
   try {
     await qStashClient.publishJSON({
       url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/deposit-request`,

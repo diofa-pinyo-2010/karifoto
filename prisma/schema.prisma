@@ -193,9 +193,11 @@ model PriceAdjustment {
   type          PriceAdjustmentType
   amountInCents Int
   reason        String
+  publicLabel   String?
+  internalNote  String?
 
-  createdBy   StaffProfile? @relation(fields: [createdById], references: [id])
-  createdById String?       @db.Uuid
+  createdBy   StaffProfile @relation(fields: [createdById], references: [id])
+  createdById String       @db.Uuid
 
   // One of these will be set, the other null
   bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id], onDelete: Cascade)
