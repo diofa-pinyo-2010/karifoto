@@ -2,17 +2,36 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { PriceAdjustmentType } from '@/generated/prisma/client';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 import { hufToCents } from '@/lib/utils';
+import { recalculatePhotoShootingStatus } from '@/server/admin';
 
-export async function createBookingIntentDiscount({
-  bookingIntentId,
+// A PriceAdjustment belongs to exactly one of these
+export type PriceAdjustmentTarget =
+  | { bookingIntentId: string }
+  | { photoShootingId: string };
+
+// Photo shooting status depends on the remaining amount, so recalculating
+// also revalidates the photo shooting page
+async function refreshTarget(target: PriceAdjustmentTarget) {
+  if ('bookingIntentId' in target) {
+    revalidatePath(`/admin/summary/${target.bookingIntentId}`);
+  } else {
+    await recalculatePhotoShootingStatus(target.photoShootingId);
+  }
+}
+
+export async function createPriceAdjustment({
+  target,
+  type,
   amountHuf,
   internalNote,
   publicLabel,
 }: {
-  bookingIntentId: string;
+  target: PriceAdjustmentTarget;
+  type: PriceAdjustmentType;
   amountHuf: number;
   internalNote: string;
   publicLabel: string;
@@ -24,41 +43,45 @@ export async function createBookingIntentDiscount({
   //   return { error: 'Nincs jogosultságod ehhez.' };
   // }
 
+  if (!Object.values(PriceAdjustmentType).includes(type)) {
+    return { error: 'Érvénytelen típus.' };
+  }
   if (!Number.isInteger(amountHuf) || amountHuf <= 0) {
     return { error: 'Add meg az összeget forintban.' };
   }
   if (publicLabel.trim().length < 2 || internalNote.trim().length < 2) {
-    return { error: 'Add meg a kedvezmény publikus nevét és indoklását.' };
+    return { error: 'Add meg a tétel publikus nevét és indoklását.' };
   }
 
   try {
     const adjustment = await prisma.priceAdjustment.create({
       data: {
-        type: 'DISCOUNT',
+        type,
         amountInCents: hufToCents(amountHuf),
         publicLabel: publicLabel.trim(),
         internalNote: internalNote.trim(),
-        bookingIntentId,
+        bookingIntentId:
+          'bookingIntentId' in target ? target.bookingIntentId : null,
+        photoShootingId:
+          'photoShootingId' in target ? target.photoShootingId : null,
         createdById: staffProfile.id,
       },
       select: { id: true },
     });
-    revalidatePath(`/admin/summary/${bookingIntentId}`);
+    await refreshTarget(target);
     return { id: adjustment.id };
   } catch (error) {
     console.error(error);
-    return { error: 'Nem sikerült létrehozni a kedvezményt. Próbáld újra.' };
+    return { error: 'Nem sikerült létrehozni a tételt. Próbáld újra.' };
   }
 }
 
 export async function deletePriceAdjustment({
   id,
-  bookingIntentId,
-  photoShootingId,
+  target,
 }: {
   id: string;
-  bookingIntentId?: string;
-  photoShootingId?: string;
+  target: PriceAdjustmentTarget;
 }): Promise<{ error: string } | void> {
   await verifySession();
 
@@ -66,9 +89,8 @@ export async function deletePriceAdjustment({
     await prisma.priceAdjustment.delete({ where: { id } });
   } catch (error) {
     console.error(error);
-    return { error: 'Nem sikerült törölni a kedvezményt. Próbáld újra.' };
+    return { error: 'Nem sikerült törölni a tételt. Próbáld újra.' };
   }
 
-  if (bookingIntentId) revalidatePath(`/admin/summary/${bookingIntentId}`);
-  if (photoShootingId) revalidatePath(`/admin/summary/${photoShootingId}`);
+  await refreshTarget(target);
 }

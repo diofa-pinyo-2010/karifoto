@@ -94,7 +94,10 @@ export default async function RemoteBookingSummaryPage({
                 <p className="text-sm text-muted-foreground">
                   {adjustment.publicLabel}
                 </p>
-                <AdjustmentNoteTooltip note={adjustment.internalNote} />
+                <AdjustmentNoteTooltip
+                  note={adjustment.internalNote}
+                  nickname={adjustment.createdBy.nickname}
+                />
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-right text-sm font-medium">
@@ -102,7 +105,7 @@ export default async function RemoteBookingSummaryPage({
                 </span>
                 <DeletePriceAdjustmentButton
                   priceAdjustmentId={adjustment.id}
-                  bookingIntentId={id}
+                  target={{ bookingIntentId: id }}
                 />
               </div>
             </div>
@@ -112,7 +115,9 @@ export default async function RemoteBookingSummaryPage({
 
       <AddPriceAdjustmentDialog
         title="Kedvezmény hozzáadása"
-        bookingIntentId={id}
+        triggerLabel="Kedvezmény hozzáadása"
+        defaultType="DISCOUNT"
+        target={{ bookingIntentId: id }}
         disabled={isBookingIntentConverted}
       />
 

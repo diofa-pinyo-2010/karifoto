@@ -4,7 +4,10 @@ import { cache } from 'react';
 
 import { ArrowLeft, ExternalLinkIcon } from 'lucide-react';
 
+import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
+import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
+import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
@@ -58,7 +61,7 @@ export function DetailRow({
   value,
   fullWidth = false,
 }: {
-  label: string;
+  label: React.ReactNode;
   value: React.ReactNode;
   fullWidth?: boolean;
 }) {
@@ -360,8 +363,24 @@ export default async function PhotoShootingDetailPage({
           {adjustments.map((adjustment) => (
             <DetailRow
               key={adjustment.id}
-              label={adjustment.publicLabel}
-              value={formatAmount(adjustment.amountInCents * -1, 'HUF')}
+              label={
+                <span className="flex items-center gap-1">
+                  {adjustment.publicLabel}
+                  <AdjustmentNoteTooltip
+                    note={adjustment.internalNote}
+                    nickname={adjustment.createdBy.nickname}
+                  />
+                </span>
+              }
+              value={
+                <span className="flex items-center justify-end gap-3">
+                  {formatAmount(adjustment.amountInCents * -1, 'HUF')}
+                  <DeletePriceAdjustmentButton
+                    priceAdjustmentId={adjustment.id}
+                    target={{ photoShootingId: shooting.id }}
+                  />
+                </span>
+              }
             />
           ))}
         </div>
@@ -387,6 +406,12 @@ export default async function PhotoShootingDetailPage({
             value={formatAmount(remainingAmount, 'HUF')}
           />
         </div>
+        <AddPriceAdjustmentDialog
+          title="Fizetés eltérés hozzáadása"
+          triggerLabel="Fizetés eltérés"
+          defaultType="DEDUCTION"
+          target={{ photoShootingId: shooting.id }}
+        />
       </div>
 
       <Separator />

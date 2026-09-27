@@ -9,7 +9,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-export function AdjustmentNoteTooltip({ note }: { note: string }) {
+export function AdjustmentNoteTooltip({
+  note,
+  nickname,
+}: {
+  note: string;
+  nickname: string;
+}) {
   return (
     <Tooltip>
       <TooltipTrigger
@@ -20,7 +26,7 @@ export function AdjustmentNoteTooltip({ note }: { note: string }) {
         }
       />
       <TooltipContent>
-        <p>{note}</p>
+        <p>{`${note}\n- ${nickname}`}</p>
       </TooltipContent>
     </Tooltip>
   );
