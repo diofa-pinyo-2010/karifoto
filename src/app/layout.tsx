@@ -1,10 +1,5 @@
 import type { Metadata } from 'next';
-import {
-  Cormorant_Garamond,
-  Jost,
-  Parisienne,
-  Geist_Mono,
-} from 'next/font/google';
+import localFont from 'next/font/local';
 
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
@@ -21,26 +16,34 @@ import { cn } from '@/lib/utils';
 // A sötét mód csak az adminban él — ne fusson le publikus oldalon.
 const THEME_SCRIPT = `(function(){try{if(!location.pathname.startsWith('/admin'))return;var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
 
-const display = Cormorant_Garamond({
-  subsets: ['latin-ext'],
-  weight: ['400', '500', '600'],
+// Self-hosted (src/fonts) so dev/build never depends on reaching Google Fonts.
+// Files are the official google/fonts variable TTFs, weight-limited and
+// subset to latin + latin-ext, converted to woff2.
+const display = localFont({
+  src: '../fonts/CormorantGaramond-Variable.woff2',
+  weight: '400 600',
   variable: '--font-cormorant',
+  fallback: ['serif'],
+  adjustFontFallback: 'Times New Roman',
 });
-const script = Parisienne({
-  subsets: ['latin-ext'],
-  weight: ['400'],
+const script = localFont({
+  src: '../fonts/Parisienne-Regular.woff2',
+  weight: '400',
   variable: '--font-parisienne',
+  fallback: ['cursive'],
 });
-const sans = Jost({
-  subsets: ['latin-ext'],
-  weight: ['300', '400', '500', '600'],
+const sans = localFont({
+  src: '../fonts/Jost-Variable.woff2',
+  weight: '300 600',
   variable: '--font-jost',
+  fallback: ['system-ui', 'sans-serif'],
 });
 
-const mono = Geist_Mono({
-  subsets: ['latin-ext'],
-  weight: ['300', '400', '500', '600'],
+const mono = localFont({
+  src: '../fonts/GeistMono-Variable.woff2',
+  weight: '300 600',
   variable: '--font-geist-mono',
+  fallback: ['monospace'],
 });
 
 export const metadata: Metadata = {
