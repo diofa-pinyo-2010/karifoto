@@ -5,6 +5,7 @@ import { Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,7 @@ export function RemoteBookingForm() {
       numberOfGuests: values.numberOfPeople,
       numberOfPets: values.numberOfPets,
       clientNote: values.customerNote.trim() || null,
+      optOutFromMarketingEmails: values.optOutFromMarketingEmails,
     });
 
     form.setError('root', { message: result.error });
@@ -158,6 +160,22 @@ export function RemoteBookingForm() {
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="optOutFromMarketingEmails"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} orientation="horizontal">
+              <Checkbox
+                id="opt-out-from-marketing-emails"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+              <FieldLabel htmlFor="opt-out-from-marketing-emails">
+                Nem kér marketing emaileket
+              </FieldLabel>
             </Field>
           )}
         />
@@ -269,6 +287,7 @@ export function RemoteBookingForm() {
               <Input
                 id="remote-booking-pets"
                 type="number"
+                inputMode="numeric"
                 min={0}
                 max={MAX_PETS}
                 value={field.value}

@@ -1,4 +1,6 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
+import { cache } from 'react';
 
 import { ArrowLeft, ExternalLinkIcon } from 'lucide-react';
 
@@ -75,13 +77,25 @@ export function DetailRow({
   );
 }
 
+// Dedupes the query between generateMetadata and the page within one request
+const getCachedPhotoShooting = cache(getPhotoShooting);
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/admin/photo-shootings/[id]'>): Promise<Metadata> {
+  const { id } = await params;
+  const shooting = await getCachedPhotoShooting(id);
+
+  return {
+    title: `${shooting?.client.owner.name ?? 'Fotózás'}`,
+  };
+}
+
 export default async function PhotoShootingDetailPage({
   params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+}: PageProps<'/admin/photo-shootings/[id]'>) {
   const { id } = await params;
-  const shooting = await getPhotoShooting(id);
+  const shooting = await getCachedPhotoShooting(id);
   const photographers = await fetchPhotographers();
   const editors = await fetchEditors();
   const photographerItems = photographers.map((p) => ({

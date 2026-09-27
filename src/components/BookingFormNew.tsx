@@ -115,6 +115,7 @@ const bookingFormSchema = z
     customerNote: z.string().max(NOTE_MAX_LENGTH),
     name: z.string().trim().min(2, 'Add meg a neved.'),
     email: z.email('Adj meg egy érvényes e-mail címet.'),
+    optOutFromMarketingEmails: z.boolean(),
   })
   .superRefine((values, ctx) => {
     if (values.packageKey == null) {
@@ -145,6 +146,7 @@ const FIELD_ORDER = [
   'numberOfPets',
   'name',
   'email',
+  'optOutFromMarketingEmails',
   'customerNote',
 ] as const satisfies readonly FieldName[];
 
@@ -172,6 +174,7 @@ export function BookingFormNew({
       customerNote: '',
       name: '',
       email: '',
+      optOutFromMarketingEmails: false,
     },
   });
 
@@ -233,6 +236,7 @@ export function BookingFormNew({
       clientNote: values.customerNote.trim() || null,
       name: values.name.trim(),
       email: values.email.trim(),
+      optOutFromMarketingEmails: values.optOutFromMarketingEmails,
     });
 
     if ('error' in result) {
@@ -553,36 +557,60 @@ export function BookingFormNew({
           )}
         />
 
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              ref={sectionRef('email')}
-              data-invalid={fieldState.invalid}
-              className={SECTION_CLASS}
-            >
-              <FieldLabel htmlFor="booking-email" className={LEGEND_CLASS}>
-                E-mail címed<span className="ml-1 text-terracotta">*</span>
-              </FieldLabel>
-              <Input
-                {...field}
-                ref={controlRef('email', field.ref)}
-                id="booking-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="anna@example.com"
-                aria-invalid={fieldState.invalid}
-                className={TEXT_CONTROL_CLASS}
-              />
-              <FieldDescription className={HINT_CLASS}>
-                Ide küldjük a visszaigazolást.
-              </FieldDescription>
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
+        <div className="flex flex-col gap-2">
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                ref={sectionRef('email')}
+                data-invalid={fieldState.invalid}
+                className={SECTION_CLASS}
+              >
+                <FieldLabel htmlFor="booking-email" className={LEGEND_CLASS}>
+                  E-mail címed<span className="ml-1 text-terracotta">*</span>
+                </FieldLabel>
+                <Input
+                  {...field}
+                  ref={controlRef('email', field.ref)}
+                  id="booking-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="anna@example.com"
+                  aria-invalid={fieldState.invalid}
+                  className={TEXT_CONTROL_CLASS}
+                />
+                {/* <FieldDescription className={HINT_CLASS}>
+                  Ide küldjük a visszaigazolást
+                </FieldDescription> */}
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Controller
+            name="optOutFromMarketingEmails"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} orientation="horizontal">
+                <Checkbox
+                  id="opt-out-from-marketing-emails"
+                  name="opt-out-from-marketing-emails"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+                <FieldLabel
+                  htmlFor="opt-out-from-marketing-emails"
+                  className="font-light text-cream-muted"
+                >
+                  Nem szeretnék levelet kapni a hírekről és akciókról.
+                </FieldLabel>
+              </Field>
+            )}
+          />
+        </div>
 
         <Controller
           name="customerNote"

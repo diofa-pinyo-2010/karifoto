@@ -29,6 +29,7 @@ export type CreateBookingIntentInput = {
   numberOfGuests: number;
   numberOfPets: number;
   clientNote: string | null;
+  optOutFromMarketingEmails: boolean;
 };
 
 export async function createBookingIntent(
@@ -100,6 +101,7 @@ export async function createBookingIntent(
         numberOfPets: input.numberOfPets,
         clientNote: input.clientNote?.trim().slice(0, 500) || null,
         timeSlotId: input.timeSlotId,
+        optOutFromMarketingEmails: input.optOutFromMarketingEmails,
       },
       select: { id: true },
     });

@@ -159,6 +159,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       ? session.customer
       : session.customer!.id!;
 
+  const marketingConsentAt = bookingIntent.optOutFromMarketingEmails
+    ? undefined
+    : new Date();
+
   const user = await prisma.user.upsert({
     where: { email: userEmail },
     update: { phoneNumber: userPhoneNumber },
@@ -171,8 +175,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const client = await prisma.clientProfile.upsert({
     where: { userId: user.id },
-    update: { stripeCustomerId },
-    create: { userId: user.id, stripeCustomerId },
+    update: { stripeCustomerId, marketingConsentAt },
+    create: { userId: user.id, stripeCustomerId, marketingConsentAt },
   });
 
   if (zip != null && city != null && addressLine1 != null) {
@@ -389,31 +393,39 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // Publish email sending and invoice generation, and Google Event Creation to QStash
-  const [emailJob, invoiceJob, calendarEventJob] = await Promise.all([
-    qStashClient.publishJSON({
-      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-confirmation`,
-      body: { shootingId: shooting.id },
-      retries: 3,
-    }),
-    hasPaymentIntent
-      ? qStashClient.publishJSON({
-          url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
-          body: {
-            shootingId: shooting.id,
-            bookingIntentId,
-            sessionId: session.id,
-            paymentIntent,
-            amountTotal: session.amount_total,
-          },
-          retries: 5,
-        })
-      : null,
-    qStashClient.publishJSON({
-      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event`,
-      body: { shootingId: shooting.id },
-      retries: 3,
-    }),
-  ]);
+  const [emailJob, invoiceJob, calendarEventJob, createResendContactJob] =
+    await Promise.all([
+      qStashClient.publishJSON({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-confirmation`,
+        body: { shootingId: shooting.id },
+        retries: 3,
+      }),
+      hasPaymentIntent
+        ? qStashClient.publishJSON({
+            url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
+            body: {
+              shootingId: shooting.id,
+              bookingIntentId,
+              sessionId: session.id,
+              paymentIntent,
+              amountTotal: session.amount_total,
+            },
+            retries: 5,
+          })
+        : null,
+      qStashClient.publishJSON({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event`,
+        body: { shootingId: shooting.id },
+        retries: 3,
+      }),
+      marketingConsentAt != null
+        ? qStashClient.publishJSON({
+            url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/create-resend-contact`,
+            body: { email: userEmail },
+            retries: 3,
+          })
+        : null,
+    ]);
 
   // TODO: Save the job ids to db?
   console.log('[stripe-webhook] jobs published', {
@@ -422,5 +434,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     emailMessageId: emailJob.messageId,
     invoiceMessageId: invoiceJob?.messageId ?? null,
     calendarMessageId: calendarEventJob.messageId,
+    createResendContactMessageId: createResendContactJob?.messageId,
   });
 }
