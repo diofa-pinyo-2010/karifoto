@@ -45,8 +45,8 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: `%s | ${SITE_NAME} Karácsonyi fotózás Budapesten 🎄`,
-    default: `${SITE_NAME} – Karácsonyi családi fotózás Budapesten 2026-ban 🎄`,
+    template: `%s • ${SITE_NAME} 🎄 • karácsonyi fotózás Budapesten`,
+    default: `${SITE_NAME} 🎄 • karácsonyi családi fotózás Budapesten 2026-ban`,
   },
   description: `Felejthetetlen élmény a díszbe borított stúdióban, retusált képek akár ${PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül.`,
   // metadataBase: new URL('https://karifoto.hu/'),
