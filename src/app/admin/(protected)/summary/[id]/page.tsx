@@ -1,9 +1,15 @@
-import { CheckCircle2Icon } from 'lucide-react';
+import { BadgeQuestionMarkIcon, CheckCircle2Icon } from 'lucide-react';
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { SendDepositRequestButton } from '@/components/SendDepositRequestButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { DECOR_SET_LABEL, PACKAGE_LABEL } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { wasEmailSent } from '@/lib/idempotency';
@@ -89,9 +95,23 @@ export default async function RemoteBookingSummaryPage({
               key={adjustment.id}
               className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0"
             >
-              <span className="text-sm text-muted-foreground">
-                {adjustment.reason}
-              </span>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-muted-foreground">
+                  {adjustment.publicLabel}
+                </p>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button size="icon-sm" variant="ghost">
+                        <BadgeQuestionMarkIcon className="text-muted-foreground" />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>
+                    <p>{adjustment.internalNote}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <div className="flex items-center gap-3">
                 <span className="text-right text-sm font-medium">
                   - {formatMoney(adjustment.amountInCents)}

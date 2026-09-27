@@ -6,11 +6,17 @@ import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 import { hufToCents } from '@/lib/utils';
 
-export async function createBookingIntentDiscount(
-  bookingIntentId: string,
-  amountHuf: number,
-  reason: string,
-): Promise<{ id: string } | { error: string }> {
+export async function createBookingIntentDiscount({
+  bookingIntentId,
+  amountHuf,
+  internalNote,
+  publicLabel,
+}: {
+  bookingIntentId: string;
+  amountHuf: number;
+  internalNote: string;
+  publicLabel: string;
+}): Promise<{ id: string } | { error: string }> {
   const { staffProfile } = await verifySession();
 
   // If you want to make it available to Superadmins only
@@ -18,13 +24,11 @@ export async function createBookingIntentDiscount(
   //   return { error: 'Nincs jogosultságod ehhez.' };
   // }
 
-  const trimmedReason = reason.trim();
-
   if (!Number.isInteger(amountHuf) || amountHuf <= 0) {
     return { error: 'Add meg az összeget forintban.' };
   }
-  if (trimmedReason.length < 2) {
-    return { error: 'Add meg a kedvezmény indoklását.' };
+  if (publicLabel.trim().length < 2 || internalNote.trim().length < 2) {
+    return { error: 'Add meg a kedvezmény publikus nevét és indoklását.' };
   }
 
   try {
@@ -32,7 +36,8 @@ export async function createBookingIntentDiscount(
       data: {
         type: 'DISCOUNT',
         amountInCents: hufToCents(amountHuf),
-        reason: trimmedReason,
+        publicLabel: publicLabel.trim(),
+        internalNote: internalNote.trim(),
         bookingIntentId,
         createdById: staffProfile.id,
       },

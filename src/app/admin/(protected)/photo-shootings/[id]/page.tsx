@@ -360,7 +360,7 @@ export default async function PhotoShootingDetailPage({
           {adjustments.map((adjustment) => (
             <DetailRow
               key={adjustment.id}
-              label={adjustment.reason}
+              label={adjustment.publicLabel}
               value={formatAmount(adjustment.amountInCents * -1, 'HUF')}
             />
           ))}

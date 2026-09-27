@@ -21,13 +21,15 @@ export function AddPriceAdjustmentDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState('');
-  const [reason, setReason] = useState('');
+  const [publicLabel, setPublicLabel] = useState('');
+  const [internalNote, setInternalNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function reset() {
     setAmount('');
-    setReason('');
+    setPublicLabel('');
+    setInternalNote('');
     setError(null);
   }
 
@@ -37,17 +39,18 @@ export function AddPriceAdjustmentDialog({
       setError('Add meg az összeget forintban.');
       return;
     }
-    if (reason.trim().length < 2) {
-      setError('Add meg a kedvezmény indoklását.');
+    if (publicLabel.trim().length < 2 || internalNote.trim().length < 2) {
+      setError('Add meg a kedvezmény publikus nevét és indoklását.');
       return;
     }
 
     startTransition(async () => {
-      const result = await createBookingIntentDiscount(
+      const result = await createBookingIntentDiscount({
         bookingIntentId,
         amountHuf,
-        reason,
-      );
+        publicLabel,
+        internalNote,
+      });
       if ('error' in result) {
         setError(result.error);
         return;
@@ -89,13 +92,25 @@ export function AddPriceAdjustmentDialog({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="price-adjustment-reason">
-            Indoklás (megjelenhet az oldalon)
+          <FieldLabel htmlFor="price-adjustment-public-label">
+            Nyilvános megnevezés (pl. összesítőben megjelenhet)
+          </FieldLabel>
+          <Input
+            type="text"
+            id="price-adjustment-public-label"
+            value={publicLabel}
+            onChange={(event) => setPublicLabel(event.target.value)}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="price-adjustment-internal-note">
+            Indoklás (csak admin)
           </FieldLabel>
           <Textarea
-            id="price-adjustment-reason"
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
+            id="price-adjustment-internal-note"
+            value={internalNote}
+            onChange={(event) => setInternalNote(event.target.value)}
           />
         </Field>
 
