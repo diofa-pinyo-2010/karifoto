@@ -50,8 +50,9 @@ model ClientProfile {
   stripeCustomerId String
   photoShootings   PhotoShooting[]
 
-  billingAddresses BillingAddress[]
-  sentEmails       SentEmail[]
+  billingAddresses   BillingAddress[]
+  sentEmails         SentEmail[]
+  marketingConsentAt DateTime?        @db.Timestamptz()
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -87,11 +88,12 @@ model BookingIntent {
 
   photoShooting PhotoShooting?
 
-  billingAddress BillingAddress?
+  billingAddress            BillingAddress?
+  adjustments               PriceAdjustment[]
+  optOutFromMarketingEmails Boolean           @default(false)
 
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @default(now()) @updatedAt
-  adjustments PriceAdjustment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([timeSlotId])
 }
@@ -262,12 +264,12 @@ model Invoice {
 }
 
 model SentEmail {
-  id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resendId String    @unique
-  type     EmailType
-  to       String
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resendId  String    @unique
+  type      EmailType
+  to        String
   subject   String
-  variables Json   @default("{}")
+  variables Json      @default("{}")
 
   client   ClientProfile? @relation(fields: [clientId], references: [id])
   clientId String?        @db.Uuid

@@ -35,6 +35,7 @@ const remoteBookingSchema = z
     numberOfPeople: z.number().int().min(1, 'Legalább 1 fő.').max(MAX_PERSONS),
     numberOfPets: z.number().int().min(0).max(MAX_PETS),
     customerNote: z.string().max(NOTE_MAX_LENGTH),
+    optOutFromMarketingEmails: z.boolean(),
   })
   .superRefine((values, ctx) => {
     if (values.packageKey == null) {
@@ -70,6 +71,7 @@ export function useRemoteBookingForm() {
       numberOfPeople: 1,
       numberOfPets: 0,
       customerNote: '',
+      optOutFromMarketingEmails: false,
     },
   });
 
