@@ -1,15 +1,10 @@
-import { BadgeQuestionMarkIcon, CheckCircle2Icon } from 'lucide-react';
+import { CheckCircle2Icon } from 'lucide-react';
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
+import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { SendDepositRequestButton } from '@/components/SendDepositRequestButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { DECOR_SET_LABEL, PACKAGE_LABEL } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { wasEmailSent } from '@/lib/idempotency';
@@ -99,18 +94,7 @@ export default async function RemoteBookingSummaryPage({
                 <p className="text-sm text-muted-foreground">
                   {adjustment.publicLabel}
                 </p>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button size="icon-sm" variant="ghost">
-                        <BadgeQuestionMarkIcon className="text-muted-foreground" />
-                      </Button>
-                    }
-                  />
-                  <TooltipContent>
-                    <p>{adjustment.internalNote}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <AdjustmentNoteTooltip note={adjustment.internalNote} />
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-right text-sm font-medium">
@@ -127,6 +111,7 @@ export default async function RemoteBookingSummaryPage({
       )}
 
       <AddPriceAdjustmentDialog
+        title="Kedvezmény hozzáadása"
         bookingIntentId={id}
         disabled={isBookingIntentConverted}
       />

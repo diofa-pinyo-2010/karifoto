@@ -23,15 +23,16 @@ export function DeletePriceAdjustmentButton({
     setLoading(true);
     startTransition(async () => {
       try {
-        const result = await deletePriceAdjustment(
-          priceAdjustmentId,
+        const result = await deletePriceAdjustment({
+          id: priceAdjustmentId,
           bookingIntentId,
-        );
+        });
         if (result != null && 'error' in result) {
           toast.add({ title: result.error, type: 'error' });
         }
       } finally {
         setLoading(false);
+        toast.add({ title: 'Kedvezmény törölve!', type: 'success' });
       }
     });
   }

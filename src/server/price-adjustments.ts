@@ -51,10 +51,15 @@ export async function createBookingIntentDiscount({
   }
 }
 
-export async function deletePriceAdjustment(
-  id: string,
-  bookingIntentId: string,
-): Promise<{ error: string } | void> {
+export async function deletePriceAdjustment({
+  id,
+  bookingIntentId,
+  photoShootingId,
+}: {
+  id: string;
+  bookingIntentId?: string;
+  photoShootingId?: string;
+}): Promise<{ error: string } | void> {
   await verifySession();
 
   try {
@@ -64,5 +69,6 @@ export async function deletePriceAdjustment(
     return { error: 'Nem sikerült törölni a kedvezményt. Próbáld újra.' };
   }
 
-  revalidatePath(`/admin/summary/${bookingIntentId}`);
+  if (bookingIntentId) revalidatePath(`/admin/summary/${bookingIntentId}`);
+  if (photoShootingId) revalidatePath(`/admin/summary/${photoShootingId}`);
 }
