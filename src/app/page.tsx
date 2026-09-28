@@ -26,10 +26,15 @@ export default async function Home() {
     <BookingSelectionProvider>
       <Header />
       <main className="bg-forest font-sans text-cream">
+        {/*
+          A Sets közvetlenül a Hero után jön, ahogy a látványtervben: a hero
+          alját lezáró krém hullám ennek a szekciónak a háttérszínébe olvad
+          (mindkettő #f5f1e9), így nincs látható él a kettő között.
+        */}
         <Hero />
+        <Sets />
         <Reviews />
         <Pricing />
-        <Sets />
         <Video />
         <Booking groupedTimeSlots={groups} />
         <Faq />

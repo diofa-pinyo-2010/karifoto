@@ -21,10 +21,7 @@ export function Sets() {
   const extras = photoSets.filter((s) => s.extra);
 
   return (
-    <section
-      id="diszletek"
-      className="brand-section bg-brand-cream bg-[radial-gradient(ellipse_at_50%_0%,#dac5a426,transparent_65%)]"
-    >
+    <section id="diszletek" className="brand-section bg-brand-cream">
       <div className="brand-shell">
         <div className="mb-9 flex flex-col gap-6 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-12">
           <div>

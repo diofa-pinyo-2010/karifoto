@@ -121,12 +121,17 @@ export function Hero() {
         </div>
       </div>
 
-      {/* A krém színű hullám a következő szekcióba vezet át. */}
+      {/*
+        Krém hullám, amely a Hero alját a következő szekcióba vezeti át: a görbe
+        fölött a fotó látszik, alatta a krém. A kitöltés ezért a következő
+        szekció háttérszíne (`Sets`, #f5f1e9), nem a Heroé — a `Sets` háttere
+        emiatt egyszínű, hogy az illesztés pontos legyen.
+      */}
       <svg
         viewBox="0 0 1440 65"
         preserveAspectRatio="none"
         aria-hidden="true"
-        className="absolute -bottom-px h-8.75 w-full text-brand-cream lg:h-13"
+        className="absolute bottom-[-1px] h-[35px] w-full text-brand-cream lg:h-[52px]"
       >
         <path d="M0 35 Q360 75 720 32 T1440 35 V65 H0Z" fill="currentColor" />
       </svg>
