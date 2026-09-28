@@ -5,6 +5,7 @@ import { FloatingAdminButton } from '@/components/FloatingAdminButton';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { MobileBookingBar } from '@/components/MobileBookingBar';
 import { Pricing } from '@/components/Pricing';
 import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
@@ -40,6 +41,7 @@ export default async function Home() {
         <Faq />
       </main>
       <Footer />
+      <MobileBookingBar />
       {session && <FloatingAdminButton />}
     </BookingSelectionProvider>
   );

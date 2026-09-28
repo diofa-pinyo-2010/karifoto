@@ -15,6 +15,7 @@ import heroPhoto from '@/photos/hero-2026.webp';
 export function Hero() {
   return (
     <section
+      id="hero"
       aria-labelledby="hero-title"
       className="relative isolate overflow-hidden bg-[#0b1e26] font-brand-sans text-brand-cream"
     >
