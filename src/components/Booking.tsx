@@ -31,19 +31,17 @@ export function Booking({
   return (
     <section
       id="foglalas"
-      className="bg-brand-cream bg-[radial-gradient(ellipse_at_0%_30%,#d5e1d947,transparent_50%)] py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28"
+      className="brand-section bg-brand-cream bg-[radial-gradient(ellipse_at_0%_30%,#d5e1d947,transparent_50%)]"
     >
-      <div className="mx-auto grid w-full max-w-[1240px] gap-9 px-6 sm:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-20 lg:px-12">
+      <div className="brand-shell grid gap-9 sm:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-20 lg:px-12">
         <div>
-          <p className="mb-4 text-[10px] font-semibold tracking-[.23em] text-[#657c79] uppercase sm:text-[11px]">
-            Itt kezdődik a közös emlék
-          </p>
-          <h2 className="font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance">
+          <p className="brand-eyebrow">Itt kezdődik a közös emlék</p>
+          <h2 className="brand-heading">
             Legyen idén
             <br />
-            <em className="text-[#587675] italic">a ti karácsonyotok.</em>
+            <em>a ti karácsonyotok.</em>
           </h2>
-          <p className="mt-5 max-w-xl text-sm leading-[1.85] text-brand-muted sm:text-base">
+          <p className="brand-intro">
             Válassz egy szabad időpontot, és lépj tovább a foglaláshoz. Mi már
             nagyon várunk benneteket!
           </p>

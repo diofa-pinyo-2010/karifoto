@@ -32,23 +32,16 @@ export function Reviews() {
     <section
       id="velemenyek"
       aria-labelledby="reviews-title"
-      className="bg-[#eae8df] py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28"
+      className="brand-section bg-[#eae8df]"
     >
-      <div className="mx-auto w-full max-w-[1240px] px-6 sm:px-10 lg:px-12">
+      <div className="brand-shell">
         <div className="mb-9 flex flex-col gap-6 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-12">
           <div>
-            <p className="mb-4 text-[10px] font-semibold tracking-[.23em] text-[#657c79] uppercase sm:text-[11px]">
-              Akik már velünk ünnepeltek
-            </p>
-            <h2
-              id="reviews-title"
-              className="font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance"
-            >
+            <p className="brand-eyebrow">Akik már velünk ünnepeltek</p>
+            <h2 id="reviews-title" className="brand-heading">
               A legszebb visszajelzés?
               <br />
-              <em className="text-[#587675] italic">
-                Amikor újra találkozunk.
-              </em>
+              <em>Amikor újra találkozunk.</em>
             </h2>
           </div>
 
@@ -60,9 +53,7 @@ export function Reviews() {
           >
             <span className="flex items-center gap-3">
               <strong className="font-display text-5xl">{RATING.score}</strong>
-              <span className="tracking-[.1em] whitespace-nowrap text-[#ae793b]">
-                ★★★★★
-              </span>
+              <span className="brand-stars">★★★★★</span>
             </span>
             <span className="border-b border-brand-ink/25 pb-2">
               {RATING.count} Google-értékelés <span aria-hidden="true">↗</span>
@@ -87,10 +78,7 @@ export function Reviews() {
                 rel="noreferrer noopener"
                 className="flex h-full flex-col"
               >
-                <span
-                  aria-label="5 csillag"
-                  className="tracking-[.1em] whitespace-nowrap text-[#ae793b]"
-                >
+                <span aria-label="5 csillag" className="brand-stars">
                   ★★★★★
                 </span>
                 <p className="mt-5 mb-7 line-clamp-6 text-sm leading-[1.85]">

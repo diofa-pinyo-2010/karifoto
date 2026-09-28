@@ -291,4 +291,47 @@ html.admin {
   .btn-cta {
     @apply inline-block rounded-full bg-terracotta text-center font-medium text-[#FFF4E6] transition-colors hover:bg-terracotta-hover;
   }
+
+  /*
+   * ─── 2026 arculat: ismétlődő szekció-primitívek ───────────────────────────
+   *
+   * Csak az a néhány minta került ide, ami három átstílusozott szekcióban
+   * (Faq, Booking, Reviews) szó szerint ugyanaz volt. A többi maradjon utility
+   * a komponensben: nem a látványterv CSS-ét másoljuk vissza, csak a bizonyított
+   * ismétlődést vonjuk össze.
+   *
+   * A `font-brand-sans` a `.brand-section`-ben átmeneti — amikor a
+   * `--ui-font-sans` Manrope-ra vált, innen elhagyható.
+   */
+  .brand-section {
+    @apply py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28;
+  }
+
+  .brand-shell {
+    @apply mx-auto w-full max-w-[1240px] px-6 sm:px-10 lg:px-12;
+  }
+
+  .brand-eyebrow {
+    @apply mb-4 text-[10px] font-semibold tracking-[.23em] uppercase sm:text-[11px];
+    color: #657c79;
+  }
+
+  .brand-heading {
+    @apply font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance;
+  }
+
+  /* Valódi kurzív vágat, lásd a Cormorant importot a gyökér layoutban. */
+  .brand-heading em {
+    color: #587675;
+    font-style: italic;
+  }
+
+  .brand-intro {
+    @apply mt-5 max-w-xl text-sm leading-[1.85] text-brand-muted sm:text-base;
+  }
+
+  .brand-stars {
+    @apply tracking-[.1em] whitespace-nowrap;
+    color: #ae793b;
+  }
 }

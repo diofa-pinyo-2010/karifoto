@@ -22,19 +22,12 @@ import { faqs } from '@/lib/data';
  */
 export function Faq() {
   return (
-    <section
-      id="gyik"
-      className="bg-[#e8eee8] py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28"
-    >
-      <div className="mx-auto grid w-full max-w-[1240px] gap-9 px-6 sm:px-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-20 lg:px-12">
+    <section id="gyik" className="brand-section bg-[#e8eee8]">
+      <div className="brand-shell grid gap-9 sm:px-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-20 lg:px-12">
         <div>
-          <p className="mb-4 text-[10px] font-semibold tracking-[.23em] text-[#657c79] uppercase sm:text-[11px]">
-            Mielőtt útnak indultok
-          </p>
-          <h2 className="font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance">
-            Jó, ha tudjátok.
-          </h2>
-          <p className="mt-5 max-w-xl text-sm leading-[1.85] text-brand-muted sm:text-base">
+          <p className="brand-eyebrow">Mielőtt útnak indultok</p>
+          <h2 className="brand-heading">Jó, ha tudjátok.</h2>
+          <p className="brand-intro">
             Hogy a készülődés is olyan könnyű legyen, mint egy közös mosoly.
           </p>
           <a
@@ -71,7 +64,7 @@ export function Faq() {
         </AccordionPrimitive.Root>
       </div>
 
-      <div className="mx-auto mt-12 flex w-full max-w-[1240px] flex-col items-center justify-center gap-5 border-t border-brand-ink/15 px-6 pt-10 text-center sm:flex-row sm:gap-9 sm:px-10 lg:px-12">
+      <div className="brand-shell mt-12 flex flex-col items-center justify-center gap-5 border-t border-brand-ink/15 pt-10 text-center sm:flex-row sm:gap-9">
         <p className="font-display text-3xl">A többi már a ti történetetek.</p>
         <a
           href="#foglalas"
