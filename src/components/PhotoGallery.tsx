@@ -37,7 +37,10 @@ function renderNextImage(
         position: 'relative',
         aspectRatio: `${width}/${height}`,
       }}
-      className="group cursor-pointer overflow-hidden rounded-lg border border-cream/30"
+      // A keret krém háttéren is látszik, hogy a világos képek ne folyjanak
+      // össze a háttérrel. A korábbi `border-cream/30` a sötétzöld arculathoz
+      // készült, krémen 1,0 kontraszttal gyakorlatilag láthatatlan volt.
+      className="group cursor-pointer overflow-hidden rounded-lg border border-[#acb9b0]"
     >
       <Image
         fill
