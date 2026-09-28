@@ -4,6 +4,10 @@ import Link from 'next/link';
 const linkClass =
   'flex min-h-11 items-center gap-2.5 text-sm transition-colors hover:text-[#e6be88]';
 const rowClass = 'justify-between md:justify-start';
+// Ugyanaz a hover, mint a körvonalas gomboké: halvány háttér és a
+// szöveghez igazodó keret (`border-current`).
+const socialClass =
+  'justify-center rounded-[10px] border border-white/30 px-2 py-2.5 hover:border-current hover:bg-[#b3c9c51a]';
 
 /**
  * 2026-os arculat. A korábbi egysoros lábléc helyett három csoport (elérhetőség,
@@ -78,7 +82,7 @@ export function Footer() {
                 href="https://www.instagram.com/karifoto.hu/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${linkClass} justify-center rounded-[10px] border border-white/30 px-2 py-2.5`}
+                className={`${linkClass} ${socialClass}`}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -107,7 +111,7 @@ export function Footer() {
                 href="https://www.facebook.com/karifoto"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${linkClass} justify-center rounded-[10px] border border-white/30 px-2 py-2.5`}
+                className={`${linkClass} ${socialClass}`}
               >
                 <svg
                   viewBox="0 0 24 24"

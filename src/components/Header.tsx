@@ -69,7 +69,7 @@ export function Header() {
 
         <a
           href="#foglalas"
-          className="hidden min-h-11 items-center gap-5 rounded-md border border-white/50 px-5 text-sm sm:inline-flex"
+          className="hidden min-h-11 items-center gap-5 rounded-md border border-white/50 px-5 text-sm transition-colors duration-200 hover:border-current hover:bg-[#b3c9c51a] sm:inline-flex"
         >
           Időpontotok <span aria-hidden="true">↗</span>
         </a>
