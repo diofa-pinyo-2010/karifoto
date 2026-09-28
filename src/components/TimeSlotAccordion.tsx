@@ -83,8 +83,8 @@ export function TimeSlotAccordion({
                       </span>
                       <span
                         className={cn(
-                          'text-[10px] font-semibold',
-                          !taken && 'text-[#3b6651]',
+                          'text-[10px] font-semibold uppercase',
+                          taken ? 'text-brand-taken' : 'text-brand-free',
                         )}
                       >
                         {taken ? 'Foglalt' : 'Szabad'}
@@ -102,7 +102,7 @@ export function TimeSlotAccordion({
                           aria-disabled
                           className={cn(
                             rowClass,
-                            'border-[#e1e2d9] bg-[#f1f0e9] text-[#7a7f78]',
+                            'cursor-not-allowed border-brand-taken-edge bg-brand-taken-surface text-brand-taken',
                           )}
                         >
                           {row}
@@ -112,7 +112,7 @@ export function TimeSlotAccordion({
                           href={`/foglalas/${id}${selectionQuery}`}
                           className={cn(
                             rowClass,
-                            'border-[#c4d5c9] bg-[#eaf1e8] transition-colors hover:border-[#6b9a7a] hover:bg-[#d4e4d8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]',
+                            'border-brand-free-edge bg-brand-free-surface transition-colors hover:border-brand-free-edge-hover hover:bg-brand-free-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]',
                           )}
                         >
                           {row}

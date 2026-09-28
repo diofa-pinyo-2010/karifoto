@@ -95,6 +95,25 @@
   --color-brand-muted: #5e6d6c;
   --color-brand-ice: #bcd8d8;
 
+  /*
+   * Idősáv-állapotok. Szándékosan NEM a shadcn szemantikus tokenjei
+   * (`--success`, `--destructive`): azok a `:root`-on ülnek, tehát az adminnal
+   * közösek — egy későbbi `shadcn apply` némán átszínezné a foglalási panelt.
+   * Ráadásul semleges felülethez vannak hangolva, a telített smaragdzöld a
+   * krém-zsálya palettán idegen lenne. Ezek tompább, meleg árnyalatok.
+   *
+   * Mindkét szövegszín AA-t teljesít a saját felületén (6,1:1 és 5,1:1) — a
+   * címke 10-11 px, tehát a 4,5:1 a mérce.
+   */
+  --color-brand-free: #2f5d43;
+  --color-brand-free-surface: #dcebdd;
+  --color-brand-free-surface-hover: #c8e0cc;
+  --color-brand-free-edge: #9dbfa6;
+  --color-brand-free-edge-hover: #5f9271;
+  --color-brand-taken: #8c5346;
+  --color-brand-taken-surface: #f5e9e5;
+  --color-brand-taken-edge: #e2cfc9;
+
   /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
 
   --font-display: var(--ui-font-display);
