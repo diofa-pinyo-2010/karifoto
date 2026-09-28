@@ -25,6 +25,10 @@ import {
   type PriceAdjustmentTarget,
 } from '@/server/price-adjustments';
 
+function format(amount: string) {
+  return amount === '' ? '' : amount.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 export function AddPriceAdjustmentDialog({
   target,
   defaultType,
@@ -128,12 +132,12 @@ export function AddPriceAdjustmentDialog({
           <FieldLabel htmlFor="price-adjustment-amount">Összeg (Ft)</FieldLabel>
           <Input
             id="price-adjustment-amount"
-            type="number"
+            type="text"
             inputMode="numeric"
             min={1}
             step={1}
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
+            value={format(amount)}
+            onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
           />
         </Field>
 
