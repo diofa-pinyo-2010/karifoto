@@ -53,7 +53,7 @@ export default async function SuccessPage(
               nem találjuk
             </h1>
             <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
-              Ha kifizetted a foglalót, a visszaigazolást e-mailben megkapod.
+              Ha kifizetted az előleget, a visszaigazolást e-mailben megkapod.
             </p>
           </>
         ) : (
