@@ -52,7 +52,18 @@ function renderNextImage(
   );
 }
 
-export function PhotoGallery({ photos }: { photos: Photo[] }) {
+export function PhotoGallery({
+  photos,
+  /**
+   * Sormagasság-cél desktopon. Az alapérték teljes szélességű konténerre van
+   * hangolva; szűkebb oszlopban (pl. a díszletszekciók kétoszlopos rácsában)
+   * kisebb érték kell, különben egy sorba alig fér kép.
+   */
+  targetRowHeight = 370,
+}: {
+  photos: Photo[];
+  targetRowHeight?: number;
+}) {
   const isMobile = useIsMobile();
   const [index, setIndex] = useState<number | null>(null);
   const open = index != null;
@@ -64,7 +75,7 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
         render={{ image: renderNextImage }}
         spacing={12}
         // 5000 is just "a number bigger than any image could ever be tall," used as a trick.
-        targetRowHeight={isMobile ? 5000 : 370}
+        targetRowHeight={isMobile ? 5000 : targetRowHeight}
         // sizes={{
         //   size: '1168px',
         //   sizes: [
