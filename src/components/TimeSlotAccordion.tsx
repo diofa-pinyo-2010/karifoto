@@ -2,15 +2,14 @@
 
 import Link from 'next/link';
 
-import { FaceSlightlyFrowningIcon } from 'lucide-react';
+import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  FaceSlightlyFrowningIcon,
+} from 'lucide-react';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import {
   monthDayFormatter,
   shortDateFormatter,
@@ -50,73 +49,79 @@ export function TimeSlotAccordion({
   }
 
   return (
-    <Accordion
+    <AccordionPrimitive.Root
       multiple={false}
       defaultValue={[days[0][0]]}
-      className="mx-auto mt-7 max-w-160 overflow-hidden rounded-[22px] border border-cream/12 bg-cream/4 sm:mt-11"
+      className="mx-auto mt-7 flex max-w-160 flex-col overflow-hidden rounded-[22px] border border-cream/12 bg-cream/4 sm:mt-11"
     >
       {days.map(([dayKey, daySlots]) => (
-        <AccordionItem
+        <AccordionPrimitive.Item
           key={dayKey}
           value={dayKey}
           className="not-last:border-b not-last:border-cream/12"
         >
-          <AccordionTrigger className="items-center px-5 py-4.5 text-sm font-black tracking-wide text-cream-strong transition-colors hover:bg-cream/4 **:data-[slot=accordion-trigger-icon]:text-sage-dim sm:px-6.5 md:text-base">
-            {formatDayTitle(daySlots[0].startTime)}
-          </AccordionTrigger>
-          <AccordionContent className="px-5 pt-0 pb-2 sm:px-6.5">
-            <ul className="flex flex-col">
-              {daySlots.map(({ id, startTime, revealed, photoShooting }) => {
-                const taken = !revealed || photoShooting != null;
+          <AccordionPrimitive.Header className="flex">
+            <AccordionPrimitive.Trigger className="group flex flex-1 items-center justify-between gap-4 px-5 py-4.5 text-left text-sm font-black tracking-wide text-cream-strong transition-colors hover:bg-cream/4 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:px-6.5 md:text-base">
+              {formatDayTitle(daySlots[0].startTime)}
+              <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-sage-dim group-data-panel-open:hidden" />
+              <ChevronUpIcon className="pointer-events-none hidden size-4 shrink-0 text-sage-dim group-data-panel-open:block" />
+            </AccordionPrimitive.Trigger>
+          </AccordionPrimitive.Header>
+          <AccordionPrimitive.Panel className="h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+            <div className="px-5 pt-0 pb-2 sm:px-6.5">
+              <ul className="flex flex-col">
+                {daySlots.map(({ id, startTime, revealed, photoShooting }) => {
+                  const taken = !revealed || photoShooting != null;
 
-                const row = (
-                  <>
-                    <span
-                      className={cn(
-                        'text-base text-cream',
-                        taken && 'text-sage-dim/70 line-through',
-                      )}
-                    >
-                      {formatSlotLabel(startTime)}
-                    </span>
-                    <span
-                      className={cn(
-                        'text-base font-bold tracking-wide uppercase',
-                        taken ? 'text-terracotta-hover' : 'text-emerald-300',
-                      )}
-                    >
-                      {taken ? 'Foglalt' : 'Szabad'}
-                    </span>
-                  </>
-                );
+                  const row = (
+                    <>
+                      <span
+                        className={cn(
+                          'text-base text-cream',
+                          taken && 'text-sage-dim/70 line-through',
+                        )}
+                      >
+                        {formatSlotLabel(startTime)}
+                      </span>
+                      <span
+                        className={cn(
+                          'text-base font-bold tracking-wide uppercase',
+                          taken ? 'text-terracotta-hover' : 'text-emerald-300',
+                        )}
+                      >
+                        {taken ? 'Foglalt' : 'Szabad'}
+                      </span>
+                    </>
+                  );
 
-                return (
-                  <li
-                    key={id}
-                    className="border-t border-dashed border-cream/10 first:border-t-0"
-                  >
-                    {taken ? (
-                      <div
-                        aria-disabled
-                        className="flex items-center justify-between gap-4 px-2 py-3"
-                      >
-                        {row}
-                      </div>
-                    ) : (
-                      <Link
-                        href={`/foglalas/${id}${selectionQuery}`}
-                        className="flex items-center justify-between gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-cream/6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-                      >
-                        {row}
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </AccordionContent>
-        </AccordionItem>
+                  return (
+                    <li
+                      key={id}
+                      className="border-t border-dashed border-cream/10 first:border-t-0"
+                    >
+                      {taken ? (
+                        <div
+                          aria-disabled
+                          className="flex items-center justify-between gap-4 px-2 py-3"
+                        >
+                          {row}
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/foglalas/${id}${selectionQuery}`}
+                          className="flex items-center justify-between gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-cream/6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                        >
+                          {row}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </AccordionPrimitive.Panel>
+        </AccordionPrimitive.Item>
       ))}
-    </Accordion>
+    </AccordionPrimitive.Root>
   );
 }
