@@ -1,6 +1,7 @@
 // import { useRouter } from 'next/navigation';
 // import { useState, useTransition } from 'react';
 
+import { BookingSelectionNote } from '@/components/BookingSelectionNote';
 import { TimeSlotAccordion } from '@/components/TimeSlotAccordion';
 import { GroupedSlots } from '@/lib/utils';
 
@@ -30,23 +31,62 @@ export function Booking({
   return (
     <section
       id="foglalas"
-      className="border-t border-cream/9 bg-[linear-gradient(180deg,#0E2620,#122E26)] px-4.5 py-14 sm:px-7 sm:py-22"
+      className="bg-brand-cream bg-[radial-gradient(ellipse_at_0%_30%,#d5e1d947,transparent_50%)] py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28"
     >
-      <div className="mx-auto max-w-270">
-        <div className="text-center">
-          <div className="eyebrow">Foglalás · 30 másodperc</div>
-          <h2 className="mt-3.5 font-display text-[32px] font-medium text-cream-strong sm:text-[52px]">
-            Foglalj időpontot most
+      <div className="mx-auto grid w-full max-w-[1240px] gap-9 px-6 sm:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-20 lg:px-12">
+        <div>
+          <p className="mb-4 text-[10px] font-semibold tracking-[.23em] text-[#657c79] uppercase sm:text-[11px]">
+            Itt kezdődik a közös emlék
+          </p>
+          <h2 className="font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance">
+            Legyen idén
+            <br />
+            <em className="text-[#587675] italic">a ti karácsonyotok.</em>
           </h2>
-          <p className="mx-auto mt-3.5 max-w-130 text-base font-light text-sage-soft">
-            Kattints a{' '}
-            <span className="font-bold text-green-400 uppercase">szabad</span>{' '}
-            időpontok valamelyikére a foglaláshoz. A helyek limitáltak, foglalj
-            egy időpntot most.
+          <p className="mt-5 max-w-xl text-sm leading-[1.85] text-brand-muted sm:text-base">
+            Válassz egy szabad időpontot, és lépj tovább a foglaláshoz. Mi már
+            nagyon várunk benneteket!
+          </p>
+
+          {/* A lépések csak desktopon jelennek meg: mobilon a panel közvetlenül
+              a szöveg alá kerül, ott a felsorolás csak távolabb tolná. */}
+          <ol className="mt-7 hidden space-y-3 lg:block">
+            {[
+              'Válassz egy napot',
+              'Kattints a szabad időpontra',
+              'Folytasd a foglalást',
+            ].map((step, i) => (
+              <li key={step} className="flex items-center gap-3 text-xs">
+                <span className="flex size-7 items-center justify-center rounded-full border border-brand-ink/20 text-[10px]">
+                  {i + 1}
+                </span>
+                {step}
+              </li>
+            ))}
+          </ol>
+
+          <p className="mt-8 text-xs leading-7 text-brand-muted">
+            Elakadtál? Segítünk.
+            <br />
+            <a href="tel:+36301086063" className="font-semibold text-brand-ink">
+              +36 30 108 6063 ↗
+            </a>
           </p>
         </div>
-        <TimeSlotAccordion groupedTimeSlots={groupedTimeSlots} />
-        {/* <Form groupedTimeSlots={groupedTimeSlots} /> */}
+
+        <div className="self-start overflow-hidden rounded-xl border border-[#cbd2c4] bg-brand-paper shadow-[0_12px_50px_#2a493408]">
+          <div className="flex items-center justify-between gap-3 bg-brand-ink px-5 py-5 text-brand-cream">
+            <span className="font-display text-2xl">Szabad időpontok</span>
+            <span className="text-xs text-brand-champagne">2026</span>
+          </div>
+          <BookingSelectionNote />
+          <div className="px-5">
+            <TimeSlotAccordion groupedTimeSlots={groupedTimeSlots} />
+          </div>
+          <p className="px-5 py-4 text-[10px] leading-5 text-brand-muted">
+            Az időpontokra kattintva tudod folytatni a foglalást.
+          </p>
+        </div>
       </div>
     </section>
   );

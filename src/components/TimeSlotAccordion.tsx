@@ -3,11 +3,7 @@
 import Link from 'next/link';
 
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  FaceSlightlyFrowningIcon,
-} from 'lucide-react';
+import { FaceSlightlyFrowningIcon } from 'lucide-react';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
 import {
@@ -38,7 +34,7 @@ export function TimeSlotAccordion({
 
   if (days.length === 0) {
     return (
-      <div className="mt-7 flex items-center justify-center gap-2 rounded-[22px] border border-cream/12 bg-cream/4 px-5 py-8 text-center text-sm text-sage-soft">
+      <div className="flex items-center justify-center gap-2 px-1 py-8 text-center text-sm text-brand-muted">
         <FaceSlightlyFrowningIcon
           strokeWidth={2}
           className="size-5 shrink-0 opacity-60"
@@ -52,41 +48,43 @@ export function TimeSlotAccordion({
     <AccordionPrimitive.Root
       multiple={false}
       defaultValue={[days[0][0]]}
-      className="mx-auto mt-7 flex max-w-160 flex-col overflow-hidden rounded-[22px] border border-cream/12 bg-cream/4 sm:mt-11"
+      className="flex flex-col"
     >
       {days.map(([dayKey, daySlots]) => (
         <AccordionPrimitive.Item
           key={dayKey}
           value={dayKey}
-          className="not-last:border-b not-last:border-cream/12"
+          className="border-b border-brand-ink/15"
         >
           <AccordionPrimitive.Header className="flex">
-            <AccordionPrimitive.Trigger className="group flex flex-1 items-center justify-between gap-4 px-5 py-4.5 text-left text-sm font-black tracking-wide text-cream-strong transition-colors hover:bg-cream/4 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:px-6.5 md:text-base">
+            <AccordionPrimitive.Trigger className="group flex min-h-16 flex-1 items-center justify-between gap-2 py-4 text-left text-[11px] font-semibold tracking-wide focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
               {formatDayTitle(daySlots[0].startTime)}
-              <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-sage-dim group-data-panel-open:hidden" />
-              <ChevronUpIcon className="pointer-events-none hidden size-4 shrink-0 text-sage-dim group-data-panel-open:block" />
+              <span
+                aria-hidden="true"
+                className="text-2xl leading-none font-normal text-[#657a70]"
+              >
+                <span className="group-data-panel-open:hidden">+</span>
+                <span className="hidden group-data-panel-open:inline">−</span>
+              </span>
             </AccordionPrimitive.Trigger>
           </AccordionPrimitive.Header>
           <AccordionPrimitive.Panel className="h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
-            <div className="px-5 pt-0 pb-2 sm:px-6.5">
-              <ul className="flex flex-col">
+            <div>
+              {/* Két oszlop `sm`-től: a panel `lg`-n a rács fele, de ott is elég
+                  széles két idősávhoz. */}
+              <ul className="grid gap-2 pb-5 sm:grid-cols-2">
                 {daySlots.map(({ id, startTime, revealed, photoShooting }) => {
                   const taken = !revealed || photoShooting != null;
 
                   const row = (
                     <>
-                      <span
-                        className={cn(
-                          'text-base text-cream',
-                          taken && 'text-sage-dim/70 line-through',
-                        )}
-                      >
+                      <span className={cn(taken && 'line-through')}>
                         {formatSlotLabel(startTime)}
                       </span>
                       <span
                         className={cn(
-                          'text-base font-bold tracking-wide uppercase',
-                          taken ? 'text-terracotta-hover' : 'text-emerald-300',
+                          'text-[10px] font-semibold',
+                          !taken && 'text-[#3b6651]',
                         )}
                       >
                         {taken ? 'Foglalt' : 'Szabad'}
@@ -94,22 +92,28 @@ export function TimeSlotAccordion({
                     </>
                   );
 
+                  const rowClass =
+                    'flex min-h-13 items-center justify-between gap-3 rounded-md border px-3 py-3 text-[11px]';
+
                   return (
-                    <li
-                      key={id}
-                      className="border-t border-dashed border-cream/10 first:border-t-0"
-                    >
+                    <li key={id}>
                       {taken ? (
                         <div
                           aria-disabled
-                          className="flex items-center justify-between gap-4 px-2 py-3"
+                          className={cn(
+                            rowClass,
+                            'border-[#e1e2d9] bg-[#f1f0e9] text-[#7a7f78]',
+                          )}
                         >
                           {row}
                         </div>
                       ) : (
                         <Link
                           href={`/foglalas/${id}${selectionQuery}`}
-                          className="flex items-center justify-between gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-cream/6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                          className={cn(
+                            rowClass,
+                            'border-[#c4d5c9] bg-[#eaf1e8] transition-colors hover:border-[#6b9a7a] hover:bg-[#d4e4d8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]',
+                          )}
                         >
                           {row}
                         </Link>

@@ -179,7 +179,8 @@
  */
 :root {
   --ui-font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
-  --ui-font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
+  /* A @fontsource-variable/cormorant-garamond deklarálja, álló és dőlt vágattal. */
+  --ui-font-display: 'Cormorant Garamond Variable', Georgia, serif;
   --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
   /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
   --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
