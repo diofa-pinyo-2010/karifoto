@@ -19,6 +19,15 @@ export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
 
 export const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
+/**
+ * Ugyanaz a videó beágyazható alakban. `youtube-nocookie.com`, és csak a
+ * lejátszógomb megnyomása után kerül a DOM-ba — így az oldal betöltése nem
+ * létesít kapcsolatot a Google-lel. Az adatkezelési tájékoztató tervezete is
+ * pontosan ezt a működést írja le.
+ */
+export const VIDEO_EMBED_URL =
+  'https://www.youtube-nocookie.com/embed/4xeHvJ1_7yE?autoplay=1';
+
 export const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
