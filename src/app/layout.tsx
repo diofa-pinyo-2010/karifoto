@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
+// A 2026-os arculat kenyérbetűje. Az `index.css` minden subsetet deklarál, de a
+// böngésző csak az `unicode-range`-nek megfelelőt tölti le — magyar szöveghez a
+// latin + latin-ext párost. Szándékosan nem `next/font/local`: a variable
+// Manrope subsetenként külön woff2-ben jön, a `localFont` pedig nem tud
+// fájlonkénti `unicode-range`-et, enélkül pedig az ő és ű kimaradna.
+import '@fontsource-variable/manrope';
+
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { InlineScript } from '@/components/InlineScript';

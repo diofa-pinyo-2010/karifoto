@@ -53,7 +53,12 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* ───────────────────────────────────────────── Karifoto colors ───────────────────────────────────────────── */
+  /* ─────────────────────────────── Karifoto colors — RÉGI (sötétzöld) ─────────────────────────────── */
+  /*
+   * A 2026-os arculatváltásig élő paletta. A publikus oldal átstílusozása után
+   * (lásd a `brand-*` tokeneket lentebb) ez a blokk törlendő, a maradék
+   * használatokkal együtt.
+   */
 
   --color-forest: #0e2620;
   --color-panel: #143329;
@@ -70,11 +75,39 @@
   --color-cream-muted: #41564a;
   --color-cream-dim: #6e7e71;
 
+  /* ─────────────────────────────── Karifoto colors — ÚJ (2026 arculat) ─────────────────────────────── */
+  /*
+   * A `karifoto-landing-skeleton` látványterv palettája. `brand-` előtaggal,
+   * három ok miatt:
+   *   1. `ink` és `cream` a régi palettában más értékkel már foglalt — amíg a
+   *      két arculat együtt él, ütköznének;
+   *   2. `muted` a shadcn szemantikus tokenje (`bg-muted`, `text-muted-
+   *      foreground`) — előtag nélkül némán átszínezné az admint;
+   *   3. így az átstílusozáskor már a végleges nevek íródnak, nem kell a
+   *      régi paletta törlésekor még egyszer átnevezni.
+   */
+
+  --color-brand-ink: #102c32;
+  --color-brand-night: #0b2028;
+  --color-brand-cream: #f5f1e9;
+  --color-brand-paper: #fffcf6;
+  --color-brand-champagne: #cfaa79;
+  --color-brand-muted: #5e6d6c;
+  --color-brand-ice: #bcd8d8;
+
   /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
 
   --font-display: var(--ui-font-display);
   --font-sans: var(--ui-font-sans);
   --font-script: var(--ui-font-script);
+
+  /*
+   * A 2026-os arculat kenyérbetűje, külön tokenen. Az átstílusozás alatt a
+   * `font-brand-sans` utilityvel lehet komponensenként átállni; amikor minden
+   * publikus szekció átállt, a `--ui-font-sans` értéke cserélhető Manrope-ra és
+   * ez a token megszűnhet.
+   */
+  --font-brand-sans: var(--ui-font-brand-sans);
 
   /* ───────────────────────────────────────────── Karifoto shadows ───────────────────────────────────────────── */
   --shadow-cta: 0 16px 40px rgba(184, 80, 58, 0.4);
@@ -148,6 +181,8 @@
   --ui-font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
   --ui-font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
   --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
+  /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
+  --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
 }
 
 .dark {
