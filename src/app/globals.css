@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--ui-font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -72,9 +72,9 @@
 
   /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
 
-  --font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
-  --font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
-  --font-script: var(--font-parisienne), 'Parisienne', cursive;
+  --font-display: var(--ui-font-display);
+  --font-sans: var(--ui-font-sans);
+  --font-script: var(--ui-font-script);
 
   /* ───────────────────────────────────────────── Karifoto shadows ───────────────────────────────────────────── */
   --shadow-cta: 0 16px 40px rgba(184, 80, 58, 0.4);
@@ -85,6 +85,23 @@
   --tracking-chip: 0.24em;
 }
 
+/*
+ * A fontkészletek közbeiktatott változóréteget kapnak: a fenti `@theme inline`
+ * utilityk (`font-sans`, `font-display`, `font-script`, `font-heading`) ezekre a
+ * `--ui-font-*` változókra mutatnak, így egyetlen scope-ból átírhatók.
+ * Alapértelmezés a márkatipográfia — a publikus oldal így JS nélkül is helyes —,
+ * az admin a lenti `html.admin` blokkban vált rendszerfontokra.
+ *
+ * Szándékosan külön `:root` blokk, nem az alatta lévő shadcn színblokkban: a
+ * színtéma cserélhető (pl. beillesztett shadcn theme) anélkül, hogy a
+ * tipográfiai réteg eltűnne vele.
+ */
+:root {
+  --ui-font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
+  --ui-font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
+  --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -92,8 +109,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.514 0.222 16.935);
-  --primary-foreground: oklch(0.969 0.015 12.422);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
@@ -119,8 +136,8 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.586 0.253 17.585);
-  --sidebar-primary-foreground: oklch(0.969 0.015 12.422);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
@@ -134,8 +151,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.455 0.188 13.697);
-  --primary-foreground: oklch(0.969 0.015 12.422);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -160,8 +177,8 @@
   --chart-5: oklch(0.432 0.095 166.913);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.645 0.246 16.439);
-  --sidebar-primary-foreground: oklch(0.969 0.015 12.422);
+  --sidebar-primary: oklch(0.922 0 0);
+  --sidebar-primary-foreground: oklch(0.205 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
@@ -185,17 +202,19 @@
 }
 
 /*
- * Az admin rendszerfontokat használ, a márkafontok csak a publikus oldalé.
- * Az `admin` osztályt a gyökér layout inline scriptje és a ThemeScope teszi a
+ * Az admin rendszerfontokat használ, a márkafontok a publikus oldalé. Az
+ * `admin` osztályt a gyökér layout inline scriptje és a ThemeScope teszi a
  * <html>-re (így a portálos dialógusok/tooltipek is megkapják). Szándékosan
  * nincs @layer-ben: a next/font változó-osztálya is layer nélküli, és a
- * `html.admin` specificitása ezt felülírja. A `--font-sans`-t is felül kell
- * írni, mert a `:root`-on már feloldott Jost értéket öröklik a leszármazottak
- * (pl. `font-heading`).
+ * `html.admin` specificitása ezt felülírja.
+ *
+ * Itt már csak a saját `--ui-font-*` réteget írjuk át: a next/font
+ * `--font-jost` változóját nem kell többé elfedni, és a `--font-sans`-t sem.
  */
 html.admin {
-  --font-jost: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: var(--font-jost);
+  --ui-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ui-font-display: var(--ui-font-sans);
+  --ui-font-script: var(--ui-font-sans);
 }
 
 @layer components {
