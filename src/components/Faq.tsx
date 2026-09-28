@@ -1,35 +1,86 @@
+import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
+
 import { faqs } from '@/lib/data';
 
+/**
+ * 2026-os arculat. A szekció opt-in módon vált a márkapalettára és a Manrope-ra
+ * (`font-brand-sans`), amíg a többi szekció még a régi sötétzöld arculatot
+ * viseli.
+ *
+ * Közvetlenül a Base UI primitívjét használjuk, nem a `@/components/ui/accordion`
+ * wrappert. Az a fájl a shadcn admin design systeméhez van stílusozva (chevron
+ * ikonok, `ring` és `muted-foreground` tokenek), így a márkás megjelenéshez
+ * végig felül kellene írni — ráadásul a `shadcn apply` (a `--only theme`
+ * kapcsoló nélkül) újragenerálja a `components/ui/` fájlokat, és a wrapper
+ * belső horgonyaira (`data-slot`, `group/...` nevek) épülő felülírások némán
+ * elromlanának.
+ *
+ * Egyszerre egy panel nyílik (a `multiple` alapértelmezésben false), az első
+ * kérdés nyitva indul, a magasságanimáció a `--accordion-panel-height`
+ * változóra épül. A Base UI saját `'use client'`-tel jön, így ez a komponens
+ * szerver oldali marad.
+ */
 export function Faq() {
   return (
     <section
       id="gyik"
-      className="mx-auto max-w-210 px-4.5 pt-13 pb-16 sm:px-7 sm:pt-20 sm:pb-27.5"
+      className="bg-[#e8eee8] py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28"
     >
-      <h2 className="mb-6 text-center font-display text-[29px] font-medium text-cream-strong sm:mb-7.5 sm:text-[42px]">
-        Gyakori kérdések
-      </h2>
-
-      <div className="flex flex-col gap-3">
-        {faqs.map((f) => (
-          <div
-            key={f.q}
-            className="rounded-2xl border border-cream/9 bg-panel px-6 py-5.5"
+      <div className="mx-auto grid w-full max-w-[1240px] gap-9 px-6 sm:px-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-20 lg:px-12">
+        <div>
+          <p className="mb-4 text-[10px] font-semibold tracking-[.23em] text-[#657c79] uppercase sm:text-[11px]">
+            Mielőtt útnak indultok
+          </p>
+          <h2 className="font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance">
+            Jó, ha tudjátok.
+          </h2>
+          <p className="mt-5 max-w-xl text-sm leading-[1.85] text-brand-muted sm:text-base">
+            Hogy a készülődés is olyan könnyű legyen, mint egy közös mosoly.
+          </p>
+          <a
+            href="mailto:info@karifoto.hu"
+            className="mt-5 inline-flex min-h-11 items-center border-b border-[#9eaba3] text-xs"
           >
-            <div className="text-[17px] text-[#F1E7D5]">{f.q}</div>
-            <div className="mt-2 text-[15px] leading-[1.6] font-light text-sage-soft">
-              {f.a}
-            </div>
-          </div>
-        ))}
+            Más kérdésed van? Írj nekünk ↗
+          </a>
+        </div>
+
+        <AccordionPrimitive.Root defaultValue={[faqs[0].q]}>
+          {faqs.map((f) => (
+            <AccordionPrimitive.Item
+              key={f.q}
+              value={f.q}
+              className="border-b border-brand-ink/20"
+            >
+              <AccordionPrimitive.Header>
+                <AccordionPrimitive.Trigger className="group flex min-h-17 w-full items-center justify-between gap-4 py-5 text-left text-sm font-semibold select-none focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ad7135]">
+                  {f.q}
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-xl leading-none font-normal text-[#62786f] transition-transform duration-200 ease-out group-data-panel-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </AccordionPrimitive.Trigger>
+              </AccordionPrimitive.Header>
+              <AccordionPrimitive.Panel className="h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+                <p className="pb-6 text-sm leading-7 text-brand-muted">{f.a}</p>
+              </AccordionPrimitive.Panel>
+            </AccordionPrimitive.Item>
+          ))}
+        </AccordionPrimitive.Root>
       </div>
 
-      <div className="mt-11 text-center">
+      <div className="mx-auto mt-12 flex w-full max-w-[1240px] flex-col items-center justify-center gap-5 border-t border-brand-ink/15 px-6 pt-10 text-center sm:flex-row sm:gap-9 sm:px-10 lg:px-12">
+        <p className="font-display text-3xl">A többi már a ti történetetek.</p>
         <a
           href="#foglalas"
-          className="btn-cta px-7 py-4.5 text-base shadow-[0_16px_40px_rgba(184,80,58,.34)] sm:px-11 sm:text-[17px]"
+          className="inline-flex min-h-13 items-center justify-center gap-5 rounded-lg border border-transparent bg-brand-champagne px-6 py-3.5 text-sm font-semibold text-[#152b2e] transition-[background-color,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-[#e3bf8d] hover:shadow-[0_5px_22px_#00000015]"
         >
-          Foglalok időpontot →
+          Foglalok időpontot
+          <span aria-hidden="true" className="text-[22px] leading-none">
+            →
+          </span>
         </a>
       </div>
     </section>
