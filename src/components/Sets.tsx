@@ -117,6 +117,10 @@ function SetSection({
   set: (typeof photoSets)[number];
   number?: number;
 }) {
+  // A látványterv `lg`-től felcseréli a második díszlet oszlopait (galéria
+  // balra), hogy a két blokk ne ugyanúgy nézzen ki egymás alatt.
+  const flipped = number === 2;
+
   return (
     <section
       id={set.id}
@@ -131,7 +135,7 @@ function SetSection({
           : 'border-b border-[#c9bfab] py-14 last:border-b-0 last:pb-0 first-of-type:pt-0 md:py-20',
       )}
     >
-      <div>
+      <div className={cn(flipped && 'lg:order-2')}>
         <p className="brand-eyebrow">
           {!set.extra && <span className="mr-3 text-xs">0{number}</span>}
           {set.extra
@@ -173,7 +177,7 @@ function SetSection({
 
       {/* `min-w-0`: rácselem alapból nem mehet a tartalma alá, enélkül a
           galéria kinyomná az oszlopot. */}
-      <div className="min-w-0">
+      <div className={cn('min-w-0', flipped && 'lg:order-1')}>
         {/*
           A két díszlet galériájában van egy-egy álló kép, ezért a
           `RowsPhotoAlbum` az álló + fekvő párokból ki tudja hozni a 370-es
@@ -193,7 +197,12 @@ function SetSection({
         />
       </div>
 
-      <Collapsible.Root className="border-t border-[#dde0d6] pt-4 md:col-span-2">
+      <Collapsible.Root
+        className={cn(
+          'border-t border-[#dde0d6] pt-4 md:col-span-2',
+          flipped && 'lg:order-3',
+        )}
+      >
         <Collapsible.Trigger className="group flex min-h-11 w-full flex-wrap items-center justify-between gap-2 text-left text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
           Mi mutat jól a képeken?
           <span className="flex items-center gap-5 text-[10px] text-[#5f756d]">
