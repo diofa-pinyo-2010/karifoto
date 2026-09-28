@@ -2,66 +2,81 @@
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
 import { PACKAGE_HIGHLIGHT_BADGE, packages } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
+/**
+ * 2026-os arculat. Sötét szekció, amelyben a kiemelt csomag kártyája világosra
+ * fordul — ezért nem elég egy-egy akcentusszín, a kártya szinte minden eleme
+ * más értéket kap kiemelt állapotban.
+ *
+ * A látványterv ezt a szekciót osztályok nélkül, leszármazott-szelektorokkal
+ * stílusozta (`#csomagok > div:nth-child(2) > div[data-highlighted] > …`). Itt a
+ * markup ugyanaz maradt, de a stílus a szokásos utilitykkel kerül az elemekre:
+ * a szelektorlánc pozíciófüggő volt, és minden sorrendváltás némán elrontotta
+ * volna.
+ */
 export function Pricing() {
   const { packageKey, selectPackage } = useBookingSelection();
 
   return (
     <section
       id="csomagok"
-      className="mx-auto max-w-300 px-4.5 py-13 sm:px-7 sm:py-20"
+      className="brand-section bg-brand-ink bg-[radial-gradient(ellipse_at_50%_0%,#34585766,transparent_65%)] text-brand-cream"
     >
-      <div className="mb-7 text-center sm:mb-11.5">
-        <div className="eyebrow">Csomagjaink</div>
-        <h2 className="mt-3.5 font-display text-[31px] font-medium text-cream-strong sm:text-[50px]">
+      <div className="brand-shell mb-10 text-center">
+        <div className="brand-eyebrow text-[#c9b692]">Csomagjaink</div>
+        <h2 className="brand-heading mx-auto max-w-xl">
           Válaszd ki, majd foglalj időpontot
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3">
+      <div className="brand-shell grid gap-6 md:grid-cols-3">
         {packages.map((p) => {
           return (
             <div
               key={p.id}
-              className={`relative flex h-full flex-col rounded-3xl border px-7 pt-8 pb-7 transition-colors ${
+              className={cn(
+                'relative flex flex-col rounded-xl border p-6 pt-8 lg:p-8 lg:pt-10',
                 p.highlighted
-                  ? 'border-gold/55 bg-panel-active'
-                  : 'border-cream/9 bg-panel'
-              }`}
+                  ? 'border-[#c9aa77] bg-brand-cream text-[#19363a]'
+                  : 'border-[#6a888066] bg-[#17383dc9]',
+              )}
             >
               {p.highlighted && (
-                <div className="absolute top-4.5 right-4.5 rounded-full bg-terracotta px-3.5 py-1.75 text-[10px] tracking-[.2em] text-[#FFF4E6] uppercase">
+                <div className="absolute -top-3 left-6 rounded-full bg-[#c9aa77] px-4 py-1 font-brand-sans text-[9px] font-semibold tracking-[.15em] text-[#19363a] uppercase">
                   {PACKAGE_HIGHLIGHT_BADGE}
                 </div>
               )}
 
-              <div className="font-display text-[30px] text-cream-strong">
-                {p.name}
-              </div>
-              <div className="mt-1.5 text-sm text-sage">{p.sub}</div>
+              <div className="font-display text-4xl">{p.name}</div>
+              <div className="mt-2 text-xs opacity-80">{p.sub}</div>
 
-              <div className="mt-5.5 flex items-baseline gap-2">
-                <span className="font-display text-[46px] text-gold">
-                  {p.price}
-                </span>
+              <div className="mt-7 font-display text-[42px] leading-tight">
+                <span>{p.price}</span>
               </div>
-              <div className="mt-1.5 text-[13px] text-sage">{p.studioFee}</div>
+              <div className="mt-1 mb-6 text-xs opacity-80">{p.studioFee}</div>
 
-              <ul className="mt-6 flex flex-col gap-3 border-t border-cream/12 pt-6">
+              <ul className="mb-5 space-y-3 border-t border-[#80948a55] pt-6">
                 {p.features.map((feat) => (
                   <li
                     key={feat.text}
-                    className={`flex gap-2.75 text-[15px] leading-[1.45] ${
-                      feat.ok ? 'text-[#C6D5CB]' : 'text-sage-dim'
-                    }`}
+                    className={cn(
+                      'flex gap-2.5 text-xs leading-6',
+                      !feat.ok && 'opacity-[.58]',
+                    )}
                   >
-                    <span className={feat.ok ? 'text-gold' : 'text-terracotta'}>
+                    <span
+                      className={cn(
+                        'shrink-0',
+                        p.highlighted ? 'text-[#49746a]' : 'text-[#b9ceba]',
+                      )}
+                    >
                       {feat.ok ? '✓' : '✕'}
                     </span>
                     <span>
                       {feat.text}
                       {feat.note && (
-                        <span className="block text-[12.5px] text-sage">
+                        <span className="block text-[10px] opacity-80">
                           ({feat.note})
                         </span>
                       )}
@@ -70,7 +85,7 @@ export function Pricing() {
                 ))}
               </ul>
 
-              <div className="mt-5 mb-6.5 flex flex-col gap-1 text-[12px] leading-[1.4] text-sage-dim">
+              <div className="mt-auto space-y-1 text-[9px] leading-5 opacity-70">
                 {p.footnotes.map((f) => (
                   <div key={f}>{f}</div>
                 ))}
@@ -79,11 +94,12 @@ export function Pricing() {
               <a
                 href="#foglalas"
                 onClick={() => selectPackage(p.id)}
-                className={`mt-auto block rounded-full border px-5 py-4 text-center text-[15px] font-medium transition-opacity hover:opacity-90 ${
+                className={cn(
+                  'mt-6 flex min-h-12 items-center justify-center rounded-lg border px-4 py-3 text-sm font-semibold transition-colors duration-200',
                   p.highlighted
-                    ? 'border-terracotta bg-terracotta text-[#FFF4E6]'
-                    : 'border-gold/40 text-gold'
-                }`}
+                    ? 'border-brand-champagne bg-brand-champagne hover:border-[#ddbb8c] hover:bg-[#ddbb8c]'
+                    : 'border-[#a4b8a477] hover:bg-[#b3c9c51a]',
+                )}
               >
                 {p.id === packageKey ? 'Kiválasztva ✓' : 'Ezt választom'}
               </a>
