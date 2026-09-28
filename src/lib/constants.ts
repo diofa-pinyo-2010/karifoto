@@ -17,6 +17,8 @@ export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
 
+export const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
+
 export const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

@@ -2,7 +2,7 @@
 
 import ReactPlayer from 'react-player';
 
-const VIDEO_URL = 'https://www.youtube.com/watch?v=smvEPm4ecGU';
+import { VIDEO_URL } from '@/lib/constants';
 
 function VideoPlayIcon() {
   return (
