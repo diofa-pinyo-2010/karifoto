@@ -75,18 +75,15 @@ export default async function BookingsPage() {
                           {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
                         </Badge>
                         <ItemTitle>
-                          {timeFormatter.format(shooting.timeSlot.startTime)}{' '}
-                          {shooting.client.owner.name} (
-                          {shooting.client.owner.email})
+                          {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
+                          {shooting.client.owner.name}
                         </ItemTitle>
                         <ItemDescription>
                           {` 
-                        ${PACKAGE_LABEL[shooting.package]} 
-                      • Dekor: ${shooting.decorSet ? DECOR_SET_LABEL[shooting.decorSet] : '–'}
-                      • Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
-                      • ${shooting.numberOfGuests} fő
-                      • ${shooting.numberOfPets} kedvenc
-                      `}
+                            ${PACKAGE_LABEL[shooting.package]}  
+                            ${shooting.package === 'MINI' && shooting.decorSet ? `// Dekor: ${DECOR_SET_LABEL[shooting.decorSet]}` : ''}
+                            // Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
+                          `}
                         </ItemDescription>
                       </ItemContent>
                       <ItemActions>
