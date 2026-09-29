@@ -212,6 +212,43 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME: Record<
   COMPLETED: CLIENT_BADGE_SETTLED,
 };
 
+/*
+ * Az ügyfélportál részletek-oldalán a harmonika szekciói. A `Record` miatt egy
+ * új `PhotoShootingStatus` addig nem fordul le, amíg el nem döntöttük, melyik
+ * szekció nyíljon hozzá — ugyanaz a védelem, mint a fenti címkéknél.
+ *
+ * A kérdés nem az, hogy melyik szekció „illik” a státuszhoz, hanem hogy miért
+ * jött az ügyfél: ha rajta a sor (válogatás, fizetés), azt nyitjuk ki, minden
+ * más esetben az áttekintést.
+ */
+export const CLIENT_PORTAL_SECTIONS = [
+  'details',
+  'image-selection',
+  'invoices',
+] as const;
+
+export type ClientPortalSection = (typeof CLIENT_PORTAL_SECTIONS)[number];
+
+export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
+  PhotoShootingStatus,
+  ClientPortalSection
+> = {
+  // Az ügyfélen a sor.
+  USER_SELECTION: 'image-selection',
+  WAITING_FOR_PAYMENT: 'invoices',
+
+  // Megvan minden, a számla a legérdekesebb.
+  COMPLETED: 'invoices',
+
+  // Nincs teendő, csak tájékozódik.
+  PHOTOGRAPHER_SELECTION: 'details',
+  WAITING_FOR_THE_DATE: 'details',
+  RAW_PHOTOS_UPLOAD: 'details',
+  EDITOR_SELECTION: 'details',
+  FINAL_PHOTOS_UPLOAD: 'details',
+  CLOSED: 'details',
+};
+
 // Bg opacity/text-lightness pairs mirror the `destructive` Badge variant
 // (bg-*/10 + darker text in light mode, bg-*/20 + lighter text in dark mode) —
 // lighter text on a dim background reads better in dark mode than the light-mode shade.

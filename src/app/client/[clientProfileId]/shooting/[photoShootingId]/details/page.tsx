@@ -1,17 +1,37 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
-import { ArrowLeftIcon } from 'lucide-react';
+import {
+  ArrowLeftIcon,
+  ImagesIcon,
+  LayoutDashboardIcon,
+  ReceiptTextIcon,
+} from 'lucide-react';
 
+import {
+  Accordion,
+  AccordionTrigger,
+  AccordionContent,
+  AccordionItem,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { APP_URLS } from '@/lib/constants';
+import {
+  APP_URLS,
+  CLIENT_PORTAL_DEFAULT_SECTION,
+  PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
+  PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
+} from '@/lib/constants';
 import { getClientSession, getSession } from '@/lib/dal';
-import { formatLongDate } from '@/lib/formatters';
+import { dateWithYearFormatter } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
+
+import type { ClientPortalSection } from '@/lib/constants';
+import type { LucideIcon } from 'lucide-react';
 
 // The gated tier: payments and invoices. Reachable with a client_session (the
 // client themselves) or an admin_session (any staff member supporting them by
@@ -74,8 +94,50 @@ export default async function ClientPortalShootingDetailsPage({
     notFound();
   }
 
+  const items: {
+    value: ClientPortalSection;
+    trigger: string;
+    content: React.ReactNode;
+    disabled: boolean;
+    icon: LucideIcon;
+  }[] = [
+    {
+      value: 'details',
+      trigger: 'Részletek',
+      content: <div className="text-red-600">Hello</div>,
+      disabled: false,
+      icon: LayoutDashboardIcon,
+    },
+    {
+      value: 'image-selection',
+      trigger: 'Képválogatás',
+      content:
+        "Billing occurs automatically at the start of each billing cycle. We accept all major credit cards, PayPal, and ACH transfers for enterprise customers. You'll receive an invoice via email after each payment.",
+      disabled: true,
+      icon: ImagesIcon,
+    },
+    {
+      value: 'invoices',
+      trigger: 'Számlák',
+      content:
+        'You can cancel your subscription anytime from your account settings. There are no cancellation fees or penalties. Your access will continue until the end of your current billing period.',
+      disabled: false,
+      icon: ReceiptTextIcon,
+    },
+  ];
+
+  // `defaultValue` csak kezdőállapot: a letiltott szekciót is kinyitná, a
+  // letiltott trigger viszont már nem engedné becsukni. Ezért esünk vissza az
+  // áttekintésre, ha a státuszhoz tartozó szekció éppen nem élne.
+  const preferredSection = CLIENT_PORTAL_DEFAULT_SECTION[photoShooting.status];
+  const openByDefault = items.some(
+    (item) => item.value === preferredSection && !item.disabled,
+  )
+    ? preferredSection
+    : 'details';
+
   return (
-    <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
+    <section className="mx-auto flex w-full max-w-180 flex-col gap-6 px-6 pt-14 pb-20 sm:px-10">
       <Button
         render={<Link href={APP_URLS.clientPortalHome(clientProfileId)} />}
         nativeButton={false}
@@ -87,19 +149,40 @@ export default async function ClientPortalShootingDetailsPage({
         Vissza a fotozásokhoz
       </Button>
 
-      <p className="brand-eyebrow">Részletek</p>
-
-      <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
-        A foglalás részletei
-      </h1>
-      <p className="mt-5 text-[15px] leading-[1.85] text-pretty text-brand-muted">
-        {formatLongDate(photoShooting.timeSlot.startTime)} ·{' '}
-        {photoShooting.status}
-      </p>
-
-      <p className="mt-7 text-[15px] leading-[1.85] text-pretty text-brand-muted">
-        A fizetési és számlázási részletek hamarosan itt lesznek láthatóak.
-      </p>
+      <div className="flex flex-col gap-2">
+        <p className="brand-eyebrow m-0">Részletek</p>
+        <h1 className="text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
+          {dateWithYearFormatter.format(photoShooting.timeSlot.startTime)}
+        </h1>
+      </div>
+      <Badge
+        className={
+          PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME[photoShooting.status]
+        }
+      >
+        {PHOTO_SHOOTING_STATUS_CLIENT_LABEL[photoShooting.status]}
+      </Badge>
+      <Accordion
+        multiple
+        defaultValue={[openByDefault]}
+        className="rounded-lg border bg-white"
+      >
+        {items.map(({ value, trigger, content, disabled, icon: Icon }) => (
+          <AccordionItem
+            key={value}
+            value={value}
+            disabled={disabled}
+            className="border-b px-4 last:border-b-0"
+          >
+            <AccordionTrigger>
+              <div className="flex items-center gap-2">
+                <Icon className="size-5 opacity-60" /> {trigger}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="py-4">{content}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </section>
   );
 }

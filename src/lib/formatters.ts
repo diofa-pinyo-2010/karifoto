@@ -65,3 +65,11 @@ export const formatSlotDateTime = (date: Date) => {
   const weekDay = upperFirst(weekDayFormatter.format(date));
   return `${monthDay} ${weekDay}, ${timeFormatter.format(date)}`;
 };
+
+// 2026 december 10. Szerda
+export const dateWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
+  year: 'numeric',
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+});
