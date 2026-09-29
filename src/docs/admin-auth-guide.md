@@ -897,13 +897,18 @@ doesn't make choices (cookie naming, session table shape) that would have to
 be undone later — it's not a step-by-step guide like the sections above, and
 some details are explicitly left open.
 
-### Two new route families, one new cookie
+### Three route tiers, one new cookie
 
-- **`/client/{clientProfileId}/`** — public. Deliberately protected only by
-  the `clientProfileId` UUID being unguessable, not by any session check.
-  Clients are meant to share this ("check our photos!"), so it shows the
-  gallery / eventual memorial page and nothing sensitive. No cookie required,
-  ever, for this route.
+- **`/client/{clientProfileId}/`** — public. A **list** of that client's
+  shootings. Deliberately protected only by the `clientProfileId` UUID being
+  unguessable, not by any session check. Shows non-sensitive summary fields
+  only — date, cover image, status — and never amounts, invoices or billing
+  details. `ClientProfile.photoShootings` is already a one-to-many in
+  [prisma/schema.prisma](../../prisma/schema.prisma), so this is a real list,
+  not a single-row page dressed up as one. No cookie required, ever.
+- **`/client/{clientProfileId}/shooting/{photoShootingId}/`** — public. **This
+  is the link clients share** ("check our photos!"): the gallery for one
+  shooting, and the eventual memorial page. No cookie required, ever.
 - **`/client/{clientProfileId}/shooting/{photoShootingId}/details`** —
   gated: payments, invoices. Requires `client_session` **or** `admin_session`
   — no role restriction beyond being staff; `EDITOR` sees this too, same as
@@ -914,21 +919,49 @@ some details are explicitly left open.
   enum: the action is a `USER_SELECTION → FINAL_PHOTOS_UPLOAD` transition,
   no new model needed.
 
-### The rule that makes the public page safe to share
+Because `{clientProfileId}` prefixes the shareable shooting URL, anyone the
+client shares a gallery with can truncate it back to
+`/client/{clientProfileId}/` and see that client's full shooting list. That is
+accepted, not overlooked — see [Decisions](#decisions).
 
-The public gallery URL and the link that grants `client_session` must never
-be the same value, and visiting the gallery must never silently issue the
-cookie. If it did, sharing the gallery link — the entire point of that page —
+### The rule that makes the public pages safe to share
+
+The URL a client shares and the link that grants `client_session` must never
+be the same value, and visiting a public route must never silently issue the
+cookie. If it did, sharing the gallery — the entire point of that page —
 would also hand out access to that client's payments, invoices, and the
 selection-confirm action to anyone the client shares it with.
 
-So `clientProfileId` in the URL is not a credential — it only ever unlocks
-the public gallery. The `client_session` cookie is granted by a **separate**,
-privately-emailed link carrying its own token:
-`/client/{clientProfileId}/?token=<raw>` (or a dedicated verification route,
-mirroring [step 10](#10-magic-link-verification-route): hash the token, look
-it up, set the cookie once. Sent automatically once, right after booking
-confirmation — not requested via a login form the way admin's magic link is.
+The three-tier split makes this easier to hold than the earlier two-route
+design did. The shareable value is now the **shooting** URL, while the
+credential rides on the **gated** `/details` URL: two different paths, rather
+than one path that did or didn't carry a `?token=`. Neither
+`clientProfileId` nor `photoShootingId` is a credential — they unlock public
+content and nothing else.
+
+The `client_session` cookie is granted by a **separate**, privately-emailed
+link carrying its own token, sent automatically once right after booking
+confirmation — not requested via a login form the way admin's magic link is:
+
+```
+/client/{clientProfileId}/shooting/{photoShootingId}/details?token=<raw>
+```
+
+That URL is the gated page itself, which is why it can't set the cookie on its
+own: Next.js only allows `cookies().set()` in a Server Action, a Route Handler
+or `proxy.ts` — never during a Server Component render. So `/details`, on
+seeing `?token=` without a valid `client_session`, redirects to a verification
+Route Handler that sets the cookie and redirects back to the clean `/details`
+URL. One extra hop buys the pretty emailed link and strips the token from the
+address bar.
+
+That handler mirrors [step 10](#10-magic-link-verification-route) in shape —
+hash the raw token, look it up, `createSession()`, set the cookie, redirect —
+with one deliberate exception: **it must not claim the token.** No `usedAt`, no
+atomic `updateMany`. The client's link is meant to survive being clicked again
+from a new device or a cleared browser; copying step 10's one-time claim would
+burn their only way back in. See the reusable-token bullet in
+[Decisions](#decisions).
 
 ### One cookie for both staff roles, a second one for clients — not three
 
@@ -950,6 +983,13 @@ carries an optional `clientProfile` alongside `staffProfile`) — a
 `getClientSession()` alongside `getSession()` in the DAL, discriminated by
 `owner.clientProfile != null` the same way admin is discriminated by
 `owner.staffProfile != null`.
+
+Because `Session` is keyed to `User`, the session is scoped to the **client**,
+not to one shooting. A client who books twice gets two emails, each pointing at
+its own `/details` page, but either token produces the same `client_session`,
+and that one session unlocks `/details` for all of their shootings. The
+`{photoShootingId}` in the URL is a destination, never a credential — which is
+exactly why row-scoping below is mandatory.
 
 ### One `User`, two profiles — no conflict
 
@@ -985,14 +1025,32 @@ second user. That person can then hold an `admin_session` and a
   email holds access — if the client forwards it, they forward access too.
   Mitigate with a line in the email itself (something like "this link is
   personal to you — don't forward it"), not with product logic.
+
+  Two consequences worth stating outright, because the verification route
+  looks so much like [step 10](#10-magic-link-verification-route) that it
+  invites a copy-paste: the handler **must not** claim the token the way step
+  10 does, and reusability is what makes per-`User` session scoping coherent
+  — re-clicking any of the client's links just re-establishes the same
+  session rather than minting a parallel one.
+
+- **The shooting list stays public.** Sharing a gallery link necessarily
+  exposes `clientProfileId`, and therefore the list at
+  `/client/{clientProfileId}/`. Rather than pretend otherwise, the list is
+  designed to be safe to see: summaries only, nothing financial. Gating it
+  would mean either dropping `{clientProfileId}` from the shareable URL or
+  accepting that a shared link half-works — neither is worth it for a page
+  that shows which photo shoots a family has had.
 - **Row-scoping is mandatory, not optional.** A valid `client_session`
   proves _a_ client is logged in, not that they're _this_ client — every
   `/client/*` data fetch must check `owner.clientProfile.id` against the
-  `clientProfileId` in the URL (and `photoShootingId` against that same
-  client), or one client could swap the URL segment and read another
-  client's payments. `requireNavAccess()` doesn't need this today (admin
-  pages aren't per-resource), but this is the one place Phase 2 needs a
-  check Phase 1 doesn't.
+  `clientProfileId` in the URL, and any `{photoShootingId}` against that same
+  client via `PhotoShooting.clientId`, or one client could swap a URL segment
+  and read another client's payments. This applies to all three tiers: the two
+  public routes must scope too, so a mismatched pair 404s instead of rendering
+  another client's gallery, and `/details` must scope on top of the session
+  check. `requireNavAccess()` doesn't need this today (admin pages
+  aren't per-resource), but this is the one place Phase 2 needs a check Phase 1
+  doesn't.
 
 This section stays prose-and-decisions, not code, until Phase 2 is actually
 scheduled.
