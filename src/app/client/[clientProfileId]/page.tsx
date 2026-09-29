@@ -32,35 +32,37 @@ export default async function ClientPortalHomePage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="font-display text-3xl">
-        Kedves {clientProfile.owner.name}!
+    <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
+      <p className="brand-eyebrow">Ügyfélportál</p>
+
+      <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
+        Üdv újra itt, {clientProfile.owner.name}!
       </h1>
-      <p className="mt-2 text-sm text-neutral-600">
+      <p className="mt-5 text-[15px] leading-[1.85] text-pretty text-brand-muted">
         Itt találjátok a fotózásaitokat.
       </p>
 
-      <ul className="mt-8 space-y-3">
-        {clientProfile.photoShootings.map((shooting) => (
-          <li key={shooting.id}>
-            <Link
-              href={APP_URLS.clientPortalShooting(
-                clientProfile.id,
-                shooting.id,
-              )}
-              className="block rounded-lg border p-4 hover:bg-neutral-50"
-            >
-              {formatLongDate(shooting.timeSlot.startTime)}
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {clientProfile.photoShootings.length === 0 && (
-        <p className="mt-8 text-sm text-neutral-600">
+      {clientProfile.photoShootings.length === 0 ? (
+        <p className="mt-7 text-[15px] leading-[1.85] text-pretty text-brand-muted">
           Még nincs rögzített fotózásotok.
         </p>
+      ) : (
+        <ul className="mt-7 space-y-3">
+          {clientProfile.photoShootings.map((shooting) => (
+            <li key={shooting.id}>
+              <Link
+                href={APP_URLS.clientPortalShooting(
+                  clientProfile.id,
+                  shooting.id,
+                )}
+                className="block rounded-2xl border border-[#d9d3c7] bg-brand-paper px-5 py-4 text-[15px] transition-colors hover:border-brand-champagne"
+              >
+                {formatLongDate(shooting.timeSlot.startTime)}
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
-    </div>
+    </section>
   );
 }

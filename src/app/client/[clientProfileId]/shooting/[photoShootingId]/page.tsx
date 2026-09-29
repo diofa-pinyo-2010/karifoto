@@ -33,7 +33,7 @@ export default async function ClientPortalShootingPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
+    <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
       <Button
         render={<Link href={`/client/${clientProfileId}`} />}
         nativeButton={false}
@@ -44,10 +44,13 @@ export default async function ClientPortalShootingPage({
         <ArrowLeftIcon />
         Vissza a fotozásokhoz
       </Button>
-      <h1 className="font-display text-3xl">
+
+      <p className="brand-eyebrow">Fotózás</p>
+
+      <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
         {formatLongDate(photoShooting.timeSlot.startTime)}
       </h1>
-      <p className="mt-2 text-sm text-neutral-600">
+      <p className="mt-5 text-[15px] leading-[1.85] text-pretty text-brand-muted">
         A galéria hamarosan elérhető lesz.
       </p>
 
@@ -56,10 +59,10 @@ export default async function ClientPortalShootingPage({
           clientProfileId,
           photoShooting.id,
         )}
-        className="mt-8 inline-block underline underline-offset-4"
+        className="mt-7 inline-block text-[15px] underline underline-offset-4 transition-opacity hover:opacity-75"
       >
         Foglalás részletei
       </Link>
-    </div>
+    </section>
   );
 }

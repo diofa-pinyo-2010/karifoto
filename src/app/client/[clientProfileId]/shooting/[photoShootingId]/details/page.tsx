@@ -75,7 +75,7 @@ export default async function ClientPortalShootingDetailsPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
+    <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
       <Button
         render={<Link href={`/client/${clientProfileId}`} />}
         nativeButton={false}
@@ -86,15 +86,21 @@ export default async function ClientPortalShootingDetailsPage({
         <ArrowLeftIcon />
         Vissza a fotozásokhoz
       </Button>
-      <h1 className="font-display text-3xl">A foglalás részletei</h1>
-      <p className="mt-2 text-sm text-neutral-600">
+
+      <p className="brand-eyebrow">Részletek</p>
+
+      <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
+        A foglalás részletei
+      </h1>
+      <p className="mt-5 text-[15px] leading-[1.85] text-pretty text-brand-muted">
         {formatLongDate(photoShooting.timeSlot.startTime)} ·{' '}
         {photoShooting.status}
       </p>
-      <p className="mt-8 text-sm text-neutral-600">
+
+      <p className="mt-7 text-[15px] leading-[1.85] text-pretty text-brand-muted">
         A fizetési és számlázási részletek hamarosan itt lesznek láthatóak.
       </p>
-    </div>
+    </section>
   );
 }
 
@@ -106,7 +112,7 @@ function ClientPortalAccessDenied({
   photoShootingId: string;
 }) {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
+    <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
       <Button
         render={
           <Link
@@ -121,12 +127,17 @@ function ClientPortalAccessDenied({
         <ArrowLeftIcon />
         Vissza az áttekintőhöz
       </Button>
-      <h1 className="font-display text-3xl">Ez az oldal védett</h1>
-      <p className="mt-4 text-sm text-neutral-600">
+
+      <p className="brand-eyebrow">Védett oldal</p>
+
+      <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
+        Ez az oldal védett
+      </h1>
+      <p className="mt-5 text-[15px] leading-[1.85] text-pretty text-brand-muted">
         A foglalás részleteit csak a visszaigazoló emailben kapott
         „Ügyfélportál” gombra kattintva tudjátok megnyitni. Érdemes megtartani
         azt az emailt — a link bármikor újra használható.
       </p>
-    </div>
+    </section>
   );
 }
