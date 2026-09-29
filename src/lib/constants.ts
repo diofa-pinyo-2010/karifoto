@@ -154,6 +154,64 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
     CLOSED: 'Bezárt',
   };
 
+/*
+ * Amit az ügyfélportál mutat. Szándékosan NEM a
+ * `PHOTO_SHOOTING_STATUS_LABEL`: az a belső munkafolyamat neve
+ * ('Szerkesztő kiválasztása', 'Nyers képek feltöltése'), ami az ügyfélnek
+ * semmit nem mond, a 'Bezárt' pedig kifejezetten riasztó. Több belső állapot
+ * szándékosan ugyanarra a címkére képződik le — az ügyfél szempontjából
+ * ugyanaz történik.
+ *
+ * Rövidek maradnak: a kártyán a dátum mellett ülnek egy sorban
+ * ('Szeptember 29., kedd · 11:00'), egy hosszabb címke összenyomná a címet.
+ */
+export const PHOTO_SHOOTING_STATUS_CLIENT_LABEL: Record<
+  PhotoShootingStatus,
+  string
+> = {
+  PHOTOGRAPHER_SELECTION: 'Visszaigazolva',
+  WAITING_FOR_THE_DATE: 'Közelgő',
+  RAW_PHOTOS_UPLOAD: 'Feldolgozás alatt',
+  USER_SELECTION: 'Válogatásra vár',
+  EDITOR_SELECTION: 'Retusálás alatt',
+  FINAL_PHOTOS_UPLOAD: 'Retusálás alatt',
+  WAITING_FOR_PAYMENT: 'Fizetésre vár',
+  COMPLETED: 'Elkészült',
+  CLOSED: 'Lezárt',
+};
+
+/*
+ * A `PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME` shadcn-tokenekre épül (admin,
+ * sötét mód), ami a krém hátterű portálon idegen lenne. Ezek a 2026-os
+ * paletta idősáv-állapotszíneit használják, amelyek AA-t teljesítenek a saját
+ * felületükön.
+ *
+ * Három állapot: az ügyfélre vár / dolgozunk rajta / nincs teendő.
+ */
+const CLIENT_BADGE_ACTION_NEEDED =
+  'bg-brand-taken-surface text-brand-taken border border-brand-taken-edge';
+const CLIENT_BADGE_IN_PROGRESS =
+  'bg-[#e7e2d6] text-[#4b5a58] border border-[#d9d3c7]';
+const CLIENT_BADGE_SETTLED =
+  'bg-brand-free-surface text-brand-free border border-brand-free-edge';
+
+export const PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME: Record<
+  PhotoShootingStatus,
+  string
+> = {
+  USER_SELECTION: CLIENT_BADGE_ACTION_NEEDED,
+  WAITING_FOR_PAYMENT: CLIENT_BADGE_ACTION_NEEDED,
+
+  PHOTOGRAPHER_SELECTION: CLIENT_BADGE_IN_PROGRESS,
+  RAW_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
+  EDITOR_SELECTION: CLIENT_BADGE_IN_PROGRESS,
+  FINAL_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
+  CLOSED: CLIENT_BADGE_IN_PROGRESS,
+
+  WAITING_FOR_THE_DATE: CLIENT_BADGE_SETTLED,
+  COMPLETED: CLIENT_BADGE_SETTLED,
+};
+
 // Bg opacity/text-lightness pairs mirror the `destructive` Badge variant
 // (bg-*/10 + darker text in light mode, bg-*/20 + lighter text in dark mode) —
 // lighter text on a dim background reads better in dark mode than the light-mode shade.

@@ -1,9 +1,38 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { APP_URLS } from '@/lib/constants';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardAction,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  APP_URLS,
+  DECOR_SET_LABEL,
+  PACKAGE_LABEL,
+  PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
+  PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
+} from '@/lib/constants';
 import { formatLongDate } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
+import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
+import hofeherDiszlet from '@/photos/hofeher-diszlet.jpg';
+
+import type { DecorSet } from '@/generated/prisma/client';
+
+// A díszlet saját fotója, ember nélkül — a kártya az időpontot hirdeti, nem egy
+// másik család képét. `decorSet` nullázható (régi foglalások), ezért van
+// tartalék.
+const DECOR_SET_IMAGE: Record<DecorSet, typeof hofeherDiszlet> = {
+  HOFEHER: hofeherDiszlet,
+  ALOMKASTELY: alomkastelyDiszlet,
+};
 
 // Public on purpose. The only thing protecting this page is the
 // clientProfileId being an unguessable UUID — and since that id also prefixes
@@ -21,7 +50,13 @@ export default async function ClientPortalHomePage({
       id: true,
       owner: { select: { name: true } },
       photoShootings: {
-        select: { id: true, timeSlot: { select: { startTime: true } } },
+        select: {
+          id: true,
+          status: true,
+          package: true,
+          decorSet: true,
+          timeSlot: { select: { startTime: true } },
+        },
         orderBy: { timeSlot: { startTime: 'desc' } },
       },
     },
@@ -47,20 +82,77 @@ export default async function ClientPortalHomePage({
           Még nincs rögzített fotózásotok.
         </p>
       ) : (
-        <ul className="mt-7 space-y-3">
-          {clientProfile.photoShootings.map((shooting) => (
-            <li key={shooting.id}>
-              <Link
-                href={APP_URLS.clientPortalShooting(
-                  clientProfile.id,
-                  shooting.id,
-                )}
-                className="block rounded-2xl border border-[#d9d3c7] bg-brand-paper px-5 py-4 text-[15px] transition-colors hover:border-brand-champagne"
-              >
-                {formatLongDate(shooting.timeSlot.startTime)}
-              </Link>
-            </li>
-          ))}
+        <ul className="mt-8 grid gap-6">
+          {clientProfile.photoShootings.map((shooting) => {
+            const cover = DECOR_SET_IMAGE[shooting.decorSet ?? 'HOFEHER'];
+            const decorLabel =
+              shooting.decorSet == null
+                ? null
+                : DECOR_SET_LABEL[shooting.decorSet];
+
+            return (
+              <li key={shooting.id}>
+                <Card className="relative h-full border-0 bg-brand-paper pt-0 text-brand-ink ring-[#d9d3c7]">
+                  {/* A képre ülő fátyol sávként testvér, nem szülő: a Card
+                      `img:first-child` szabályai csak közvetlen gyerekre
+                      illeszkednek. */}
+                  <div className="absolute inset-x-0 top-0 z-10 aspect-video bg-brand-ink/25" />
+                  <Image
+                    src={cover}
+                    alt={
+                      decorLabel == null
+                        ? 'A stúdió karácsonyi díszlete'
+                        : `${decorLabel} díszlet`
+                    }
+                    placeholder="blur"
+                    sizes="(min-width: 640px) 50vw, 100vw"
+                    className="aspect-video w-full object-cover"
+                  />
+
+                  <CardHeader>
+                    <CardAction>
+                      <Badge
+                        className={
+                          PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME[
+                            shooting.status
+                          ]
+                        }
+                      >
+                        {PHOTO_SHOOTING_STATUS_CLIENT_LABEL[shooting.status]}
+                      </Badge>
+                    </CardAction>
+
+                    <CardTitle className="text-lg font-medium">
+                      {formatLongDate(shooting.timeSlot.startTime)}
+                    </CardTitle>
+                    <CardDescription className="text-brand-muted">
+                      {[PACKAGE_LABEL[shooting.package], decorLabel]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardFooter className="border-t-[#d9d3c7] bg-transparent">
+                    <Button
+                      render={
+                        <Link
+                          href={APP_URLS.clientPortalShooting(
+                            clientProfile.id,
+                            shooting.id,
+                          )}
+                        />
+                      }
+                      nativeButton={false}
+                      size="lg"
+                      className="w-full bg-brand-champagne font-semibold text-[#152b2e] hover:bg-brand-champagne hover:opacity-90"
+                    >
+                      Megnézem
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
