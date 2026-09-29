@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { cn } from '@/lib/utils';
+
 const linkClass =
   'flex min-h-11 items-center gap-2.5 text-sm transition-colors hover:text-[#e6be88]';
 const rowClass = 'justify-between md:justify-start';
@@ -17,9 +19,25 @@ const socialClass =
  * `MobileBookingBar`-nak tart helyet; amíg az nincs kész, ott üres sáv marad.
  * Az `env(safe-area-inset-bottom)` az iPhone-ok alsó indikátorsávja miatt kell.
  */
-export function Footer() {
+export function Footer({
+  /**
+   * A landing oldalon a `MobileBookingBar` a lábléc fölé ül, ezért mobilon
+   * helyet kell neki hagyni. A jogi oldalakon nincs sáv — ott az üres sáv csak
+   * lóg a tartalom alatt.
+   */
+  reserveBookingBarSpace = true,
+}: {
+  reserveBookingBarSpace?: boolean;
+} = {}) {
   return (
-    <footer className="bg-[#102a31] bg-[radial-gradient(ellipse_at_10%_0%,#36565677,transparent_60%)] pt-8 pb-[calc(100px+env(safe-area-inset-bottom))] font-brand-sans text-brand-cream md:pt-12 md:pb-28 lg:pb-7">
+    <footer
+      className={cn(
+        'bg-[#102a31] bg-[radial-gradient(ellipse_at_10%_0%,#36565677,transparent_60%)] pt-8 font-brand-sans text-brand-cream md:pt-12 lg:pb-7',
+        reserveBookingBarSpace
+          ? 'pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-28'
+          : 'pb-8 md:pb-12',
+      )}
+    >
       <div className="brand-shell">
         <div className="flex flex-col items-center gap-5 pb-7 text-center md:flex-row md:items-center md:justify-between md:gap-7 md:pb-10 md:text-left lg:justify-around lg:gap-10">
           <Link href="/" aria-label="Karifoto – kezdőlap">
@@ -137,19 +155,19 @@ export function Footer() {
               aria-label="Jogi információk"
               className="grid gap-0.5 text-[#e2e3d8]"
             >
-              <Link href="/impresszum/" className={`${linkClass} ${rowClass}`}>
+              <Link href="/impresszum" className={`${linkClass} ${rowClass}`}>
                 Impresszum{' '}
                 <span aria-hidden="true" className="text-[#c8b68d]">
                   →
                 </span>
               </Link>
-              <Link href="/adatkezeles/" className={`${linkClass} ${rowClass}`}>
+              <Link href="/adatkezeles" className={`${linkClass} ${rowClass}`}>
                 Adatkezelési tájékoztató{' '}
                 <span aria-hidden="true" className="text-[#c8b68d]">
                   →
                 </span>
               </Link>
-              <Link href="/aszf/" className={`${linkClass} ${rowClass}`}>
+              <Link href="/aszf" className={`${linkClass} ${rowClass}`}>
                 ÁSZF{' '}
                 <span aria-hidden="true" className="text-[#c8b68d]">
                   →
