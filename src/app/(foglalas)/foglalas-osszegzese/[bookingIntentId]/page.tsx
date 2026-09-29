@@ -17,9 +17,11 @@ export default async function BookingSummaryPage(
 
   // Ugyanaz a szabály, mint a createCheckoutSession-ben, hogy ne mutassunk
   // fizethető összegzést olyan idősávra, amit az action utána visszautasítana.
+  // A `timeSlot` már null lehet, ha időközben törölték az idősávot.
   const isBookable =
     bookingIntent != null &&
     bookingIntent.status === BookingIntentStatus.PENDING &&
+    bookingIntent.timeSlot != null &&
     bookingIntent.timeSlot.photoShooting == null &&
     bookingIntent.timeSlot.startTime.getTime() > Date.now();
 

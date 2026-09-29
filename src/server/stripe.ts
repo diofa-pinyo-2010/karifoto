@@ -58,7 +58,11 @@ export async function createCheckoutSession(
     };
   }
 
-  if (bookingIntent.timeSlot.photoShooting != null) {
+  // `timeSlot` is null if the slot was deleted while this intent was pending.
+  if (
+    bookingIntent.timeSlot == null ||
+    bookingIntent.timeSlot.photoShooting != null
+  ) {
     return {
       error: 'Ez az időpont már nem elérhető. Kérlek, válassz másikat.',
     };

@@ -98,6 +98,7 @@ export async function createBookingIntent(
         numberOfPets: input.numberOfPets,
         clientNote: input.clientNote?.trim().slice(0, 500) || null,
         timeSlotId: input.timeSlotId,
+        requestedStartTime: timeSlot.startTime,
         optOutFromMarketingEmails: input.optOutFromMarketingEmails,
       },
       select: { id: true },
@@ -117,8 +118,9 @@ const bookingIntentWithTimeSlot = {
         photoShooting: { select: { id: true } },
       },
     },
-    // Set once converted. Its time slot is the current one — the intent's own
-    // `timeSlot` keeps the originally booked time if the shooting was moved.
+    // Set once converted, and its time slot is the current one. The intent's
+    // own `timeSlot` is null once the freed slot is deleted — fall back to
+    // `requestedStartTime` for the originally booked time, never to `timeSlot`.
     photoShooting: {
       select: { timeSlot: { select: { startTime: true } } },
     },

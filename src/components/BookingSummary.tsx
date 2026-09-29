@@ -57,7 +57,7 @@ export function BookingSummary({
           </div>
 
           <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
-            {formatLongDate(bookingIntent.timeSlot.startTime)}
+            {formatLongDate(bookingIntent.requestedStartTime)}
           </div>
           {/* <div className="mt-1.5 text-sm text-[#5C7064]">
             Karifoto stúdió · Budapest, Rózsa utca 12.

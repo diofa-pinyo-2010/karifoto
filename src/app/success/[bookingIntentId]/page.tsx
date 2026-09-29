@@ -75,7 +75,7 @@ export default async function SuccessPage(
                 value={formatLongDate(
                   // A fotózás időpontja átkerülhetett — azt mutatjuk.
                   bookingIntent.photoShooting?.timeSlot.startTime ??
-                    bookingIntent.timeSlot.startTime,
+                    bookingIntent.requestedStartTime,
                 )}
               />
               <SuccessRow
