@@ -2,7 +2,12 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { cache } from 'react';
 
-import { ArrowLeft, ExternalLinkIcon } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRightIcon,
+  ExternalLinkIcon,
+  UserIcon,
+} from 'lucide-react';
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
@@ -188,7 +193,25 @@ export default async function PhotoShootingDetailPage({
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">Ügyfél</h3>
+        {/* <h3 className="text-lg font-medium">Ügyfél</h3> */}
+        <Button
+          variant="secondary"
+          className="self-start uppercase"
+          size="lg"
+          render={
+            <Link
+              href={APP_URLS.clientPortalShootingDetails(
+                client.id,
+                shooting.id,
+              )}
+            />
+          }
+          nativeButton={false}
+        >
+          <UserIcon />
+          Ügyfélportál
+          <ArrowRightIcon />
+        </Button>
         <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Telefon"

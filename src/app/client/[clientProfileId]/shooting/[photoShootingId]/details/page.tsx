@@ -131,7 +131,7 @@ export default async function ClientPortalShootingDetailsPage({
     },
     {
       value: 'invoices',
-      trigger: 'Számlák',
+      trigger: 'Pénzügyek',
       content: <ClientPortalInvoices invoices={photoShooting.invoices} />,
       disabled: false,
       icon: ReceiptTextIcon,
@@ -268,7 +268,7 @@ function ClientPortalInvoices({
           title={formatAmount(invoice.amountInCents, invoice.currency)}
           description={`${invoice.invoiceNumber} · ${INVOICE_STATUS_LABEL[invoice.status]}`}
           href={invoice.publicUrl}
-          linkLabel="Megnyitás"
+          linkLabel="Számla"
         />
       ))}
     </ItemGroup>
@@ -336,7 +336,7 @@ function ClientPortalShootingDetails({
 
       {shooting.photographer && (
         <DetailRow icon={CameraIcon} label="Fotósotok">
-          {shooting.photographer.nickname}
+          {shooting.photographer.nickname} ☺️
         </DetailRow>
       )}
 

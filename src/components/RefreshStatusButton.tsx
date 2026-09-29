@@ -33,7 +33,7 @@ export function RefreshStatusButton({ action }: RefreshStatusButtonProps) {
         render={
           <Button
             size="icon-lg"
-            variant="outline"
+            variant="ghost"
             disabled={isPending}
             onClick={handleClick}
           >
