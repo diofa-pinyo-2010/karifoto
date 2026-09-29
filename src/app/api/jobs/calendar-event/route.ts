@@ -21,7 +21,10 @@ export const POST = verifySignatureAppRouter(
 
     const photoShooting = await prisma.photoShooting.findUnique({
       where: { id: parsed.data.shootingId },
-      include: {
+      select: {
+        id: true,
+        clientNote: true,
+        package: true,
         timeSlot: { select: { startTime: true, endTime: true } },
         client: {
           select: {
@@ -55,6 +58,9 @@ export const POST = verifySignatureAppRouter(
         Ügyfél:
         ${photoShooting.client.owner.name}
         ${photoShooting.client.owner.phoneNumber}
+
+        Megjegyzés:
+        ${photoShooting.clientNote ? photoShooting.clientNote : '–'}
       `,
         startTime,
         endTime,
