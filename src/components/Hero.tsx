@@ -1,7 +1,20 @@
 import Image from 'next/image';
 
+import { Avatar } from '@base-ui/react/avatar';
+
 import { RATING } from '@/lib/data';
+import avatar1 from '@/photos/avatars/csalad-1.webp';
+import avatar2 from '@/photos/avatars/csalad-2.webp';
+import avatar3 from '@/photos/avatars/csalad-3.webp';
+import avatar4 from '@/photos/avatars/csalad-4.webp';
 import heroPhoto from '@/photos/hero-2026.webp';
+
+/**
+ * A „1700 lefotózott család” sor egymásra csúsztatott arcképei. Korábbi
+ * fotózásokból kivágott portrék, 128px-es webp-ek — a `next/image` itt nem
+ * hozna semmit, a fájl már a megjelenítési méret közelében van.
+ */
+const familyAvatars = [avatar1, avatar2, avatar3, avatar4];
 
 /**
  * 2026-os arculat. A fejléc ráül a hero képére (`absolute`), ezért a szöveg
@@ -82,11 +95,24 @@ export function Hero() {
 
           <div className="mt-4 flex flex-col gap-2.5 text-[11px] max-[359px]:text-[10px] sm:text-xs lg:mt-[27px]">
             <p className="flex items-center gap-1.5">
-              <span
-                aria-hidden="true"
-                className="mr-1 text-xl text-brand-champagne"
-              >
-                ♡
+              {/* Dekoratív: a mondat maga hordozza a jelentést, ezért a
+                  képsor a képernyőolvasónak rejtett. */}
+              <span aria-hidden="true" className="mr-2 flex -space-x-2">
+                {familyAvatars.map((photo) => (
+                  <Avatar.Root
+                    key={photo.src}
+                    className="inline-flex size-7 overflow-hidden rounded-full bg-[#1b3239] ring-2 ring-[#f1ece1]/90 select-none"
+                  >
+                    <Avatar.Image
+                      src={photo.src}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="size-full object-cover"
+                    />
+                    <Avatar.Fallback className="size-full bg-brand-champagne/30" />
+                  </Avatar.Root>
+                ))}
               </span>
               Több mint <strong className="font-semibold">1700</strong>{' '}
               lefotózott család
