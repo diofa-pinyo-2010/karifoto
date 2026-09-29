@@ -10,19 +10,13 @@ import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
+import { ExternalLinkItem } from '@/components/ExternalLinkItem';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from '@/components/ui/item';
+import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
-import { Currency, PaymentMethod } from '@/generated/prisma/client';
+import { PaymentMethod } from '@/generated/prisma/client';
 import {
   APP_URLS,
   booleanToYesNo,
@@ -42,7 +36,7 @@ import {
 } from '@/lib/formatters';
 import { getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
-import { capitalize, cn, formatMoney } from '@/lib/utils';
+import { capitalize, cn, formatAmount } from '@/lib/utils';
 import {
   fetchPhotographers,
   fetchEditors,
@@ -50,11 +44,6 @@ import {
   updatePhotoShootingField,
 } from '@/server/admin';
 import { calculateRemainingAmount } from '@/server/pricing';
-
-function formatAmount(amountInCents: number, currency: Currency): string {
-  if (currency === 'HUF') return formatMoney(amountInCents);
-  return `${(amountInCents / 100).toLocaleString('hu-HU')} ${currency}`;
-}
 
 export function DetailRow({
   label,
@@ -522,36 +511,13 @@ export default async function PhotoShootingDetailPage({
         ) : (
           <ItemGroup>
             {ledgerEntries.map((entry) => (
-              <Item key={entry.id} variant="outline" className="bg-card">
-                <ItemContent>
-                  <ItemTitle>
-                    {formatAmount(entry.amountInCents, entry.currency)} ·{' '}
-                    {LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}
-                  </ItemTitle>
-                  <ItemDescription>
-                    {PAYMENT_METHOD_LABEL[entry.method]}
-                  </ItemDescription>
-                </ItemContent>
-                {entry.invoice && (
-                  <ItemActions>
-                    <Button
-                      variant="ghost"
-                      nativeButton={false}
-                      render={
-                        <a
-                          href={entry.invoice.publicUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="Számla"
-                        />
-                      }
-                    >
-                      Számla
-                      <ExternalLinkIcon />
-                    </Button>
-                  </ItemActions>
-                )}
-              </Item>
+              <ExternalLinkItem
+                key={entry.id}
+                title={`${formatAmount(entry.amountInCents, entry.currency)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
+                description={PAYMENT_METHOD_LABEL[entry.method]}
+                href={entry.invoice?.publicUrl}
+                linkLabel="Számla"
+              />
             ))}
           </ItemGroup>
         )}
@@ -565,31 +531,13 @@ export default async function PhotoShootingDetailPage({
         ) : (
           <ItemGroup>
             {sentEmails.map((email) => (
-              <Item key={email.id} variant="outline" className="bg-card">
-                <ItemContent>
-                  <ItemTitle>
-                    {shortFullDateFormatter.format(email.sentAt)}
-                  </ItemTitle>
-                  <ItemDescription>{email.subject}</ItemDescription>
-                </ItemContent>
-                <ItemActions>
-                  <Button
-                    variant="ghost"
-                    nativeButton={false}
-                    render={
-                      <a
-                        href={resendEmailUrl(email.resendId)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Resend"
-                      />
-                    }
-                  >
-                    Resend
-                    <ExternalLinkIcon />
-                  </Button>
-                </ItemActions>
-              </Item>
+              <ExternalLinkItem
+                key={email.id}
+                title={shortFullDateFormatter.format(email.sentAt)}
+                description={email.subject}
+                href={resendEmailUrl(email.resendId)}
+                linkLabel="Resend"
+              />
             ))}
           </ItemGroup>
         )}

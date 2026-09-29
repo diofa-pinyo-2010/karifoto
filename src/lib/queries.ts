@@ -138,6 +138,18 @@ const photoShootingForClientPortalSelect = {
     clientNote: true,
     timeSlot: { select: { startTime: true } },
     photographer: { select: { nickname: true } },
+    // Az Invoice-nak nincs createdAt-je, a számlaszám viszont növekvő.
+    invoices: {
+      select: {
+        id: true,
+        invoiceNumber: true,
+        publicUrl: true,
+        amountInCents: true,
+        currency: true,
+        status: true,
+      },
+      orderBy: { invoiceNumber: 'asc' },
+    },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 

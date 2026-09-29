@@ -1,5 +1,6 @@
 import {
   DecorSet,
+  InvoiceStatus,
   LedgerEntryCategory,
   Package,
   PaymentMethod,
@@ -324,6 +325,15 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   CARD: 'Bankkártya',
   TRANSFER: 'Átutalás',
   CASH: 'Készpénz',
+};
+
+// Ügyfélnek is megmutatjuk, ezért nem belső szakszó. A gyakorlatban ma minden
+// számla SETTLED-ként jön létre (lásd a generate-deposit-invoice jobot), a
+// másik kettő a jövőbeli eseteké.
+export const INVOICE_STATUS_LABEL: Record<InvoiceStatus, string> = {
+  WAITING_FOR_PAYMENT: 'Fizetésre vár',
+  SETTLED: 'Kifizetve',
+  REFUNDED: 'Visszatérítve',
 };
 
 export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =

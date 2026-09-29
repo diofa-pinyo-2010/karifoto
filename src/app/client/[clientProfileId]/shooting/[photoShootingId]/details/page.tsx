@@ -16,6 +16,7 @@ import {
   UsersIcon,
 } from 'lucide-react';
 
+import { ExternalLinkItem } from '@/components/ExternalLinkItem';
 import {
   Accordion,
   AccordionTrigger,
@@ -24,10 +25,12 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ItemGroup } from '@/components/ui/item';
 import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
   DECOR_SET_LABEL,
+  INVOICE_STATUS_LABEL,
   isStatusBefore,
   PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
@@ -43,6 +46,7 @@ import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
+import { formatAmount } from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
 import type { PhotoShootingForClientPortal } from '@/lib/queries';
@@ -128,8 +132,7 @@ export default async function ClientPortalShootingDetailsPage({
     {
       value: 'invoices',
       trigger: 'Számlák',
-      content:
-        'You can cancel your subscription anytime from your account settings. There are no cancellation fees or penalties. Your access will continue until the end of your current billing period.',
+      content: <ClientPortalInvoices invoices={photoShooting.invoices} />,
       disabled: false,
       icon: ReceiptTextIcon,
     },
@@ -242,6 +245,35 @@ function ClientPortalAccessDenied({
 const PACKAGE_BY_ENUM = new Map(
   packages.map((item) => [item.id.toUpperCase(), item]),
 );
+
+function ClientPortalInvoices({
+  invoices,
+}: {
+  invoices: PhotoShootingForClientPortal['invoices'];
+}) {
+  if (invoices.length === 0) {
+    return (
+      <p className="text-brand-muted">
+        Még nincs számlátok ehhez a fotózáshoz. Az előlegről szóló számlát a
+        foglalás után, a többit a fotózás elszámolásakor állítjuk ki.
+      </p>
+    );
+  }
+
+  return (
+    <ItemGroup>
+      {invoices.map((invoice) => (
+        <ExternalLinkItem
+          key={invoice.id}
+          title={formatAmount(invoice.amountInCents, invoice.currency)}
+          description={`${invoice.invoiceNumber} · ${INVOICE_STATUS_LABEL[invoice.status]}`}
+          href={invoice.publicUrl}
+          linkLabel="Megnyitás"
+        />
+      ))}
+    </ItemGroup>
+  );
+}
 
 function DetailRow({
   icon: Icon,
