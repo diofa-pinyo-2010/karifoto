@@ -14,7 +14,6 @@
     "dev": "next dev",
     "dev:qstash": "pnpm dlx @upstash/qstash-cli dev",
     "email:dev": "email dev --dir src/emails --port 3001",
-    "email:types": "tsx scripts/generate-email-types.ts && oxfmt src/lib/resend/email-template-variables.generated.ts",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",

@@ -1,15 +1,17 @@
-// src/lib/resend/send-react-email.ts
 import type { ReactElement } from 'react';
 
+import { env } from '@/env';
 import { resend } from '@/lib/resend/index';
 
+// Only production deployments send from the real address — local dev and
+// Vercel previews use the DEV sender.
 export const EMAIL_FROM =
-  process.env.NODE_ENV === 'development'
-    ? 'Karifoto DEV <dev@dev.karifoto.hu>'
-    : 'Karifoto Admin <nevalaszolj@ertesitesek.karifoto.hu>';
+  env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+    ? 'Karifoto <nevalaszolj@ertesitesek.karifoto.hu>'
+    : 'Karifoto DEV <dev@dev.karifoto.hu>';
 
 type SendReactEmailParams = {
-  type: string; // → 'type' tag, same as sendTemplatedEmail
+  type: string; // → 'type' tag
   to: string | string[];
   subject: string;
   react: ReactElement;

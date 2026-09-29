@@ -18,13 +18,13 @@ export function sendDepositRequestEmail({
   bookingIntentId,
 }: DepositRequestEmailParams) {
   return sendClientEmail({
+    type: 'DEPOSIT_REQUEST',
     to,
-    template: 'DEPOSIT_REQUEST',
-    variables: {
-      NAME: name,
-      BOOKED_TIME: bookedTimeString,
-      DEPOSIT_AMOUNT: depositAmount,
-      SUMMARY_URL: summaryUrl,
+    props: {
+      name,
+      bookedTime: bookedTimeString,
+      depositAmount,
+      summaryUrl,
     },
     tags: [{ name: 'bookingIntentId', value: bookingIntentId }],
   });

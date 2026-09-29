@@ -1,5 +1,8 @@
 import { sendClientEmail } from '@/lib/resend/send-client-email';
 
+// TODO: replace once the client portal exists.
+const CLIENT_PORTAL_LOGIN_LINK_PLACEHOLDER = 'https://karifoto.hu';
+
 type SendBookingConfirmationEmailParams = {
   to: string;
   name: string;
@@ -18,14 +21,15 @@ export function sendBookingConfirmationEmail({
   clientId,
 }: SendBookingConfirmationEmailParams) {
   return sendClientEmail({
+    type: 'CLIENT_BOOKING_CONFIRMATION',
     to,
     clientId,
     photoShootingId: shootingId,
-    template: 'CLIENT_BOOKING_CONFIRMATION',
-    variables: {
-      NAME: name,
-      BOOKED_TIME: bookedTimeString,
-      ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
+    props: {
+      name,
+      bookedTime: bookedTimeString,
+      addToGoogleCalendarLink,
+      clientPortalLoginLink: CLIENT_PORTAL_LOGIN_LINK_PLACEHOLDER,
     },
     tags: [{ name: 'shootingId', value: shootingId }],
   });
