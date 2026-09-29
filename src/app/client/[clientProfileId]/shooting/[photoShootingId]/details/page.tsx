@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
+  isStatusBefore,
   PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
 } from '@/lib/constants';
@@ -104,16 +105,25 @@ export default async function ClientPortalShootingDetailsPage({
     {
       value: 'details',
       trigger: 'Részletek',
-      content: <div className="text-red-600">Hello</div>,
+      content: <ClientPortalShootingDetails />,
       disabled: false,
       icon: LayoutDashboardIcon,
     },
     {
       value: 'image-selection',
       trigger: 'Képválogatás',
-      content:
-        "Billing occurs automatically at the start of each billing cycle. We accept all major credit cards, PayPal, and ACH transfers for enterprise customers. You'll receive an invoice via email after each payment.",
-      disabled: true,
+      // A válogatás előtti szakaszban csak elmagyarázzuk, mi fog történni —
+      // ilyenkor még nincs mit válogatni.
+      content: isStatusBefore(photoShooting.status, 'USER_SELECTION') ? (
+        <p className="text-brand-muted">
+          A fotózás után feltöltjük a nyers képeket, és itt fogjátok tudni
+          kiválasztani, melyeket retusáljuk. Szólunk emailben, amint elindulhat
+          a válogatás.
+        </p>
+      ) : (
+        <p>TODO: Képválogatás content</p>
+      ),
+      disabled: false,
       icon: ImagesIcon,
     },
     {
@@ -226,4 +236,8 @@ function ClientPortalAccessDenied({
       </p>
     </section>
   );
+}
+
+function ClientPortalShootingDetails() {
+  return <div>Részletek</div>;
 }

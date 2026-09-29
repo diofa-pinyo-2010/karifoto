@@ -26,7 +26,7 @@ export function calculateRemainingAmount({
   );
   const extraEdited = Math.max(
     0,
-    pricing.totalEditedImages - pricing.packageEditedImagesAllowance,
+    shooting.totalEditedImages - pricing.packageEditedImagesAllowance,
   );
 
   const totalCharges =
@@ -36,7 +36,7 @@ export function calculateRemainingAmount({
     extraPeople * pricing.extraPeopleRateInCents +
     shooting.numberOfPets * pricing.extraPetRateInCents +
     extraEdited * pricing.extraEditedImageRateInCents +
-    pricing.totalRetouchedImages * pricing.extraRetouchedImageRateInCents;
+    shooting.totalRetouchedImages * pricing.extraRetouchedImageRateInCents;
 
   const totalDeductions = adjustments.reduce(
     (sum, a) => sum + a.amountInCents,

@@ -155,6 +155,50 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
   };
 
 /*
+ * A munkafolyamat sorrendje, kimondva. Eddig két helyen élt implicit módon: az
+ * enum felsorolási sorrendjében (prisma/schema.prisma) és a `resolveStatus()`
+ * if-láncában (src/server/admin.ts) — egyik sem alkalmas összehasonlításra, és
+ * az enum sorrendjére támaszkodni néma hibát okozna, ha valaki átrendezi.
+ *
+ * `Record`, nem tömb: így egy új státusz addig nem fordul le, amíg nem kapott
+ * helyet a sorban.
+ *
+ * FIGYELEM: a `USER_SELECTION`-t jelenleg SEMMI nem állítja be — a
+ * `resolveStatus()` a RAW_PHOTOS_UPLOAD után egyből EDITOR_SELECTION-re lép.
+ * A rá épülő feltételek tehát ma még nem tüzelnek.
+ */
+export const PHOTO_SHOOTING_STATUS_RANK: Record<PhotoShootingStatus, number> = {
+  PHOTOGRAPHER_SELECTION: 0,
+  WAITING_FOR_THE_DATE: 1,
+  RAW_PHOTOS_UPLOAD: 2,
+  USER_SELECTION: 3,
+  EDITOR_SELECTION: 4,
+  FINAL_PHOTOS_UPLOAD: 5,
+  WAITING_FOR_PAYMENT: 6,
+  COMPLETED: 7,
+  // Bármelyik állapotból ide lehet kerülni, de visszaút nincs — ezért a végén.
+  CLOSED: 8,
+};
+
+export function isStatusBefore(
+  status: PhotoShootingStatus,
+  reference: PhotoShootingStatus,
+) {
+  return (
+    PHOTO_SHOOTING_STATUS_RANK[status] < PHOTO_SHOOTING_STATUS_RANK[reference]
+  );
+}
+
+export function isStatusAtLeast(
+  status: PhotoShootingStatus,
+  reference: PhotoShootingStatus,
+) {
+  return (
+    PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
+  );
+}
+
+/*
  * Amit az ügyfélportál mutat. Szándékosan NEM a
  * `PHOTO_SHOOTING_STATUS_LABEL`: az a belső munkafolyamat neve
  * ('Szerkesztő kiválasztása', 'Nyers képek feltöltése'), ami az ügyfélnek
