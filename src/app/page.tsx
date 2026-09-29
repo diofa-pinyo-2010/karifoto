@@ -5,6 +5,7 @@ import { FloatingAdminButton } from '@/components/FloatingAdminButton';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { Location } from '@/components/Location';
 import { MobileBookingBar } from '@/components/MobileBookingBar';
 import { Pricing } from '@/components/Pricing';
 import { Reviews } from '@/components/Reviews';
@@ -39,6 +40,7 @@ export default async function Home() {
         <Video />
         <Booking groupedTimeSlots={groups} />
         <Faq />
+        <Location />
       </main>
       <Footer />
       <MobileBookingBar />

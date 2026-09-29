@@ -17,6 +17,31 @@ export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
 
+/**
+ * A stúdió Google-térkép beágyazása, a fenti címből származtatva — így egy
+ * forrásból jön a cím és a térkép pin.
+ *
+ * Szándékosan nem a "Share → Embed a map" által adott `pb=` paraméteres URL:
+ * az egy átlátszatlan, generált blob, amit kézzel nem lehet előállítani, és ha
+ * elavul, a Google "Invalid 'pb' parameter" hibával utasítja el. Az
+ * `output=embed` forma sima lekérdezést vár, és nem kell hozzá API-kulcs.
+ *
+ * Az iframe `loading="lazy"`, tehát csak akkor kér le bármit a Google-tól, ha a
+ * szekció a nézetbe kerül — de a videóval ellentétben nem kattintásra tölt. Az
+ * adatkezelési tájékoztató tervezete is így írja le.
+ */
+/**
+ * Térkép nagyítás. Egész szám, nagyobb érték = közelebb:
+ *   13 kerület · 15 utcák · 17 háztömb · 18 épület · 20 maximum
+ */
+export const STUDIO_MAP_ZOOM = 16;
+
+export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
+  STUDIO_ADDRESS,
+)}&z=${STUDIO_MAP_ZOOM}&output=embed`;
+
+export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA';
+
 export const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
 /**
