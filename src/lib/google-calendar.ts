@@ -4,9 +4,21 @@ import { google } from 'googleapis';
 import { env } from '@/env';
 import { STUDIO_ADDRESS } from '@/lib/constants';
 
+const privateKey = env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+
+console.log('[google-calendar] key starts with:', privateKey.substring(0, 40));
+console.log(
+  '[google-calendar] key ends with:',
+  privateKey.substring(privateKey.length - 40),
+);
+console.log(
+  '[google-calendar] newlines count:',
+  (privateKey.match(/\n/g) ?? []).length,
+);
+
 const auth = new JWT({
   email: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-  key: env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  key: privateKey,
   scopes: ['https://www.googleapis.com/auth/calendar'],
 });
 
