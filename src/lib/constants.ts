@@ -205,4 +205,15 @@ export const APP_URLS = {
   photoShootingAdminPage: (shootingId: string) =>
     `/admin/photo-shootings/${shootingId}`,
   upcomingShootings: '/admin/bookings',
+
+  // Client portal. The first two are public and meant to be shared; only
+  // `clientPortalShootingDetails` is gated. Built here so the confirmation
+  // email and the pages themselves can never drift apart.
+  clientPortalHome: (clientProfileId: string) => `/client/${clientProfileId}`,
+  clientPortalShooting: (clientProfileId: string, shootingId: string) =>
+    `/client/${clientProfileId}/shooting/${shootingId}`,
+  clientPortalShootingDetails: (clientProfileId: string, shootingId: string) =>
+    `/client/${clientProfileId}/shooting/${shootingId}/details`,
+  clientPortalVerify: '/api/client-portal/verify',
+  clientPortalInvalidLink: '/client/ervenytelen-link',
 };

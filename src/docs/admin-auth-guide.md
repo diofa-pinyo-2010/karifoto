@@ -2,15 +2,14 @@
 
 Passwordless admin auth for Karifoto's `/admin` area, built on what's already in
 this repo: the existing `User`/`StaffProfile`/`Session`/`MagicLinkToken` models,
-the `@/lib/prisma` singleton, `sendTemplatedEmail`, Upstash Redis, and the
+the `@/lib/prisma` singleton, `sendClientEmail`, Upstash Redis, and the
 existing `AppSidebar` layout. This is not a generic tutorial — every snippet
 below targets this codebase's actual conventions.
 
-Two phases: **Phase 1** (steps 1–14 below) is `/admin` — staff auth plus
-`SUPERADMIN`/`EDITOR` authorization — and is buildable now. **Phase 2** (its
-own section at the end) is the client-facing `/client/*` portal — captured
-here as an agreed design, not yet built, so Phase 1 doesn't paint us into a
-corner (e.g. cookie naming, session table shape).
+Two phases, both now built: **Phase 1** (steps 1–14 below) is `/admin` —
+staff auth plus `SUPERADMIN`/`MEMBER` authorization. **Phase 2** (its own
+section at the end) is the client-facing `/client/*` portal, whose auth
+machinery ships with placeholder pages behind it.
 
 ## Table of Contents
 
@@ -31,10 +30,10 @@ corner (e.g. cookie naming, session table shape).
   - [11. Protect the Existing Admin Layout](#11-protect-the-existing-admin-layout)
   - [12. Floating Admin Button](#12-floating-admin-button)
   - [13. Admin Verification Email](#13-admin-verification-email)
-  - [14. Role-Based Authorization (SUPERADMIN vs EDITOR)](#14-role-based-authorization-superadmin-vs-editor)
+  - [14. Role-Based Authorization (SUPERADMIN vs MEMBER)](#14-role-based-authorization-superadmin-vs-member)
 - [Authentication Flow](#authentication-flow)
 - [Security Features](#security-features)
-- [Phase 2 (later): Client Portal (`/client/*`)](#phase-2-later-client-portal-client)
+- [Phase 2: Client Portal (`/client/*`)](#phase-2-client-portal-client)
 
 ---
 
@@ -44,9 +43,9 @@ corner (e.g. cookie naming, session table shape).
 - Staff-only: only `User`s with a `StaffProfile` row can log in — your own
   account (`nemethricsi@gmail.com`) is already seeded as `SUPERADMIN` in
   [prisma/seed.ts](../../prisma/seed.ts), so there's nothing to bootstrap.
-- Two roles, already migrated: `SUPERADMIN` (full access) and `EDITOR`
+- Two roles, already migrated: `SUPERADMIN` (full access) and `MEMBER`
   (photographers/editors — limited, mostly read-only access), see
-  [step 14](#14-role-based-authorization-superadmin-vs-editor).
+  [step 14](#14-role-based-authorization-superadmin-vs-member).
 - 30-day sessions, hashed tokens in DB, 15-minute magic links.
 - Route protection: `src/proxy.ts` (fast, cookie-existence only) +
   `verifySession()` in the admin layout (real DB check) +
@@ -54,10 +53,10 @@ corner (e.g. cookie naming, session table shape).
 
 ## What already exists vs. what's new
 
-|                                                 |                                                                                                                                                                                                                                                                                                                                                                                         |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Already in the repo — reuse, don't recreate** | `User`, `StaffProfile`, `Session`, `MagicLinkToken` models ([prisma/schema.prisma](../../prisma/schema.prisma)), including the migrated `StaffProfileRole` enum (`SUPERADMIN` \| `EDITOR`, default `EDITOR`); `@/lib/prisma` singleton; `@/lib/resend/index.ts` + `send-templated-email.ts`; `src/proxy.ts` (coming-soon gate); `src/app/admin/layout.tsx` + `AppSidebar`; `src/env.ts` |
-| **New files this guide adds**                   | `src/lib/token.ts`, `src/lib/session.ts`, `src/lib/auth.ts`, `src/lib/dal.ts`, `src/lib/admin-nav.ts`, `src/lib/resend/admin-verification.ts`, `src/server/admin-auth.ts`, `src/app/admin/login/**`, `src/components/FloatingAdminButton.tsx`                                                                                                                                           |
+|                                                 |                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Already in the repo — reuse, don't recreate** | `User`, `StaffProfile`, `Session`, `MagicLinkToken` models ([prisma/schema.prisma](../../prisma/schema.prisma)), including the migrated `StaffProfileRole` enum (`SUPERADMIN` \| `MEMBER`, default `MEMBER`); `@/lib/prisma` singleton; `@/lib/resend/index.ts` + `send-react-email.ts` + `send-client-email.ts`; `src/proxy.ts` (coming-soon gate); `src/app/admin/layout.tsx` + `AppSidebar`; `src/env.ts` |
+| **New files this guide adds**                   | `src/lib/token.ts`, `src/lib/session.ts`, `src/lib/auth.ts`, `src/lib/dal.ts`, `src/lib/admin-nav.ts`, `src/lib/resend/admin-verification.ts`, `src/server/admin-auth.ts`, `src/app/admin/login/**`, `src/components/FloatingAdminButton.tsx`                                                                                                                                                                |
 
 Three repo-specific corrections worth calling out up front, since a generic
 version of this guide gets all three wrong here:
@@ -73,7 +72,7 @@ version of this guide gets all three wrong here:
 3. **`isPhotographer`/`isEditor` are not authorization flags.** They only
    decide who's eligible to be assigned as a `PhotoShooting`'s photographer or
    editor. Authorization is `StaffProfile.role` alone — see
-   [step 14](#14-role-based-authorization-superadmin-vs-editor).
+   [step 14](#14-role-based-authorization-superadmin-vs-member).
 
 ## Architecture
 
@@ -89,7 +88,7 @@ src/
 │   ├── upstash.ts                 # existing — reused for rate limiting
 │   └── resend/
 │       ├── index.ts               # existing — reused as-is
-│       ├── send-templated-email.ts # existing — reused as-is
+│       ├── send-react-email.ts    # existing — reused as-is
 │       └── admin-verification.ts  # new: sendAdminVerificationEmail()
 ├── proxy.ts                       # existing — EXTENDED, not replaced
 ├── server/
@@ -99,19 +98,43 @@ src/
 └── app/
     ├── page.tsx                   # existing — renders FloatingAdminButton when session exists
     └── admin/
-        ├── layout.tsx             # existing — add verifySession() + logout button
-        ├── page.tsx                # existing — already redirects to /admin/bookings
+        ├── (protected)/
+        │   └── layout.tsx         # verifySession() + logout button — the route
+        │                          # group is what scopes the gate
+        ├── page.tsx               # existing — already redirects to /admin/bookings
         └── login/
-            ├── page.tsx            # new
-            ├── login-form.tsx      # new (client)
+            ├── page.tsx           # new
+            ├── login-form.tsx     # new (client)
             └── verify/
-                └── route.ts        # new (GET handler)
+                └── route.ts       # new (GET handler)
+```
+
+Phase 2 then added, alongside the above:
+
+```
+src/
+├── lib/
+│   ├── auth.ts                    # + createClientPortalToken(), kind arg on createSession()
+│   ├── dal.ts                     # + getClientSession(), requireClientAccess()
+│   ├── session.ts                 # + client cookie/TTL constants, sanitizeClientRedirect()
+│   └── client-portal.ts           # new: clientPortalLoginUrl() for the email
+└── app/
+    ├── api/client-portal/verify/
+    │   └── route.ts               # new: issues client_session, never claims the token
+    └── client/
+        ├── ervenytelen-link/      # invalid/expired link page
+        └── [clientProfileId]/
+            ├── page.tsx           # public list
+            └── shooting/[photoShootingId]/
+                ├── page.tsx       # public, shareable gallery
+                └── details/
+                    └── page.tsx   # gated
 ```
 
 Any row with a `StaffProfile` — either role — can _log in_ to `/admin`; steps
-1–13 (auth) don't distinguish `SUPERADMIN` from `EDITOR` at all. What each
+1–13 (auth) don't distinguish `SUPERADMIN` from `MEMBER` at all. What each
 role can then _see and do_ inside `/admin` is a separate, later concern,
-covered in [step 14](#14-role-based-authorization-superadmin-vs-editor).
+covered in [step 14](#14-role-based-authorization-superadmin-vs-member).
 
 ---
 
@@ -588,7 +611,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
 }
 ```
 
-Wire `userName`/`onLogout` into `AppSidebar`'s footer (a `<form action={onLogout}>` with a submit button), same shape as its existing nav items. `role` is new — see [step 14](#14-role-based-authorization-superadmin-vs-editor) for what `AppSidebar` does with it. Note `/admin/login` itself is _outside_ this layout (it's a sibling route under `src/app/admin/login/`, not nested under a layout that calls `verifySession()`) — otherwise the login page would redirect-loop against itself.
+Wire `userName`/`onLogout` into `AppSidebar`'s footer (a `<form action={onLogout}>` with a submit button), same shape as its existing nav items. `role` is new — see [step 14](#14-role-based-authorization-superadmin-vs-member) for what `AppSidebar` does with it. Note `/admin/login` itself is _outside_ this layout (it's a sibling route under `src/app/admin/login/`, not nested under a layout that calls `verifySession()`) — otherwise the login page would redirect-loop against itself.
 
 ### 12. Floating Admin Button
 
@@ -639,51 +662,50 @@ export default async function Home() {
 
 ### 13. Admin Verification Email
 
-`resend.emails.send({ template: { id, variables } })` is a real Resend API
-(verified against current docs) and `sendTemplatedEmail` already implements
-it in [src/lib/resend/send-templated-email.ts](../../src/lib/resend/send-templated-email.ts) — reuse it, just add the admin-specific wrapper:
+Emails are React Email components in [src/emails/](../../src/emails/), rendered
+by `sendReactEmail()` in
+[src/lib/resend/send-react-email.ts](../../src/lib/resend/send-react-email.ts).
+The admin login email goes through that primitive **directly**, not through
+`sendClientEmail()`:
 
 ```ts
 // src/lib/resend/admin-verification.ts
-import { sendTemplatedEmail } from '@/lib/resend/send-templated-email';
-
-const ADMIN_LOGIN_TEMPLATE_ID = 'your-resend-template-id';
-
-type SendAdminVerificationEmailParams = {
-  to: string;
-  name: string;
-  verifyUrl: string;
-};
+import AdminLoginEmail, { ADMIN_LOGIN_SUBJECT } from '@/emails/AdminLogin';
+import { BASE_URL_PROD } from '@/lib/constants';
+import { sendReactEmail } from '@/lib/resend/send-react-email';
 
 export function sendAdminVerificationEmail({
   to,
   name,
   verifyUrl,
 }: SendAdminVerificationEmailParams) {
-  return sendTemplatedEmail({
+  return sendReactEmail({
+    type: 'ADMIN_LOGIN',
     to,
-    templateId: ADMIN_LOGIN_TEMPLATE_ID,
-    variables: { NAME: name, VERIFY_URL: verifyUrl },
+    subject: ADMIN_LOGIN_SUBJECT,
+    react: AdminLoginEmail({ name, verifyUrl, baseUrl: BASE_URL_PROD }),
   });
 }
 ```
 
-Create the actual template in the Resend dashboard and drop its real ID in.
+`sendClientEmail()` is the wrong layer here: it writes a `SentEmail` audit row
+keyed to an `EmailType` enum value, and `ADMIN_LOGIN` deliberately isn't one —
+staff logins aren't client correspondence.
 
-### 14. Role-Based Authorization (SUPERADMIN vs EDITOR)
+### 14. Role-Based Authorization (SUPERADMIN vs MEMBER)
 
-`StaffProfile.role` is already migrated to `SUPERADMIN` | `EDITOR` (default
-`EDITOR`) in `prisma/schema.prisma`. `isPhotographer`/`isEditor` stay out of
+`StaffProfile.role` is already migrated to `SUPERADMIN` | `MEMBER` (default
+`MEMBER`) in `prisma/schema.prisma`. `isPhotographer`/`isEditor` stay out of
 this entirely — they only gate who can be assigned to a `PhotoShooting`, not
 what they can see in `/admin`.
 
 Current scope, decided for this repo (revisit if requirements grow):
 
 - **Page-level only.** A nav item/route is either visible+reachable for a
-  role or it isn't. No row-level filtering (an `EDITOR` sees the same
+  role or it isn't. No row-level filtering (an `MEMBER` sees the same
   `PhotoShooting` rows a `SUPERADMIN` does) and no field-level PII hiding —
   both roles see identical data on shared pages, for now.
-- **Unauthorized direct navigation** (an `EDITOR` hitting a `SUPERADMIN`-only
+- **Unauthorized direct navigation** (an `MEMBER` hitting a `SUPERADMIN`-only
   URL) redirects to `/admin/bookings`, the same target `verifySession()`
   already uses as the "safe default" page.
 - **One config drives both** the sidebar nav and the route guard, so a page
@@ -767,7 +789,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
 #### Guarding the route itself: `requireNavAccess()` in the DAL
 
 Hiding the nav item is cosmetic — a role-gated page must still refuse the
-`EDITOR` who navigates there directly. Add this to `src/lib/dal.ts` alongside
+`MEMBER` who navigates there directly. Add this to `src/lib/dal.ts` alongside
 `getSession()`/`verifySession()` from step 5:
 
 ```ts
@@ -824,7 +846,7 @@ return canEdit ? (
 ```
 
 The UI branch is cosmetic. **Whatever Server Action performs the actual
-mutation must independently re-check the role** — an `EDITOR` can call a
+mutation must independently re-check the role** — an `MEMBER` can call a
 Server Action directly regardless of what the page renders for them:
 
 ```ts
@@ -886,16 +908,32 @@ admin/layout.tsx calls verifySession() -> real DB check, staffProfile confirmed
 | Staff-only access         | Requires `staffProfile` relation, checked in `getSession()`                                                                                                                     |
 | Dual protection           | `proxy.ts` (edge, cookie existence) + `verifySession()` (server, real DB check)                                                                                                 |
 | Request dedup             | `cache()` around `getSession()`/`verifySession()`                                                                                                                               |
-| Role-based authorization  | `StaffProfile.role` (`SUPERADMIN`/`EDITOR`) gates page access via `requireNavAccess()`; UI hiding is never the only check — mutating Server Actions re-check role independently |
+| Role-based authorization  | `StaffProfile.role` (`SUPERADMIN`/`MEMBER`) gates page access via `requireNavAccess()`; UI hiding is never the only check — mutating Server Actions re-check role independently |
 
 ---
 
-## Phase 2 (later): Client Portal (`/client/*`)
+## Phase 2: Client Portal (`/client/*`)
 
-Not being built now. This section records the design agreed on so Phase 1
-doesn't make choices (cookie naming, session table shape) that would have to
-be undone later — it's not a step-by-step guide like the sections above, and
-some details are explicitly left open.
+**v1 is built — auth only.** The session/token machinery and route gating below
+are live; the three pages themselves are deliberate placeholders waiting on
+real gallery and payment content. The reasoning is kept as prose rather than
+rewritten as steps, because what matters here is _why_ the gating is shaped
+this way, not how to retype it.
+
+Where it lives:
+
+|                                                    |                                                                                                                                                                               |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema                                             | `Session.kind` (`SessionKind`), `ClientPortalToken` — [prisma/schema.prisma](../../prisma/schema.prisma)                                                                      |
+| Session + token minting                            | `createSession(userId, kind)`, `createClientPortalToken()` — [src/lib/auth.ts](../../src/lib/auth.ts)                                                                         |
+| Cookie + TTL constants, `sanitizeClientRedirect()` | [src/lib/session.ts](../../src/lib/session.ts)                                                                                                                                |
+| `getClientSession()`, `requireClientAccess()`      | [src/lib/dal.ts](../../src/lib/dal.ts)                                                                                                                                        |
+| Verify route (the bounce)                          | [src/app/api/client-portal/verify/route.ts](../../src/app/api/client-portal/verify/route.ts)                                                                                  |
+| Pages                                              | [src/app/client/](../../src/app/client/)                                                                                                                                      |
+| Emailed login URL                                  | `clientPortalLoginUrl()` — [src/lib/client-portal.ts](../../src/lib/client-portal.ts), called from [the confirmation job](../../src/app/api/jobs/email-confirmation/route.ts) |
+
+Still open: everything the pages actually _show_, and the
+`USER_SELECTION → FINAL_PHOTOS_UPLOAD` selection-confirm action.
 
 ### Three route tiers, one new cookie
 
@@ -911,7 +949,7 @@ some details are explicitly left open.
   shooting, and the eventual memorial page. No cookie required, ever.
 - **`/client/{clientProfileId}/shooting/{photoShootingId}/details`** —
   gated: payments, invoices. Requires `client_session` **or** `admin_session`
-  — no role restriction beyond being staff; `EDITOR` sees this too, same as
+  — no role restriction beyond being staff; `MEMBER` sees this too, same as
   `SUPERADMIN` (unlike `/admin/finance`, which is `SUPERADMIN`-only).
 - **The "I selected the images, I'm ready" action** — gated, `client_session`
   **only**, not reachable via `admin_session` even though staff can view
@@ -965,11 +1003,11 @@ burn their only way back in. See the reusable-token bullet in
 
 ### One cookie for both staff roles, a second one for clients — not three
 
-Per [step 14](#14-role-based-authorization-superadmin-vs-editor)'s reasoning:
+Per [step 14](#14-role-based-authorization-superadmin-vs-member)'s reasoning:
 a cookie _name_ can't itself carry authorization — the token inside it is
 what's looked up against the `Session` table regardless of what the cookie
 is called — so staff stays on a single `admin_session` for both
-`SUPERADMIN` and `EDITOR`. A separate `editor_session` would just create a
+`SUPERADMIN` and `MEMBER`. A separate `member_session` would just create a
 second, staleness-prone place role lives (promote someone and their old
 cookie name would lie about their access until they re-login).
 
@@ -993,7 +1031,7 @@ exactly why row-scoping below is mandatory.
 
 ### One `User`, two profiles — no conflict
 
-A `SUPERADMIN`/`EDITOR` who books a shooting under their own email (e.g. for
+A `SUPERADMIN`/`MEMBER` who books a shooting under their own email (e.g. for
 testing) ends up with both a `StaffProfile` and a `ClientProfile` on the same
 `User` row — the Stripe webhook upserts `User` by email, so it finds the
 existing staff `User` and just adds a `ClientProfile`, rather than creating a
@@ -1011,7 +1049,7 @@ second user. That person can then hold an `admin_session` and a
 
 ### Decisions
 
-- **`EDITOR` sees `/details` too.** The OR-gate is "any staff," full stop —
+- **`MEMBER` sees `/details` too.** The OR-gate is "any staff," full stop —
   unlike `/admin/finance`, there's no `SUPERADMIN`-only carve-out for a
   client's payments/invoices. Staff supporting a client by phone/email needs
   this regardless of role.
@@ -1052,5 +1090,6 @@ second user. That person can then hold an `admin_session` and a
   aren't per-resource), but this is the one place Phase 2 needs a check Phase 1
   doesn't.
 
-This section stays prose-and-decisions, not code, until Phase 2 is actually
-scheduled.
+This section stays prose-and-decisions rather than a step-by-step like Phase
+1: the code is small and already written, and what's worth preserving is the
+reasoning behind the gating, not a transcript of it.

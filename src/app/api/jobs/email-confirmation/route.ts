@@ -2,6 +2,8 @@ import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import z from 'zod';
 
 import { env } from '@/env';
+import { createClientPortalToken } from '@/lib/auth';
+import { clientPortalLoginUrl } from '@/lib/client-portal';
 import { formatLongDate } from '@/lib/formatters';
 import { markEmailSent, wasEmailSent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
@@ -25,7 +27,13 @@ export const POST = verifySignatureAppRouter(
       where: { id: parsed.data.shootingId },
       include: {
         timeSlot: { select: { startTime: true, endTime: true } },
-        client: { select: { owner: { select: { email: true, name: true } } } },
+        client: {
+          select: {
+            // `id` is needed to mint the client portal token — Session and
+            // ClientPortalToken are both keyed to User, not ClientProfile.
+            owner: { select: { id: true, email: true, name: true } },
+          },
+        },
       },
     });
 
@@ -51,12 +59,24 @@ export const POST = verifySignatureAppRouter(
       photoShooting.timeSlot.endTime,
     );
 
+    // Minted here rather than in the Stripe webhook: this job is already
+    // idempotency-guarded and QStash-retried, and the token is reusable by
+    // design, so a retry that mints a second one is harmless.
+    const { raw: portalToken } = await createClientPortalToken(
+      photoShooting.client.owner.id,
+    );
+
     try {
       const { data, error } = await sendBookingConfirmationEmail({
         to: photoShooting.client.owner.email,
         name: photoShooting.client.owner.name,
         bookedTimeString,
         addToGoogleCalendarLink,
+        clientPortalLoginLink: clientPortalLoginUrl({
+          clientProfileId: photoShooting.clientId,
+          shootingId: photoShooting.id,
+          rawToken: portalToken,
+        }),
         shootingId: photoShooting.id,
         clientId: photoShooting.clientId,
       });
