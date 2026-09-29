@@ -84,8 +84,13 @@ model BookingIntent {
   clientNote          String?
   paymentIntent       String? // needed for double payments
 
-  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
-  timeSlotId String   @db.Uuid
+  // The time the client picked, kept as a value so it survives the slot row.
+  // `timeSlot` is the live hold on that slot and only matters while PENDING —
+  // once the intent is converted or cancelled the slot may be deleted and this
+  // pointer goes null. Read `requestedStartTime` for history, never `timeSlot`.
+  requestedStartTime DateTime  @db.Timestamptz
+  timeSlot           TimeSlot? @relation(fields: [timeSlotId], references: [id], onDelete: SetNull)
+  timeSlotId         String?   @db.Uuid
 
   photoShooting PhotoShooting?
 

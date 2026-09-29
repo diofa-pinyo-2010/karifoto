@@ -28,7 +28,7 @@ export const POST = verifySignatureAppRouter(
         id: true,
         name: true,
         email: true,
-        timeSlot: { select: { startTime: true } },
+        requestedStartTime: true,
       },
     });
 
@@ -48,7 +48,7 @@ export const POST = verifySignatureAppRouter(
       return new Response('already sent', { status: 200 });
     }
 
-    const bookedTimeString = formatLongDate(bookingIntent.timeSlot.startTime);
+    const bookedTimeString = formatLongDate(bookingIntent.requestedStartTime);
     try {
       const { data, error } = await sendDepositRequestEmail({
         bookedTimeString,

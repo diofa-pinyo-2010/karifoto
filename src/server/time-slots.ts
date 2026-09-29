@@ -2,7 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { TIME_SLOT_DURATION_MINUTES } from '@/lib/constants';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
+import {
+  PENDING_INTENT_HOLD_HOURS,
+  TIME_SLOT_DURATION_MINUTES,
+} from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
@@ -49,11 +53,27 @@ export async function deleteTimeSlot(
 ): Promise<{ error: string } | void> {
   await verifySession();
 
+  // Only a live hold blocks deletion — same predicate `getOrCreateTimeSlot`
+  // uses to decide a slot is free. Converted and cancelled intents keep their
+  // own `requestedStartTime`, and their FK is `SetNull`, so the row can go.
+  const holdCutoff = new Date(
+    Date.now() - PENDING_INTENT_HOLD_HOURS * 60 * 60 * 1000,
+  );
+
   const slot = await prisma.timeSlot.findUnique({
     where: { id },
     select: {
       photoShooting: { select: { id: true } },
-      _count: { select: { bookingIntents: true } },
+      _count: {
+        select: {
+          bookingIntents: {
+            where: {
+              status: BookingIntentStatus.PENDING,
+              updatedAt: { gt: holdCutoff },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -64,7 +84,7 @@ export async function deleteTimeSlot(
   if (slot != null && slot._count.bookingIntents > 0) {
     return {
       error:
-        'Ehhez az idősávhoz BookingIntent (foglalási szándék) tartozik, ezért nem törölhető.',
+        'Erre az idősávra épp folyamatban van egy foglalás, ezért nem törölhető.',
     };
   }
 

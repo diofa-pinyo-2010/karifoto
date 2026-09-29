@@ -64,7 +64,7 @@ export function BookingReview({
         <div className="mx-auto max-w-130 px-4.5 pt-5.5 pb-7 sm:px-10">
           <div className="eyebrow">A foglalásod</div>
           <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
-            {formatLongDate(bookingIntent.timeSlot.startTime)}
+            {formatLongDate(bookingIntent.requestedStartTime)}
           </div>
         </div>
       </section> */}
@@ -131,7 +131,7 @@ export function BookingReview({
             <div className="flex justify-between gap-4 border-b border-ink/10 py-3">
               <span className="text-lg font-bold text-ink">Időpont</span>
               <span className="text-right text-lg font-medium text-ink">
-                {formatSlotDateTime(bookingIntent.timeSlot.startTime)}
+                {formatSlotDateTime(bookingIntent.requestedStartTime)}
               </span>
             </div>
             <PriceRow

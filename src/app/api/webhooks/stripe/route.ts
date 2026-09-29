@@ -150,6 +150,43 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
+  // The slot was deleted while this intent was pending, so there is nothing to
+  // book the payment onto. Same handling as a double-sold slot: flag it and let
+  // a human sort it out.
+  if (bookingIntent.timeSlotId == null) {
+    try {
+      await prisma.bookingIntent.update({
+        where: { id: bookingIntentId },
+        data: { status: BookingIntentStatus.PAYMENT_ORPHANED, paymentIntent },
+      });
+    } catch (err) {
+      console.error(
+        'Could not update Booking Intent with orphaned payment.',
+        err,
+      );
+    }
+    console.error('[stripe-webhook] time slot is gone', {
+      bookingIntentId,
+      paymentIntent,
+      email: userEmail,
+    });
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        '**A fizetett foglaláshoz tartozó idősáv már nem létezik**\n',
+        `Booking intent ID: ${bookingIntentId}`,
+        `Kért időpont: ${bookingIntent.requestedStartTime.toISOString()}`,
+        `Fizetés (Stripe): ${
+          paymentIntent !== ''
+            ? `[${bookingIntent.name}](${stripePaymentIntentUrl(paymentIntent)})`
+            : bookingIntent.name
+        }`,
+      ].join('\n'),
+    });
+
+    return; // 200 - no retry, no invoice, no email
+  }
+
   const timeSlotId = bookingIntent.timeSlotId;
   const clientNote = bookingIntent.clientNote;
   const selectedPackage = bookingIntent.package;
