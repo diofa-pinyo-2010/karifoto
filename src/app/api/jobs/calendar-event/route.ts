@@ -23,7 +23,11 @@ export const POST = verifySignatureAppRouter(
       where: { id: parsed.data.shootingId },
       include: {
         timeSlot: { select: { startTime: true, endTime: true } },
-        client: { select: { owner: { select: { email: true, name: true } } } },
+        client: {
+          select: {
+            owner: { select: { email: true, name: true, phoneNumber: true } },
+          },
+        },
       },
     });
 
@@ -43,10 +47,14 @@ export const POST = verifySignatureAppRouter(
 
     try {
       const event = await createCalendarEvent({
-        title: `📸 ${photoShooting.client.owner.name} - ${photoShooting.package}`,
+        title: `📸 ${photoShooting.package} – ${photoShooting.client.owner.name}`,
         description: `
         Fotózás oldala az adminon:
         ${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(photoShooting.id)}
+
+        Ügyfél:
+        ${photoShooting.client.owner.name}
+        ${photoShooting.client.owner.phoneNumber}
       `,
         startTime,
         endTime,
