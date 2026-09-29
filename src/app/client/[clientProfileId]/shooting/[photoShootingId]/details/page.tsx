@@ -161,7 +161,10 @@ export default async function ClientPortalShootingDetailsPage({
         Vissza a fotozásokhoz
       </Button>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
+        <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
+          Üdv újra itt, {photoShooting.client.owner.name}!
+        </h1>
         <p className="brand-eyebrow m-0">Részletek</p>
         <h1 className="text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
           {dateWithYearFormatter.format(photoShooting.timeSlot.startTime)}

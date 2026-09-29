@@ -74,11 +74,8 @@ export default async function ClientPortalHomePage({
       <p className="brand-eyebrow">Ügyfélportál</p>
 
       <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
-        Üdv újra itt, {clientProfile.owner.name}!
+        {clientProfile.owner.name} karifotói
       </h1>
-      <p className="mt-5 text-[15px] leading-[1.85] text-pretty text-brand-muted">
-        Itt találjátok a fotózásaitokat.
-      </p>
 
       {clientProfile.photoShootings.length === 0 ? (
         <p className="mt-7 text-[15px] leading-[1.85] text-pretty text-brand-muted">

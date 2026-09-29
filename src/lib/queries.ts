@@ -129,6 +129,7 @@ const photoShootingForClientPortalSelect = {
   select: {
     id: true,
     clientId: true,
+    client: { select: { owner: { select: { name: true } } } },
     status: true,
     package: true,
     decorSet: true,
