@@ -28,48 +28,50 @@ export default async function SuccessPage(
   const isProcessing = bookingIntent?.status === BookingIntentStatus.PENDING;
 
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="sticky top-0 z-40 flex items-center gap-3.5 border-b border-ink/12 bg-cream/94 px-4.5 py-4 backdrop-blur-[10px] sm:px-10">
-        <Link href="/" className="text-ink transition-opacity hover:opacity-75">
-          <Image
-            src="/images/karifoto-logo-terrakotta.png"
-            alt="Karifoto"
-            width={353}
-            height={146}
-            priority
-            className="h-7 w-auto lg:h-10"
-          />
-        </Link>
+    <div className="min-h-screen bg-brand-cream font-brand-sans text-brand-ink">
+      <header className="bg-[#102a31] py-4.5 text-brand-cream">
+        <div className="brand-shell flex items-center justify-between gap-5">
+          <Link href="/" aria-label="Karifoto – kezdőlap">
+            <Image
+              src="/images/karifoto-logo-krem.png"
+              alt="Karifoto"
+              width={353}
+              height={146}
+              priority
+              className="h-7 w-auto lg:h-9"
+            />
+          </Link>
+        </div>
       </header>
 
-      <section className="mx-auto max-w-130 px-4.5 pt-14 pb-10 text-center sm:px-10">
-        <div className="eyebrow">Visszaigazolás</div>
+      <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 text-center sm:px-10">
+        <p className="brand-eyebrow">Visszaigazolás</p>
 
         {bookingIntent == null ? (
           <>
-            <h1 className="mt-3.5 font-display text-[30px] leading-[1.1] font-medium text-pretty text-ink sm:text-[38px]">
+            <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
               Ezt a foglalást
               <br />
               nem találjuk
             </h1>
-            <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
+            <p className="mx-auto mt-5 max-w-125 text-[15px] leading-[1.85] text-pretty text-brand-muted">
               Ha kifizetted az előleget, a visszaigazolást e-mailben megkapod.
             </p>
           </>
         ) : (
           <>
-            <h1 className="mt-3.5 font-display text-[30px] leading-[1.1] font-medium text-pretty text-ink sm:text-[38px]">
+            <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
               {isProcessing
                 ? 'A foglalás feldolgozás alatt van…'
                 : 'Sikeres foglalás!'}
             </h1>
-            <p className="mx-auto mt-3.5 max-w-100 text-base leading-[1.6] font-light text-pretty text-cream-muted">
+            <p className="mx-auto mt-5 max-w-125 text-[15px] leading-[1.85] text-pretty text-brand-muted">
               {isProcessing
                 ? 'A fizetés megtörtént, a visszaigazolás pár másodpercen belül megérkezik. Frissítsd az oldalt.'
                 : `Kedves ${bookingIntent.name}! Köszönjük a foglalást! A visszaigazolást elküldtük e-mailben is.`}
             </p>
 
-            <dl className="mx-auto mt-7 max-w-100 rounded-2xl border border-ink/15 bg-[#FFFDF8] px-5 py-1.5 text-left">
+            <dl className="mx-auto mt-7 max-w-125 rounded-2xl border border-[#d9d3c7] bg-brand-paper px-5 py-1.5 text-left">
               <SuccessRow
                 label="Időpont"
                 value={formatLongDate(
@@ -93,7 +95,7 @@ export default async function SuccessPage(
             </dl>
 
             {isConverted && (
-              <p className="mx-auto mt-4 max-w-100 text-[13px] leading-[1.6] text-pretty text-cream-dim">
+              <p className="mx-auto mt-4 max-w-125 text-[13px] leading-[1.6] text-pretty text-brand-muted">
                 A végleges összeget a fotózás napján, a stúdióban fizetitek — a
                 foglaló ebből levonásra kerül.
               </p>
@@ -103,7 +105,7 @@ export default async function SuccessPage(
 
         <Link
           href="/"
-          className="mt-7 inline-block rounded-full bg-terracotta px-6 py-3.5 text-base font-medium text-[#FFF4E6] transition-colors hover:bg-terracotta-hover"
+          className="mt-7 inline-flex min-h-13 items-center justify-center rounded-lg bg-brand-champagne px-6 py-3.5 text-sm font-semibold text-[#152b2e] transition-opacity hover:opacity-90"
         >
           Vissza a főoldalra
         </Link>
@@ -114,9 +116,9 @@ export default async function SuccessPage(
 
 function SuccessRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-6 border-b border-ink/10 py-3 last:border-b-0">
-      <dt className="text-[14.5px] text-cream-muted">{label}</dt>
-      <dd className="text-right text-[14.5px] break-all text-ink">{value}</dd>
+    <div className="flex justify-between gap-6 border-b border-[#d9d3c7] py-3 last:border-b-0">
+      <dt className="text-[14.5px] text-brand-muted">{label}</dt>
+      <dd className="text-right text-[14.5px] break-all">{value}</dd>
     </div>
   );
 }

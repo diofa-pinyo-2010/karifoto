@@ -49,6 +49,31 @@ type ClientEmailProps<T extends EmailType> = Omit<
   'baseUrl'
 >;
 
+const REDACTED = '[redacted]';
+
+// Email props are persisted verbatim into SentEmail.variables, which is
+// readable from /admin. Some of them carry credentials — the client portal
+// login link embeds a reusable, year-long token — so strip those before the
+// row is written. Done generically rather than per-prop so a future email
+// carrying a token is covered without anyone having to remember.
+function redactTokens(props: Record<string, unknown>) {
+  return Object.fromEntries(
+    Object.entries(props).map(([key, value]) => {
+      if (typeof value !== 'string' || !URL.canParse(value)) {
+        return [key, value];
+      }
+
+      const url = new URL(value);
+      if (!url.searchParams.has('token')) {
+        return [key, value];
+      }
+
+      url.searchParams.set('token', REDACTED);
+      return [key, url.toString()];
+    }),
+  );
+}
+
 type SendClientEmailParams<T extends EmailType> = {
   type: T;
   to: string;
@@ -90,8 +115,9 @@ export async function sendClientEmail<T extends EmailType>({
           type,
           to,
           subject,
-          // Every email prop is a string, so this is plain JSON.
-          variables: props as Prisma.InputJsonObject,
+          // Every email prop is a string, so this is plain JSON. The sent
+          // email keeps the real links — only this audit row is scrubbed.
+          variables: redactTokens(props) as Prisma.InputJsonObject,
           clientId,
           photoShootingId,
         },

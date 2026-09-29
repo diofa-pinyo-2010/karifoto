@@ -23,8 +23,9 @@ model User {
   staffProfile  StaffProfile?
   clientProfile ClientProfile?
 
-  magicLinkTokens MagicLinkToken[]
-  sessions        Session[]
+  magicLinkTokens    MagicLinkToken[]
+  sessions           Session[]
+  clientPortalTokens ClientPortalToken[]
 }
 
 model StaffProfile {
@@ -149,6 +150,13 @@ model PhotoShooting {
   editor   StaffProfile? @relation("Editor", fields: [editorId], references: [id])
   editorId String?       @db.Uuid
 
+  selectionRequestedAt    DateTime? @db.Timestamptz()
+  selectionCompletedAt    DateTime? @db.Timestamptz()
+  declaredEditedImages    Int?
+  declaredRetouchedImages Int?
+  totalEditedImages       Int       @default(0)
+  totalRetouchedImages    Int       @default(0)
+
   rawImagesUrl   String?
   finalImagesUrl String?
   clientNote     String?
@@ -158,10 +166,10 @@ model PhotoShooting {
   calendarEvent BookingCalendarEvent?
   pricing       PhotoShootingPricing?
   adjustments   PriceAdjustment[]
+  sentEmails    SentEmail[]
 
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @default(now()) @updatedAt
-  sentEmails SentEmail[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([clientId])
   @@index([photographerId])
@@ -185,9 +193,6 @@ model PhotoShootingPricing {
 
   extraEditedImageRateInCents    Int
   extraRetouchedImageRateInCents Int
-
-  totalEditedImages    Int @default(0)
-  totalRetouchedImages Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -312,6 +317,26 @@ model MagicLinkToken {
 }
 
 model Session {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner     User        @relation(fields: [userId], references: [id])
+  userId    String      @db.Uuid
+  tokenHash String      @unique
+  expiresAt DateTime    @db.Timestamptz
+  // Admin and client sessions are otherwise identical rows. The DAL filters on
+  // this so a token minted for one side can never resolve on the other.
+  kind      SessionKind @default(ADMIN)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// The client portal's bootstrap credential. Deliberately NOT shaped like
+// `MagicLinkToken`: no `usedAt`, long expiry, and the verify route never claims
+// it — clients must be able to click the link in their confirmation email again
+// from a new device or after clearing cookies. See the Phase 2 section of
+// src/docs/admin-auth-guide.md.
+model ClientPortalToken {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   owner     User     @relation(fields: [userId], references: [id])
   userId    String   @db.Uuid
@@ -321,6 +346,11 @@ model Session {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+enum SessionKind {
+  ADMIN
+  CLIENT
 }
 
 enum StaffProfileRole {

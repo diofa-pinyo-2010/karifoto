@@ -1,11 +1,12 @@
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { cache } from 'react';
 
+import { SessionKind } from '@/generated/prisma/client';
 import { ADMIN_NAV_ITEMS } from '@/lib/admin-nav';
 import { APP_URLS } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
-import { SESSION_COOKIE_NAME } from '@/lib/session';
+import { CLIENT_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/lib/session';
 import { hashToken } from '@/lib/token';
 
 // Returns session data or null — use on public pages.
@@ -18,7 +19,7 @@ export const getSession = cache(async () => {
   }
 
   const session = await prisma.session.findUnique({
-    where: { tokenHash: hashToken(rawToken) },
+    where: { tokenHash: hashToken(rawToken), kind: SessionKind.ADMIN },
     include: { owner: { include: { staffProfile: true } } },
   });
 
@@ -57,6 +58,80 @@ export async function requireNavAccess(href: string) {
 
   if (!navItem.allowedRoles.includes(session.staffProfile.role)) {
     redirect(APP_URLS.upcomingShootings);
+  }
+
+  return session;
+}
+
+// The client-portal mirror of getSession(). Discriminated by
+// `owner.clientProfile` the same way the admin one is by `owner.staffProfile`,
+// so a user who happens to hold both profiles gets exactly what each cookie
+// grants and nothing more.
+export const getClientSession = cache(async () => {
+  const cookieStore = await cookies();
+  const rawToken = cookieStore.get(CLIENT_SESSION_COOKIE_NAME)?.value;
+
+  if (!rawToken) {
+    return null;
+  }
+
+  const session = await prisma.session.findUnique({
+    where: { tokenHash: hashToken(rawToken), kind: SessionKind.CLIENT },
+    include: { owner: { include: { clientProfile: true } } },
+  });
+
+  if (
+    !session ||
+    session.expiresAt <= new Date() ||
+    !session.owner.clientProfile
+  ) {
+    return null;
+  }
+
+  return { user: session.owner, clientProfile: session.owner.clientProfile };
+});
+
+// Who may read a client's portal: any staff member, or that client themselves.
+// This is the row-scoping the portal needs and /admin doesn't — a valid
+// client_session proves *a* client is logged in, not that they're *this*
+// client, so without the id comparison anyone with a portal session could swap
+// the clientProfileId in the URL and read another client's payments.
+//
+// Deliberately returns null instead of redirecting, unlike verifySession():
+// there is no client login page to send anyone to, and the two callers want
+// different things from a refusal — the page tries the emailed token first,
+// the query turns it into a 404.
+export const getPortalAccess = cache(async (clientProfileId: string) => {
+  const [adminSession, clientSession] = await Promise.all([
+    getSession(),
+    getClientSession(),
+  ]);
+
+  // Staff see every client's shooting, with no role carve-out — supporting a
+  // client by phone needs this regardless of SUPERADMIN vs MEMBER.
+  if (adminSession != null) {
+    return { as: 'staff' as const };
+  }
+
+  if (clientSession?.clientProfile.id === clientProfileId) {
+    return { as: 'client' as const };
+  }
+
+  return null;
+});
+
+// The stricter gate: *this* client and nobody else, not even staff. Nothing
+// calls it yet — it's for the "kiválasztottam a képeket" submission, which the
+// Phase 2 design puts behind client_session only, since staff must not be able
+// to confirm a selection on the client's behalf. See src/docs/image-selection.md.
+//
+// Fails with notFound() rather than a redirect, for the same reason as above:
+// a 404 doesn't confirm that the other id exists.
+export async function requireClientAccess(clientProfileId: string) {
+  const session = await getClientSession();
+
+  if (!session || session.clientProfile.id !== clientProfileId) {
+    notFound();
   }
 
   return session;

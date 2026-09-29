@@ -5,12 +5,19 @@ import { twMerge } from 'tailwind-merge';
 
 import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
 
+import type { Currency } from '@/generated/prisma/enums';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export const formatMoney = (cents: number) => {
   return `${new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(cents / 100)} Ft`;
+};
+
+export const formatAmount = (cents: number, currency: Currency) => {
+  if (currency === 'HUF') return formatMoney(cents);
+  return `${(cents / 100).toLocaleString('hu-HU')} ${currency}`;
 };
 
 export const hufToCents = (huf: number) => Math.round(huf) * 100;

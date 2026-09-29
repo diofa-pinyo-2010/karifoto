@@ -1,5 +1,6 @@
 import {
   DecorSet,
+  InvoiceStatus,
   LedgerEntryCategory,
   Package,
   PaymentMethod,
@@ -154,6 +155,145 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
     CLOSED: 'Bezárt',
   };
 
+/*
+ * A munkafolyamat sorrendje, kimondva. Eddig két helyen élt implicit módon: az
+ * enum felsorolási sorrendjében (prisma/schema.prisma) és a `resolveStatus()`
+ * if-láncában (src/server/admin.ts) — egyik sem alkalmas összehasonlításra, és
+ * az enum sorrendjére támaszkodni néma hibát okozna, ha valaki átrendezi.
+ *
+ * `Record`, nem tömb: így egy új státusz addig nem fordul le, amíg nem kapott
+ * helyet a sorban.
+ *
+ * FIGYELEM: a `USER_SELECTION`-t jelenleg SEMMI nem állítja be — a
+ * `resolveStatus()` a RAW_PHOTOS_UPLOAD után egyből EDITOR_SELECTION-re lép.
+ * A rá épülő feltételek tehát ma még nem tüzelnek.
+ */
+export const PHOTO_SHOOTING_STATUS_RANK: Record<PhotoShootingStatus, number> = {
+  PHOTOGRAPHER_SELECTION: 0,
+  WAITING_FOR_THE_DATE: 1,
+  RAW_PHOTOS_UPLOAD: 2,
+  USER_SELECTION: 3,
+  EDITOR_SELECTION: 4,
+  FINAL_PHOTOS_UPLOAD: 5,
+  WAITING_FOR_PAYMENT: 6,
+  COMPLETED: 7,
+  // Bármelyik állapotból ide lehet kerülni, de visszaút nincs — ezért a végén.
+  CLOSED: 8,
+};
+
+export function isStatusBefore(
+  status: PhotoShootingStatus,
+  reference: PhotoShootingStatus,
+) {
+  return (
+    PHOTO_SHOOTING_STATUS_RANK[status] < PHOTO_SHOOTING_STATUS_RANK[reference]
+  );
+}
+
+export function isStatusAtLeast(
+  status: PhotoShootingStatus,
+  reference: PhotoShootingStatus,
+) {
+  return (
+    PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
+  );
+}
+
+/*
+ * Amit az ügyfélportál mutat. Szándékosan NEM a
+ * `PHOTO_SHOOTING_STATUS_LABEL`: az a belső munkafolyamat neve
+ * ('Szerkesztő kiválasztása', 'Nyers képek feltöltése'), ami az ügyfélnek
+ * semmit nem mond, a 'Bezárt' pedig kifejezetten riasztó. Több belső állapot
+ * szándékosan ugyanarra a címkére képződik le — az ügyfél szempontjából
+ * ugyanaz történik.
+ *
+ * Rövidek maradnak: a kártyán a dátum mellett ülnek egy sorban
+ * ('Szeptember 29., kedd · 11:00'), egy hosszabb címke összenyomná a címet.
+ */
+export const PHOTO_SHOOTING_STATUS_CLIENT_LABEL: Record<
+  PhotoShootingStatus,
+  string
+> = {
+  PHOTOGRAPHER_SELECTION: 'Visszaigazolva',
+  WAITING_FOR_THE_DATE: 'Közelgő',
+  RAW_PHOTOS_UPLOAD: 'Feldolgozás alatt',
+  USER_SELECTION: 'Válogatásra vár',
+  EDITOR_SELECTION: 'Retusálás alatt',
+  FINAL_PHOTOS_UPLOAD: 'Retusálás alatt',
+  WAITING_FOR_PAYMENT: 'Fizetésre vár',
+  COMPLETED: 'Elkészült',
+  CLOSED: 'Lezárt',
+};
+
+/*
+ * A `PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME` shadcn-tokenekre épül (admin,
+ * sötét mód), ami a krém hátterű portálon idegen lenne. Ezek a 2026-os
+ * paletta idősáv-állapotszíneit használják, amelyek AA-t teljesítenek a saját
+ * felületükön.
+ *
+ * Három állapot: az ügyfélre vár / dolgozunk rajta / nincs teendő.
+ */
+const CLIENT_BADGE_ACTION_NEEDED =
+  'bg-brand-taken-surface text-brand-taken border border-brand-taken-edge';
+const CLIENT_BADGE_IN_PROGRESS =
+  'bg-[#e7e2d6] text-[#4b5a58] border border-[#d9d3c7]';
+const CLIENT_BADGE_SETTLED =
+  'bg-brand-free-surface text-brand-free border border-brand-free-edge';
+
+export const PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME: Record<
+  PhotoShootingStatus,
+  string
+> = {
+  USER_SELECTION: CLIENT_BADGE_ACTION_NEEDED,
+  WAITING_FOR_PAYMENT: CLIENT_BADGE_ACTION_NEEDED,
+
+  PHOTOGRAPHER_SELECTION: CLIENT_BADGE_IN_PROGRESS,
+  RAW_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
+  EDITOR_SELECTION: CLIENT_BADGE_IN_PROGRESS,
+  FINAL_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
+  CLOSED: CLIENT_BADGE_IN_PROGRESS,
+
+  WAITING_FOR_THE_DATE: CLIENT_BADGE_SETTLED,
+  COMPLETED: CLIENT_BADGE_SETTLED,
+};
+
+/*
+ * Az ügyfélportál részletek-oldalán a harmonika szekciói. A `Record` miatt egy
+ * új `PhotoShootingStatus` addig nem fordul le, amíg el nem döntöttük, melyik
+ * szekció nyíljon hozzá — ugyanaz a védelem, mint a fenti címkéknél.
+ *
+ * A kérdés nem az, hogy melyik szekció „illik” a státuszhoz, hanem hogy miért
+ * jött az ügyfél: ha rajta a sor (válogatás, fizetés), azt nyitjuk ki, minden
+ * más esetben az áttekintést.
+ */
+export const CLIENT_PORTAL_SECTIONS = [
+  'details',
+  'image-selection',
+  'invoices',
+] as const;
+
+export type ClientPortalSection = (typeof CLIENT_PORTAL_SECTIONS)[number];
+
+export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
+  PhotoShootingStatus,
+  ClientPortalSection
+> = {
+  // Az ügyfélen a sor.
+  USER_SELECTION: 'image-selection',
+  WAITING_FOR_PAYMENT: 'invoices',
+
+  // Megvan minden, a számla a legérdekesebb.
+  COMPLETED: 'invoices',
+
+  // Nincs teendő, csak tájékozódik.
+  PHOTOGRAPHER_SELECTION: 'details',
+  WAITING_FOR_THE_DATE: 'details',
+  RAW_PHOTOS_UPLOAD: 'details',
+  EDITOR_SELECTION: 'details',
+  FINAL_PHOTOS_UPLOAD: 'details',
+  CLOSED: 'details',
+};
+
 // Bg opacity/text-lightness pairs mirror the `destructive` Badge variant
 // (bg-*/10 + darker text in light mode, bg-*/20 + lighter text in dark mode) —
 // lighter text on a dim background reads better in dark mode than the light-mode shade.
@@ -187,6 +327,15 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   CASH: 'Készpénz',
 };
 
+// Ügyfélnek is megmutatjuk, ezért nem belső szakszó. A gyakorlatban ma minden
+// számla SETTLED-ként jön létre (lásd a generate-deposit-invoice jobot), a
+// másik kettő a jövőbeli eseteké.
+export const INVOICE_STATUS_LABEL: Record<InvoiceStatus, string> = {
+  WAITING_FOR_PAYMENT: 'Fizetésre vár',
+  SETTLED: 'Kifizetve',
+  REFUNDED: 'Visszatérítve',
+};
+
 export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
   {
     INCOME_CLIENT_PAYMENT_DEPOSIT: 'Előleg',
@@ -205,4 +354,19 @@ export const APP_URLS = {
   photoShootingAdminPage: (shootingId: string) =>
     `/admin/photo-shootings/${shootingId}`,
   upcomingShootings: '/admin/bookings',
+
+  // Client portal. The first two are public and meant to be shared; only
+  // `clientPortalShootingDetails` is gated. Built here so the confirmation
+  // email and the pages themselves can never drift apart.
+  clientPortalHome: (clientProfileId: string) => `/client/${clientProfileId}`,
+  // The bare shooting URL only redirects to the gallery — it stays because it
+  // was the shareable link before `/public` existed.
+  clientPortalShooting: (clientProfileId: string, shootingId: string) =>
+    `/client/${clientProfileId}/shooting/${shootingId}`,
+  clientPortalShootingGallery: (clientProfileId: string, shootingId: string) =>
+    `/client/${clientProfileId}/shooting/${shootingId}/public`,
+  clientPortalShootingDetails: (clientProfileId: string, shootingId: string) =>
+    `/client/${clientProfileId}/shooting/${shootingId}/details`,
+  clientPortalVerify: '/api/client-portal/verify',
+  clientPortalInvalidLink: '/client/ervenytelen-link',
 };
