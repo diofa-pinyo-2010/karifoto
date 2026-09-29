@@ -4,13 +4,9 @@ import { google } from 'googleapis';
 import { env } from '@/env';
 import { STUDIO_ADDRESS } from '@/lib/constants';
 
-const privateKey = env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
-
-console.log('[google-calendar] email:', env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
-
 const auth = new JWT({
   email: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-  key: privateKey,
+  key: env.GOOGLE_PRIVATE_KEY,
   scopes: ['https://www.googleapis.com/auth/calendar'],
 });
 
