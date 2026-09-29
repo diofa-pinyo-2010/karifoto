@@ -237,12 +237,10 @@ export type PhotoSet = {
   key: DecorSetKey | null;
   name: string;
   tagline: string;
-  thumb: string;
   desc: string;
   colors?: SetColor[];
   tips: string;
   gallery: Photo[];
-  bg: string; // section background utility
   /** true = nem alapdíszlet, hanem felárért kérhető extra */
   extra?: boolean;
 };
@@ -262,7 +260,6 @@ export const photoSets: PhotoSet[] = [
     key: 'hofeher',
     name: 'Hófehér',
     tagline: 'Világos, havas hangulat',
-    thumb: '/images/diszlet-hofeher.jpg',
     desc: 'A már ikonikus díszletünk idén új köntösben és még varázslatosabban vár Benneteket!',
     colors: [
       { name: 'Fehér', hex: '#F4F1EC' },
@@ -271,14 +268,12 @@ export const photoSets: PhotoSet[] = [
     ],
     tips: 'A világos árnyalatokból összeállított „Hófehér” díszletünkhöz legjobban a világos ruhák illenek: fehér, bézs és pasztell színekből összeállított kombinációk kiválóan mutatnak a képeken. Szintén nagyszerű hatást érhettek el, ha összehangoltan öltöztök, akár otthonos, akár elegáns ruhákban. A világos, mintás pizsamák különösen jól mutatnak a sötétebb, fényjátékos beállításoknál (lásd lentebb). Ne féljetek kreatívnak lenni, így lesz tökéletes az élmény!',
     gallery: gallery.HOFEHER,
-    bg: 'bg-forest',
   },
   {
     id: 'diszlet-alomkastely',
     key: 'alomkastely',
     name: 'Álomkastély',
     tagline: 'Arany fények, sötétzöld fal',
-    thumb: '/images/diszlet-alomkastely.jpg',
     desc: 'Idén egy igazán elegáns és kifinomult, a megszokottól kicsit elrugaszkodott díszlettel készülünk Nektek!',
     colors: [
       { name: 'Fekete', hex: '#161616' },
@@ -287,18 +282,15 @@ export const photoSets: PhotoSet[] = [
     ],
     tips: 'A sötét antracit és arany árnyalataiból összeállított "Álomkastély" díszletünkhöz az elegáns viseletek illenek a legjobban, mert ez a díszlet is egy elegánsabb stílust képvisel. Válasszatok ünneplős ruhákat, estélyiket, zakókat és ingeket. Ajánlott színek: fekete, fehér, arany, barna és ezek különböző árnyalatai.',
     gallery: gallery.ALOMKASTELY,
-    bg: 'bg-[#122E26]',
   },
   {
     id: 'diszlet-fenyjatek',
     key: null,
     name: 'Fényjáték',
     tagline: 'Meleg izzók, meghitt közelik',
-    thumb: '/images/diszlet-fenyjatek.jpg',
     desc: 'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
     tips: 'A stílust 4 éve a "HÓFEHÉR" díszlet ihlette, és idén is a díszlet megújult változatában készítjük a Fényjátékos fotókat.',
     gallery: gallery.FENYJATEK,
-    bg: 'bg-forest',
     extra: true,
   },
 ];

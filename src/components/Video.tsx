@@ -1,57 +1,81 @@
 'use client';
 
-import ReactPlayer from 'react-player';
+import Image from 'next/image';
+import { useState } from 'react';
 
-import { VIDEO_URL } from '@/lib/constants';
+import { VIDEO_EMBED_URL } from '@/lib/constants';
+import poster from '@/photos/video-poster.jpg';
 
-function VideoPlayIcon() {
-  return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3.5 bg-[linear-gradient(180deg,rgba(14,38,32,.25),rgba(14,38,32,.6))]">
-      <div className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-terracotta shadow-[0_16px_40px_rgba(184,80,58,.45)] sm:h-[84px] sm:w-[84px]">
-        <span className="ml-1.5 block h-0 w-0 border-y-[13px] border-l-[20px] border-y-transparent border-l-[#FFF4E6]" />
-      </div>
-      <span className="text-[13px] tracking-[.16em] text-[#EADFC9] uppercase">
-        Videó · 0:34
-      </span>
-    </div>
-  );
-}
-
+/**
+ * 2026-os arculat. A YouTube-iframe csak kattintásra kerül a DOM-ba: addig a
+ * videó saját borítóképe áll a helyén, helyben kiszolgálva — így az oldal
+ * betöltése nem létesít kapcsolatot a Google-lel, és nem kell `react-player`
+ * sem. A vezérlőket lejátszás után a YouTube adja.
+ *
+ * A borító a Shorts eredeti, álló képkockája (`oardefault`), ezért a keret is
+ * 9:16 — így sem a kép, sem a lejátszó nem vágódik. A képbe égetett felirat a
+ * kép alján ül, ezért ide nem teszünk saját alsó feliratot.
+ */
 export function Video() {
+  const [playing, setPlaying] = useState(false);
+
   return (
-    <section
-      id="video"
-      className="bg-cream px-[18px] py-[52px] text-ink sm:px-7 sm:py-[88px]"
-    >
-      <div className="mx-auto max-w-[1000px] text-center">
-        <div className="text-[11px] tracking-label text-[#7B8C80] uppercase">
-          Vendégeink mesélik
-        </div>
-        <h2 className="mt-3.5 font-display text-[31px] font-medium text-balance text-ink sm:text-[50px]">
-          Milyen élmény nálunk a karácsonyi fotózás?
-        </h2>
-        <p className="mx-auto mt-3.5 max-w-[560px] text-base leading-[1.6] font-light text-pretty text-cream-muted sm:text-[18px]">
-          Feltettünk pár kérdést vendégeinknek, lesd meg, milyen válaszokat
-          kaptunk.
-        </p>
-
-        <div className="relative mx-auto mt-[26px] aspect-[9/16] max-w-[380px] overflow-hidden rounded-[18px] border border-ink/[.18] bg-panel shadow-[0_24px_60px_rgba(20,51,42,.18)] sm:mt-10 sm:rounded-3xl">
-          <ReactPlayer
-            src={VIDEO_URL}
-            // light="/images/hofeher-fo.jpg"
-            playIcon={<VideoPlayIcon />}
-            controls
-            width="100%"
-            height="100%"
-          />
+    <section id="video" className="brand-section bg-[#ede8de]">
+      <div className="brand-shell grid items-center gap-10 md:grid-cols-[1.2fr_1fr] md:gap-20">
+        <div>
+          <p className="brand-eyebrow">Vendégeink mesélik</p>
+          <h2 className="brand-heading">
+            Egy kis betekintés.
+            <br />
+            <em>Egy csomó mosoly.</em>
+          </h2>
+          <p className="brand-intro">
+            Milyen élmény nálunk a karácsonyi fotózás? Feltettünk pár kérdést
+            vendégeinknek, lesd meg, milyen válaszokat kaptunk.
+          </p>
+          <a
+            href="#foglalas"
+            // Mobilon teljes szélesség — a látványterv a hero CTA-inál is ezt
+            // csinálja (`w-full sm:w-auto`), és így nagyobb a koppintási felület.
+            className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-5 rounded-lg border border-[#85928b70] px-5 py-3 text-sm font-semibold transition-[background-color,border-color] duration-200 hover:border-current hover:bg-[#b3c9c51a] sm:w-auto"
+          >
+            Én is szeretnék ilyen élményt <span aria-hidden="true">→</span>
+          </a>
         </div>
 
-        <a
-          href="#foglalas"
-          className="btn-cta mt-6 px-[26px] py-[18px] text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:mt-[34px] sm:px-10"
-        >
-          Én is szeretnék ilyen élményt →
-        </a>
+        <div className="relative mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden rounded-xl border border-[#c5cbbc] bg-brand-night">
+          {playing ? (
+            <iframe
+              src={VIDEO_EMBED_URL}
+              title="Vendégeink mesélik – Karifoto"
+              allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              className="h-full w-full"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPlaying(true)}
+              aria-label="Vendégeink mesélik – videó lejátszása"
+              className="group absolute inset-0 block cursor-pointer"
+            >
+              <Image
+                src={poster}
+                alt=""
+                fill
+                sizes="340px"
+                placeholder="blur"
+                className="object-cover"
+              />
+              <span className="absolute inset-0 bg-brand-night/25 transition-colors group-hover:bg-brand-night/10" />
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="flex size-18 items-center justify-center rounded-full bg-brand-champagne pl-1 text-2xl text-[#152b2e] shadow-[0_8px_28px_#0b202859] transition-transform duration-200 group-hover:scale-105">
+                  ▶
+                </span>
+              </span>
+            </button>
+          )}
+        </div>
       </div>
     </section>
   );

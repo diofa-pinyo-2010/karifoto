@@ -37,7 +37,10 @@ function renderNextImage(
         position: 'relative',
         aspectRatio: `${width}/${height}`,
       }}
-      className="group cursor-pointer overflow-hidden rounded-lg border border-cream/30"
+      // A keret krém háttéren is látszik, hogy a világos képek ne folyjanak
+      // össze a háttérrel. A korábbi `border-cream/30` a sötétzöld arculathoz
+      // készült, krémen 1,0 kontraszttal gyakorlatilag láthatatlan volt.
+      className="group cursor-pointer overflow-hidden rounded-lg border border-[#acb9b0]"
     >
       <Image
         fill
@@ -52,7 +55,18 @@ function renderNextImage(
   );
 }
 
-export function PhotoGallery({ photos }: { photos: Photo[] }) {
+export function PhotoGallery({
+  photos,
+  /**
+   * Sormagasság-cél desktopon. Az alapérték teljes szélességű konténerre van
+   * hangolva; szűkebb oszlopban (pl. a díszletszekciók kétoszlopos rácsában)
+   * kisebb érték kell, különben egy sorba alig fér kép.
+   */
+  targetRowHeight = 370,
+}: {
+  photos: Photo[];
+  targetRowHeight?: number;
+}) {
   const isMobile = useIsMobile();
   const [index, setIndex] = useState<number | null>(null);
   const open = index != null;
@@ -64,14 +78,24 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
         render={{ image: renderNextImage }}
         spacing={12}
         // 5000 is just "a number bigger than any image could ever be tall," used as a trick.
-        targetRowHeight={isMobile ? 5000 : 370}
-        // sizes={{
-        //   size: '1168px',
-        //   sizes: [
-        //     { viewport: '(max-width: 640px)', size: '100vw' },
-        //     { viewport: '(max-width: 1024px)', size: '50vw' },
-        //   ],
-        // }}
+        targetRowHeight={isMobile ? 5000 : targetRowHeight}
+        /*
+         * A galéria a díszletszekciók kétoszlopos rácsában ül, nem teljes
+         * szélességben — enélkül a react-photo-album `100vw`-t ad az
+         * <Image>-nek, és a Next a szükségesnél jóval nagyobb változatot
+         * szolgálja ki (a dev konzol ezt külön szóvá is teszi).
+         *
+         * Mért oszlopszélességek: `md` alatt egy oszlop (~88vw), `md`–`xl`
+         * között ~41–44vw, `xl` fölött fixen 592px, mert a `.brand-shell`
+         * 1240px-nél megáll: (1240 − 56 rácsköz) / 2.
+         */
+        sizes={{
+          size: '592px',
+          sizes: [
+            { viewport: '(max-width: 767px)', size: '90vw' },
+            { viewport: '(max-width: 1279px)', size: '45vw' },
+          ],
+        }}
         onClick={({ index: idx }) => setIndex(idx)}
       />
       <Dialog open={open} onOpenChange={(o) => !o && setIndex(null)}>

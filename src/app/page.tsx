@@ -5,6 +5,8 @@ import { FloatingAdminButton } from '@/components/FloatingAdminButton';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { Location } from '@/components/Location';
+import { MobileBookingBar } from '@/components/MobileBookingBar';
 import { Pricing } from '@/components/Pricing';
 import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
@@ -25,16 +27,31 @@ export default async function Home() {
   return (
     <BookingSelectionProvider>
       <Header />
-      <main className="bg-forest font-sans text-cream">
+      {/*
+        Nincs saját háttér vagy betűtípus: minden szekció maga állítja be. A
+        korábbi `bg-forest font-sans text-cream` a régi arculatból maradt itt,
+        és a krém szekciók mögé festett sötétzöldet.
+
+        Az `id` a fejléc „Ugrás a tartalomra" linkjének és a lábléc „Vissza az
+        elejére" hivatkozásának a célpontja.
+      */}
+      <main id="tartalom">
+        {/*
+          A Sets közvetlenül a Hero után jön, ahogy a látványtervben: a hero
+          alját lezáró krém hullám ennek a szekciónak a háttérszínébe olvad
+          (mindkettő #f5f1e9), így nincs látható él a kettő között.
+        */}
         <Hero />
+        <Sets />
         <Reviews />
         <Pricing />
-        <Sets />
         <Video />
         <Booking groupedTimeSlots={groups} />
         <Faq />
+        <Location />
       </main>
       <Footer />
+      <MobileBookingBar />
       {session && <FloatingAdminButton />}
     </BookingSelectionProvider>
   );

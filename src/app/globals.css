@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--ui-font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -53,7 +53,12 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* ───────────────────────────────────────────── Karifoto colors ───────────────────────────────────────────── */
+  /* ─────────────────────────────── Karifoto colors — RÉGI (sötétzöld) ─────────────────────────────── */
+  /*
+   * A 2026-os arculatváltásig élő paletta. A publikus oldal átstílusozása után
+   * (lásd a `brand-*` tokeneket lentebb) ez a blokk törlendő, a maradék
+   * használatokkal együtt.
+   */
 
   --color-forest: #0e2620;
   --color-panel: #143329;
@@ -70,11 +75,58 @@
   --color-cream-muted: #41564a;
   --color-cream-dim: #6e7e71;
 
+  /* ─────────────────────────────── Karifoto colors — ÚJ (2026 arculat) ─────────────────────────────── */
+  /*
+   * A `karifoto-landing-skeleton` látványterv palettája. `brand-` előtaggal,
+   * három ok miatt:
+   *   1. `ink` és `cream` a régi palettában más értékkel már foglalt — amíg a
+   *      két arculat együtt él, ütköznének;
+   *   2. `muted` a shadcn szemantikus tokenje (`bg-muted`, `text-muted-
+   *      foreground`) — előtag nélkül némán átszínezné az admint;
+   *   3. így az átstílusozáskor már a végleges nevek íródnak, nem kell a
+   *      régi paletta törlésekor még egyszer átnevezni.
+   */
+
+  --color-brand-ink: #102c32;
+  --color-brand-night: #0b2028;
+  --color-brand-cream: #f5f1e9;
+  --color-brand-paper: #fffcf6;
+  --color-brand-champagne: #cfaa79;
+  --color-brand-muted: #5e6d6c;
+  --color-brand-ice: #bcd8d8;
+
+  /*
+   * Idősáv-állapotok. Szándékosan NEM a shadcn szemantikus tokenjei
+   * (`--success`, `--destructive`): azok a `:root`-on ülnek, tehát az adminnal
+   * közösek — egy későbbi `shadcn apply` némán átszínezné a foglalási panelt.
+   * Ráadásul semleges felülethez vannak hangolva, a telített smaragdzöld a
+   * krém-zsálya palettán idegen lenne. Ezek tompább, meleg árnyalatok.
+   *
+   * Mindkét szövegszín AA-t teljesít a saját felületén (6,1:1 és 5,1:1) — a
+   * címke 10-11 px, tehát a 4,5:1 a mérce.
+   */
+  --color-brand-free: #2f5d43;
+  --color-brand-free-surface: #dcebdd;
+  --color-brand-free-surface-hover: #c8e0cc;
+  --color-brand-free-edge: #9dbfa6;
+  --color-brand-free-edge-hover: #5f9271;
+  --color-brand-taken: #8c5346;
+  --color-brand-taken-surface: #f5e9e5;
+  --color-brand-taken-edge: #e2cfc9;
+
   /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
 
-  --font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
-  --font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
-  --font-script: var(--font-parisienne), 'Parisienne', cursive;
+  --font-display: var(--ui-font-display);
+  --font-sans: var(--ui-font-sans);
+  --font-script: var(--ui-font-script);
+
+  /*
+   * A 2026-os arculat kenyérbetűje, külön tokenen. Az átstílusozás alatt a
+   * `font-brand-sans` utilityvel lehet komponensenként átállni; amikor minden
+   * publikus szekció átállt, a `--ui-font-sans` értéke cserélhető Manrope-ra és
+   * ez a token megszűnhet.
+   */
+  --font-brand-sans: var(--ui-font-brand-sans);
 
   /* ───────────────────────────────────────────── Karifoto shadows ───────────────────────────────────────────── */
   --shadow-cta: 0 16px 40px rgba(184, 80, 58, 0.4);
@@ -87,20 +139,24 @@
 
 :root {
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.514 0.222 16.935);
-  --primary-foreground: oklch(0.969 0.015 12.422);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.491 0.27 292.581);
+  --primary-foreground: oklch(0.969 0.016 293.756);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.577 0.245 27.325);
+  /*
+   * Projektspecifikus szemantikus tokenek: a shadcn preset nem ismeri őket,
+   * ezért egy `apply --only theme` után kézzel kell visszatenni ide.
+   */
   --destructive-bg: oklch(0.96 0.03 27.325);
   --success: oklch(0.627 0.194 149.214);
   --success-bg: oklch(0.96 0.03 149.214);
@@ -108,39 +164,61 @@
   --warning-bg: oklch(0.96 0.04 58.318);
   --info: oklch(0.546 0.245 262.881);
   --info-bg: oklch(0.96 0.03 262.881);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.845 0.143 164.978);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.596 0.145 163.225);
-  --chart-4: oklch(0.508 0.118 165.612);
-  --chart-5: oklch(0.432 0.095 166.913);
-  --radius: 0.625rem;
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --chart-1: oklch(0.785 0.115 274.713);
+  --chart-2: oklch(0.585 0.233 277.117);
+  --chart-3: oklch(0.511 0.262 276.966);
+  --chart-4: oklch(0.457 0.24 277.023);
+  --chart-5: oklch(0.398 0.195 277.366);
+  --radius: 0.45rem;
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.586 0.253 17.585);
-  --sidebar-primary-foreground: oklch(0.969 0.015 12.422);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.541 0.281 293.009);
+  --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.705 0.015 286.067);
+}
+
+/*
+ * A fontkészletek közbeiktatott változóréteget kapnak: a fenti `@theme inline`
+ * utilityk (`font-sans`, `font-display`, `font-script`, `font-heading`) ezekre a
+ * `--ui-font-*` változókra mutatnak, így egyetlen scope-ból átírhatók.
+ * Alapértelmezés a márkatipográfia — a publikus oldal így JS nélkül is helyes —,
+ * az admin a lenti `html.admin` blokkban vált rendszerfontokra.
+ *
+ * FONTOS: ez a blokk a shadcn színblokk UTÁN maradjon. A
+ * `shadcn apply --only theme` a fájl ELSŐ `:root` blokkjába írja a preset
+ * színeit, ezért elsőnek a színblokknak kell állnia. Ha ez a blokk kerül előre,
+ * a preset ide íródik, a színblokk pedig változatlanul marad alatta — és a
+ * kaszkádban a későbbi nyer, vagyis a téma némán hatástalan lesz.
+ */
+:root {
+  --ui-font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
+  /* A @fontsource-variable/cormorant-garamond deklarálja, álló és dőlt vágattal. */
+  --ui-font-display: 'Cormorant Garamond Variable', Georgia, serif;
+  --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
+  /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
+  --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.455 0.188 13.697);
-  --primary-foreground: oklch(0.969 0.015 12.422);
+  --primary: oklch(0.432 0.232 292.759);
+  --primary-foreground: oklch(0.969 0.016 293.756);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-bg: oklch(0.28 0.06 22.216);
@@ -152,20 +230,20 @@
   --info-bg: oklch(0.28 0.06 254.624);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.845 0.143 164.978);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.596 0.145 163.225);
-  --chart-4: oklch(0.508 0.118 165.612);
-  --chart-5: oklch(0.432 0.095 166.913);
+  --ring: oklch(0.552 0.016 285.938);
+  --chart-1: oklch(0.785 0.115 274.713);
+  --chart-2: oklch(0.585 0.233 277.117);
+  --chart-3: oklch(0.511 0.262 276.966);
+  --chart-4: oklch(0.457 0.24 277.023);
+  --chart-5: oklch(0.398 0.195 277.366);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.645 0.246 16.439);
-  --sidebar-primary-foreground: oklch(0.969 0.015 12.422);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-primary: oklch(0.606 0.25 292.717);
+  --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
 @layer base {
@@ -185,17 +263,19 @@
 }
 
 /*
- * Az admin rendszerfontokat használ, a márkafontok csak a publikus oldalé.
- * Az `admin` osztályt a gyökér layout inline scriptje és a ThemeScope teszi a
+ * Az admin rendszerfontokat használ, a márkafontok a publikus oldalé. Az
+ * `admin` osztályt a gyökér layout inline scriptje és a ThemeScope teszi a
  * <html>-re (így a portálos dialógusok/tooltipek is megkapják). Szándékosan
  * nincs @layer-ben: a next/font változó-osztálya is layer nélküli, és a
- * `html.admin` specificitása ezt felülírja. A `--font-sans`-t is felül kell
- * írni, mert a `:root`-on már feloldott Jost értéket öröklik a leszármazottak
- * (pl. `font-heading`).
+ * `html.admin` specificitása ezt felülírja.
+ *
+ * Itt már csak a saját `--ui-font-*` réteget írjuk át: a next/font
+ * `--font-jost` változóját nem kell többé elfedni, és a `--font-sans`-t sem.
  */
 html.admin {
-  --font-jost: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: var(--font-jost);
+  --ui-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ui-font-display: var(--ui-font-sans);
+  --ui-font-script: var(--ui-font-sans);
 }
 
 @layer components {
@@ -210,5 +290,48 @@ html.admin {
 
   .btn-cta {
     @apply inline-block rounded-full bg-terracotta text-center font-medium text-[#FFF4E6] transition-colors hover:bg-terracotta-hover;
+  }
+
+  /*
+   * ─── 2026 arculat: ismétlődő szekció-primitívek ───────────────────────────
+   *
+   * Csak az a néhány minta került ide, ami három átstílusozott szekcióban
+   * (Faq, Booking, Reviews) szó szerint ugyanaz volt. A többi maradjon utility
+   * a komponensben: nem a látványterv CSS-ét másoljuk vissza, csak a bizonyított
+   * ismétlődést vonjuk össze.
+   *
+   * A `font-brand-sans` a `.brand-section`-ben átmeneti — amikor a
+   * `--ui-font-sans` Manrope-ra vált, innen elhagyható.
+   */
+  .brand-section {
+    @apply py-16 font-brand-sans text-brand-ink md:py-24 lg:py-28;
+  }
+
+  .brand-shell {
+    @apply mx-auto w-full max-w-[1240px] px-6 sm:px-10 lg:px-12;
+  }
+
+  .brand-eyebrow {
+    @apply mb-4 text-[10px] font-semibold tracking-[.23em] uppercase sm:text-[11px];
+    color: #657c79;
+  }
+
+  .brand-heading {
+    @apply font-display text-[clamp(2.35rem,5vw,3.8rem)] leading-[1.06] font-medium tracking-[-.025em] text-balance;
+  }
+
+  /* Valódi kurzív vágat, lásd a Cormorant importot a gyökér layoutban. */
+  .brand-heading em {
+    color: #587675;
+    font-style: italic;
+  }
+
+  .brand-intro {
+    @apply mt-5 max-w-xl text-sm leading-[1.85] text-brand-muted sm:text-base;
+  }
+
+  .brand-stars {
+    @apply tracking-[.1em] whitespace-nowrap;
+    color: #ae793b;
   }
 }

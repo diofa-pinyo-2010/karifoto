@@ -186,10 +186,10 @@ export function BookingReview({
           <span className="text-[15px] leading-[1.6] font-light text-pretty text-cream-muted">
             A következő lépésben{' '}
             <strong className="font-medium text-ink">
-              {formatMoney(DEPOSIT_AMOUNT)} foglalót
+              {formatMoney(DEPOSIT_AMOUNT)} előleget
             </strong>{' '}
             kell kifizetni — ezzel válik véglegessé a foglalás. A végleges
-            összeget a fotózás napján, a stúdióban fizetitek — a foglaló ebből
+            összeget a fotózás napján, a stúdióban fizetitek — az előleg ebből
             levonásra kerül.
           </span>
         </div>
@@ -221,7 +221,7 @@ export function BookingReview({
         <div className="mx-auto flex max-w-180 items-center gap-4">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] tracking-[.16em] text-sage-dim uppercase">
-              Foglaló
+              Előleg
             </span>
             <span className="text-[26px] leading-none text-cream">
               {formatMoney(DEPOSIT_AMOUNT)}

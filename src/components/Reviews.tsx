@@ -1,74 +1,135 @@
-import Link from 'next/link';
+'use client';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
+import { useRef } from 'react';
+
 import { RATING, reviews } from '@/lib/data';
 
-const arrowClassName =
-  'static size-11 border-cream/9 bg-panel text-cream-strong hover:border-cream hover:bg-panel-active disabled:opacity-30';
-
+/**
+ * 2026-os arculat. Nem carousel könyvtár, hanem natív scroll-snap sáv: a
+ * húzás-görgetés érintőn és trackpaden így is megvan, a görgetősáv pedig
+ * magától jelzi, hogy van még tartalom. A nyilak csak egy képernyőnyit
+ * görgetnek — a `snap-mandatory` utána a legközelebbi kártyára igazít, így nem
+ * kell elemenkénti indexelés.
+ *
+ * Egérrel húzni nem lehet (ezt tudná az embla), ez tudatos csere: cserébe nincs
+ * carousel-függőség a publikus oldalon.
+ */
 export function Reviews() {
+  const listRef = useRef<HTMLUListElement>(null);
+
+  const scroll = (direction: 1 | -1) => {
+    const list = listRef.current;
+    if (!list) return;
+    list.scrollBy({
+      left: direction * list.clientWidth,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+    });
+  };
+
   return (
     <section
       id="velemenyek"
-      className="mx-auto max-w-300 px-4.5 py-14 sm:px-7 sm:py-22"
+      aria-labelledby="reviews-title"
+      className="brand-section bg-[#eae8df]"
     >
-      <Carousel opts={{ align: 'start', loop: false }} aria-label="Vélemények">
-        <div className="mb-7 text-center sm:mb-11">
-          <div className="eyebrow">Google értékelések</div>
-          <h2 className="mt-3.5 mb-1.5 font-display text-[31px] font-medium text-cream-strong sm:text-[50px]">
-            {RATING.score} / 5 · {RATING.count} család
-          </h2>
-          <Link
+      <div className="brand-shell">
+        <div className="mb-9 flex flex-col gap-6 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-12">
+          <div>
+            <p className="brand-eyebrow">Akik már velünk ünnepeltek</p>
+            <h2 id="reviews-title" className="brand-heading">
+              A legszebb visszajelzés?
+              <br />
+              <em>Amikor újra találkozunk.</em>
+            </h2>
+          </div>
+
+          <a
             href="https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA"
-            className="text-sm text-[#93A99D] underline-offset-4 hover:text-[#93A99D]/90 hover:underline"
             target="_blank"
             rel="noreferrer noopener"
+            className="flex w-fit flex-col gap-2 text-xs"
           >
-            <span className="text-gold">★★★★★</span> &nbsp;valódi, ellenőrzött
-            Google vélemények
-          </Link>
+            <span className="flex items-center gap-3">
+              <strong className="font-display text-5xl">{RATING.score}</strong>
+              <span className="brand-stars">★★★★★</span>
+            </span>
+            <span className="border-b border-brand-ink/25 pb-2">
+              {RATING.count} Google-értékelés <span aria-hidden="true">↗</span>
+            </span>
+          </a>
         </div>
 
-        <CarouselContent className="-ml-3.5">
+        <ul
+          ref={listRef}
+          className="flex snap-x snap-mandatory [scrollbar-width:thin] [scrollbar-color:#b9c5ba_transparent] gap-4 overflow-x-auto pb-3"
+        >
           {reviews.map((r) => (
-            <CarouselItem key={r.name} className="pl-3.5 md:basis-1/3">
-              <Link
+            <li
+              key={r.name}
+              // A `calc()`-ban kötelező a szóköz a `-` körül, arbitrary
+              // értékben pedig `_` jelöli — enélkül a szabály némán kimarad.
+              className="w-[88%] shrink-0 snap-start rounded-xl border border-[#d9ded3] bg-[#fcfaf4] p-6 sm:w-[47%] lg:w-[calc((100%_-_2rem)/3)]"
+            >
+              <a
                 href={r.href}
-                className="flex h-full flex-col rounded-[20px] border border-cream/9 bg-panel p-7 transition-colors hover:border-cream"
                 target="_blank"
                 rel="noreferrer noopener"
+                className="flex h-full flex-col"
               >
-                <div className="flex items-center gap-3.25">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta text-base font-medium text-[#FFF4E6]">
-                    {r.initial}
-                  </div>
-                  <div>
-                    <div className="text-[15px] text-[#F1E7D5]">{r.name}</div>
-                    <div className="text-xs text-sage-dim">{r.when}</div>
-                  </div>
-                </div>
-                <div className="mt-4 text-sm tracking-[.16em] text-gold">
+                <span aria-label="5 csillag" className="brand-stars">
                   ★★★★★
-                </div>
-                <p className="mt-3 line-clamp-6 min-h-[6lh] text-[15px] leading-[1.62] font-light text-[#C2D2C8]">
-                  {r.text}
+                </span>
+                <p className="mt-5 mb-7 line-clamp-6 text-sm leading-[1.85]">
+                  „{r.text}”
                 </p>
-              </Link>
-            </CarouselItem>
+                <div className="mt-auto flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#e5eae2] font-display text-xl"
+                  >
+                    {r.initial}
+                  </span>
+                  <div>
+                    <strong className="block text-[11px] font-semibold">
+                      {r.name}
+                    </strong>
+                    <span className="mt-1 block text-[10px] text-brand-muted">
+                      {r.when}
+                    </span>
+                  </div>
+                  <span aria-hidden="true" className="ml-auto">
+                    ↗
+                  </span>
+                </div>
+              </a>
+            </li>
           ))}
-        </CarouselContent>
+        </ul>
 
-        <div className="mt-7 flex justify-center gap-5">
-          <CarouselPrevious className={arrowClassName} />
-          <CarouselNext className={arrowClassName} />
+        <div className="mt-5 flex items-center justify-between gap-4 text-[10px] text-brand-muted">
+          <span>Valódi családok. Saját történetek.</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              aria-label="Előző vélemények"
+              onClick={() => scroll(-1)}
+              className="size-11 rounded-full border border-brand-ink/25 text-lg text-brand-ink transition-colors hover:bg-brand-ink/5"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              aria-label="Következő vélemények"
+              onClick={() => scroll(1)}
+              className="size-11 rounded-full border border-brand-ink/25 text-lg text-brand-ink transition-colors hover:bg-brand-ink/5"
+            >
+              →
+            </button>
+          </div>
         </div>
-      </Carousel>
+      </div>
     </section>
   );
 }

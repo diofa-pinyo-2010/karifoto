@@ -34,15 +34,11 @@ function readTheme(): Theme {
 export function ThemeToggle() {
   const [theme, setThemeState] = React.useState<Theme>(readTheme);
 
+  // Csak a felhasználó választását alkalmazzuk azonnal. A rendszertéma
+  // változására a `ThemeScope` figyel (gyökér layout), hogy a `(protected)`
+  // layouton kívüli admin oldalak is kövessék.
   React.useLayoutEffect(() => {
     applyTheme(theme);
-
-    if (theme !== 'system') return;
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => applyTheme('system');
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
   }, [theme]);
 
   function setTheme(next: Theme) {

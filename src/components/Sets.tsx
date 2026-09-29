@@ -1,99 +1,86 @@
 'use client';
 
-import Link from 'next/link';
+import { Collapsible } from '@base-ui/react/collapsible';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { photoSets } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
-/** Áttekintő (krém háttéren) + egy szekció díszletenként. */
+/**
+ * 2026-os arculat. A díszletek egyetlen szekcióba kerültek: fejléc, két
+ * díszlet-fül, majd díszletenként egy kétoszlopos blokk (szöveg + galéria).
+ * Korábban minden díszlet külön, teljes szélességű szekció volt saját
+ * háttérrel.
+ *
+ * A Fényjáték nem díszlet, hanem extra (`extra: true`, `key: null`), ezért a
+ * fülek közül kimarad, és a két díszlet után önálló, keretes kártyaként ül.
+ */
 export function Sets() {
-  return (
-    <>
-      <SetsOverview />
-      {photoSets.map((s) => (
-        <SetSection key={s.id} set={s} />
-      ))}
-    </>
-  );
-}
+  const decorSets = photoSets.filter((s) => !s.extra);
+  const extras = photoSets.filter((s) => s.extra);
 
-function SetsOverview() {
   return (
-    <section
-      id="diszletek"
-      className="bg-cream px-4.5 py-14 text-[#1A3A2E] sm:px-7 sm:py-22"
-    >
-      <div className="mx-auto max-w-300">
-        <div className="flex flex-wrap items-end justify-between gap-6.5">
-          <div className="max-w-160">
-            <div className="text-[11px] tracking-label text-[#7B8C80] uppercase">
-              Épített díszleteink
-            </div>
-            <h2 className="mt-3.5 font-display text-[31px] leading-none font-medium text-ink sm:text-[50px]">
-              Idén két díszlet
+    <section id="diszletek" className="brand-section bg-brand-cream">
+      <div className="brand-shell">
+        <div className="mb-9 flex flex-col gap-6 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-12">
+          <div>
+            <p className="brand-eyebrow">A történetetek díszlete</p>
+            <h2 className="brand-heading">
+              Két mesés világ.
               <br />
-              várja a családokat
+              <em>Ti vagytok a középpontban.</em>
             </h2>
-            <p className="mt-4.5 text-[16px] leading-[1.65] font-light text-pretty text-cream-muted sm:text-[17px]">
-              Köszönjük, hogy évek óta bizalmat szavaztok nekünk a karácsonyi
-              fotózásban. 2026-ban is különleges karácsonyi díszletekkel
-              készültünk Nektek. Az időpontok gyorsan fogynak – foglaljatok
-              időben!
-            </p>
           </div>
-          <a
-            href="#foglalas"
-            className="btn-cta px-6 py-4.5 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9.5"
-          >
-            Szabad időpontok →
-          </a>
+          <p className="brand-intro max-w-sm">
+            Havas ragyogás vagy meghitt kastélyhangulat? Ismerjétek meg a
+            díszleteket, és találjátok meg a hozzátok illőt.
+          </p>
         </div>
 
-        <div className="mt-7 grid grid-cols-1 gap-3.5 sm:mt-11 sm:grid-cols-3 sm:gap-4.5">
-          {photoSets.map((s) => (
-            <Link
+        <nav
+          aria-label="Díszletek"
+          className="mb-4 grid grid-cols-1 border-y border-[#d5cdbf] sm:grid-cols-2"
+        >
+          {decorSets.map((s, i) => (
+            <a
               key={s.id}
               href={`#${s.id}`}
-              className="flex flex-col gap-3 text-inherit transition-opacity hover:opacity-85"
+              className="flex min-h-14 items-center gap-3 border-b border-[#d5cdbf] px-1 py-3 font-display text-2xl transition-colors last:border-b-0 hover:bg-[#dac5a426] sm:border-r sm:border-b-0 sm:px-4 sm:last:border-r-0"
             >
-              <div className="relative aspect-4/3 overflow-hidden rounded-[18px] border border-ink/12 bg-[#E6D6BE]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={s.thumb}
-                  alt={`${s.name} díszlet`}
-                  loading="lazy"
-                  className="absolute inset-0 block h-full w-full object-cover"
-                />
-              </div>
-              <div>
-                <div className="font-display text-[22px] text-ink">
-                  {s.name}
-                </div>
-                <div className="mt-0.5 text-[13px] text-[#5C7064]">
-                  {s.tagline}
-                </div>
-                {s.extra && (
-                  <div className="mt-2.25 inline-flex items-center gap-1.75 rounded-full border border-terracotta/30 bg-terracotta/[.07] px-3 py-1.5 text-xs text-[#9C4430]">
-                    Extra · Family csomag tartalmazza, vagy külön kérhető
-                  </div>
-                )}
-              </div>
-            </Link>
+              <span className="font-brand-sans text-[10px] text-[#6e8277]">
+                0{i + 1}
+              </span>
+              {s.name}
+              <span aria-hidden="true" className="ml-auto text-xl">
+                ↘
+              </span>
+            </a>
           ))}
-        </div>
+        </nav>
+
+        <p className="mb-10 text-xs leading-6 text-brand-muted">
+          Még egy kis varázslat a díszletekben:{' '}
+          <a
+            href="#diszlet-fenyjatek"
+            className="inline-flex min-h-11 items-center gap-2 font-semibold text-brand-ink underline underline-offset-4"
+          >
+            Fényjáték extra <span aria-hidden="true">↘</span>
+          </a>
+        </p>
+
+        {decorSets.map((s, i) => (
+          <SetSection key={s.id} set={s} number={i + 1} />
+        ))}
+        {extras.map((s) => (
+          <SetSection key={s.id} set={s} />
+        ))}
       </div>
     </section>
   );
 }
 
-function SetCta({
-  set,
-  className,
-}: {
-  set: (typeof photoSets)[number];
-  className?: string;
-}) {
+function SetCta({ set }: { set: (typeof photoSets)[number] }) {
   const { decorKey, light, selectDecorSet, toggleLight } =
     useBookingSelection();
   // A Fényjáték nem díszlet, hanem extra → külön kapcsolóként viselkedik.
@@ -109,7 +96,7 @@ function SetCta({
           selectDecorSet(set.key);
         }
       }}
-      className={`btn-cta px-6 py-4.25 text-base shadow-[0_14px_32px_rgba(184,80,58,.28)] sm:px-9 ${className ?? ''}`}
+      className="mt-5 inline-flex min-h-12 items-center justify-center gap-5 rounded-lg border border-[#85928b70] px-5 py-3 text-sm font-semibold transition-[background-color,border-color] duration-200 hover:border-current hover:bg-[#b3c9c51a]"
     >
       {selected
         ? 'Kiválasztva ✓'
@@ -120,77 +107,117 @@ function SetCta({
   );
 }
 
-function SetSection({ set }: { set: (typeof photoSets)[number] }) {
+function SetSection({
+  set,
+  number,
+}: {
+  set: (typeof photoSets)[number];
+  number?: number;
+}) {
+  // A látványterv `lg`-től felcseréli a második díszlet oszlopait (galéria
+  // balra), hogy a két blokk ne ugyanúgy nézzen ki egymás alatt.
+  const flipped = number === 2;
+
   return (
     <section
       id={set.id}
-      className={`border-t border-cream/8 px-4.5 py-13 sm:px-7 sm:py-22 ${set.bg}`}
+      className={cn(
+        'grid gap-6 md:grid-cols-2 md:items-center md:gap-x-14',
+        set.extra
+          ? // Önálló kártya: saját kerete és belső margója van. A lenti
+            // elválasztó-szabályok (`last:border-b-0`, `last:pb-0`) nem
+            // kerülhetnek rá — a kártya mindig utolsó elem, és azok pont az ő
+            // alsó keretét és belső margóját nulláznák le.
+            'mt-10 rounded-2xl border border-[#d5c5ab] bg-[#ece5d9] p-5 sm:p-8 md:mt-14 md:p-10'
+          : 'border-b border-[#c9bfab] py-14 last:border-b-0 last:pb-0 first-of-type:pt-0 md:py-20',
+      )}
     >
-      <div className="mx-auto max-w-300">
-        <div className="max-w-195">
-          <div className="eyebrow">Díszlet</div>
-          <h2 className="mt-3 font-display text-[34px] font-medium text-cream-strong sm:text-[54px]">
-            {set.name}
-          </h2>
+      <div className={cn(flipped && 'lg:order-2')}>
+        <p className="brand-eyebrow">
+          {!set.extra && <span className="mr-3 text-xs">0{number}</span>}
+          {set.extra
+            ? 'Kiegészítő szolgáltatás · a díszletekben'
+            : 'Karácsonyi díszlet'}
+        </p>
+        <h3 className="mb-4 font-display text-5xl font-medium text-balance md:text-6xl">
+          {set.name}
+        </h3>
+        <p className="max-w-md text-sm leading-7 text-[#536964]">{set.desc}</p>
 
-          <p className="mt-5.5 text-[16px] leading-[1.62] font-light text-pretty text-[#BFCFC6] sm:text-[18px]">
-            {set.desc}
-          </p>
-
-          {set.colors != null && (
-            <div className="mt-6">
-              <div className="text-[11px] tracking-chip text-sage-dim uppercase">
-                Uralkodó színek
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2.5">
-                {set.colors.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex items-center gap-2.25 rounded-full border border-cream/16 bg-cream/4 py-2 pr-3.5 pl-2.25"
-                  >
-                    <span
-                      className="h-4 w-4 rounded-full border border-black/20"
-                      style={{ background: c.hex }}
-                    />
-                    <span className="text-sm text-[#D8E2DA]">{c.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {set.extra && (
-            <div className="mt-6.5 flex max-w-130 items-start gap-3 rounded-2xl border border-gold/30 bg-gold/8 px-4.5 py-4">
-              <span className="mt-0.5 font-display text-xl leading-none text-gold">
-                ✦
+        {set.colors != null && (
+          <div
+            aria-label="Uralkodó színek"
+            className="my-5 flex flex-wrap gap-4 text-[10px] text-[#526561]"
+          >
+            {set.colors.map((c) => (
+              <span key={c.name} className="flex items-center gap-2">
+                <i
+                  className="block size-3 rounded-full border border-black/10"
+                  style={{ background: c.hex }}
+                />
+                {c.name}
               </span>
-              <span className="text-[15px] leading-[1.55] font-light text-pretty text-[#E7D9BE]">
-                Ezt a díszletet a{' '}
-                <strong className="font-medium text-[#F1E7D5]">
-                  Family csomag tartalmazza
-                </strong>
-                , vagy külön kérhető a foglalás során.
-              </span>
-            </div>
-          )}
-          <SetCta set={set} className="mt-6.5" />
-        </div>
-
-        <div className="mt-7 sm:mt-12">
-          <PhotoGallery photos={set.gallery} />
-        </div>
-
-        <div className="mt-7 max-w-195 rounded-2xl border border-cream/12 bg-[#1B3B31] px-5 py-5 sm:mt-10 sm:px-7 sm:py-6.5">
-          <div className="text-[11px] tracking-chip text-sage uppercase">
-            Öltözködési tippek
+            ))}
           </div>
-          <p className="mt-2.5 text-base leading-[1.68] font-light text-pretty text-[#CFDCD4] sm:text-[17px]">
+        )}
+
+        {set.extra && (
+          <p className="mt-4 max-w-md text-sm leading-7 text-[#536964]">
+            A{' '}
+            <strong className="font-semibold">Family csomag tartalmazza</strong>
+            , vagy külön kérhető a foglalás során.
+          </p>
+        )}
+
+        <SetCta set={set} />
+      </div>
+
+      {/* `min-w-0`: rácselem alapból nem mehet a tartalma alá, enélkül a
+          galéria kinyomná az oszlopot. */}
+      <div className={cn('min-w-0', flipped && 'lg:order-1')}>
+        {/*
+          A két díszlet galériájában van egy-egy álló kép, ezért a
+          `RowsPhotoAlbum` az álló + fekvő párokból ki tudja hozni a 370-es
+          sormagasságot, és soronként két kép kerül egymás mellé.
+
+          A Fényjáték galériája viszont csupa fekvő (1,38–1,62): egy kép a
+          félszéles oszlopban épp ~336 magas, ami közelebb van a 370-hez, mint
+          bármely kétképes megoldás — így mind a hat kép külön sorba kerülne, és
+          a galériaoszlop háromszor olyan magas lenne, mint a szöveg melletti.
+          Alacsonyabb célmagassággal itt is két kép kerül egy sorba, ahogy a
+          látványterv fix kétoszlopos rácsában is volt.
+        */}
+        <PhotoGallery
+          photos={set.gallery}
+          // targetRowHeight={set.extra ? 175 : 370}
+          targetRowHeight={set.extra ? 175 : 240}
+        />
+      </div>
+
+      <Collapsible.Root
+        className={cn(
+          'border-t border-[#dde0d6] pt-4 md:col-span-2',
+          flipped && 'lg:order-3',
+        )}
+      >
+        <Collapsible.Trigger className="group flex min-h-11 w-full flex-wrap items-center justify-between gap-2 text-left text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
+          Mi mutat jól a képeken?
+          <span className="flex items-center gap-5 text-[10px] text-[#5f756d]">
+            Öltözködési tippek
+            <span
+              aria-hidden="true"
+              className="text-base transition-transform duration-200 ease-out group-data-panel-open:rotate-45"
+            >
+              +
+            </span>
+          </span>
+        </Collapsible.Trigger>
+        <Collapsible.Panel className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+          <p className="max-w-3xl py-4 text-sm leading-7 text-brand-muted">
             {set.tips}
           </p>
-        </div>
-
-        {!set.extra && <SetCta set={set} className="mt-7 sm:mt-9" />}
-      </div>
+        </Collapsible.Panel>
+      </Collapsible.Root>
     </section>
   );
 }

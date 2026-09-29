@@ -1,6 +1,18 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
+// A 2026-os arculat kenyérbetűje. Az `index.css` minden subsetet deklarál, de a
+// böngésző csak az `unicode-range`-nek megfelelőt tölti le — magyar szöveghez a
+// latin + latin-ext párost. Szándékosan nem `next/font/local`: a variable
+// Manrope subsetenként külön woff2-ben jön, a `localFont` pedig nem tud
+// fájlonkénti `unicode-range`-et, enélkül pedig az ő és ű kimaradna.
+import '@fontsource-variable/manrope';
+// Cormorant álló és dőlt vágata. A dőlt külön fájlban jön, és valódi kurzív
+// betűformákat hoz — nem a böngésző döntögeti meg az állót. A `<em>`-ek
+// (pl. a foglalási szekció címében) ettől lesznek helyesek.
+import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { InlineScript } from '@/components/InlineScript';
@@ -20,13 +32,12 @@ const THEME_SCRIPT = `(function(){try{var a=location.pathname.startsWith('/admin
 // Self-hosted (src/fonts) so dev/build never depends on reaching Google Fonts.
 // Files are the official google/fonts variable TTFs, weight-limited and
 // subset to latin + latin-ext, converted to woff2.
-const display = localFont({
-  src: '../fonts/CormorantGaramond-Variable.woff2',
-  weight: '400 600',
-  variable: '--font-cormorant',
-  fallback: ['serif'],
-  adjustFontFallback: 'Times New Roman',
-});
+//
+// A Cormorant kivétel: a dőlt vágata subsetenként külön woff2-ben érhető el, a
+// `localFont` viszont nem tud fájlonkénti `unicode-range`-et, így egyetlen
+// faceként nem lehetett volna álló + dőlt párost képezni. Ezért a Cormorant a
+// `@fontsource-variable/cormorant-garamond` csomagból jön (lásd a fenti
+// importokat), és nem itt van deklarálva.
 const script = localFont({
   src: '../fonts/Parisienne-Regular.woff2',
   weight: '400',
@@ -71,7 +82,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={cn(
         'h-full',
         'antialiased',
-        display.variable,
         script.variable,
         sans.variable,
         mono.variable,
