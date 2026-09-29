@@ -134,7 +134,7 @@ pending, and the slot was double-sold. Both need a human.
   database from being reaped.
 - [src/lib/idempotency.ts](src/lib/idempotency.ts) is the single home for every
   Redis key. Each helper documents its failure stance — the webhook guard
-  fails *open* so a Redis outage cannot block payments, email markers fail open so
+  fails _open_ so a Redis outage cannot block payments, email markers fail open so
   a duplicate beats a missing one, and the deposit-invoice claim **throws**,
   because re-issuing a real szamlazz.hu document is worse than a delay. Preserve
   those stances when editing.
@@ -142,7 +142,7 @@ pending, and the slot was double-sold. Both need a human.
 ## Auth (exists — two independent session kinds)
 
 [src/proxy.ts](src/proxy.ts) (Next 16's middleware equivalent) does a cookie
-*presence* check on `/admin/:path*` only. **It is not the authorization boundary** —
+_presence_ check on `/admin/:path*` only. **It is not the authorization boundary** —
 every protected page must call into the DAL.
 
 [src/lib/dal.ts](src/lib/dal.ts) is that boundary, all `cache()`-wrapped:
@@ -156,11 +156,11 @@ every protected page must call into the DAL.
   `requireClientAccess(clientProfileId)` — the client portal. `Session.kind`
   (`ADMIN` | `CLIENT`) means a token minted for one side can never resolve on the
   other, and the portal helpers additionally compare the id in the URL, because a
-  valid client session proves *a* client is logged in, not *this* one.
+  valid client session proves _a_ client is logged in, not _this_ one.
 
 Staff log in with a `MagicLinkToken` (single-use, 15 min). Clients bootstrap from a
 long-lived reusable `ClientPortalToken` in their confirmation email — deliberately
-*not* single-use, so the link still works from a new device months later.
+_not_ single-use, so the link still works from a new device months later.
 
 ## Money
 
@@ -226,7 +226,7 @@ see the comment block in [src/lib/fetch-photos.ts](src/lib/fetch-photos.ts).
 
 ## Design docs
 
-[src/docs/](src/docs/) holds long-form design notes that explain *why* the schema
+[src/docs/](src/docs/) holds long-form design notes that explain _why_ the schema
 and flows look the way they do — `admin-auth-guide.md` (incl. the Phase 2 client
 portal), `final-amount-calculation.md`, `image-selection.md`,
 `redesign-status.md`. Read the relevant one before changing auth, pricing, the
