@@ -44,7 +44,7 @@ export default async function AdminTimeSlotsPage() {
           ).length;
           return (
             <AccordionItem key={dayKey} value={dayKey}>
-              <AccordionTrigger className="text-lg text-primary">
+              <AccordionTrigger className="text-lg">
                 {dateFormatter.format(slots[0].startTime)}{' '}
                 {numberOfBookedSlots > 0 && `(${numberOfBookedSlots} fotózás)`}
               </AccordionTrigger>

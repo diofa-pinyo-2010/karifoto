@@ -183,7 +183,7 @@ export default async function PhotoShootingDetailPage({
             action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
           />
         </div>
-        <h1 className="text-3xl font-semibold text-primary lg:text-4xl dark:text-primary-foreground">
+        <h1 className="text-3xl font-semibold lg:text-4xl">
           {client.owner.name}
         </h1>
         <div className="item-center flex flex-col gap-2 lg:flex-row">
