@@ -6,15 +6,7 @@ import { STUDIO_ADDRESS } from '@/lib/constants';
 
 const privateKey = env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
 
-console.log('[google-calendar] key starts with:', privateKey.substring(0, 40));
-console.log(
-  '[google-calendar] key ends with:',
-  privateKey.substring(privateKey.length - 40),
-);
-console.log(
-  '[google-calendar] newlines count:',
-  (privateKey.match(/\n/g) ?? []).length,
-);
+console.log('[google-calendar] email:', env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
 
 const auth = new JWT({
   email: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
