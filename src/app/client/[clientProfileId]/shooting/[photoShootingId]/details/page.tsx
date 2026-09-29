@@ -38,19 +38,14 @@ import {
 import { getClientSession, getSession } from '@/lib/dal';
 import { packages } from '@/lib/data';
 import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
-import { prisma } from '@/lib/prisma';
+import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
 
-// `Package` a `@/lib/data`-ban a landing csomagkártyáját jelenti, ezért kap
-// másik nevet a Prisma enum.
-import type {
-  DecorSet,
-  Package as PackageEnum,
-} from '@/generated/prisma/enums';
 import type { ClientPortalSection } from '@/lib/constants';
+import type { PhotoShootingForClientPortal } from '@/lib/queries';
 import type { LucideIcon } from 'lucide-react';
 
 // The gated tier: payments and invoices. Reachable with a client_session (the
@@ -100,23 +95,8 @@ export default async function ClientPortalShootingDetailsPage({
     );
   }
 
-  const photoShooting = await prisma.photoShooting.findUnique({
-    where: { id: photoShootingId },
-    select: {
-      id: true,
-      clientId: true,
-      status: true,
-      package: true,
-      decorSet: true,
-      isLightPlaySelected: true,
-      numberOfGuests: true,
-      numberOfPets: true,
-      clientNote: true,
-      timeSlot: { select: { startTime: true } },
-      // Csak a becenév — a fotós telefonszáma az adminban marad.
-      photographer: { select: { nickname: true } },
-    },
-  });
+  const photoShooting =
+    await fetchPhotoShootingForClientPortal(photoShootingId);
 
   if (!photoShooting || photoShooting.clientId !== clientProfileId) {
     notFound();
@@ -291,21 +271,10 @@ function DetailRow({
   );
 }
 
-type ShootingDetails = {
-  package: PackageEnum;
-  decorSet: DecorSet | null;
-  isLightPlaySelected: boolean;
-  numberOfGuests: number;
-  numberOfPets: number;
-  clientNote: string | null;
-  timeSlot: { startTime: Date };
-  photographer: { nickname: string } | null;
-};
-
 function ClientPortalShootingDetails({
   shooting,
 }: {
-  shooting: ShootingDetails;
+  shooting: PhotoShootingForClientPortal;
 }) {
   const packageInfo = PACKAGE_BY_ENUM.get(shooting.package);
 

@@ -124,3 +124,32 @@ export async function getPhotoShooting(
     ...photoShootingDetailInclude,
   });
 }
+
+const photoShootingForClientPortalSelect = {
+  select: {
+    id: true,
+    clientId: true,
+    status: true,
+    package: true,
+    decorSet: true,
+    isLightPlaySelected: true,
+    numberOfGuests: true,
+    numberOfPets: true,
+    clientNote: true,
+    timeSlot: { select: { startTime: true } },
+    photographer: { select: { nickname: true } },
+  },
+} satisfies Prisma.PhotoShootingDefaultArgs;
+
+export type PhotoShootingForClientPortal = Prisma.PhotoShootingGetPayload<
+  typeof photoShootingForClientPortalSelect
+>;
+
+export async function fetchPhotoShootingForClientPortal(
+  photoShootingId: string,
+) {
+  return prisma.photoShooting.findUnique({
+    where: { id: photoShootingId },
+    ...photoShootingForClientPortalSelect,
+  });
+}
