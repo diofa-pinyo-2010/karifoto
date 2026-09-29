@@ -3,9 +3,17 @@ import { notFound, redirect } from 'next/navigation';
 
 import {
   ArrowLeftIcon,
+  CameraIcon,
+  ClockIcon,
   ImagesIcon,
   LayoutDashboardIcon,
+  MapPinIcon,
+  MessageSquareTextIcon,
+  PackageIcon,
   ReceiptTextIcon,
+  SparklesIcon,
+  TreePineIcon,
+  UsersIcon,
 } from 'lucide-react';
 
 import {
@@ -19,18 +27,29 @@ import { Button } from '@/components/ui/button';
 import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
+  DECOR_SET_LABEL,
   isStatusBefore,
+  PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
+  STUDIO_ADDRESS,
+  STUDIO_MAP_LINK,
 } from '@/lib/constants';
 import { getClientSession, getSession } from '@/lib/dal';
-import { dateWithYearFormatter } from '@/lib/formatters';
+import { packages } from '@/lib/data';
+import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
 
+// `Package` a `@/lib/data`-ban a landing csomagkártyáját jelenti, ezért kap
+// másik nevet a Prisma enum.
+import type {
+  DecorSet,
+  Package as PackageEnum,
+} from '@/generated/prisma/enums';
 import type { ClientPortalSection } from '@/lib/constants';
 import type { LucideIcon } from 'lucide-react';
 
@@ -87,7 +106,15 @@ export default async function ClientPortalShootingDetailsPage({
       id: true,
       clientId: true,
       status: true,
+      package: true,
+      decorSet: true,
+      isLightPlaySelected: true,
+      numberOfGuests: true,
+      numberOfPets: true,
+      clientNote: true,
       timeSlot: { select: { startTime: true } },
+      // Csak a becenév — a fotós telefonszáma az adminban marad.
+      photographer: { select: { nickname: true } },
     },
   });
 
@@ -105,7 +132,7 @@ export default async function ClientPortalShootingDetailsPage({
     {
       value: 'details',
       trigger: 'Részletek',
-      content: <ClientPortalShootingDetails />,
+      content: <ClientPortalShootingDetails shooting={photoShooting} />,
       disabled: false,
       icon: LayoutDashboardIcon,
     },
@@ -238,6 +265,123 @@ function ClientPortalAccessDenied({
   );
 }
 
-function ClientPortalShootingDetails() {
-  return <div>Részletek</div>;
+// A csomagok ügyfélnek szóló szövege (`sub`) a landing oldal adataiból jön, nem
+// írjuk le még egyszer. Az enum értéke nagybetűs, a `data.ts` id-je kisbetűs.
+const PACKAGE_BY_ENUM = new Map(
+  packages.map((item) => [item.id.toUpperCase(), item]),
+);
+
+function DetailRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 border-b border-[#e6e0d4] py-3 last:border-b-0">
+      <Icon className="mt-0.5 size-4.5 shrink-0 text-brand-muted" aria-hidden />
+      <dt className="w-26 shrink-0 text-[13px] leading-6 text-brand-muted">
+        {label}
+      </dt>
+      <dd className="min-w-0 flex-1 text-[15px] leading-6">{children}</dd>
+    </div>
+  );
+}
+
+type ShootingDetails = {
+  package: PackageEnum;
+  decorSet: DecorSet | null;
+  isLightPlaySelected: boolean;
+  numberOfGuests: number;
+  numberOfPets: number;
+  clientNote: string | null;
+  timeSlot: { startTime: Date };
+  photographer: { nickname: string } | null;
+};
+
+function ClientPortalShootingDetails({
+  shooting,
+}: {
+  shooting: ShootingDetails;
+}) {
+  const packageInfo = PACKAGE_BY_ENUM.get(shooting.package);
+
+  // A Family ára tartalmazza a fényjátékot — ezért nem számol rá felárat a
+  // `calculateRemainingAmount` sem.
+  const hasLightPlay =
+    shooting.package === 'FAMILY' || shooting.isLightPlaySelected;
+
+  // Díszletet csak a Mini csomagnál választanak; a másik kettőben mindkettő
+  // benne van, ott egyet megnevezni félrevezető lenne.
+  const chosenDecorSet = shooting.package === 'MINI' ? shooting.decorSet : null;
+
+  return (
+    <dl className="flex flex-col">
+      <DetailRow icon={ClockIcon} label="Kezdés">
+        <span className="font-medium">
+          {timeFormatter.format(shooting.timeSlot.startTime)}
+        </span>
+        <span className="text-brand-muted">
+          {' '}
+          — érdemes 5–10 perccel korábban érkezni
+        </span>
+      </DetailRow>
+
+      <DetailRow icon={MapPinIcon} label="Helyszín">
+        <a
+          href={STUDIO_MAP_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-4 transition-opacity hover:opacity-75"
+        >
+          {STUDIO_ADDRESS}
+        </a>
+      </DetailRow>
+
+      {shooting.photographer && (
+        <DetailRow icon={CameraIcon} label="Fotósotok">
+          {shooting.photographer.nickname}
+        </DetailRow>
+      )}
+
+      <DetailRow icon={PackageIcon} label="Csomag">
+        <span className="font-medium">{PACKAGE_LABEL[shooting.package]}</span>
+        {packageInfo && (
+          <span className="block text-[13px] text-brand-muted">
+            {packageInfo.sub}
+          </span>
+        )}
+      </DetailRow>
+
+      {chosenDecorSet && (
+        <DetailRow icon={TreePineIcon} label="Díszlet">
+          {DECOR_SET_LABEL[chosenDecorSet]}
+        </DetailRow>
+      )}
+
+      {hasLightPlay && (
+        <DetailRow icon={SparklesIcon} label="Fényjáték">
+          Benne van a fotózásotokban ✨
+        </DetailRow>
+      )}
+
+      {shooting.numberOfGuests > 0 && (
+        <DetailRow icon={UsersIcon} label="Létszám">
+          {shooting.numberOfGuests} fő
+          {shooting.numberOfPets > 0 && ` · ${shooting.numberOfPets} kisállat`}
+        </DetailRow>
+      )}
+
+      {shooting.clientNote && (
+        <DetailRow icon={MessageSquareTextIcon} label="Megjegyzésetek">
+          <span className="text-brand-muted italic">
+            „{shooting.clientNote}”
+          </span>
+        </DetailRow>
+      )}
+    </dl>
+  );
 }
