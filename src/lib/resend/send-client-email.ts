@@ -1,81 +1,109 @@
+import { createElement } from 'react';
+import type { ComponentProps, FunctionComponent, ReactNode } from 'react';
+
+import BookingConfirmationEmail, {
+  CLIENT_BOOKING_CONFIRMATION_SUBJECT,
+} from '@/emails/BookingConfirmation';
+import DepositRequestEmail, {
+  CLIENT_DEPOSIT_REQUEST_SUBJECT,
+} from '@/emails/DepositRequest';
+import ReminderOnTheDayEmail, {
+  CLIENT_REMINDER_ON_THE_DAY_SUBJECT,
+} from '@/emails/ReminderOnTheDay';
+import RescheduleNotificationEmail, {
+  CLIENT_RESCHEDULE_NOTIFICATION_SUBJECT,
+} from '@/emails/RescheduleNotification';
+import { BASE_URL_PROD } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
-import { resend } from '@/lib/resend/index';
-import {
-  sendTemplatedEmail,
-  type SendTemplatedEmailParams,
-} from '@/lib/resend/send-templated-email';
+import { sendReactEmail } from '@/lib/resend/send-react-email';
 
-import type { EmailType } from '@/generated/prisma/client';
+import type { EmailType, Prisma } from '@/generated/prisma/client';
 
-type SendClientEmailParams<T extends EmailType> =
-  SendTemplatedEmailParams<T> & {
-    clientId?: string;
-    photoShootingId?: string;
-  };
+// One entry per `EmailType` — adding an enum value without a template here is
+// a type error.
+const CLIENT_EMAILS = {
+  CLIENT_BOOKING_CONFIRMATION: {
+    component: BookingConfirmationEmail,
+    subject: CLIENT_BOOKING_CONFIRMATION_SUBJECT,
+  },
+  DEPOSIT_REQUEST: {
+    component: DepositRequestEmail,
+    subject: CLIENT_DEPOSIT_REQUEST_SUBJECT,
+  },
+  REMINDER_ON_THE_DAY: {
+    component: ReminderOnTheDayEmail,
+    subject: CLIENT_REMINDER_ON_THE_DAY_SUBJECT,
+  },
+  RESCHEDULE_NOTIFICATION: {
+    component: RescheduleNotificationEmail,
+    subject: CLIENT_RESCHEDULE_NOTIFICATION_SUBJECT,
+  },
+} satisfies Record<
+  EmailType,
+  { component: (props: never) => ReactNode; subject: string }
+>;
+
+// `baseUrl` is filled in here, so callers don't pass it and it isn't recorded.
+type ClientEmailProps<T extends EmailType> = Omit<
+  ComponentProps<(typeof CLIENT_EMAILS)[T]['component']>,
+  'baseUrl'
+>;
+
+type SendClientEmailParams<T extends EmailType> = {
+  type: T;
+  to: string;
+  props: ClientEmailProps<T>;
+  tags?: { name: string; value: string }[];
+  clientId?: string;
+  photoShootingId?: string;
+};
 
 // Sends a client email and records it in `SentEmail`. Recording failures are
 // logged, not thrown — the email is already out, and throwing would make the
 // QStash jobs retry and send it twice.
 export async function sendClientEmail<T extends EmailType>({
+  type,
+  to,
+  props,
+  tags,
   clientId,
   photoShootingId,
-  ...params
 }: SendClientEmailParams<T>) {
-  const result = await sendTemplatedEmail(params);
+  const { component, subject } = CLIENT_EMAILS[type];
+
+  // TS can't narrow the component union through the generic `T`; the
+  // `props` type above already ties `type` and `props` together.
+  const react = createElement(
+    component as unknown as FunctionComponent<
+      ClientEmailProps<T> & { baseUrl: string }
+    >,
+    { ...props, baseUrl: BASE_URL_PROD },
+  );
+
+  const result = await sendReactEmail({ type, to, subject, react, tags });
 
   if (result.data != null) {
-    await recordSentEmail({
-      resendId: result.data.id,
-      type: params.template,
-      variables: params.variables,
-      clientId,
-      photoShootingId,
-    });
+    try {
+      await prisma.sentEmail.create({
+        data: {
+          resendId: result.data.id,
+          type,
+          to,
+          subject,
+          // Every email prop is a string, so this is plain JSON.
+          variables: props as Prisma.InputJsonObject,
+          clientId,
+          photoShootingId,
+        },
+      });
+    } catch (error) {
+      console.error('[sendClientEmail] failed to record sent email', {
+        resendId: result.data.id,
+        type,
+        error,
+      });
+    }
   }
 
   return result;
-}
-
-async function recordSentEmail({
-  resendId,
-  type,
-  variables,
-  clientId,
-  photoShootingId,
-}: {
-  resendId: string;
-  type: EmailType;
-  variables: Record<string, string | number | undefined>;
-  clientId?: string;
-  photoShootingId?: string;
-}) {
-  try {
-    // The subject is resolved from the Resend template, so it only exists on
-    // Resend's side. Drop this lookup once templates live in code.
-    const { data: email, error } = await resend.emails.get(resendId);
-    if (error != null || email == null) {
-      throw new Error(`Resend email lookup failed: ${error?.message}`, {
-        cause: error,
-      });
-    }
-
-    await prisma.sentEmail.create({
-      data: {
-        resendId,
-        type,
-        to: email.to.join(', '),
-        subject: email.subject,
-        variables,
-        sentAt: new Date(email.created_at),
-        clientId,
-        photoShootingId,
-      },
-    });
-  } catch (error) {
-    console.error('[sendClientEmail] failed to record sent email', {
-      resendId,
-      type,
-      error,
-    });
-  }
 }

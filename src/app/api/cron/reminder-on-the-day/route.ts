@@ -1,5 +1,4 @@
 import { env } from '@/env';
-import { formatLongDate } from '@/lib/formatters';
 import { markReminderSent, wasReminderSent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { sendReminderOnTheDayEmail } from '@/lib/resend/reminder-on-the-day';
@@ -43,7 +42,7 @@ export async function GET(req: Request) {
         const { error } = await sendReminderOnTheDayEmail({
           to: shooting.client.owner.email,
           name: shooting.client.owner.name,
-          bookedTimeString: formatLongDate(shooting.timeSlot.startTime),
+          startTime: shooting.timeSlot.startTime,
           shootingId: shooting.id,
           clientId: shooting.clientId,
         });

@@ -20,15 +20,15 @@ export function sendRescheduleNotificationEmail({
   clientId,
 }: RescheduleNotificationEmailParams) {
   return sendClientEmail({
+    type: 'RESCHEDULE_NOTIFICATION',
     to,
     clientId,
     photoShootingId: shootingId,
-    template: 'RESCHEDULE_NOTIFICATION',
-    variables: {
-      NAME: name,
-      BOOKED_TIME: bookedTimeString,
-      OLD_TIME: oldTimeString,
-      ADD_TO_GOOGLE_CALENDAR_LINK: addToGoogleCalendarLink,
+    props: {
+      name,
+      bookedTime: bookedTimeString,
+      oldTime: oldTimeString,
+      addToGoogleCalendarLink,
     },
     tags: [{ name: 'shootingId', value: shootingId }],
   });

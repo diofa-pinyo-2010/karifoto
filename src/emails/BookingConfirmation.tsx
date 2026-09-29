@@ -49,10 +49,10 @@ export default function BookingConfirmationEmail({
               Köszönjük, hogy a Karifotot választottátok! Az előleg megérkezett
               hozzánk, a foglalásotokat pedig rögzítettük.
             </Text>
-            <Text className="text-center mt-8">
+            <Text className="mt-8 text-center">
               📸 A fotózásotok időpontja:
             </Text>
-            <Text className="font-bold text-lg text-center">{bookedTime}</Text>
+            <Text className="text-center text-lg font-bold">{bookedTime}</Text>
             <Link
               href={addToGoogleCalendarLink}
               className="mb-8 block text-center underline underline-offset-4"
@@ -63,7 +63,7 @@ export default function BookingConfirmationEmail({
               Várunk titeket szeretettel a stúdiónkba, addig is a foglalás
               részleteit az Ügyfélportálunkon keresztül tudjátok megnézni.
             </Text>
-            <Section className="text-center mb-0">
+            <Section className="mb-0 text-center">
               <Button
                 href={clientPortalLoginLink}
                 className="font-base my-4 inline-block rounded-lg bg-gray-800 px-7 py-4 text-center font-sans leading-6 font-semibold tracking-wide text-white uppercase"
@@ -71,7 +71,7 @@ export default function BookingConfirmationEmail({
                 Ügyfélportál
               </Button>
             </Section>
-            <Text className="text-slate-500 text-sm mt-0">
+            <Text className="mt-0 text-sm text-slate-500">
               A végleges fotók készhezvételéig minden részletet itt tudtok majd
               nyomon követni, bejelentkezni pedig mindig ezzel a gombbal fogtok
               tudni, tehát érdemes megtartani ezt az emailt :)
