@@ -1,7 +1,7 @@
 import 'server-only';
 import { Prisma } from '@/generated/prisma/client';
 import { UPCOMING_SHOOTINGS_TO_SHOW, UUID_RE } from '@/lib/constants';
-import { verifySession } from '@/lib/dal';
+import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
 const photoShootingWithClientInclude = {
@@ -145,11 +145,30 @@ export type PhotoShootingForClientPortal = Prisma.PhotoShootingGetPayload<
   typeof photoShootingForClientPortalSelect
 >;
 
+/*
+ * Szándékosan NEM `verifySession()`, mint a fájl többi lekérdezése: az
+ * staff-only és `/admin/login`-ra irányít, tehát minden ügyfelet kidobna a
+ * saját portáljáról. A kaput a `getPortalAccess()` adja.
+ *
+ * A "nincs ilyen" és a "nem a tiéd" egyaránt `null`: a hívó mindkettőre 404-et
+ * mutat, így a válasz nem árulja el, hogy létezik-e a másik fotózás.
+ *
+ * A sorrend miatt előbb olvasunk, aztán engedélyezünk: a jogosultság a fotózás
+ * `clientId`-jához mérendő, amit csak a lekérdezés után ismerünk.
+ */
 export async function fetchPhotoShootingForClientPortal(
   photoShootingId: string,
 ) {
-  return prisma.photoShooting.findUnique({
+  if (!UUID_RE.test(photoShootingId)) return null;
+
+  const photoShooting = await prisma.photoShooting.findUnique({
     where: { id: photoShootingId },
     ...photoShootingForClientPortalSelect,
   });
+
+  if (photoShooting == null) return null;
+
+  const access = await getPortalAccess(photoShooting.clientId);
+
+  return access == null ? null : photoShooting;
 }

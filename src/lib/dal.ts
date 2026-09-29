@@ -91,13 +91,42 @@ export const getClientSession = cache(async () => {
   return { user: session.owner, clientProfile: session.owner.clientProfile };
 });
 
-// Row-scoping, which the client portal needs and /admin doesn't: a valid
+// Who may read a client's portal: any staff member, or that client themselves.
+// This is the row-scoping the portal needs and /admin doesn't — a valid
 // client_session proves *a* client is logged in, not that they're *this*
-// client. Without this check anyone with a portal session could swap the
-// clientProfileId in the URL and read another client's payments.
+// client, so without the id comparison anyone with a portal session could swap
+// the clientProfileId in the URL and read another client's payments.
 //
-// Fails with notFound() rather than a redirect: there is no client login page
-// to send them to, and a 404 doesn't confirm that the other id exists.
+// Deliberately returns null instead of redirecting, unlike verifySession():
+// there is no client login page to send anyone to, and the two callers want
+// different things from a refusal — the page tries the emailed token first,
+// the query turns it into a 404.
+export const getPortalAccess = cache(async (clientProfileId: string) => {
+  const [adminSession, clientSession] = await Promise.all([
+    getSession(),
+    getClientSession(),
+  ]);
+
+  // Staff see every client's shooting, with no role carve-out — supporting a
+  // client by phone needs this regardless of SUPERADMIN vs MEMBER.
+  if (adminSession != null) {
+    return { as: 'staff' as const };
+  }
+
+  if (clientSession?.clientProfile.id === clientProfileId) {
+    return { as: 'client' as const };
+  }
+
+  return null;
+});
+
+// The stricter gate: *this* client and nobody else, not even staff. Nothing
+// calls it yet — it's for the "kiválasztottam a képeket" submission, which the
+// Phase 2 design puts behind client_session only, since staff must not be able
+// to confirm a selection on the client's behalf. See src/docs/image-selection.md.
+//
+// Fails with notFound() rather than a redirect, for the same reason as above:
+// a 404 doesn't confirm that the other id exists.
 export async function requireClientAccess(clientProfileId: string) {
   const session = await getClientSession();
 

@@ -35,7 +35,7 @@ import {
   STUDIO_ADDRESS,
   STUDIO_MAP_LINK,
 } from '@/lib/constants';
-import { getClientSession, getSession } from '@/lib/dal';
+import { getPortalAccess } from '@/lib/dal';
 import { packages } from '@/lib/data';
 import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
@@ -61,18 +61,10 @@ export default async function ClientPortalShootingDetailsPage({
     photoShootingId,
   );
 
-  const [adminSession, clientSession] = await Promise.all([
-    getSession(),
-    getClientSession(),
-  ]);
+  // Any staff member, or this client themselves — see getPortalAccess().
+  const access = await getPortalAccess(clientProfileId);
 
-  // Row-scoping: a valid client_session proves *a* client is logged in, not
-  // that they're *this* client. Staff are exempt — they're allowed to view any
-  // client's shooting.
-  const hasAccess =
-    adminSession != null || clientSession?.clientProfile.id === clientProfileId;
-
-  if (!hasAccess) {
+  if (access == null) {
     const token = (await searchParams)[CLIENT_PORTAL_TOKEN_PARAM];
 
     // The emailed link lands here carrying its token. A Server Component can't
