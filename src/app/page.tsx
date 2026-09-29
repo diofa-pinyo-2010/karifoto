@@ -27,7 +27,15 @@ export default async function Home() {
   return (
     <BookingSelectionProvider>
       <Header />
-      <main className="bg-forest font-sans text-cream">
+      {/*
+        Nincs saját háttér vagy betűtípus: minden szekció maga állítja be. A
+        korábbi `bg-forest font-sans text-cream` a régi arculatból maradt itt,
+        és a krém szekciók mögé festett sötétzöldet.
+
+        Az `id` a fejléc „Ugrás a tartalomra" linkjének és a lábléc „Vissza az
+        elejére" hivatkozásának a célpontja.
+      */}
+      <main id="tartalom">
         {/*
           A Sets közvetlenül a Hero után jön, ahogy a látványtervben: a hero
           alját lezáró krém hullám ennek a szekciónak a háttérszínébe olvad

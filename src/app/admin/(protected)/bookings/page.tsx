@@ -34,7 +34,7 @@ export default async function BookingsPage() {
 
   if (days.length === 0) {
     return (
-      <div className="mt-7 flex items-center justify-center gap-2 rounded-[22px] border border-cream/12 bg-cream/4 px-5 py-8 text-center text-sm text-sage-soft">
+      <div className="mt-7 flex items-center justify-center gap-2 rounded-[22px] border border-border bg-muted px-5 py-8 text-center text-sm text-muted-foreground">
         <FaceSlightlyFrowningIcon
           strokeWidth={2}
           className="size-5 shrink-0 opacity-60"
