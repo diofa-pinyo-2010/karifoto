@@ -77,7 +77,7 @@ export default async function ClientPortalShootingDetailsPage({
   return (
     <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
       <Button
-        render={<Link href={`/client/${clientProfileId}`} />}
+        render={<Link href={APP_URLS.clientPortalHome(clientProfileId)} />}
         nativeButton={false}
         variant="outline"
         size="lg"
@@ -116,7 +116,10 @@ function ClientPortalAccessDenied({
       <Button
         render={
           <Link
-            href={`/client/${clientProfileId}/shooting/${photoShootingId}`}
+            href={APP_URLS.clientPortalShootingGallery(
+              clientProfileId,
+              photoShootingId,
+            )}
           />
         }
         nativeButton={false}

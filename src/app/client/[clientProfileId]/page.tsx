@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ImagesIcon, LockIcon } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,6 +57,7 @@ export default async function ClientPortalHomePage({
           status: true,
           package: true,
           decorSet: true,
+          finalImagesUrl: true,
           timeSlot: { select: { startTime: true } },
         },
         orderBy: { timeSlot: { startTime: 'desc' } },
@@ -132,11 +135,52 @@ export default async function ClientPortalHomePage({
                     </CardDescription>
                   </CardHeader>
 
-                  <CardFooter className="border-t-[#d9d3c7] bg-transparent">
+                  <CardFooter className="gap-3 border-t-[#d9d3c7] bg-transparent">
+                    {/*
+                      A galéria addig nem kattintható, amíg nincs mit mutatnia.
+                      Natív, letiltott gombként renderel, nem letiltott
+                      linkként: utóbbi fókuszálható maradna, és a képernyőolvasó
+                      sem mondaná meg, hogy nem él.
+                    */}
+                    {shooting.finalImagesUrl == null ? (
+                      <Button
+                        disabled
+                        size="lg"
+                        variant="outline"
+                        className="flex-1 border-[#d9d3c7] bg-transparent"
+                      >
+                        <ImagesIcon />
+                        Galéria
+                      </Button>
+                    ) : (
+                      <Button
+                        render={
+                          <Link
+                            href={APP_URLS.clientPortalShootingGallery(
+                              clientProfile.id,
+                              shooting.id,
+                            )}
+                          />
+                        }
+                        nativeButton={false}
+                        size="lg"
+                        variant="outline"
+                        className="flex-1 border-[#d9d3c7] bg-transparent hover:bg-brand-cream"
+                      >
+                        Galéria
+                      </Button>
+                    )}
+
+                    {/*
+                      A részletek szándékosan mindig élnek. Munkamenet nélkül a
+                      céloldal elmagyarázza, hogy a visszaigazoló emailben lévő
+                      gomb nyitja meg — ez az egyetlen visszaút, letiltva
+                      zsákutca lenne.
+                    */}
                     <Button
                       render={
                         <Link
-                          href={APP_URLS.clientPortalShooting(
+                          href={APP_URLS.clientPortalShootingDetails(
                             clientProfile.id,
                             shooting.id,
                           )}
@@ -144,9 +188,10 @@ export default async function ClientPortalHomePage({
                       }
                       nativeButton={false}
                       size="lg"
-                      className="w-full bg-brand-champagne font-semibold text-[#152b2e] hover:bg-brand-champagne hover:opacity-90"
+                      className="flex-1 bg-brand-champagne font-semibold text-[#152b2e] hover:bg-brand-champagne hover:opacity-90"
                     >
-                      Megnézem
+                      <LockIcon />
+                      Részletek
                     </Button>
                   </CardFooter>
                 </Card>

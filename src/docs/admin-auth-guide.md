@@ -126,7 +126,9 @@ src/
         └── [clientProfileId]/
             ├── page.tsx           # public list
             └── shooting/[photoShootingId]/
-                ├── page.tsx       # public, shareable gallery
+                ├── page.tsx       # redirect → public/
+                ├── public/
+                │   └── page.tsx   # public, shareable gallery
                 └── details/
                     └── page.tsx   # gated
 ```
@@ -935,7 +937,7 @@ Where it lives:
 Still open: everything the pages actually _show_, and the
 `USER_SELECTION → FINAL_PHOTOS_UPLOAD` selection-confirm action.
 
-### Three route tiers, one new cookie
+### Four routes, three tiers, one new cookie
 
 - **`/client/{clientProfileId}/`** — public. A **list** of that client's
   shootings. Deliberately protected only by the `clientProfileId` UUID being
@@ -944,8 +946,12 @@ Still open: everything the pages actually _show_, and the
   details. `ClientProfile.photoShootings` is already a one-to-many in
   [prisma/schema.prisma](../../prisma/schema.prisma), so this is a real list,
   not a single-row page dressed up as one. No cookie required, ever.
-- **`/client/{clientProfileId}/shooting/{photoShootingId}/`** — public. **This
-  is the link clients share** ("check our photos!"): the gallery for one
+- **`/client/{clientProfileId}/shooting/{photoShootingId}/`** — public, and
+  nothing but a redirect to `/public` below. It stays because it was the
+  shareable link before the gallery and the details page became siblings;
+  a temporary redirect, so the structure isn't frozen by browser caches.
+- **`/client/{clientProfileId}/shooting/{photoShootingId}/public`** — public.
+  **This is the link clients share** ("check our photos!"): the gallery for one
   shooting, and the eventual memorial page. No cookie required, ever.
 - **`/client/{clientProfileId}/shooting/{photoShootingId}/details`** —
   gated: payments, invoices. Requires `client_session` **or** `admin_session`
@@ -961,6 +967,15 @@ Because `{clientProfileId}` prefixes the shareable shooting URL, anyone the
 client shares a gallery with can truncate it back to
 `/client/{clientProfileId}/` and see that client's full shooting list. That is
 accepted, not overlooked — see [Decisions](#decisions).
+
+On the list, each shooting's card carries both destinations. **Galéria** is
+disabled until `PhotoShooting.finalImagesUrl` is set — the status enum is the
+wrong signal, since `CLOSED` sorts after `COMPLETED` and would switch a
+finished gallery back off. **Részletek** is deliberately never disabled: the
+list is public, so it renders for visitors with no `client_session` at all,
+and `/details` already answers them with "use the link from your confirmation
+email". That page is the only way back in, so hiding the route behind a dead
+button would strand exactly the client it was meant to protect.
 
 ### The rule that makes the public pages safe to share
 

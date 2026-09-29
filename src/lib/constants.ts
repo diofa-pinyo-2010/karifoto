@@ -268,8 +268,12 @@ export const APP_URLS = {
   // `clientPortalShootingDetails` is gated. Built here so the confirmation
   // email and the pages themselves can never drift apart.
   clientPortalHome: (clientProfileId: string) => `/client/${clientProfileId}`,
+  // The bare shooting URL only redirects to the gallery — it stays because it
+  // was the shareable link before `/public` existed.
   clientPortalShooting: (clientProfileId: string, shootingId: string) =>
     `/client/${clientProfileId}/shooting/${shootingId}`,
+  clientPortalShootingGallery: (clientProfileId: string, shootingId: string) =>
+    `/client/${clientProfileId}/shooting/${shootingId}/public`,
   clientPortalShootingDetails: (clientProfileId: string, shootingId: string) =>
     `/client/${clientProfileId}/shooting/${shootingId}/details`,
   clientPortalVerify: '/api/client-portal/verify',
