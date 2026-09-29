@@ -79,13 +79,23 @@ export function PhotoGallery({
         spacing={12}
         // 5000 is just "a number bigger than any image could ever be tall," used as a trick.
         targetRowHeight={isMobile ? 5000 : targetRowHeight}
-        // sizes={{
-        //   size: '1168px',
-        //   sizes: [
-        //     { viewport: '(max-width: 640px)', size: '100vw' },
-        //     { viewport: '(max-width: 1024px)', size: '50vw' },
-        //   ],
-        // }}
+        /*
+         * A galéria a díszletszekciók kétoszlopos rácsában ül, nem teljes
+         * szélességben — enélkül a react-photo-album `100vw`-t ad az
+         * <Image>-nek, és a Next a szükségesnél jóval nagyobb változatot
+         * szolgálja ki (a dev konzol ezt külön szóvá is teszi).
+         *
+         * Mért oszlopszélességek: `md` alatt egy oszlop (~88vw), `md`–`xl`
+         * között ~41–44vw, `xl` fölött fixen 592px, mert a `.brand-shell`
+         * 1240px-nél megáll: (1240 − 56 rácsköz) / 2.
+         */
+        sizes={{
+          size: '592px',
+          sizes: [
+            { viewport: '(max-width: 767px)', size: '90vw' },
+            { viewport: '(max-width: 1279px)', size: '45vw' },
+          ],
+        }}
         onClick={({ index: idx }) => setIndex(idx)}
       />
       <Dialog open={open} onOpenChange={(o) => !o && setIndex(null)}>
