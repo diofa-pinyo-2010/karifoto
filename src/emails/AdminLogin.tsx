@@ -34,7 +34,7 @@ export default function AdminLoginEmail({
         <Body className="m-0 font-sans sm:bg-[#fafafa] sm:py-8">
           <Container className="max-w-140 rounded-lg bg-white px-6 py-8">
             <Img
-              src={`${baseUrl}/images/karifoto-logo-terrakotta.png`}
+              src={`${baseUrl}/images/karifoto-logo-arany.png`}
               alt="Karifotó"
               width="100"
               className="mx-auto mb-8"

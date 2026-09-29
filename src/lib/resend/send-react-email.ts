@@ -6,7 +6,7 @@ import { resend } from '@/lib/resend/index';
 export const EMAIL_FROM =
   process.env.NODE_ENV === 'development'
     ? 'Karifoto DEV <dev@dev.karifoto.hu>'
-    : 'Karifoto Admin <nevalaszolj@ertesitesek.karifoto.hu>';
+    : 'Karifoto <nevalaszolj@ertesitesek.karifoto.hu>';
 
 type SendReactEmailParams = {
   type: string; // → 'type' tag, same as sendTemplatedEmail

@@ -1,6 +1,18 @@
 import type { ReactElement } from 'react';
 
 import AdminLoginEmail, { ADMIN_LOGIN_SUBJECT } from '@/emails/AdminLogin';
+import BookingConfirmationEmail, {
+  CLIENT_BOOKING_CONFIRMATION_SUBJECT,
+} from '@/emails/BookingConfirmation';
+import DepositRequestEmail, {
+  CLIENT_DEPOSIT_REQUEST_SUBJECT,
+} from '@/emails/DepositRequest';
+import ReminderOnTheDayEmail, {
+  CLIENT_REMINDER_ON_THE_DAY_SUBJECT,
+} from '@/emails/ReminderOnTheDay';
+import RescheduleNotificationEmail, {
+  CLIENT_RESCHEDULE_NOTIFICATION_SUBJECT,
+} from '@/emails/RescheduleNotification';
 import { BASE_URL_PROD } from '@/lib/constants';
 
 // Templates shown on /admin/email-previews, rendered with their PreviewProps.
@@ -22,6 +34,50 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <AdminLoginEmail
         {...AdminLoginEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-booking-confirmation',
+    label: 'Foglalás megerősítése',
+    subject: CLIENT_BOOKING_CONFIRMATION_SUBJECT,
+    element: () => (
+      <BookingConfirmationEmail
+        {...BookingConfirmationEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-deposit-request',
+    label: 'Előleg bekérő',
+    subject: CLIENT_DEPOSIT_REQUEST_SUBJECT,
+    element: () => (
+      <DepositRequestEmail
+        {...DepositRequestEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-reminder-on-the-day',
+    label: 'Aznapi emlékezető',
+    subject: CLIENT_REMINDER_ON_THE_DAY_SUBJECT,
+    element: () => (
+      <ReminderOnTheDayEmail
+        {...ReminderOnTheDayEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-reschedule-notification',
+    label: 'Időpont változás értesítő',
+    subject: CLIENT_RESCHEDULE_NOTIFICATION_SUBJECT,
+    element: () => (
+      <RescheduleNotificationEmail
+        {...RescheduleNotificationEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),
