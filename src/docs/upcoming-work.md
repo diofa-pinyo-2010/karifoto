@@ -15,7 +15,7 @@ is a January problem.
 - [1. Invoice wrappers](#1-invoice-wrappers)
 - [2. Final invoice (végszámla) generation](#2-final-invoice-végszámla-generation)
 - [3. SumUp and `PaymentAttempt`](#3-sumup-and-paymentattempt)
-- [4. `calculateRemainingAmount` → breakdown](#4-calculateremainingamount--breakdown)
+- [4. `calculateRemainingAmount` → breakdown (done)](#4-calculateremainingamount--breakdown)
 - [5. `PriceAdjustment` needs a surcharge](#5-priceadjustment-needs-a-surcharge)
 - [6. The next checkout kind](#6-the-next-checkout-kind)
 - [7. Rounding, if VAT ever stops being AAM](#7-rounding-if-vat-ever-stops-being-aam)
@@ -82,12 +82,11 @@ Four things are easy to get wrong, in rough order of how expensive they are:
 
 1. **List the full price, not the remainder.** szamlazz deducts the referenced
    advance itself. Listing the remainder deducts it twice and under-bills.
-2. **`completionDate` is the shooting date**, not `now`.
-3. **Use a new idempotency key.** `claimDepositInvoice` in
+2. **Use a new idempotency key.** `claimDepositInvoice` in
    [idempotency.ts](../lib/idempotency.ts) is keyed on `deposit_inv:<shootingId>`
    — shooting id alone. Reusing that helper would let the deposit invoice block
    the final one forever. It needs its own key, e.g. `final_inv:<shootingId>`.
-4. **`Invoice` needs an advance → final link**, so the job can find which
+3. **`Invoice` needs an advance → final link**, so the job can find which
    előlegszámla it is settling. Shape it like the existing `stornoOf`
    self-relation rather than storing a bare invoice-number string, so it cannot
    point at a document that does not exist.
@@ -173,51 +172,40 @@ metadata layer; October is the window for that refactor, not December.
 
 ## 4. `calculateRemainingAmount` → breakdown
 
-[`calculateRemainingAmount()`](../server/pricing.ts) returns one number: what
-the client still owes. Three consumers need more than that:
+**Built — 2026-09-30.** Kept here because section 2 depends on it and because
+two decisions are easier to find than to rediscover.
 
-| consumer               | needs                     |
-| ---------------------- | ------------------------- |
-| SumUp `PaymentAttempt` | the amount owed now       |
-| végszámla line items   | the full price, itemised  |
-| admin pricing rows     | the same items, on screen |
+[`calculatePricing()`](../server/pricing.ts) returns the itemised bill;
+`calculateRemainingAmount()` survives as a one-line view over its
+`totalToBePaid`, so `resolveStatus` did not have to change. Three consumers now
+share one source of truth: the admin pricing rows, a végszámla's line items, and
+the SumUp payment amount.
 
-Two scalars (`totalToBePaid` / `totalToBeInvoiced`) would serve the first two and
-leave the admin page re-deriving every term by hand — which has **already caused
-a real bug**: the light-play row was computed without the FAMILY carve-out, so
-the displayed rows did not sum to the displayed total. That specific bug is
-fixed (see `isLightPlayChargeable` in [constants.ts](../lib/constants.ts)), but
-the duplication that produced it is still there.
+**Everything is signed.** Charges are positive, adjustments negative, and
+`lines` always sums to `totalToBeInvoiced` — that identity is the first test in
+[pricing.test.ts](../server/pricing.test.ts). `totalAdjustments` is signed too,
+so `totalToBeInvoiced = totalCharges + totalAdjustments`. This deviates from the
+`charges − adjustments` sketch this section originally carried, and it is why
+section 5 is now a much smaller job: a surcharge is simply a positive amount.
 
-Return the lines instead:
+**A line is emitted only when it costs something**, so nothing renders or
+invoices a 0 Ft row — except the package and studio fee, which always apply.
+That removed the old "Fényjáték ára: 0 Ft" and "Kis kedvencek (0)" rows from the
+admin page. `PriceLine.adjustmentId` is set on adjustment lines so the admin page
+can hang its note tooltip and delete button on those rows only; an invoice
+ignores it.
 
-```ts
-type PriceLine = { label: string; amountInCents: number };
-
-{
-  lines: PriceLine[],        // charges + adjustments, in order
-  totalCharges: number,
-  totalAdjustments: number,
-  totalPaid: number,
-  totalToBeInvoiced: number, // charges − adjustments
-  totalToBePaid: number,     // … − paid
-}
-```
-
-`PriceAdjustment.publicLabel` exists precisely because adjustments are meant to
-appear as **named lines on a customer-facing document** — more evidence the
-invoice wants items rather than a netted scalar.
-
-Do this **before** the final-invoice job. Building that job against a function
-that returns one number is how the light-play inconsistency gets copied a third
-time.
+Wiring the admin page to these lines fixed a **second** instance of the original
+bug: extra edited and retouched images were missing from the displayed rows
+entirely while being counted in the total, so the list silently failed to sum
+whenever either was non-zero. Nobody had noticed because the image-selection
+flow is unbuilt and those fields are still zero in practice.
 
 ## 5. `PriceAdjustment` needs a surcharge
 
 `PriceAdjustmentType` has `DISCOUNT` and `DEDUCTION` — two labels for one
-behaviour, because `calculateRemainingAmount` subtracts _every_ adjustment
-unconditionally. There is no way to charge a client more, e.g. for something
-broken in the studio.
+behaviour, because every adjustment is negated unconditionally. There is no way
+to charge a client more, e.g. for something broken in the studio.
 
 Add a `SURCHARGE` member and give each type a sign, mirroring
 `LEDGER_ENTRY_CATEGORY_SIGN`:
@@ -234,16 +222,22 @@ This works because `createPriceAdjustment` already rejects `amountHuf <= 0`, so
 amounts are positive magnitudes and the sign lives in exactly one place. Keep
 that invariant.
 
-**Three call sites change silently** — no type error, just wrong money or a
-wrong display:
+**Section 4 made this a much smaller job.** The sign is now applied in exactly
+one expression — the `-adjustment.amountInCents` that builds the adjustment
+lines in [`calculatePricing`](../server/pricing.ts). Replace that negation with
+the sign map and every consumer follows, because they all read the same lines.
+The admin page's old hardcoded `amountInCents * -1` is already gone.
 
-1. `calculateRemainingAmount` — a surcharge would otherwise _reduce_ the bill.
-2. The admin adjustment row, which hardcodes `amountInCents * -1`.
-3. `AddPriceAdjustmentDialog`, whose description says the amount "levonásra
-   kerül a végösszegből".
+Two things still change, neither of them loud:
+
+1. That negation in `calculatePricing`.
+2. `AddPriceAdjustmentDialog`, whose description says the amount "levonásra
+   kerül a végösszegből" — untrue for a surcharge.
 
 `PRICE_ADJUSTMENT_TYPE_LABEL` is an exhaustive `Record`, so that one _will_ fail
-to compile — it is the only loud one.
+to compile — it is the only loud one. The `subtracts a DEDUCTION exactly like a
+DISCOUNT` test in [pricing.test.ts](../server/pricing.test.ts) is the tripwire:
+it goes red when the semantics move, and tells you the change landed.
 
 The dialog renders `Object.values(PriceAdjustmentType)`, so a new type appears
 on the pre-payment booking-intent page too. Damage happens at the shoot, not
