@@ -271,7 +271,7 @@ export default async function PhotoShootingDetailPage({
                   shooting.id,
                   'isLightPlaySelected',
                 )}
-                disabled={isLightPlayChargeable(shooting.package)}
+                disabled={!isLightPlayChargeable(shooting.package)}
               />
             }
           />
