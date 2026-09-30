@@ -55,6 +55,7 @@ export const szamlazzInvoiceClient: InvoiceClient = {
         sendEmail: true,
         settled: true,
         comment: input.comment,
+        advanceInvoice: true,
       },
       items,
     );
