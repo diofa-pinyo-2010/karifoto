@@ -25,6 +25,8 @@ pnpm build            # prisma generate → (prod only) migrate deploy → next 
 pnpm typecheck        # next typegen && tsc --noEmit
 pnpm lint             # oxlint         (lint:fix to autofix)
 pnpm fmt              # oxfmt          (fmt:check for CI parity)
+pnpm test             # vitest (watch) — test:run for one pass, as CI does
+
 
 pnpm db:migrate       # prisma migrate dev
 pnpm db:migrate:co    # migrate dev --create-only (hand-edit the SQL, see below)
@@ -34,9 +36,18 @@ pnpm db:reset         # migrate reset --force + seed
 pnpm db:studio        # port 5555
 ```
 
-CI (`.github/workflows/ci.yml`, every push) = `lint` + `fmt:check` + `typecheck`.
-**There is no test suite** — no test runner is installed, so there is no
-"run a single test". Verification is typecheck/lint/fmt plus manual QA.
+CI (`.github/workflows/ci.yml`, every push) = `lint` + `fmt:check` + `typecheck`
+
+- `test:run`.
+
+**Vitest covers pure functions only** — `src/**/*.test.ts`, default `node`
+environment, no jsdom/React Testing Library and no database. A single file is
+`pnpm test:run src/lib/checkout-metadata.test.ts`; a single case is
+`pnpm test:run -t '<name>'`. Anything needing a browser, Stripe or Postgres is
+deliberately out of scope and stays manual QA, so the way to make risky code
+testable here is to extract the decision into a pure function and test that —
+see [checkout-metadata.ts](src/lib/checkout-metadata.ts) versus the webhook that
+consumes it.
 
 Tooling is **oxlint + oxfmt**, not ESLint/Prettier. Format before committing;
 `fmt:check` failures break CI. oxfmt also sorts imports into groups
@@ -110,6 +121,7 @@ only what must be transactional, then fans the rest out to QStash:
 - verifies the signature, then `isEventProcessed(event.id)` (Redis `SET NX`);
   on a thrown handler it calls `releaseEvent` so Stripe's retry is not turned away
   by our own marker.
+- routes the session by its **kind** (see below), then, for a booking deposit:
 - upserts `User` + `ClientProfile` + `BillingAddress`, creates the `PhotoShooting`
   (idempotent — `timeSlotId` is `@unique`), snapshots prices into
   `PhotoShootingPricing`, un-reveals the slot, converts the `BookingIntent` and
@@ -122,6 +134,30 @@ only what must be transactional, then fans the rest out to QStash:
 Two failure states return **200 with no retry** and instead flip the intent to
 `PAYMENT_ORPHANED` and ping Discord: the slot vanished while the intent was
 pending, and the slot was double-sold. Both need a human.
+
+### Checkout session kinds
+
+Stripe emits one event type (`checkout.session.completed`) for **every** payment
+the studio will ever take, so each session we create carries a `kind` in its
+metadata saying what the payment means.
+
+Build metadata only with `buildCheckoutMetadata` and read it only with
+`parseCheckoutMetadata` ([checkout-metadata.ts](src/lib/checkout-metadata.ts)),
+so the two sides cannot drift. Adding a kind means adding a member to
+`checkoutMetadataSchema`, which then **fails the build** until it has a case in
+the webhook's switch and an entry in `CHECKOUT_KIND_LEDGER_CATEGORY` — that is
+the mechanism, not a convention to remember.
+
+Two rules worth keeping:
+
+- The ledger category is derived from the kind in code, **never** carried in the
+  metadata. Metadata is written at session-creation time and read much later, so
+  a stored category would go stale if the mapping changed. Prices get
+  snapshotted because the client agreed to them; an internal taxonomy does not.
+- A session whose metadata does not parse is a **third** no-retry 200: it alerts
+  on Discord naming the kind that arrived, and nothing else happens. A retry
+  cannot fix an unknown kind, and falling through to the deposit handler would
+  create a booking for someone paying for something else.
 
 ### Background work
 
