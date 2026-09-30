@@ -269,6 +269,12 @@ portal), `final-amount-calculation.md`, `image-selection.md`,
 image-selection status machine, or page styling. They also list what is still
 unbuilt, which is the honest answer to "does this exist yet".
 
+[upcoming-work.md](src/docs/upcoming-work.md) is the forward-looking one: what is
+decided but unbuilt across billing, payments and pricing — the invoice wrappers,
+végszámla generation, SumUp + `PaymentAttempt`, the `calculateRemainingAmount`
+breakdown, and `PriceAdjustment` surcharges. Read it before starting any of
+those, and keep its open-questions list current.
+
 ## Coming-soon gate
 
 `proxy.ts` rewrites `/` to `/coming-soon` when `COMING_SOON_ENABLED` is true, unless
