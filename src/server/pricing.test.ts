@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { calculateRemainingAmount } from '@/server/pricing';
+import { calculatePricing, calculateRemainingAmount } from '@/server/pricing';
 
 import type {
   LedgerEntry,
@@ -133,6 +133,28 @@ function remaining({
     ledgerEntries,
   });
 }
+
+function breakdown({
+  pricing,
+  shooting,
+  adjustments = [],
+  ledgerEntries = [],
+}: {
+  pricing?: Partial<PhotoShootingPricing>;
+  shooting?: Partial<PhotoShooting>;
+  adjustments?: PriceAdjustment[];
+  ledgerEntries?: LedgerEntry[];
+} = {}) {
+  return calculatePricing({
+    pricing: makePricing(pricing),
+    shooting: makeShooting(shooting),
+    adjustments,
+    ledgerEntries,
+  });
+}
+
+const labels = (result: ReturnType<typeof breakdown>) =>
+  result.lines.map((line) => line.label);
 
 describe('calculateRemainingAmount', () => {
   it('charges the package and the studio fee with no extras', () => {
@@ -356,5 +378,176 @@ describe('calculateRemainingAmount', () => {
         3_000_00 -
         20_000_00,
     );
+  });
+});
+
+describe('calculatePricing', () => {
+  // The invariant everything else depends on. If the lines stop summing to the
+  // invoiced total, the admin rows stop matching the figure beneath them and a
+  // végszámla built from these lines bills the wrong amount.
+  it('has lines that sum to totalToBeInvoiced', () => {
+    const result = breakdown({
+      shooting: {
+        isLightPlaySelected: true,
+        numberOfGuests: PEOPLE_INCLUDED + 2,
+        numberOfPets: 1,
+        totalEditedImages: EDITED_ALLOWANCE + 3,
+        totalRetouchedImages: 2,
+      },
+      adjustments: [makeAdjustment({ amountInCents: 4_000_00 })],
+    });
+
+    const summed = result.lines.reduce(
+      (sum, line) => sum + line.amountInCents,
+      0,
+    );
+
+    expect(summed).toBe(result.totalToBeInvoiced);
+  });
+
+  it('always lists the package and the studio fee', () => {
+    expect(labels(breakdown())).toEqual(['Csomag ára', 'Studio bérlet']);
+  });
+
+  describe('optional lines appear only when they cost something', () => {
+    it('omits light play when it was not selected', () => {
+      expect(labels(breakdown())).not.toContain('Fényjáték');
+    });
+
+    it('lists light play when selected on a chargeable package', () => {
+      const result = breakdown({ shooting: { isLightPlaySelected: true } });
+
+      expect(labels(result)).toContain('Fényjáték');
+      expect(
+        result.lines.find((l) => l.label === 'Fényjáték')?.amountInCents,
+      ).toBe(LIGHT_PLAY);
+    });
+
+    // Same carve-out as the total: FAMILY includes light play, so it must not
+    // appear as a charged line either. This is the bug the admin page had.
+    it('omits light play on FAMILY even when selected', () => {
+      const result = breakdown({
+        shooting: { package: 'FAMILY', isLightPlaySelected: true },
+      });
+
+      expect(labels(result)).not.toContain('Fényjáték');
+    });
+
+    it('omits extra people at or below the threshold', () => {
+      const result = breakdown({
+        shooting: { numberOfGuests: PEOPLE_INCLUDED },
+      });
+
+      expect(labels(result).some((l) => l.startsWith('Extra személyek'))).toBe(
+        false,
+      );
+    });
+
+    it('names the count of extra people it is charging for', () => {
+      const result = breakdown({
+        shooting: { numberOfGuests: PEOPLE_INCLUDED + 2 },
+      });
+
+      expect(labels(result)).toContain('Extra személyek (2)');
+    });
+
+    it('omits pets when there are none', () => {
+      expect(
+        labels(breakdown({ shooting: { numberOfPets: 0 } })),
+      ).not.toContain('Kis kedvencek (0)');
+    });
+
+    it('omits extra edited images at or below the allowance', () => {
+      const result = breakdown({
+        shooting: { totalEditedImages: EDITED_ALLOWANCE },
+      });
+
+      expect(
+        labels(result).some((l) => l.startsWith('Extra szerkesztett')),
+      ).toBe(false);
+    });
+
+    // These two were missing from the admin rows entirely, so the displayed
+    // rows did not sum to the displayed total whenever either was non-zero.
+    it('lists extra edited and retouched images when there are any', () => {
+      const result = breakdown({
+        shooting: {
+          totalEditedImages: EDITED_ALLOWANCE + 3,
+          totalRetouchedImages: 2,
+        },
+      });
+
+      expect(labels(result)).toContain('Extra szerkesztett képek (3)');
+      expect(labels(result)).toContain('Retusált képek (2)');
+    });
+  });
+
+  describe('adjustments', () => {
+    it('lists them by their public label, as negative amounts', () => {
+      const result = breakdown({
+        adjustments: [
+          makeAdjustment({
+            publicLabel: 'Hűségkedvezmény',
+            amountInCents: 5_000_00,
+          }),
+        ],
+      });
+
+      // Carries the id so the admin page can hang the note tooltip and the
+      // delete button on this row and no other.
+      expect(result.lines.at(-1)).toEqual({
+        label: 'Hűségkedvezmény',
+        amountInCents: -5_000_00,
+        adjustmentId: 'adjustment-1',
+      });
+    });
+
+    it('keeps them out of totalCharges and in totalAdjustments', () => {
+      const result = breakdown({
+        adjustments: [makeAdjustment({ amountInCents: 5_000_00 })],
+      });
+
+      expect(result.totalCharges).toBe(BASE);
+      expect(result.totalAdjustments).toBe(-5_000_00);
+      expect(result.totalToBeInvoiced).toBe(BASE - 5_000_00);
+    });
+  });
+
+  describe('totals', () => {
+    it('counts only INCOME ledger rows as paid', () => {
+      const result = breakdown({
+        ledgerEntries: [
+          makeLedgerEntry({ id: 'l1', amountInCents: 10_000_00 }),
+          makeLedgerEntry({
+            id: 'l2',
+            category: 'EXPENSE_PHOTOGRAPHER_FEE',
+            amountInCents: -8_000_00,
+          }),
+        ],
+      });
+
+      expect(result.totalPaid).toBe(10_000_00);
+    });
+
+    // The distinction the végszámla depends on: it lists the full price and
+    // lets szamlazz deduct the advance, while the till takes only the balance.
+    it('separates what is invoiced from what is still owed', () => {
+      const result = breakdown({
+        ledgerEntries: [makeLedgerEntry({ amountInCents: 10_000_00 })],
+      });
+
+      expect(result.totalToBeInvoiced).toBe(BASE);
+      expect(result.totalToBePaid).toBe(BASE - 10_000_00);
+    });
+  });
+
+  it('agrees with calculateRemainingAmount', () => {
+    const args = {
+      shooting: { numberOfPets: 2, isLightPlaySelected: true },
+      adjustments: [makeAdjustment({ amountInCents: 1_000_00 })],
+      ledgerEntries: [makeLedgerEntry({ amountInCents: 7_000_00 })],
+    };
+
+    expect(breakdown(args).totalToBePaid).toBe(remaining(args));
   });
 });
