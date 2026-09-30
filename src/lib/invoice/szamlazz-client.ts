@@ -3,6 +3,7 @@ import SZClient, {
 } from '@halftome/szamlazz-client';
 
 import { env } from '@/env';
+import { toSzamlazzLineItems } from '@/lib/invoice/line-items';
 import {
   InvoiceClient,
   GenerateInvoiceInput,
@@ -24,24 +25,7 @@ async function issue(
 ): Promise<GeneratedInvoice> {
   const now = new Date();
 
-  const items = input.items.map((item) => {
-    const quantity = Number(item.quantity);
-    const vatRateNumer = item.vatRate === 'AAM' ? 0 : item.vatRate;
-    const netUnitPrice = item.unitPriceGross / (1 + vatRateNumer / 100);
-    const netAmount = netUnitPrice * quantity;
-    const grossAmount = item.unitPriceGross * quantity;
-
-    return {
-      name: item.name,
-      amount: quantity,
-      amountName: 'db',
-      netUnitPrice,
-      netAmount,
-      taxAmount: grossAmount - netAmount,
-      grossAmount,
-      vatRate: item.vatRate,
-    };
-  });
+  const items = toSzamlazzLineItems(input.items);
 
   const result = await client.generateInvoice(
     {

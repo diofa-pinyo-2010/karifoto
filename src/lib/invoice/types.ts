@@ -13,7 +13,7 @@ interface InvoiceCustomer {
   email: string;
 }
 
-interface InvoiceLineItem {
+export interface InvoiceLineItem {
   name: string;
   quantity: number;
   unitPriceGross: number;

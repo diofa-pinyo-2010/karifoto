@@ -18,6 +18,7 @@ is a January problem.
 - [4. `calculateRemainingAmount` → breakdown](#4-calculateremainingamount--breakdown)
 - [5. `PriceAdjustment` needs a surcharge](#5-priceadjustment-needs-a-surcharge)
 - [6. The next checkout kind](#6-the-next-checkout-kind)
+- [7. Rounding, if VAT ever stops being AAM](#7-rounding-if-vat-ever-stops-being-aam)
 - [Open questions](#open-questions)
 
 ## Priority order
@@ -272,6 +273,55 @@ that reason.
 Adding a kind is compiler-guided: a new member of `checkoutMetadataSchema`
 breaks the build until it has a case in the webhook's switch and an entry in
 `CHECKOUT_KIND_LEDGER_CATEGORY`. Add all the pieces in one PR.
+
+## 7. Rounding, if VAT ever stops being AAM
+
+Everything is invoiced at `NamedVATRate.AAM` today, so
+[line-items.ts](../lib/invoice/line-items.ts) never divides by anything but 1
+and the numbers stay whole by accident. The `27` branch of `VATRate` is
+currently dead code. The moment it is not:
+
+**Round exactly one number and derive the rest.** Rounding net, tax and gross
+independently makes them stop summing, and szamlazz rejects a line whose totals
+do not add up — the fork's own test suite has a case for that error.
+
+Round the **unit** net, never the total:
+
+```ts
+const netUnitPrice = Math.round(item.unitPriceGross / (1 + vat / 100));
+const netAmount = netUnitPrice * quantity; // not Math.round(totalGross / 1.27)
+const grossAmount = item.unitPriceGross * quantity;
+const taxAmount = grossAmount - netAmount; // keep deriving this
+```
+
+Why the order matters — 1 000 Ft/unit at 27%, quantity 3:
+
+|                           | round the unit | round the total         |
+| ------------------------- | -------------- | ----------------------- |
+| `netUnitPrice`            | 787            | 787.40 ← not an integer |
+| `netAmount`               | 2 361          | 2 362                   |
+| `netUnitPrice × quantity` | 2 361 ✓        | 2 362.20 ≠ 2 362 ✗      |
+
+Rounding the total produces a fractional unit price **and** breaks
+`unitPrice × quantity = netAmount`, which szamlazz is likely to validate.
+Rounding the unit keeps both identities — `net + tax = gross` and
+`unit × qty = total` — with the leftover forint landing in tax, which is the
+normal outcome.
+
+**Check `simpleItems` first.** The `fejlec` xsd has a `simpleItems` boolean at
+position 27 that the client does not model. If it means szamlazz derives net and
+tax from a gross price itself, that beats rounding by hand: their arithmetic is
+the one that has to satisfy their own validator.
+
+Two tests change when this lands. `keeps net + tax exactly equal to gross` in
+[line-items.test.ts](../lib/invoice/line-items.test.ts) is currently
+_unfalsifiable_ — tax is derived by subtraction, so it cannot fail — and only
+becomes load-bearing once rounding is introduced. A second assertion,
+`netUnitPrice × quantity === netAmount`, would need adding.
+
+Whether whole forints are a legal requirement or merely universal convention is
+a könyvelő question, but it does not change any of the above: szamlazz enforces
+the arithmetic regardless.
 
 ## Open questions
 
