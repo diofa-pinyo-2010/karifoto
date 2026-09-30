@@ -65,16 +65,19 @@ export function calculatePricing({
   ledgerEntries,
 }: PricingArgs): PriceBreakdown {
   const lines: PriceLine[] = [
-    { label: 'Csomag ára', amountInCents: pricing.packagePriceInCents },
     {
-      label: 'Studio bérlet',
+      label: `${shooting.package} csomag`,
+      amountInCents: pricing.packagePriceInCents,
+    },
+    {
+      label: 'Stúdió bérlés',
       amountInCents: pricing.packageStudioPriceInCents,
     },
   ];
 
   if (isLightPlayChargeable(shooting.package) && shooting.isLightPlaySelected) {
     lines.push({
-      label: 'Fényjáték',
+      label: '✨ Fényjáték',
       amountInCents: pricing.lightPlayPriceInCents,
     });
   }
@@ -92,7 +95,7 @@ export function calculatePricing({
 
   if (shooting.numberOfPets > 0) {
     lines.push({
-      label: `Kis kedvencek (${shooting.numberOfPets})`,
+      label: `🐶 Kis kedvencek (${shooting.numberOfPets})`,
       amountInCents: shooting.numberOfPets * pricing.extraPetRateInCents,
     });
   }
