@@ -19,6 +19,7 @@ type EditableFieldProps<T> = {
     value: T | null;
     onChange: (value: T | null) => void;
   }) => React.ReactNode;
+  disabled?: boolean;
 };
 
 export function EditableField<T>({
@@ -26,6 +27,7 @@ export function EditableField<T>({
   displayValue,
   onSave,
   renderInput,
+  disabled = false,
 }: EditableFieldProps<T>) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftValue, setDraftValue] = useState<T | null>(value);
@@ -61,7 +63,12 @@ export function EditableField<T>({
         <Tooltip>
           <TooltipTrigger
             render={
-              <Button size="icon-sm" variant="outline" onClick={handleEdit}>
+              <Button
+                size="icon-sm"
+                variant="outline"
+                onClick={handleEdit}
+                disabled={disabled}
+              >
                 <Edit2Icon />
               </Button>
             }

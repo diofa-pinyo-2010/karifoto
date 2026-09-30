@@ -253,6 +253,7 @@ export default async function PhotoShootingDetailPage({
                   'decorSet',
                 )}
                 emptyLabel="–"
+                disabled={shooting.package !== 'MINI'}
               />
             }
           />
@@ -270,6 +271,7 @@ export default async function PhotoShootingDetailPage({
                   shooting.id,
                   'isLightPlaySelected',
                 )}
+                disabled={isLightPlayChargeable(shooting.package)}
               />
             }
           />
