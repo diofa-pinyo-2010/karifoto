@@ -10,6 +10,7 @@ import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
 import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
+import { recalculatePhotoShootingStatus } from '@/server/admin';
 
 const photoShootingsForDaySelect = {
   select: {
@@ -115,5 +116,6 @@ export async function changeTimeOfPhotoShooting({
     }
   });
 
+  await recalculatePhotoShootingStatus(shootingId);
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
 }
