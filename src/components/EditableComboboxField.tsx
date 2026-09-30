@@ -24,6 +24,7 @@ type EditableComboboxFieldProps = {
   /** Custom content for the current selection in the non-edit view. Defaults to `value.label`. */
   displayValue?: React.ReactNode;
   onSave: (value: string | null) => Promise<{ error: string } | void>;
+  disabled?: boolean;
 };
 
 export function EditableComboboxField({
@@ -33,12 +34,14 @@ export function EditableComboboxField({
   emptyLabel = 'Nincs kiválasztva',
   displayValue,
   onSave,
+  disabled = false,
 }: EditableComboboxFieldProps) {
   return (
     <EditableField<ComboboxFieldItem>
       value={value}
       displayValue={displayValue ?? value?.label ?? emptyLabel}
       onSave={(item) => onSave(item?.value ?? null)}
+      disabled={disabled}
       renderInput={({ value: draft, onChange }) => (
         <Field>
           <Combobox
