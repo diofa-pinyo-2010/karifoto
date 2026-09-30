@@ -9,18 +9,10 @@ import {
   LedgerEntryCategory,
 } from '@/generated/prisma/enums';
 import { parseCheckoutMetadata } from '@/lib/checkout-metadata';
-import {
-  EXTRA_EDIT_PER_IMAGE,
-  EXTRA_FEE_PER_EXTRA_PERSON,
-  EXTRA_FEE_PER_PET,
-  EXTRA_RETOUCH_PER_IMAGE,
-  LEDGER_ENTRY_CATEGORY_SIGN,
-  LIGHT_PLAY_FEE,
-  PACKAGE_PRICES,
-  PERSONS_INCLUDED,
-} from '@/lib/constants';
+import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import { sendDiscordNotification } from '@/lib/discord';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
+import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
@@ -404,16 +396,7 @@ async function handleBookingDeposit(
       await tx.photoShootingPricing.create({
         data: {
           photoShootingId: newPhotoShooting.id,
-          packagePriceInCents: PACKAGE_PRICES[selectedPackage].base,
-          packageStudioPriceInCents: PACKAGE_PRICES[selectedPackage].studio,
-          lightPlayPriceInCents: LIGHT_PLAY_FEE,
-          packageEditedImagesAllowance:
-            PACKAGE_PRICES[selectedPackage].editedImagesAllowance,
-          extraPeopleThreshold: PERSONS_INCLUDED,
-          extraPeopleRateInCents: EXTRA_FEE_PER_EXTRA_PERSON,
-          extraPetRateInCents: EXTRA_FEE_PER_PET,
-          extraEditedImageRateInCents: EXTRA_EDIT_PER_IMAGE,
-          extraRetouchedImageRateInCents: EXTRA_RETOUCH_PER_IMAGE,
+          ...buildPricingSnapshot(selectedPackage),
         },
       });
       await tx.timeSlot.update({
