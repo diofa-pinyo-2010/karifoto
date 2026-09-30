@@ -8,18 +8,11 @@ import {
   BookingIntentStatus,
   LedgerEntryCategory,
 } from '@/generated/prisma/enums';
-import {
-  EXTRA_EDIT_PER_IMAGE,
-  EXTRA_FEE_PER_EXTRA_PERSON,
-  EXTRA_FEE_PER_PET,
-  EXTRA_RETOUCH_PER_IMAGE,
-  LEDGER_ENTRY_CATEGORY_SIGN,
-  LIGHT_PLAY_FEE,
-  PACKAGE_PRICES,
-  PERSONS_INCLUDED,
-} from '@/lib/constants';
+import { parseCheckoutMetadata } from '@/lib/checkout-metadata';
+import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import { sendDiscordNotification } from '@/lib/discord';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
+import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
@@ -57,7 +50,7 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        await handleCheckoutCompleted(session);
+        await routeCheckoutSession(session);
       }
     }
   } catch (err) {
@@ -75,29 +68,82 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ received: true });
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+function readPaymentIntentId(session: Stripe.Checkout.Session) {
+  return typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : (session.payment_intent?.id ?? '');
+}
+
+/**
+ * Sends a completed Checkout Session to the handler for its kind.
+ *
+ * Every session we create carries that kind in its metadata. One that does not
+ * is a payment we cannot account for, so it is escalated rather than guessed
+ * at — silently falling through to the deposit handler would create a booking
+ * for someone who was paying for something else entirely.
+ */
+async function routeCheckoutSession(session: Stripe.Checkout.Session) {
+  const parsed = parseCheckoutMetadata(session.metadata);
+  const paymentIntent = readPaymentIntentId(session);
+
+  if (!parsed.ok) {
+    // A retry cannot fix an unrecognised kind, so this returns 200 and alerts
+    // instead. The money has moved and nothing has recorded it — a human must.
+    console.error('[stripe-webhook] unroutable checkout session', {
+      sessionId: session.id,
+      paymentIntent,
+      amount: session.amount_total,
+      reason: parsed.reason,
+    });
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        '**Beazonosíthatatlan Stripe fizetés érkezett!**\n',
+        'A fizetés megtörtént, de nem tudjuk hova könyvelni — kézi rögzítés kell.',
+        `Checkout Session ID: ${session.id}`,
+        `Fizetés (Stripe): ${
+          paymentIntent !== '' ? stripePaymentIntentUrl(paymentIntent) : '—'
+        }`,
+        `Összeg: ${session.amount_total}`,
+        `Ok: ${parsed.reason}`,
+      ].join('\n'),
+    });
+    return;
+  }
+
+  const metadata = parsed.metadata;
+
+  switch (metadata.kind) {
+    case 'booking_deposit': {
+      await handleBookingDeposit(session, metadata.booking_intent_id);
+      return;
+    }
+    default: {
+      // The exhaustiveness guard asserts on the *discriminant*, not on
+      // `metadata` itself: TypeScript only narrows a parent object to `never`
+      // when its type is a genuine union, and today `CheckoutMetadata` has a
+      // single member. Narrowing the literal works either way — add a kind
+      // without a case above and this assignment stops compiling.
+      const unhandledKind: never = metadata.kind;
+      throw new Error(
+        `Unhandled checkout session kind: ${String(unhandledKind)}`,
+      );
+    }
+  }
+}
+
+async function handleBookingDeposit(
+  session: Stripe.Checkout.Session,
+  bookingIntentId: string,
+) {
   const userEmail = session.customer_details?.email;
   const invoicingName = session.customer_details?.individual_name;
   const userPhoneNumber = session.customer_details?.phone;
   const zip = session.customer_details?.address?.postal_code;
   const city = session.customer_details?.address?.city;
   const addressLine1 = session.customer_details?.address?.line1;
-  const bookingIntentId = session.metadata?.booking_intent_id;
 
-  const paymentIntent =
-    typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : (session.payment_intent?.id ?? '');
-
-  if (bookingIntentId == null) {
-    console.error('[stripe-webhook] no booking_intent_id in session metadata', {
-      sessionId: session.id,
-      paymentIntent,
-      email: userEmail,
-      amount: session.amount_total,
-    });
-    return;
-  }
+  const paymentIntent = readPaymentIntentId(session);
 
   // Create or Update client (customer) in the database
   if (userEmail == null || invoicingName == null || userPhoneNumber == null) {
@@ -350,16 +396,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       await tx.photoShootingPricing.create({
         data: {
           photoShootingId: newPhotoShooting.id,
-          packagePriceInCents: PACKAGE_PRICES[selectedPackage].base,
-          packageStudioPriceInCents: PACKAGE_PRICES[selectedPackage].studio,
-          lightPlayPriceInCents: LIGHT_PLAY_FEE,
-          packageEditedImagesAllowance:
-            PACKAGE_PRICES[selectedPackage].editedImagesAllowance,
-          extraPeopleThreshold: PERSONS_INCLUDED,
-          extraPeopleRateInCents: EXTRA_FEE_PER_EXTRA_PERSON,
-          extraPetRateInCents: EXTRA_FEE_PER_PET,
-          extraEditedImageRateInCents: EXTRA_EDIT_PER_IMAGE,
-          extraRetouchedImageRateInCents: EXTRA_RETOUCH_PER_IMAGE,
+          ...buildPricingSnapshot(selectedPackage),
         },
       });
       await tx.timeSlot.update({

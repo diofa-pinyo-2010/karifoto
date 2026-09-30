@@ -23,3 +23,5 @@ jobs:
       - run: pnpm run fmt:check
 
       - run: pnpm run typecheck
+
+      - run: pnpm run test:run

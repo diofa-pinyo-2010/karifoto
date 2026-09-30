@@ -149,7 +149,7 @@ export default async function ClientPortalShootingDetailsPage({
     : 'details';
 
   return (
-    <section className="mx-auto flex w-full max-w-180 flex-col gap-6 px-6 pt-14 pb-20 sm:px-10">
+    <section className="mx-auto flex min-h-[calc(100vh-240px)] w-full max-w-180 flex-col gap-6 px-6 pt-14 pb-20 sm:px-10">
       <Button
         render={<Link href={APP_URLS.clientPortalHome(clientProfileId)} />}
         nativeButton={false}
@@ -178,7 +178,7 @@ export default async function ClientPortalShootingDetailsPage({
         {PHOTO_SHOOTING_STATUS_CLIENT_LABEL[photoShooting.status]}
       </Badge>
       <Accordion
-        multiple
+        multiple={false}
         defaultValue={[openByDefault]}
         className="rounded-lg border bg-white"
       >
