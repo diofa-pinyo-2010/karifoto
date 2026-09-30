@@ -4,15 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import * as z from 'zod';
 
-import {
-  DecorSet,
-  LedgerEntry,
-  Package,
-  PhotoShootingPricing,
-  PhotoShootingStatus,
-  PriceAdjustment,
-  Prisma,
-} from '@/generated/prisma/client';
+import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
 import {
   APP_URLS,
   PACKAGE_PRICES,
@@ -21,7 +13,7 @@ import {
 } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
-import { calculateRemainingAmount } from '@/server/pricing';
+import { resolveStatus } from '@/server/photo-shooting-status';
 
 const photoShootingWithTimeSlotInclude = {
   include: {
@@ -31,10 +23,6 @@ const photoShootingWithTimeSlotInclude = {
     ledgerEntries: true,
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
-
-type PhotoShootingWithTimeSlot = Prisma.PhotoShootingGetPayload<
-  typeof photoShootingWithTimeSlotInclude
->;
 
 export async function fetchPhotographers() {
   await verifySession();
@@ -110,63 +98,6 @@ const PhotoShootingUpdateSchema = z.object({
 });
 
 type PhotoShootingUpdateInput = z.infer<typeof PhotoShootingUpdateSchema>;
-
-function resolveStatus({
-  current,
-  updates,
-  pricing,
-  adjustments,
-  ledgerEntries,
-  now = new Date(),
-}: {
-  current: PhotoShootingWithTimeSlot;
-  updates: PhotoShootingUpdateInput;
-  pricing: PhotoShootingPricing;
-  adjustments: PriceAdjustment[];
-  ledgerEntries: LedgerEntry[];
-  now?: Date;
-}): PhotoShootingStatus {
-  const merged = { ...current, ...updates };
-
-  if (merged.closedAt != null) {
-    return PhotoShootingStatus.CLOSED;
-  }
-
-  if (merged.photographerId == null) {
-    return PhotoShootingStatus.PHOTOGRAPHER_SELECTION;
-  }
-
-  if (merged.timeSlot.startTime > now) {
-    return PhotoShootingStatus.WAITING_FOR_THE_DATE;
-  }
-
-  // TODO: Waiting for Balance payment here
-
-  if (merged.rawImagesUrl == null) {
-    return PhotoShootingStatus.RAW_PHOTOS_UPLOAD;
-  }
-
-  if (merged.editorId == null) {
-    return PhotoShootingStatus.EDITOR_SELECTION;
-  }
-
-  if (merged.finalImagesUrl == null) {
-    return PhotoShootingStatus.FINAL_PHOTOS_UPLOAD;
-  }
-
-  const toBePaid = calculateRemainingAmount({
-    pricing,
-    shooting: merged,
-    adjustments,
-    ledgerEntries,
-  });
-
-  if (toBePaid > 0) {
-    return PhotoShootingStatus.WAITING_FOR_PAYMENT;
-  }
-
-  return PhotoShootingStatus.COMPLETED;
-}
 
 export async function updatePhotoShooting(
   id: string,
