@@ -20,7 +20,7 @@ import { LedgerEntryCategory } from '@/generated/prisma/enums';
  */
 const bookingDepositMetadata = z.object({
   kind: z.literal('booking_deposit'),
-  booking_intent_id: z.uuid(),
+  booking_intent_id: z.string(),
 });
 
 // One member today. It stays a discriminated union because the point is the
