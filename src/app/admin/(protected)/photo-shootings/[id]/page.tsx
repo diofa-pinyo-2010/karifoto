@@ -429,7 +429,7 @@ export default async function PhotoShootingDetailPage({
           defaultType="DEDUCTION"
           target={{ photoShootingId: shooting.id }}
         />
-        <div className="rounded-lg border bg-card px-4 mt-4">
+        <div className="mt-4 rounded-lg border bg-card px-4">
           {ledgerEntries.map((ledgerEntry) => {
             return (
               <DetailRow
