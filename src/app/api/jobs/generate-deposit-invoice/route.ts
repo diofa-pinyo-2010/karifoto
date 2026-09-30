@@ -108,7 +108,7 @@ export const POST = verifySignatureAppRouter(
 
     let invoice: GeneratedInvoice;
     try {
-      invoice = await invoiceService.generateInvoice({
+      invoice = await invoiceService.generateAdvanceInvoice({
         customer: {
           name: billingAddress.name,
           zip: billingAddress.zip,
