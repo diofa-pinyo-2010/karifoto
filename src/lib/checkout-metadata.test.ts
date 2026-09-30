@@ -2,44 +2,30 @@ import { describe, expect, it } from 'vitest';
 
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import {
-  buildCheckoutMetadata,
   CHECKOUT_KIND_LEDGER_CATEGORY,
   parseCheckoutMetadata,
 } from '@/lib/checkout-metadata';
 
+import type { CheckoutMetadata } from '@/lib/checkout-metadata';
+
 const BOOKING_INTENT_ID = '7f3d1c62-59a4-4b8e-9f21-0c7a5e2d1b44';
 
-describe('buildCheckoutMetadata', () => {
-  it('round-trips through parseCheckoutMetadata', () => {
-    const built = buildCheckoutMetadata({
-      kind: 'booking_deposit',
-      booking_intent_id: BOOKING_INTENT_ID,
-    });
-
-    const parsed = parseCheckoutMetadata(built);
-
-    expect(parsed).toEqual({
-      ok: true,
-      metadata: {
-        kind: 'booking_deposit',
-        booking_intent_id: BOOKING_INTENT_ID,
-      },
-    });
-  });
-
-  it('produces only string values, since Stripe metadata is string→string', () => {
-    const built = buildCheckoutMetadata({
-      kind: 'booking_deposit',
-      booking_intent_id: BOOKING_INTENT_ID,
-    });
-
-    for (const value of Object.values(built)) {
-      expect(typeof value).toBe('string');
-    }
-  });
-});
+// Written exactly as `createCheckoutSession` writes it, `satisfies` and all, so
+// the fixture cannot drift from the real session-creation site without one of
+// the two failing to compile.
+const DEPOSIT_METADATA = {
+  kind: 'booking_deposit',
+  booking_intent_id: BOOKING_INTENT_ID,
+} satisfies CheckoutMetadata;
 
 describe('parseCheckoutMetadata', () => {
+  it('accepts the metadata a deposit checkout session writes', () => {
+    expect(parseCheckoutMetadata(DEPOSIT_METADATA)).toEqual({
+      ok: true,
+      metadata: DEPOSIT_METADATA,
+    });
+  });
+
   it('rejects null, which is what Stripe sends when metadata was never set', () => {
     const parsed = parseCheckoutMetadata(null);
 

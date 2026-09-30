@@ -8,8 +8,11 @@ import { LedgerEntryCategory } from '@/generated/prisma/enums';
  * (`checkout.session.completed`) for every payment the studio ever takes, and
  * the handler has to guess.
  *
- * Build metadata only through `buildCheckoutMetadata` and read it only through
- * `parseCheckoutMetadata`, so the writing and reading sides cannot drift.
+ * Write it with `satisfies CheckoutMetadata` at the session-creation site and
+ * read it only through `parseCheckoutMetadata`, so the two sides cannot drift.
+ * There is deliberately no builder function: `satisfies` already rejects a
+ * mistyped kind, a missing field and an unknown key, so one would be an
+ * identity function dressed up as a seam.
  *
  * The shape below *is* the wire format: Stripe metadata is `string → string`,
  * so the snake_case keys are deliberate and there is no mapping layer to get
@@ -47,12 +50,6 @@ export const CHECKOUT_KIND_LEDGER_CATEGORY: Record<
 > = {
   booking_deposit: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT,
 };
-
-export function buildCheckoutMetadata(
-  metadata: CheckoutMetadata,
-): Record<string, string> {
-  return metadata;
-}
 
 // Read off the raw value rather than the zod error, so an unrecognised kind can
 // be named in the Discord alert — "what arrived" is the whole diagnostic.

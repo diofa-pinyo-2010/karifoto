@@ -6,10 +6,11 @@ import * as z from 'zod';
 
 import { env } from '@/env';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
-import { buildCheckoutMetadata } from '@/lib/checkout-metadata';
 import { DEPOSIT_AMOUNT, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+
+import type { CheckoutMetadata } from '@/lib/checkout-metadata';
 
 const CheckoutSchema = z.object({
   numberOfGuests: z.coerce.number().int().min(1).max(MAX_PERSONS),
@@ -116,10 +117,10 @@ export async function createCheckoutSession(
       name_collection: {
         individual: { enabled: true, optional: false },
       },
-      metadata: buildCheckoutMetadata({
+      metadata: {
         kind: 'booking_deposit',
         booking_intent_id: bookingIntent.id,
-      }),
+      } satisfies CheckoutMetadata,
       success_url: `${origin}/success/${bookingIntentId}`,
       cancel_url: `${origin}/foglalas-osszegzese/${bookingIntentId}`,
     });
