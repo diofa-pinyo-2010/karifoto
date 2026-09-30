@@ -258,7 +258,7 @@ export default async function PhotoShootingDetailPage({
             }
           />
           <DetailRow
-            label="Fényjáték"
+            label="Fényjáték extraként választva"
             value={
               <EditableComboboxField
                 value={{
