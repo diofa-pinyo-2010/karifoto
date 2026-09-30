@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 
-import { BadgePercentIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 
 import { ResponsiveDialog } from '@/components/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
@@ -96,8 +96,8 @@ export function AddPriceAdjustmentDialog({
         if (!nextOpen) reset();
       }}
       trigger={
-        <Button size="lg" disabled={disabled} variant="secondary">
-          <BadgePercentIcon />
+        <Button size="lg" disabled={disabled} variant="destructive">
+          <PlusIcon />
           {triggerLabel}
         </Button>
       }
