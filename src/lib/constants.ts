@@ -43,7 +43,7 @@ export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURICo
 
 export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA';
 
-export const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
+// const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
 /**
  * Ugyanaz a videó beágyazható alakban. `youtube-nocookie.com`, és csak a
