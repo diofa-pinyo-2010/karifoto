@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 
 import { Package } from '@/generated/prisma/enums';
 import {
+  APP_URLS,
   DEPOSIT_AMOUNT,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
@@ -196,7 +197,10 @@ export function BookingReview({
         <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-muted-foreground">
           A fizetés biztonságos Stripe oldalon történik, bankkártya adataidat
           nem látjuk. A fizetés gombbal elfogadod az{' '}
-          <a href="#0">Általános Szerződési Feltételeket</a>.
+          <a href={APP_URLS.terms} target="_blank" rel="noopener norefferer">
+            Általános Szerződési Feltételeket
+          </a>
+          .
         </div>
       </section>
 

@@ -369,4 +369,5 @@ export const APP_URLS = {
     `/client/${clientProfileId}/shooting/${shootingId}/details`,
   clientPortalVerify: '/api/client-portal/verify',
   clientPortalInvalidLink: '/client/ervenytelen-link',
+  terms: '/aszf',
 };

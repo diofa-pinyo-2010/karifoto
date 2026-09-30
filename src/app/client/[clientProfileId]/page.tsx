@@ -70,7 +70,7 @@ export default async function ClientPortalHomePage({
   }
 
   return (
-    <section className="mx-auto w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
+    <section className="mx-auto min-h-[calc(100vh-240px)] w-full max-w-180 px-6 pt-14 pb-20 sm:px-10">
       <p className="brand-eyebrow">Ügyfélportál</p>
 
       <h1 className="font-display text-[clamp(30px,5vw,44px)] leading-[1.07] font-medium text-pretty">
