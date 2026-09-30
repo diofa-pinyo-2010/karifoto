@@ -161,7 +161,8 @@ model PhotoShooting {
   finalImagesUrl String?
   clientNote     String?
 
-  closedAt DateTime?
+  completedAt DateTime? @db.Timestamptz()
+  cancelledAt DateTime? @db.Timestamptz()
 
   calendarEvent BookingCalendarEvent?
   pricing       PhotoShootingPricing?
@@ -394,8 +395,9 @@ enum PhotoShootingStatus {
   EDITOR_SELECTION
   FINAL_PHOTOS_UPLOAD
   WAITING_FOR_EXTRA_PAYMENT
+  READY_TO_COMPLETE
   COMPLETED
-  CLOSED
+  CANCELLED
 }
 
 enum Currency {

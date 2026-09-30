@@ -74,7 +74,8 @@ function makeShooting(overrides: Partial<PhotoShooting> = {}): PhotoShooting {
     rawImagesUrl: null,
     finalImagesUrl: null,
     clientNote: null,
-    closedAt: null,
+    completedAt: null,
+    cancelledAt: null,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
@@ -405,22 +406,31 @@ describe('calculatePricing', () => {
     expect(summed).toBe(result.totalToBeInvoiced);
   });
 
-  it('always lists the package and the studio fee', () => {
-    expect(labels(breakdown())).toEqual(['Csomag ára', 'Studio bérlet']);
+  // Asserts the shape, not the wording: these labels are user-facing copy that
+  // also lands on an invoice, so pinning the exact strings here would turn every
+  // copy tweak into a failing test.
+  it('always lists the package and the studio fee, and nothing else by default', () => {
+    const result = breakdown();
+
+    expect(result.lines).toHaveLength(2);
+    expect(result.lines[0].amountInCents).toBe(PACKAGE);
+    expect(result.lines[1].amountInCents).toBe(STUDIO);
+    expect(result.lines[0].label).toContain('CLASSIC');
   });
 
   describe('optional lines appear only when they cost something', () => {
     it('omits light play when it was not selected', () => {
-      expect(labels(breakdown())).not.toContain('Fényjáték');
+      expect(labels(breakdown()).some((l) => l.includes('Fényjáték'))).toBe(
+        false,
+      );
     });
 
     it('lists light play when selected on a chargeable package', () => {
       const result = breakdown({ shooting: { isLightPlaySelected: true } });
 
-      expect(labels(result)).toContain('Fényjáték');
-      expect(
-        result.lines.find((l) => l.label === 'Fényjáték')?.amountInCents,
-      ).toBe(LIGHT_PLAY);
+      const line = result.lines.find((l) => l.label.includes('Fényjáték'));
+
+      expect(line?.amountInCents).toBe(LIGHT_PLAY);
     });
 
     // Same carve-out as the total: FAMILY includes light play, so it must not
@@ -430,7 +440,7 @@ describe('calculatePricing', () => {
         shooting: { package: 'FAMILY', isLightPlaySelected: true },
       });
 
-      expect(labels(result)).not.toContain('Fényjáték');
+      expect(labels(result).some((l) => l.includes('Fényjáték'))).toBe(false);
     });
 
     it('omits extra people at or below the threshold', () => {

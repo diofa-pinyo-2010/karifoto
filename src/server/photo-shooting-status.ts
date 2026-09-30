@@ -52,8 +52,10 @@ export function resolveStatus({
       entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_BALANCE,
   );
 
-  if (merged.closedAt != null) {
-    return PhotoShootingStatus.CLOSED;
+  // Cancellation wins over everything, including money still owed — a refund
+  // is its own flow, not a balance to collect.
+  if (merged.cancelledAt != null) {
+    return PhotoShootingStatus.CANCELLED;
   }
 
   if (merged.photographerId == null) {
@@ -89,6 +91,10 @@ export function resolveStatus({
 
   if (toBePaid > 0) {
     return PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT;
+  }
+
+  if (merged.completedAt == null) {
+    return PhotoShootingStatus.READY_TO_COMPLETE;
   }
 
   return PhotoShootingStatus.COMPLETED;

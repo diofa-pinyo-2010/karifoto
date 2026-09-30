@@ -1,5 +1,5 @@
 import 'server-only';
-import { Prisma } from '@/generated/prisma/client';
+import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
 import { UPCOMING_SHOOTINGS_TO_SHOW, UUID_RE } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
@@ -24,7 +24,9 @@ export async function fetchUpcomingPhotoShootings(): Promise<
     where: {
       AND: {
         timeSlot: { endTime: { gte: new Date() } },
-        status: { notIn: ['COMPLETED', 'CLOSED'] },
+        status: {
+          notIn: [PhotoShootingStatus.COMPLETED, PhotoShootingStatus.CANCELLED],
+        },
       },
     },
     take: UPCOMING_SHOOTINGS_TO_SHOW,

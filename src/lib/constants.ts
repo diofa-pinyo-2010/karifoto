@@ -142,7 +142,7 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_OTHER: -1,
 };
 
-export const UPCOMING_SHOOTINGS_TO_SHOW = 10;
+export const UPCOMING_SHOOTINGS_TO_SHOW = 300;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;
 
@@ -181,24 +181,37 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
     EDITOR_SELECTION: 'Szerkesztő kiválasztása',
     FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
     WAITING_FOR_EXTRA_PAYMENT: 'Hiányzó befizetés',
+    READY_TO_COMPLETE: 'Kész a teljesítésre',
     COMPLETED: 'Teljesített',
-    CLOSED: 'Bezárt',
+    CANCELLED: 'Lemondott',
   };
 
-/*
- * A munkafolyamat sorrendje, kimondva. Eddig két helyen élt implicit módon: az
- * enum felsorolási sorrendjében (prisma/schema.prisma) és a `resolveStatus()`
- * if-láncában (src/server/admin.ts) — egyik sem alkalmas összehasonlításra, és
- * az enum sorrendjére támaszkodni néma hibát okozna, ha valaki átrendezi.
+/**
+ * A munkafolyamat lineáris sorrendje. A `CANCELLED` szándékosan NINCS benne:
+ * az nem a sor vége, hanem kilépés a sorból. Ha rajta lenne a skálán, egy
+ * lemondott fotózás minden mérföldkövön "túl" lenne (`isStatusAtLeast` igaz
+ * mindenre) és semmi előtt nem állna — vagyis a hívók a kész fotózásnak járó
+ * tartalmat mutatnák neki.
  *
- * `Record`, nem tömb: így egy új státusz addig nem fordul le, amíg nem kapott
- * helyet a sorban.
+ * Így viszont a típus kényszeríti ki, hogy minden hívó külön kezelje a
+ * lemondást, mielőtt sorrendet kérdez.
+ *
+ * `Record`, nem tömb: egy ÚJ munkafolyamat-státusz továbbra sem fordul le,
+ * amíg nem kapott helyet a sorban.
  *
  * FIGYELEM: a `USER_SELECTION`-t jelenleg SEMMI nem állítja be — a
  * `resolveStatus()` a RAW_PHOTOS_UPLOAD után egyből EDITOR_SELECTION-re lép.
  * A rá épülő feltételek tehát ma még nem tüzelnek.
  */
-export const PHOTO_SHOOTING_STATUS_RANK: Record<PhotoShootingStatus, number> = {
+export type PhotoShootingWorkflowStatus = Exclude<
+  PhotoShootingStatus,
+  'CANCELLED'
+>;
+
+export const PHOTO_SHOOTING_STATUS_RANK: Record<
+  PhotoShootingWorkflowStatus,
+  number
+> = {
   PHOTOGRAPHER_SELECTION: 0,
   WAITING_FOR_THE_DATE: 1,
   WAITING_FOR_BALANCE_PAYMENT: 2,
@@ -207,14 +220,13 @@ export const PHOTO_SHOOTING_STATUS_RANK: Record<PhotoShootingStatus, number> = {
   EDITOR_SELECTION: 5,
   FINAL_PHOTOS_UPLOAD: 6,
   WAITING_FOR_EXTRA_PAYMENT: 7,
-  COMPLETED: 8,
-  // Bármelyik állapotból ide lehet kerülni, de visszaút nincs — ezért a végén.
-  CLOSED: 9,
+  READY_TO_COMPLETE: 8,
+  COMPLETED: 9,
 };
 
 export function isStatusBefore(
-  status: PhotoShootingStatus,
-  reference: PhotoShootingStatus,
+  status: PhotoShootingWorkflowStatus,
+  reference: PhotoShootingWorkflowStatus,
 ) {
   return (
     PHOTO_SHOOTING_STATUS_RANK[status] < PHOTO_SHOOTING_STATUS_RANK[reference]
@@ -222,8 +234,8 @@ export function isStatusBefore(
 }
 
 export function isStatusAtLeast(
-  status: PhotoShootingStatus,
-  reference: PhotoShootingStatus,
+  status: PhotoShootingWorkflowStatus,
+  reference: PhotoShootingWorkflowStatus,
 ) {
   return (
     PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
@@ -253,8 +265,9 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_LABEL: Record<
   EDITOR_SELECTION: 'Retusálás alatt',
   FINAL_PHOTOS_UPLOAD: 'Retusálás alatt',
   WAITING_FOR_EXTRA_PAYMENT: 'Fizetésre vár',
+  READY_TO_COMPLETE: 'Küldésre kész',
   COMPLETED: 'Elkészült',
-  CLOSED: 'Lezárt',
+  CANCELLED: 'Lemondott',
 };
 
 /*
@@ -284,9 +297,10 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME: Record<
   RAW_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
   EDITOR_SELECTION: CLIENT_BADGE_IN_PROGRESS,
   FINAL_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
-  CLOSED: CLIENT_BADGE_IN_PROGRESS,
+  CANCELLED: CLIENT_BADGE_IN_PROGRESS,
 
   WAITING_FOR_THE_DATE: CLIENT_BADGE_SETTLED,
+  READY_TO_COMPLETE: CLIENT_BADGE_SETTLED,
   COMPLETED: CLIENT_BADGE_SETTLED,
 };
 
@@ -325,7 +339,8 @@ export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
   RAW_PHOTOS_UPLOAD: 'details',
   EDITOR_SELECTION: 'details',
   FINAL_PHOTOS_UPLOAD: 'details',
-  CLOSED: 'details',
+  READY_TO_COMPLETE: 'details',
+  CANCELLED: 'details',
 };
 
 // Bg opacity/text-lightness pairs mirror the `destructive` Badge variant
@@ -350,9 +365,10 @@ export const PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME: Record<
   WAITING_FOR_EXTRA_PAYMENT: IN_PROGRESS_BADGE_CLASSNAME,
 
   WAITING_FOR_THE_DATE: NOTHING_TO_DO_BADGE_CLASSNAME,
+  READY_TO_COMPLETE: NOTHING_TO_DO_BADGE_CLASSNAME,
   COMPLETED: NOTHING_TO_DO_BADGE_CLASSNAME,
 
-  CLOSED:
+  CANCELLED:
     'bg-red-500/10 text-red-600 dark:bg-red-500/20 border border-red-500/80 dark:border-red-500/40 dark:text-red-400 uppercase font-mono font-medium',
 };
 

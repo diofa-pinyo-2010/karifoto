@@ -63,7 +63,8 @@ function makeShooting(
     rawImagesUrl: null,
     finalImagesUrl: null,
     clientNote: null,
-    closedAt: null,
+    cancelledAt: null,
+    completedAt: null,
     createdAt: BEFORE,
     updatedAt: BEFORE,
     ...overrides,
@@ -97,6 +98,13 @@ const paidInFull = [
   }),
 ];
 
+/** Raw images up, editor assigned, final images up. */
+const delivered = {
+  rawImagesUrl: 'https://picdrop.example/raw',
+  editorId: 'editor-1',
+  finalImagesUrl: 'https://picdrop.example/final',
+} satisfies Partial<PhotoShooting>;
+
 function status({
   shooting,
   startTime = BEFORE,
@@ -124,13 +132,22 @@ function status({
 
 describe('resolveStatus', () => {
   describe('the gates before the shooting', () => {
-    it('reports CLOSED regardless of anything else', () => {
+    it('reports CANCELLED regardless of anything else', () => {
       expect(
         status({
-          shooting: { closedAt: BEFORE, photographerId: null },
+          shooting: { cancelledAt: BEFORE, photographerId: null },
           ledgerEntries: [],
         }),
-      ).toBe(PhotoShootingStatus.CLOSED);
+      ).toBe(PhotoShootingStatus.CANCELLED);
+    });
+
+    // Cancellation outranks the balance gate on purpose: money owed on a
+    // cancelled shooting is a refund question, and staff must not be shown
+    // cash and card buttons for it.
+    it('does not ask for the balance on a cancelled shooting that owes money', () => {
+      expect(
+        status({ shooting: { cancelledAt: BEFORE }, ledgerEntries: [] }),
+      ).toBe(PhotoShootingStatus.CANCELLED);
     });
 
     it('asks for a photographer first', () => {
@@ -182,6 +199,54 @@ describe('resolveStatus', () => {
       ).toBe(PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT);
     });
 
+    // Both of these pin the gate order. Money owed must outrank the delivery
+    // confirmation in either direction, or staff would be invited to send the
+    // final images to a client who still owes for them.
+    it('asks for the extras before offering to confirm delivery', () => {
+      expect(
+        status({
+          shooting: { ...delivered, totalEditedImages: 13 },
+          ledgerEntries: paidInFull,
+        }),
+      ).toBe(PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT);
+    });
+
+    it('reopens a confirmed shooting that owes again', () => {
+      expect(
+        status({
+          shooting: {
+            ...delivered,
+            completedAt: NOW,
+            totalEditedImages: 13,
+          },
+          ledgerEntries: paidInFull,
+        }),
+      ).toBe(PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT);
+    });
+
+    // And returns without asking for a second confirmation, because completedAt
+    // is still set. Whether a second delivery email should go out for the extra
+    // images is an open product question — this only records today's behaviour.
+    it('goes back to COMPLETED once those extras are paid', () => {
+      expect(
+        status({
+          shooting: {
+            ...delivered,
+            completedAt: NOW,
+            totalEditedImages: 13,
+          },
+          ledgerEntries: [
+            ...paidInFull,
+            makeLedgerEntry({
+              id: 'extra',
+              category: 'INCOME_CLIENT_PAYMENT_EXTRA',
+              amountInCents: 9_000_00,
+            }),
+          ],
+        }),
+      ).toBe(PhotoShootingStatus.COMPLETED);
+    });
+
     it('does not ask for the balance twice once a balance row exists', () => {
       expect(
         status({
@@ -220,14 +285,19 @@ describe('resolveStatus', () => {
       ).toBe(PhotoShootingStatus.FINAL_PHOTOS_UPLOAD);
     });
 
-    it('is COMPLETED when everything is delivered and nothing is owed', () => {
+    // Delivery is deliberately not automatic. A wrong finalImagesUrl would
+    // otherwise send the client an email that cannot be recalled, so the
+    // shooting parks here until a human confirms.
+    it('waits for a human to confirm delivery once everything is in place', () => {
+      expect(status({ shooting: delivered, ledgerEntries: paidInFull })).toBe(
+        PhotoShootingStatus.READY_TO_COMPLETE,
+      );
+    });
+
+    it('is COMPLETED only once that confirmation was recorded', () => {
       expect(
         status({
-          shooting: {
-            rawImagesUrl: 'https://picdrop.example/raw',
-            editorId: 'editor-1',
-            finalImagesUrl: 'https://picdrop.example/final',
-          },
+          shooting: { ...delivered, completedAt: NOW },
           ledgerEntries: paidInFull,
         }),
       ).toBe(PhotoShootingStatus.COMPLETED);
