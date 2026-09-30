@@ -9,7 +9,10 @@ import {
   LedgerEntryCategory,
 } from '@/generated/prisma/enums';
 import { parseCheckoutMetadata } from '@/lib/checkout-metadata';
-import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
+import {
+  isLightPlayChargeable,
+  LEDGER_ENTRY_CATEGORY_SIGN,
+} from '@/lib/constants';
 import { sendDiscordNotification } from '@/lib/discord';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
@@ -384,7 +387,9 @@ async function handleBookingDeposit(
           decorSet: bookingIntent.decorSet,
           numberOfGuests: bookingIntent.numberOfGuests,
           numberOfPets: bookingIntent.numberOfPets,
-          isLightPlaySelected: bookingIntent.isLightPlaySelected,
+          isLightPlaySelected:
+            isLightPlayChargeable(selectedPackage) &&
+            bookingIntent.isLightPlaySelected,
           editor:
             defaultEditor != null
               ? { connect: { id: defaultEditor.id } }

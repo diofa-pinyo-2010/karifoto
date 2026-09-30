@@ -6,6 +6,7 @@ import {
   DEPOSIT_AMOUNT,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
+  isLightPlayChargeable,
   LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
@@ -35,7 +36,7 @@ export function BookingSummary({
   const packageStudioFee =
     PACKAGE_PRICES[bookingIntent.package as keyof typeof PACKAGE_PRICES].studio;
 
-  const shouldShowLight = bookingIntent.package != 'FAMILY';
+  const shouldShowLight = isLightPlayChargeable(bookingIntent.package);
   const lightFee =
     shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
 

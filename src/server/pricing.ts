@@ -4,6 +4,7 @@ import {
   PhotoShootingPricing,
   PriceAdjustment,
 } from '@/generated/prisma/client';
+import { isLightPlayChargeable } from '@/lib/constants';
 
 export function calculateRemainingAmount({
   pricing,
@@ -17,7 +18,7 @@ export function calculateRemainingAmount({
   ledgerEntries: LedgerEntry[];
 }): number {
   const lightPlayPrice =
-    shooting.package !== 'FAMILY' && shooting.isLightPlaySelected
+    isLightPlayChargeable(shooting.package) && shooting.isLightPlaySelected
       ? pricing.lightPlayPriceInCents
       : 0;
   const extraPeople = Math.max(

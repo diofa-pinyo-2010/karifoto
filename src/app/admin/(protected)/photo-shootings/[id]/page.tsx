@@ -27,6 +27,7 @@ import {
   booleanToYesNo,
   DECOR_SET_COMBOBOX_ITEMS,
   DECOR_SET_LABEL,
+  isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_LABEL,
   PACKAGE_LABEL,
   PAYMENT_METHOD_LABEL,
@@ -354,7 +355,9 @@ export default async function PhotoShootingDetailPage({
           <DetailRow
             label="Fényjáték ára"
             value={formatAmount(
-              Number(isLightPlaySelected) * pricing.lightPlayPriceInCents,
+              isLightPlayChargeable(shooting.package) && isLightPlaySelected
+                ? pricing.lightPlayPriceInCents
+                : 0,
               'HUF',
             )}
           />

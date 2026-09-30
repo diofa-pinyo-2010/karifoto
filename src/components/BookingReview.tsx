@@ -8,6 +8,7 @@ import {
   DEPOSIT_AMOUNT,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
+  isLightPlayChargeable,
   LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
@@ -46,7 +47,7 @@ export function BookingReview({
   const { base: packageBasePrice, studio: packageStudioFee } =
     PACKAGE_PRICES[bookingIntent.package];
 
-  const shouldShowLight = bookingIntent.package !== Package.FAMILY;
+  const shouldShowLight = isLightPlayChargeable(bookingIntent.package);
   const lightFee =
     shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
 
