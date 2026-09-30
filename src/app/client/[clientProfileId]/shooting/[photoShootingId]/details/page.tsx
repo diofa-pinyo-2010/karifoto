@@ -30,6 +30,7 @@ import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
   DECOR_SET_LABEL,
+  hasLightPlay,
   INVOICE_STATUS_LABEL,
   isStatusBefore,
   PACKAGE_LABEL,
@@ -305,10 +306,10 @@ function ClientPortalShootingDetails({
 }) {
   const packageInfo = PACKAGE_BY_ENUM.get(shooting.package);
 
-  // A Family ára tartalmazza a fényjátékot — ezért nem számol rá felárat a
-  // `calculateRemainingAmount` sem.
-  const hasLightPlay =
-    shooting.package === 'FAMILY' || shooting.isLightPlaySelected;
+  const lightPlay = hasLightPlay(
+    shooting.package,
+    shooting.isLightPlaySelected,
+  );
 
   // Díszletet csak a Mini csomagnál választanak; a másik kettőben mindkettő
   // benne van, ott egyet megnevezni félrevezető lenne.
@@ -358,7 +359,7 @@ function ClientPortalShootingDetails({
         </DetailRow>
       )}
 
-      {hasLightPlay && (
+      {lightPlay && (
         <DetailRow icon={SparklesIcon} label="Fényjáték">
           Benne van a fotózásotokban ✨
         </DetailRow>
