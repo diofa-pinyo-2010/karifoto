@@ -12,6 +12,7 @@ is a January problem.
 ## Table of Contents
 
 - [Priority order](#priority-order)
+- [Status machine — what changed since this doc was written](#status-machine--what-changed-since-this-doc-was-written)
 - [1. Invoice wrappers](#1-invoice-wrappers)
 - [2. Final invoice (végszámla) generation](#2-final-invoice-végszámla-generation)
 - [3. SumUp and `PaymentAttempt`](#3-sumup-and-paymentattempt)
@@ -42,6 +43,52 @@ you are touching — see [pricing.test.ts](../server/pricing.test.ts) and
 [pricing-snapshot.test.ts](../lib/pricing-snapshot.test.ts) for the two
 conventions already established (one must **not** import `constants.ts`, the
 other must, and both say why in a comment).
+
+## Status machine — what changed since this doc was written
+
+`PhotoShootingStatus` gained three members and lost one name. Read this before
+section 2, because the végszámla job sits inside this workflow.
+
+| status                        | meaning                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| `WAITING_FOR_BALANCE_PAYMENT` | the shooting has started and the balance is collectable — cash or SumUp, in person |
+| `WAITING_FOR_EXTRA_PAYMENT`   | was `WAITING_FOR_PAYMENT`; extras owed after delivery, **Stripe only**             |
+| `READY_TO_COMPLETE`           | everything delivered and paid, waiting for a human to confirm                      |
+| `CANCELLED`                   | was `CLOSED`, which always meant cancelled; `closedAt` is now `cancelledAt`        |
+
+Three rules the code enforces, in
+[photo-shooting-status.ts](../server/photo-shooting-status.ts):
+
+- **The two payment gates ask different questions.** `toBePaid > 0` alone cannot
+  tell the balance from the extras, so the first gate also requires that no
+  `INCOME_CLIENT_PAYMENT_BALANCE` row exists yet. Without that, a completed
+  shooting whose client orders extra images falls back into the balance state
+  and gets offered cash and card for money that must go through Stripe.
+- **Delivery is deliberate.** A final images URL no longer flips the shooting to
+  `COMPLETED` and emails the client, because a wrong URL had no correction path.
+  The confirmation gate sits _after_ the extra-payment check — moving it above
+  turns two tests red, since staff would be invited to send images to a client
+  who still owes for them.
+- **`CANCELLED` is off the rank scale.** It is an exit from the workflow, not the
+  end of it. `PHOTO_SHOOTING_STATUS_RANK` and both ordering helpers are typed on
+  `PhotoShootingWorkflowStatus`, which excludes it, so the compiler forces every
+  caller to dispose of cancellation before asking whether one status precedes
+  another. A new _workflow_ status still fails to compile until it is ranked.
+
+### Both new gates are dead ends today
+
+**Nothing writes `completedAt` or `cancelledAt`.** So a shooting reaches
+`READY_TO_COMPLETE` and stops there — `COMPLETED` is unreachable — and
+`CANCELLED` is unreachable entirely. Two pieces of wiring are missing:
+
+- the **Lezárás** button in [BalancePayment](../components/BalancePayment.tsx):
+  send the final-images email, stamp `completedAt`, and only then let the status
+  advance. Deriving the status from a `SentEmail` row instead of the column was
+  considered and rejected; with a column, a failed Resend call leaves the
+  shooting marked complete, so whatever sets `completedAt` must do it _after_
+  the email is accepted.
+- cancellation itself (priority 5), which stamps `cancelledAt` and decides the
+  refund.
 
 ## 1. Invoice wrappers
 
