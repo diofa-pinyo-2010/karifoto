@@ -1,3 +1,38 @@
+## ⚠️ Temporary: szamlazz-client is a fork, not the npm release
+
+`@halftome/szamlazz-client` is installed from a **fork branch**, not from npm:
+
+```bash
+pnpm add -D github:nemethricsi/szamlazz-client#advance-invoices
+```
+
+**Why:** the published package has no support for advance invoices
+(előlegszámla) or final invoices (végszámla), which the deposit → balance
+billing flow needs. The fork adds `advanceInvoice`, `finalInvoice` and
+`advanceInvoiceNumber` to `InvoiceOptions`, and fixes the `<fejlec>` elements
+being emitted out of the xsd's `xs:sequence` order. The package name is
+unchanged, so no import anywhere in `src/` refers to the fork.
+
+Things to know:
+
+- **The lockfile pins a commit SHA**, not the branch. Pushing to
+  `advance-invoices` does _not_ update this project — re-run the command above
+  to pick up new commits.
+- **Do not delete the branch** while this dependency points at it. Deleting it
+  breaks every install, including Vercel builds.
+- The fork adds a `prepare: tsc` script so the package builds at install time.
+  That commit is deliberately kept out of the upstream PR.
+
+### When the upstream PR is merged
+
+1. `pnpm add -D @halftome/szamlazz-client@<new-version>`
+2. Check `InvoiceOptions` still exposes the three fields with the same names —
+   the maintainer may have renamed them or taken a discriminated union instead.
+3. Run the invoice flow against a szamlazz test account before deploying.
+4. Delete this section, then delete the fork branch.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
