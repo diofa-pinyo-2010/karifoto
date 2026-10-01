@@ -5,6 +5,9 @@ import {
   ArrowLeftIcon,
   CameraIcon,
   ClockIcon,
+  ExternalLinkIcon,
+  FlagIcon,
+  HeartIcon,
   ImagesIcon,
   LayoutDashboardIcon,
   MapPinIcon,
@@ -24,16 +27,23 @@ import {
   AccordionItem,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ItemGroup } from '@/components/ui/item';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
   DECOR_SET_LABEL,
+  EXTRA_EDIT_PER_IMAGE,
+  EXTRA_RETOUCH_PER_IMAGE,
   hasLightPlay,
   INVOICE_STATUS_LABEL,
   isStatusBefore,
   PACKAGE_LABEL,
+  PACKAGE_PRICES,
+  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
   STUDIO_ADDRESS,
@@ -47,7 +57,7 @@ import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
-import { formatAmount } from '@/lib/utils';
+import { formatAmount, formatMoney } from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
 import type { PhotoShootingForClientPortal } from '@/lib/queries';
@@ -134,7 +144,7 @@ export default async function ClientPortalShootingDetailsPage({
             elindulhat a válogatás.
           </p>
         ) : (
-          <p>TODO: Képválogatás content</p>
+          <ClientImageSelection {...photoShooting} />
         ),
       disabled: photoShooting.status === 'CANCELLED',
       icon: ImagesIcon,
@@ -389,5 +399,173 @@ function ClientPortalShootingDetails({
         </DetailRow>
       )}
     </dl>
+  );
+}
+
+function galleryFilterUrl(rawImagesUrl: string, filter: string) {
+  const url = new URL(rawImagesUrl);
+  url.searchParams.set(filter.split('=')[0], filter.split('=')[1]);
+  return url.toString();
+}
+
+function ClientImageSelection({
+  rawImagesUrl,
+  package: shootingPackage,
+}: PhotoShootingForClientPortal) {
+  const allowance = PACKAGE_PRICES[shootingPackage].editedImagesAllowance;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <p>Itt van a nyers képek galériája:</p>
+        {rawImagesUrl != null ? (
+          <a
+            href={rawImagesUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({
+              variant: 'secondary',
+              size: 'lg',
+              className: 'w-full sm:w-fit',
+            })}
+          >
+            PicDrop galéria megnyitása
+            <ExternalLinkIcon />
+          </a>
+        ) : (
+          <p className="font-bold text-red-500">
+            Nem találjuk a linket :( Kérlek, hívj fel minket.
+          </p>
+        )}
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-4">
+        <h3 className="text-lg font-semibold">Hogyan válogass?</h3>
+        <ol className="flex flex-col gap-4">
+          <li className="flex gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-ink text-sm font-semibold text-brand-paper">
+              1
+            </span>
+            <div className="flex flex-col gap-1">
+              <p className="flex items-center gap-2 font-semibold">
+                <FlagIcon className="size-4 fill-black" />
+                Szerkesztésre: fekete zászló
+              </p>
+              <p className="text-brand-muted">
+                Nyisd meg a képet, kattints a zászló ikonra, és válaszd a fekete
+                zászlót. Ezeket szerkesztjük meg. A csomagod{' '}
+                <strong>{allowance} db</strong> szerkesztett képet tartalmaz,
+                minden további kép {formatMoney(EXTRA_EDIT_PER_IMAGE)}/db.
+              </p>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-ink text-sm font-semibold text-brand-paper">
+              2
+            </span>
+            <div className="flex flex-col gap-1">
+              <p className="flex items-center gap-2 font-semibold">
+                <HeartIcon className="size-4 fill-red-500 text-red-500" />
+                Extra retusra: piros szív
+              </p>
+              <p className="text-brand-muted">
+                Ha egy képre beauty retust kérsz (bőrsimítás, alakformálás,
+                fogfehérítés stb.), jelöld a piros szívvel is. Díja{' '}
+                {formatMoney(EXTRA_RETOUCH_PER_IMAGE)}/kép. A retusált képnek a
+                fekete zászlós képek között is szerepelnie kell.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        {rawImagesUrl != null && (
+          <div className="flex flex-col gap-2 rounded-lg bg-brand-cream p-4">
+            <p className="text-sm font-semibold">
+              Ellenőrizd a megjelölt képeidet:
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <a
+                href={galleryFilterUrl(rawImagesUrl, 'filterflags=final')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({
+                  variant: 'outline',
+                  size: 'default',
+                  className: 'fill-black',
+                })}
+              >
+                <FlagIcon className="fill-black" />
+                Fekete zászlós képek
+              </a>
+              <a
+                href={galleryFilterUrl(rawImagesUrl, 'filterliked=1')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({
+                  variant: 'outline',
+                  size: 'default',
+                  className: 'fill-red-500 text-red-500',
+                })}
+              >
+                <HeartIcon className="fill-red-500 text-red-500" />
+                Piros szíves képek
+              </a>
+            </div>
+          </div>
+        )}
+
+        <p className="text-sm text-brand-muted">
+          A galériából az összes képet le is tudod tölteni a „Download … files”
+          gombbal.
+        </p>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-semibold">Végeztél? Add meg a számokat</h3>
+        <p className="text-brand-muted">
+          Ha a megjelölt képek száma megegyezik a csomagodéval, azonnal kezdjük
+          a szerkesztést. A kész képeket a jelölés beérkezésétől számított{' '}
+          {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül
+          küldjük.
+        </p>
+        {/* TODO: bekötni egy server actionre (declaredEditedImages /
+            declaredRetouchedImages). Addig nincs bekötve, a gomb tiltott. */}
+        <form className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="editedImages">Fekete zászlós képek száma</Label>
+              <Input
+                id="editedImages"
+                name="editedImages"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                className="h-10"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="retouchedImages">Piros szíves képek száma</Label>
+              <Input
+                id="retouchedImages"
+                name="retouchedImages"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                className="h-10"
+              />
+            </div>
+          </div>
+          <Button type="submit" size="lg" disabled className="w-full sm:w-fit">
+            Válogatás beküldése
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }

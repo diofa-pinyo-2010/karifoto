@@ -140,6 +140,7 @@ const photoShootingForClientPortalSelect = {
     numberOfPets: true,
     clientNote: true,
     timeSlot: { select: { startTime: true } },
+    rawImagesUrl: true,
     photographer: { select: { nickname: true } },
     // Az Invoice-nak nincs createdAt-je, a számlaszám viszont növekvő.
     invoices: {
