@@ -29,7 +29,7 @@ export async function createTimeSlot(
   await verifySession();
 
   if (Number.isNaN(startTime.getTime()) || startTime.getTime() <= Date.now()) {
-    return { error: 'Érvénytelen időpont.' };
+    return { error: 'Érvénytelen vagy múltbéli időpont.' };
   }
 
   const endTime = new Date(
