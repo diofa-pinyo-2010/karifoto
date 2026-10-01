@@ -2,7 +2,7 @@ import {
   EXTRA_EDIT_PER_IMAGE,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
-  EXTRA_RETOUCH_PER_IMAGE,
+  EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
   LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
@@ -44,6 +44,6 @@ export function buildPricingSnapshot(
     extraPetRateInCents: EXTRA_FEE_PER_PET,
 
     extraEditedImageRateInCents: EXTRA_EDIT_PER_IMAGE,
-    extraRetouchedImageRateInCents: EXTRA_RETOUCH_PER_IMAGE,
+    extraRetouchedImageRateInCents: EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
   };
 }

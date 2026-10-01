@@ -101,13 +101,16 @@ export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) =>
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PERSONS = 8;
+export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
 export const MAX_PETS = 8;
 export const PERSONS_INCLUDED = 5;
 export const DEPOSIT_AMOUNT = 10000_00;
-export const EXTRA_EDIT_PER_IMAGE = 2000_00;
-export const EXTRA_RETOUCH_PER_IMAGE = 3000_00;
+export const EXTRA_EDIT_PER_IMAGE = 1000_00;
+export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
+export const EXPRESS_AFTERWORK_FEE = 10000_00;
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
+export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;
 
 export const PACKAGE_PRICES = {
   MINI: {
