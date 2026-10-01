@@ -176,7 +176,7 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
     PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
     WAITING_FOR_THE_DATE: 'Várunk a fotózásra',
     WAITING_FOR_BALANCE_PAYMENT: 'Egyenlegfizetés',
-    RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése',
+    RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése & küldése',
     USER_SELECTION: 'Ügyfél válogatás',
     EDITOR_SELECTION: 'Szerkesztő kiválasztása',
     FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
@@ -225,22 +225,26 @@ export const PHOTO_SHOOTING_STATUS_RANK: Record<
 };
 
 export function isStatusBefore(
-  status: PhotoShootingWorkflowStatus,
+  status: PhotoShootingStatus,
   reference: PhotoShootingWorkflowStatus,
 ) {
+  if (status === PhotoShootingStatus.CANCELLED) return true;
+
   return (
     PHOTO_SHOOTING_STATUS_RANK[status] < PHOTO_SHOOTING_STATUS_RANK[reference]
   );
 }
 
-export function isStatusAtLeast(
-  status: PhotoShootingWorkflowStatus,
-  reference: PhotoShootingWorkflowStatus,
-) {
-  return (
-    PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
-  );
-}
+// export function isStatusAtLeast(
+//   status: PhotoShootingStatus,
+//   reference: PhotoShootingWorkflowStatus,
+// ) {
+//   if (status === PhotoShootingStatus.CANCELLED) return false;
+
+//   return (
+//     PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
+//   );
+// }
 
 /*
  * Amit az ügyfélportál mutat. Szándékosan NEM a
@@ -261,7 +265,7 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_LABEL: Record<
   WAITING_FOR_THE_DATE: 'Közelgő',
   WAITING_FOR_BALANCE_PAYMENT: 'Folyamatban',
   RAW_PHOTOS_UPLOAD: 'Feldolgozás alatt',
-  USER_SELECTION: 'Válogatásra vár',
+  USER_SELECTION: 'Ön válogat',
   EDITOR_SELECTION: 'Retusálás alatt',
   FINAL_PHOTOS_UPLOAD: 'Retusálás alatt',
   WAITING_FOR_EXTRA_PAYMENT: 'Fizetésre vár',
@@ -270,14 +274,6 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_LABEL: Record<
   CANCELLED: 'Lemondott',
 };
 
-/*
- * A `PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME` shadcn-tokenekre épül (admin,
- * sötét mód), ami a krém hátterű portálon idegen lenne. Ezek a 2026-os
- * paletta idősáv-állapotszíneit használják, amelyek AA-t teljesítenek a saját
- * felületükön.
- *
- * Három állapot: az ügyfélre vár / dolgozunk rajta / nincs teendő.
- */
 const CLIENT_BADGE_ACTION_NEEDED =
   'bg-brand-taken-surface text-brand-taken border border-brand-taken-edge';
 const CLIENT_BADGE_IN_PROGRESS =
@@ -421,4 +417,5 @@ export const APP_URLS = {
   clientPortalVerify: '/api/client-portal/verify',
   clientPortalInvalidLink: '/client/ervenytelen-link',
   terms: '/aszf',
+  privacy: '/adatkezeles',
 };

@@ -16,7 +16,15 @@ const BEFORE = new Date('2026-12-10T10:00:00.000Z');
 const AFTER = new Date('2026-12-20T10:00:00.000Z');
 const NOW_LATER = new Date('2026-12-25T10:00:00.000Z');
 
+/** Raw images sent to the client, then the client finished picking. */
+const SENT = new Date('2026-12-11T09:00:00.000Z');
+const SELECTED = new Date('2026-12-12T09:00:00.000Z');
+
 const PACKAGE_TOTAL = 40_000_00;
+const DEPOSIT = 10_000_00;
+
+const RAW_URL = 'https://picdrop.example/raw';
+const FINAL_URL = 'https://picdrop.example/final';
 
 function makePricing(): PhotoShootingPricing {
   return {
@@ -88,21 +96,58 @@ function makeLedgerEntry(overrides: Partial<LedgerEntry> = {}): LedgerEntry {
   };
 }
 
+function makeAdjustment(
+  overrides: Partial<PriceAdjustment> = {},
+): PriceAdjustment {
+  return {
+    id: 'adjustment-1',
+    type: 'DISCOUNT',
+    amountInCents: 0,
+    publicLabel: 'Kedvezmény',
+    internalNote: 'teszt',
+    createdById: 'staff-1',
+    bookingIntentId: null,
+    photoShootingId: 'shooting-1',
+    createdAt: BEFORE,
+    updatedAt: BEFORE,
+    ...overrides,
+  };
+}
+
+/** Deposit only — the balance is still owed. */
+const depositOnly = [makeLedgerEntry({ amountInCents: DEPOSIT })];
+
 /** Enough income that nothing is owed. */
 const paidInFull = [
-  makeLedgerEntry({ id: 'deposit', amountInCents: 10_000_00 }),
+  makeLedgerEntry({ id: 'deposit', amountInCents: DEPOSIT }),
   makeLedgerEntry({
     id: 'balance',
     category: 'INCOME_CLIENT_PAYMENT_BALANCE',
-    amountInCents: PACKAGE_TOTAL - 10_000_00,
+    amountInCents: PACKAGE_TOTAL - DEPOSIT,
   }),
 ];
 
-/** Raw images up, editor assigned, final images up. */
+/**
+ * `RAW_PHOTOS_UPLOAD` is one staff task with two steps — save the url *and*
+ * send it to the client — so the state only ends when both are done.
+ * `selectionRequestedAt` is the second step.
+ */
+const rawImagesSent = {
+  rawImagesUrl: RAW_URL,
+  selectionRequestedAt: SENT,
+} satisfies Partial<PhotoShooting>;
+
+/** …and the client has finished picking. */
+const selectionDone = {
+  ...rawImagesSent,
+  selectionCompletedAt: SELECTED,
+} satisfies Partial<PhotoShooting>;
+
+/** Everything in place: selection done, editor assigned, final images up. */
 const delivered = {
-  rawImagesUrl: 'https://picdrop.example/raw',
+  ...selectionDone,
   editorId: 'editor-1',
-  finalImagesUrl: 'https://picdrop.example/final',
+  finalImagesUrl: FINAL_URL,
 } satisfies Partial<PhotoShooting>;
 
 function status({
@@ -168,33 +213,47 @@ describe('resolveStatus', () => {
 
   describe('the two payment gates', () => {
     it('asks for the balance once the shooting has started and nothing was collected', () => {
-      expect(
-        status({
-          ledgerEntries: [
-            makeLedgerEntry({ amountInCents: 10_000_00 }), // deposit only
-          ],
-        }),
-      ).toBe(PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT);
+      expect(status({ ledgerEntries: depositOnly })).toBe(
+        PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT,
+      );
     });
 
     /**
      * The case that makes the two gates different questions.
      *
-     * A completed shooting whose client later orders extra images owes money
-     * again. If the first gate only asked `toBePaid > 0` it would capture this
-     * and offer cash and card — for money that must go through Stripe Checkout.
-     * The balance ledger row is what tells the two apart.
+     * A delivered shooting whose client orders extra images owes money again. If
+     * the first gate only asked `toBePaid > 0` it would capture this and offer
+     * cash and card — for money that must go through Stripe Checkout.
+     *
+     * What tells them apart is `selectionRequestedAt`: the balance is due at the
+     * shoot, before the raw images go out, so once the selection has been
+     * requested any further debt is extras by definition.
      */
     it('asks for an extra payment — not the balance — when a settled shooting owes again', () => {
       expect(
         status({
-          shooting: {
-            rawImagesUrl: 'https://picdrop.example/raw',
-            editorId: 'editor-1',
-            finalImagesUrl: 'https://picdrop.example/final',
-            totalEditedImages: 13, // 3 over the allowance
-          },
+          shooting: { ...delivered, totalEditedImages: 13 }, // 3 over the allowance
           ledgerEntries: paidInFull,
+        }),
+      ).toBe(PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT);
+    });
+
+    /**
+     * The regression guard for why the gate is no longer keyed on a balance
+     * ledger row. A discount covering the whole remaining balance — a free
+     * shoot for a friend — means nothing is collected at the shoot, so no
+     * `INCOME_CLIENT_PAYMENT_BALANCE` row ever exists. A gate asking for that
+     * row would send this shooting back to the balance state and offer cash for
+     * extras that must go through Stripe.
+     */
+    it('asks for an extra payment after a free shoot too, where no balance row exists', () => {
+      expect(
+        status({
+          shooting: { ...delivered, totalEditedImages: 13 },
+          adjustments: [
+            makeAdjustment({ amountInCents: PACKAGE_TOTAL - DEPOSIT }),
+          ],
+          ledgerEntries: depositOnly,
         }),
       ).toBe(PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT);
     });
@@ -247,10 +306,30 @@ describe('resolveStatus', () => {
       ).toBe(PhotoShootingStatus.COMPLETED);
     });
 
-    it('does not ask for the balance twice once a balance row exists', () => {
+    /**
+     * Requesting the selection is what closes the balance stage — the same data
+     * either side of it, and only that field moves. The server action that
+     * stamps it refuses while `toBePaid > 0`, so the second case is not reached
+     * by forgetting to take the cash; it is reached by the price rising later.
+     *
+     * Note what the second case does *not* say: during the selection window the
+     * debt is invisible to the status machine (it surfaces once
+     * `selectionCompletedAt` is set). That is why the admin page locks the
+     * price-changing fields for exactly that window.
+     */
+    it('asks for the balance while the selection has not been requested', () => {
       expect(
         status({
-          shooting: { totalRetouchedImages: 1 },
+          shooting: { rawImagesUrl: RAW_URL, totalRetouchedImages: 1 },
+          ledgerEntries: paidInFull,
+        }),
+      ).toBe(PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT);
+    });
+
+    it('never asks for the balance once the selection has been requested', () => {
+      expect(
+        status({
+          shooting: { ...rawImagesSent, totalRetouchedImages: 1 },
           ledgerEntries: paidInFull,
         }),
       ).not.toBe(PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT);
@@ -264,22 +343,33 @@ describe('resolveStatus', () => {
       );
     });
 
-    it('asks for an editor once the raw images are up', () => {
+    // Saving the url is only half the task: the client still has to be sent the
+    // link, which is what stamps `selectionRequestedAt`. So the state holds.
+    it('still asks for the raw images when the url is saved but not sent', () => {
       expect(
         status({
-          shooting: { rawImagesUrl: 'https://picdrop.example/raw' },
+          shooting: { rawImagesUrl: RAW_URL },
           ledgerEntries: paidInFull,
         }),
+      ).toBe(PhotoShootingStatus.RAW_PHOTOS_UPLOAD);
+    });
+
+    it('waits for the client to pick once the raw images are sent', () => {
+      expect(
+        status({ shooting: rawImagesSent, ledgerEntries: paidInFull }),
+      ).toBe(PhotoShootingStatus.USER_SELECTION);
+    });
+
+    it('asks for an editor once the client has picked', () => {
+      expect(
+        status({ shooting: selectionDone, ledgerEntries: paidInFull }),
       ).toBe(PhotoShootingStatus.EDITOR_SELECTION);
     });
 
     it('asks for the final images once an editor is assigned', () => {
       expect(
         status({
-          shooting: {
-            rawImagesUrl: 'https://picdrop.example/raw',
-            editorId: 'editor-1',
-          },
+          shooting: { ...selectionDone, editorId: 'editor-1' },
           ledgerEntries: paidInFull,
         }),
       ).toBe(PhotoShootingStatus.FINAL_PHOTOS_UPLOAD);
@@ -308,8 +398,8 @@ describe('resolveStatus', () => {
     it('uses a pending update rather than the stored value', () => {
       expect(
         status({
-          shooting: { rawImagesUrl: null },
-          updates: { rawImagesUrl: 'https://picdrop.example/raw' },
+          shooting: { ...selectionDone, rawImagesUrl: null },
+          updates: { rawImagesUrl: RAW_URL },
           ledgerEntries: paidInFull,
         }),
       ).toBe(PhotoShootingStatus.EDITOR_SELECTION);

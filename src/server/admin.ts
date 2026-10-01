@@ -95,6 +95,7 @@ const PhotoShootingUpdateSchema = z.object({
     .enum(Object.values(DecorSet) as [DecorSet, ...DecorSet[]])
     .nullable()
     .optional(),
+  selectionRequestedAt: z.date().optional(),
 });
 
 type PhotoShootingUpdateInput = z.infer<typeof PhotoShootingUpdateSchema>;

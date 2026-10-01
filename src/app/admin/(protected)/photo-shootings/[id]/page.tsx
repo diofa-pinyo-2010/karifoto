@@ -14,15 +14,17 @@ import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
+import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
+import { SendRawImages } from '@/components/SendRawImages';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
-import { PaymentMethod } from '@/generated/prisma/client';
+import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
   booleanToYesNo,
@@ -51,30 +53,6 @@ import {
   updatePhotoShootingField,
 } from '@/server/admin';
 import { calculatePricing } from '@/server/pricing';
-
-export function DetailRow({
-  label,
-  value,
-  fullWidth = false,
-}: {
-  label: React.ReactNode;
-  value: React.ReactNode;
-  fullWidth?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0">
-      <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
-      <span
-        className={cn(
-          'text-right text-sm font-medium',
-          fullWidth && 'min-w-0 flex-1',
-        )}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
 
 // Dedupes the query between generateMetadata and the page within one request
 const getCachedPhotoShooting = cache(getPhotoShooting);
@@ -147,6 +125,7 @@ export default async function PhotoShootingDetailPage({
     isLightPlaySelected,
     decorSet,
     sentEmails,
+    status,
   } = shooting;
 
   const priceBreakdown = calculatePricing({
@@ -155,6 +134,15 @@ export default async function PhotoShootingDetailPage({
     adjustments,
     ledgerEntries,
   });
+
+  /**
+   * After balance is collected we don't want to be able
+   * to edit the photo shooting details.
+   */
+  const readOnlyDetails =
+    (shooting.selectionRequestedAt != null &&
+      shooting.selectionCompletedAt == null) ||
+    status === PhotoShootingStatus.CANCELLED;
 
   return (
     <div className="mx-auto flex w-full flex-col gap-10 lg:w-3xl">
@@ -319,7 +307,7 @@ export default async function PhotoShootingDetailPage({
                   'decorSet',
                 )}
                 emptyLabel="–"
-                disabled={shooting.package !== 'MINI'}
+                disabled={shooting.package !== 'MINI' || readOnlyDetails}
               />
             }
           />
@@ -337,7 +325,9 @@ export default async function PhotoShootingDetailPage({
                   shooting.id,
                   'isLightPlaySelected',
                 )}
-                disabled={!isLightPlayChargeable(shooting.package)}
+                disabled={
+                  !isLightPlayChargeable(shooting.package) || readOnlyDetails
+                }
               />
             }
           />
@@ -353,6 +343,7 @@ export default async function PhotoShootingDetailPage({
                   shooting.id,
                   'numberOfGuests',
                 )}
+                disabled={readOnlyDetails}
               />
             }
           />
@@ -368,6 +359,7 @@ export default async function PhotoShootingDetailPage({
                   shooting.id,
                   'numberOfPets',
                 )}
+                disabled={readOnlyDetails}
               />
             }
           />
@@ -413,6 +405,7 @@ export default async function PhotoShootingDetailPage({
                       <DeletePriceAdjustmentButton
                         priceAdjustmentId={adjustment.id}
                         target={{ photoShootingId: shooting.id }}
+                        disabled={readOnlyDetails}
                       />
                     </span>
                   ) : (
@@ -423,18 +416,25 @@ export default async function PhotoShootingDetailPage({
             );
           })}
         </div>
+        <div className="rounded-lg border bg-accent px-4 text-accent-foreground">
+          <DetailRow
+            label="ÖSSZESEN"
+            value={formatAmount(priceBreakdown.totalToBeInvoiced, 'HUF')}
+          />
+        </div>
         <AddPriceAdjustmentDialog
           title="Fizetés eltérés hozzáadása"
           triggerLabel="Fizetés eltérés"
           defaultType="DEDUCTION"
           target={{ photoShootingId: shooting.id }}
+          disabled={readOnlyDetails}
         />
         <div className="mt-4 rounded-lg border bg-card px-4">
           {ledgerEntries.map((ledgerEntry) => {
             return (
               <DetailRow
                 key={ledgerEntry.id}
-                label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.invoice?.paymentMethod as PaymentMethod]})`}
+                label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
                 value={formatAmount(
                   ledgerEntry.category.startsWith('INCOME')
                     ? ledgerEntry.amountInCents * -1
@@ -448,6 +448,7 @@ export default async function PhotoShootingDetailPage({
         <BalancePayment
           remainingAmount={priceBreakdown.totalToBePaid}
           currentShootingStatus={shooting.status}
+          shootingId={shooting.id}
         />
       </div>
 
@@ -485,6 +486,13 @@ export default async function PhotoShootingDetailPage({
               />
             }
           />
+          <SendRawImages
+            id={shooting.id}
+            selectionRequestedAt={shooting.selectionRequestedAt}
+            rawImagesUrl={shooting.rawImagesUrl}
+          />
+        </div>
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Végleges képek (PicDrop URL)"
             fullWidth

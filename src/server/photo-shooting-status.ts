@@ -1,12 +1,11 @@
 import {
   LedgerEntry,
-  LedgerEntryCategory,
   PhotoShooting,
   PhotoShootingPricing,
   PhotoShootingStatus,
   PriceAdjustment,
 } from '@/generated/prisma/client';
-import { calculateRemainingAmount } from '@/server/pricing';
+import { calculatePricing } from '@/server/pricing';
 
 /**
  * Lives outside `admin.ts` because that file is `'use server'`, where every
@@ -47,13 +46,8 @@ export function resolveStatus({
 }: ResolveStatusArgs): PhotoShootingStatus {
   const merged = { ...current, ...updates };
 
-  const isBalanceCollected = ledgerEntries.some(
-    (entry) =>
-      entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_BALANCE,
-  );
-
-  // Cancellation wins over everything, including money still owed — a refund
-  // is its own flow, not a balance to collect.
+  /** Cancellation wins over everything, including money still owed — a refund
+   *  is its own flow, not a balance to collect. */
   if (merged.cancelledAt != null) {
     return PhotoShootingStatus.CANCELLED;
   }
@@ -66,31 +60,35 @@ export function resolveStatus({
     return PhotoShootingStatus.WAITING_FOR_THE_DATE;
   }
 
-  const toBePaid = calculateRemainingAmount({
+  const { totalToBePaid } = calculatePricing({
     pricing,
     shooting: merged,
     adjustments,
     ledgerEntries,
   });
 
-  if (!isBalanceCollected && toBePaid > 0) {
+  if (merged.selectionRequestedAt == null && totalToBePaid > 0) {
     return PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT;
   }
 
-  if (merged.rawImagesUrl == null) {
+  if (merged.rawImagesUrl == null || merged.selectionRequestedAt == null) {
     return PhotoShootingStatus.RAW_PHOTOS_UPLOAD;
+  }
+
+  if (merged.selectionCompletedAt == null) {
+    return PhotoShootingStatus.USER_SELECTION;
   }
 
   if (merged.editorId == null) {
     return PhotoShootingStatus.EDITOR_SELECTION;
   }
 
-  if (merged.finalImagesUrl == null) {
-    return PhotoShootingStatus.FINAL_PHOTOS_UPLOAD;
+  if (totalToBePaid > 0) {
+    return PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT;
   }
 
-  if (toBePaid > 0) {
-    return PhotoShootingStatus.WAITING_FOR_EXTRA_PAYMENT;
+  if (merged.finalImagesUrl == null) {
+    return PhotoShootingStatus.FINAL_PHOTOS_UPLOAD;
   }
 
   if (merged.completedAt == null) {

@@ -31,9 +31,10 @@ export type PriceBreakdown = {
   totalAdjustments: number;
   totalPaid: number;
   /**
-   * The full price of the shooting. This is what a végszámla lists — szamlazz
-   * deducts the referenced advance itself, so listing the balance instead
-   * would deduct it twice.
+   * The full price of the shooting. A végszámla lists this, and then deducts
+   * the advance it settles as a separate negative line — szamlazz does that
+   * arithmetic for nobody, so the document's own total is what must come out
+   * right. See [`buildFinalInvoiceItems()`](../lib/invoice/final-invoice-items.ts).
    */
   totalToBeInvoiced: number;
   /** What the client still hands over at the till. */
@@ -153,9 +154,4 @@ export function calculatePricing({
     totalToBeInvoiced,
     totalToBePaid: totalToBeInvoiced - totalPaid,
   };
-}
-
-/** What the client still owes. Thin view over {@link calculatePricing}. */
-export function calculateRemainingAmount(args: PricingArgs): number {
-  return calculatePricing(args).totalToBePaid;
 }

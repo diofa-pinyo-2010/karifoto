@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { calculatePricing, calculateRemainingAmount } from '@/server/pricing';
+import { calculatePricing } from '@/server/pricing';
 
 import type {
   LedgerEntry,
@@ -116,25 +116,6 @@ function makeLedgerEntry(overrides: Partial<LedgerEntry> = {}): LedgerEntry {
   };
 }
 
-function remaining({
-  pricing,
-  shooting,
-  adjustments = [],
-  ledgerEntries = [],
-}: {
-  pricing?: Partial<PhotoShootingPricing>;
-  shooting?: Partial<PhotoShooting>;
-  adjustments?: PriceAdjustment[];
-  ledgerEntries?: LedgerEntry[];
-} = {}) {
-  return calculateRemainingAmount({
-    pricing: makePricing(pricing),
-    shooting: makeShooting(shooting),
-    adjustments,
-    ledgerEntries,
-  });
-}
-
 function breakdown({
   pricing,
   shooting,
@@ -157,7 +138,15 @@ function breakdown({
 const labels = (result: ReturnType<typeof breakdown>) =>
   result.lines.map((line) => line.label);
 
-describe('calculateRemainingAmount', () => {
+/**
+ * What the client still owes. The block below asserts the whole bill through
+ * this one number, because that is the number the status machine gates on — so
+ * every pricing term has to be visible in it.
+ */
+const remaining = (args: Parameters<typeof breakdown>[0] = {}) =>
+  breakdown(args).totalToBePaid;
+
+describe('totalToBePaid', () => {
   it('charges the package and the studio fee with no extras', () => {
     expect(remaining()).toBe(BASE);
   });
@@ -540,7 +529,9 @@ describe('calculatePricing', () => {
     });
 
     // The distinction the végszámla depends on: it lists the full price and
-    // lets szamlazz deduct the advance, while the till takes only the balance.
+    // deducts the advance as its own negative line, while the till takes only
+    // the balance. szamlazz deducts nothing on its own — see
+    // buildFinalInvoiceItems().
     it('separates what is invoiced from what is still owed', () => {
       const result = breakdown({
         ledgerEntries: [makeLedgerEntry({ amountInCents: 10_000_00 })],
@@ -549,15 +540,5 @@ describe('calculatePricing', () => {
       expect(result.totalToBeInvoiced).toBe(BASE);
       expect(result.totalToBePaid).toBe(BASE - 10_000_00);
     });
-  });
-
-  it('agrees with calculateRemainingAmount', () => {
-    const args = {
-      shooting: { numberOfPets: 2, isLightPlaySelected: true },
-      adjustments: [makeAdjustment({ amountInCents: 1_000_00 })],
-      ledgerEntries: [makeLedgerEntry({ amountInCents: 7_000_00 })],
-    };
-
-    expect(breakdown(args).totalToBePaid).toBe(remaining(args));
   });
 });

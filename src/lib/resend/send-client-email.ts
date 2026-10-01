@@ -7,6 +7,9 @@ import BookingConfirmationEmail, {
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
+import ImageSelectionEmail, {
+  CLIENT_IMAGE_SELECTION_SUBJECT,
+} from '@/emails/ImageSelection';
 import ReminderOnTheDayEmail, {
   CLIENT_REMINDER_ON_THE_DAY_SUBJECT,
 } from '@/emails/ReminderOnTheDay';
@@ -37,6 +40,10 @@ const CLIENT_EMAILS = {
   RESCHEDULE_NOTIFICATION: {
     component: RescheduleNotificationEmail,
     subject: CLIENT_RESCHEDULE_NOTIFICATION_SUBJECT,
+  },
+  IMAGE_SELECTION: {
+    component: ImageSelectionEmail,
+    subject: CLIENT_IMAGE_SELECTION_SUBJECT,
   },
 } satisfies Record<
   EmailType,

@@ -1,8 +1,7 @@
+import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { requireNavAccess } from '@/lib/dal';
 import { fetchEditors, setDefaultEditor } from '@/server/admin';
-
-import { DetailRow } from '../photo-shootings/[id]/page';
 
 export default async function SettingsPage() {
   await requireNavAccess('/admin/settings');

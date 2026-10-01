@@ -1,3 +1,13 @@
+> **Historical design proposal, kept for the _why_.** Written before any of
+> this was built, in the future tense, and its code blocks are sketches rather
+> than current code. Two names shipped differently: the sketched
+> `calculateRemainingAmount()` became
+> [`calculatePricing()`](../server/pricing.ts), which returns the itemised
+> breakdown instead of one number (`totalToBePaid` is the figure sketched here),
+> and the `calculateRemainingAmount()` wrapper that briefly wrapped it was
+> deleted on 2026-10-01. See section 4 of
+> [upcoming-work.md](./upcoming-work.md) for what the final shape is and why.
+
 We want to introduce a new model: `PhotoShootingPricing` and abstract all the pricing related things of the `PhotoShooting` here.
 
 ```prisma

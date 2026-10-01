@@ -15,9 +15,11 @@ import {
 export function DeletePriceAdjustmentButton({
   priceAdjustmentId,
   target,
+  disabled = false,
 }: {
   priceAdjustmentId: string;
   target: PriceAdjustmentTarget;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [, startTransition] = useTransition();
@@ -46,7 +48,7 @@ export function DeletePriceAdjustmentButton({
       variant="destructive"
       size="icon-sm"
       onClick={handleDelete}
-      disabled={loading}
+      disabled={loading || disabled}
     >
       {loading ? <Spinner /> : <TrashIcon />}
     </Button>
