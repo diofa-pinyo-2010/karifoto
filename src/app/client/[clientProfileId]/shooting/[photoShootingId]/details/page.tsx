@@ -37,7 +37,7 @@ import {
   CLIENT_PORTAL_DEFAULT_SECTION,
   DECOR_SET_LABEL,
   EXTRA_EDIT_PER_IMAGE,
-  EXTRA_RETOUCH_PER_IMAGE,
+  EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
   hasLightPlay,
   INVOICE_STATUS_LABEL,
   isStatusBefore,
@@ -487,6 +487,18 @@ function ClientImageSelection({
       <Separator />
 
       <div className="flex flex-col gap-4">
+        <h3 className="text-lg font-semibold">➕ Plusz képek rendelése</h3>
+        <p>
+          Több képet is választhattok, mint amennyit a csomagotok tartalmaz. A
+          plusz képek ára{' '}
+          <strong>{formatAmount(EXTRA_EDIT_PER_IMAGE, 'HUF')}</strong>/kép,
+        </p>
+        <p>
+          <strong>
+            A Csomagotok ({PACKAGE_LABEL[shootingPackage]}) tartalma:
+          </strong>{' '}
+          {}
+        </p>
         <h3 className="text-lg font-semibold">Hogyan válogass?</h3>
         <ol className="flex flex-col gap-4">
           <li className="flex gap-3">
@@ -518,8 +530,8 @@ function ClientImageSelection({
               <p className="text-brand-muted">
                 Ha egy képre beauty retust kérsz (bőrsimítás, alakformálás,
                 fogfehérítés stb.), jelöld a piros szívvel is. Díja{' '}
-                {formatMoney(EXTRA_RETOUCH_PER_IMAGE)}/kép. A retusált képnek a
-                fekete zászlós képek között is szerepelnie kell.
+                {formatMoney(EXTRA_BEAUTY_RETOUCH_PER_IMAGE)}/kép. A retusált
+                képnek a fekete zászlós képek között is szerepelnie kell.
               </p>
             </div>
           </li>

@@ -62,14 +62,6 @@ export function Booking({
               </li>
             ))}
           </ol>
-
-          <p className="mt-8 text-xs leading-7 text-brand-muted">
-            Elakadtál? Segítünk.
-            <br />
-            <a href="tel:+36301086063" className="font-semibold text-brand-ink">
-              +36 30 108 6063 ↗
-            </a>
-          </p>
         </div>
 
         <div className="self-start overflow-hidden rounded-xl border border-[#cbd2c4] bg-brand-paper shadow-[0_12px_50px_#2a493408]">

@@ -5,7 +5,7 @@ import {
   EXTRA_EDIT_PER_IMAGE,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
-  EXTRA_RETOUCH_PER_IMAGE,
+  EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
   LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
@@ -49,7 +49,7 @@ describe('buildPricingSnapshot', () => {
 
     it('takes the retouched image rate from EXTRA_RETOUCH_PER_IMAGE', () => {
       expect(snapshot.extraRetouchedImageRateInCents).toBe(
-        EXTRA_RETOUCH_PER_IMAGE,
+        EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
       );
     });
   });

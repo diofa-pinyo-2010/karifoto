@@ -197,25 +197,6 @@ export const reviews = [
   },
 ];
 
-export const faqs = [
-  {
-    q: 'Meddig lehet foglalni?',
-    a: 'Amíg van szabad hely — a december 12-i nap már betelt. Jellemzően november végén elfogynak a hétvégék.',
-  },
-  {
-    q: 'Mit vegyünk fel?',
-    a: 'A foglalás után e-mailben küldünk egy rövid ruhaválasztási segédletet a stúdió színvilágához. Ha bizonytalan vagy, hozz két szettet.',
-  },
-  {
-    q: 'Jöhet a nagymama vagy a kutya?',
-    a: 'Igen, a Családi klasszikus és a Nagy ünnep csomagnál felár nélkül. A kutyát jelezd előre, hogy tudjunk időt hagyni rá.',
-  },
-  {
-    q: 'Mi van, ha a gyerek beteg lesz?',
-    a: 'A fotózás előtti napig díjmentesen áthelyezzük egy másik szabad időpontra. Előre fizetés nincs, így nem veszítesz semmit.',
-  },
-];
-
 export const stats = [
   { value: "45'", label: 'Rövid fotózás — pont annyi, amíg a gyerekek bírják' },
   { value: '5 nap', label: 'Retusált képek online galériában, letöltésre' },

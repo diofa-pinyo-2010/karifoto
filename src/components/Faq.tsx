@@ -1,6 +1,6 @@
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 
-import { faqs } from '@/lib/data';
+import { faqs } from '@/lib/faq';
 
 /**
  * 2026-os arculat. A szekció opt-in módon vált a márkapalettára és a Manrope-ra
@@ -57,7 +57,9 @@ export function Faq() {
                 </AccordionPrimitive.Trigger>
               </AccordionPrimitive.Header>
               <AccordionPrimitive.Panel className="h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
-                <p className="pb-6 text-sm leading-7 text-brand-muted">{f.a}</p>
+                <div className="space-y-3 pb-6 text-sm leading-7 text-brand-muted [&_strong]:font-semibold [&_strong]:text-brand-ink [&_ul]:list-disc [&_ul]:pl-5">
+                  {f.a}
+                </div>
               </AccordionPrimitive.Panel>
             </AccordionPrimitive.Item>
           ))}
