@@ -16,7 +16,7 @@ export const STUDIO_TZ = 'Europe/Budapest';
 
 export const SITE_NAME = 'Karifoto';
 
-export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
+export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
 
 /**
  * A stúdió Google-térkép beágyazása, a fenti címből származtatva — így egy
@@ -35,13 +35,13 @@ export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
  * Térkép nagyítás. Egész szám, nagyobb érték = közelebb:
  *   13 kerület · 15 utcák · 17 háztömb · 18 épület · 20 maximum
  */
-export const STUDIO_MAP_ZOOM = 16;
+export const STUDIO_MAP_ZOOM = 17;
 
 export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
   STUDIO_ADDRESS,
 )}&z=${STUDIO_MAP_ZOOM}&output=embed`;
 
-export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA';
+export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/6DymPCNXbgY6iN8c7';
 
 // const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
@@ -142,7 +142,7 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_OTHER: -1,
 };
 
-export const UPCOMING_SHOOTINGS_TO_SHOW = 10;
+export const UPCOMING_SHOOTINGS_TO_SHOW = 300;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;
 
@@ -175,58 +175,76 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
   {
     PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
     WAITING_FOR_THE_DATE: 'Várunk a fotózásra',
-    RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése',
+    WAITING_FOR_BALANCE_PAYMENT: 'Egyenlegfizetés',
+    RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése & küldése',
     USER_SELECTION: 'Ügyfél válogatás',
     EDITOR_SELECTION: 'Szerkesztő kiválasztása',
     FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
-    WAITING_FOR_PAYMENT: 'Hiányzó befizetés',
+    WAITING_FOR_EXTRA_PAYMENT: 'Hiányzó befizetés',
+    READY_TO_COMPLETE: 'Kész a teljesítésre',
     COMPLETED: 'Teljesített',
-    CLOSED: 'Bezárt',
+    CANCELLED: 'Lemondott',
   };
 
-/*
- * A munkafolyamat sorrendje, kimondva. Eddig két helyen élt implicit módon: az
- * enum felsorolási sorrendjében (prisma/schema.prisma) és a `resolveStatus()`
- * if-láncában (src/server/admin.ts) — egyik sem alkalmas összehasonlításra, és
- * az enum sorrendjére támaszkodni néma hibát okozna, ha valaki átrendezi.
+/**
+ * A munkafolyamat lineáris sorrendje. A `CANCELLED` szándékosan NINCS benne:
+ * az nem a sor vége, hanem kilépés a sorból. Ha rajta lenne a skálán, egy
+ * lemondott fotózás minden mérföldkövön "túl" lenne (`isStatusAtLeast` igaz
+ * mindenre) és semmi előtt nem állna — vagyis a hívók a kész fotózásnak járó
+ * tartalmat mutatnák neki.
  *
- * `Record`, nem tömb: így egy új státusz addig nem fordul le, amíg nem kapott
- * helyet a sorban.
+ * Így viszont a típus kényszeríti ki, hogy minden hívó külön kezelje a
+ * lemondást, mielőtt sorrendet kérdez.
+ *
+ * `Record`, nem tömb: egy ÚJ munkafolyamat-státusz továbbra sem fordul le,
+ * amíg nem kapott helyet a sorban.
  *
  * FIGYELEM: a `USER_SELECTION`-t jelenleg SEMMI nem állítja be — a
  * `resolveStatus()` a RAW_PHOTOS_UPLOAD után egyből EDITOR_SELECTION-re lép.
  * A rá épülő feltételek tehát ma még nem tüzelnek.
  */
-export const PHOTO_SHOOTING_STATUS_RANK: Record<PhotoShootingStatus, number> = {
+export type PhotoShootingWorkflowStatus = Exclude<
+  PhotoShootingStatus,
+  'CANCELLED'
+>;
+
+export const PHOTO_SHOOTING_STATUS_RANK: Record<
+  PhotoShootingWorkflowStatus,
+  number
+> = {
   PHOTOGRAPHER_SELECTION: 0,
   WAITING_FOR_THE_DATE: 1,
-  RAW_PHOTOS_UPLOAD: 2,
-  USER_SELECTION: 3,
-  EDITOR_SELECTION: 4,
-  FINAL_PHOTOS_UPLOAD: 5,
-  WAITING_FOR_PAYMENT: 6,
-  COMPLETED: 7,
-  // Bármelyik állapotból ide lehet kerülni, de visszaút nincs — ezért a végén.
-  CLOSED: 8,
+  WAITING_FOR_BALANCE_PAYMENT: 2,
+  RAW_PHOTOS_UPLOAD: 3,
+  USER_SELECTION: 4,
+  EDITOR_SELECTION: 5,
+  FINAL_PHOTOS_UPLOAD: 6,
+  WAITING_FOR_EXTRA_PAYMENT: 7,
+  READY_TO_COMPLETE: 8,
+  COMPLETED: 9,
 };
 
 export function isStatusBefore(
   status: PhotoShootingStatus,
-  reference: PhotoShootingStatus,
+  reference: PhotoShootingWorkflowStatus,
 ) {
+  if (status === PhotoShootingStatus.CANCELLED) return true;
+
   return (
     PHOTO_SHOOTING_STATUS_RANK[status] < PHOTO_SHOOTING_STATUS_RANK[reference]
   );
 }
 
-export function isStatusAtLeast(
-  status: PhotoShootingStatus,
-  reference: PhotoShootingStatus,
-) {
-  return (
-    PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
-  );
-}
+// export function isStatusAtLeast(
+//   status: PhotoShootingStatus,
+//   reference: PhotoShootingWorkflowStatus,
+// ) {
+//   if (status === PhotoShootingStatus.CANCELLED) return false;
+
+//   return (
+//     PHOTO_SHOOTING_STATUS_RANK[status] >= PHOTO_SHOOTING_STATUS_RANK[reference]
+//   );
+// }
 
 /*
  * Amit az ügyfélportál mutat. Szándékosan NEM a
@@ -245,23 +263,17 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_LABEL: Record<
 > = {
   PHOTOGRAPHER_SELECTION: 'Visszaigazolva',
   WAITING_FOR_THE_DATE: 'Közelgő',
+  WAITING_FOR_BALANCE_PAYMENT: 'Folyamatban',
   RAW_PHOTOS_UPLOAD: 'Feldolgozás alatt',
-  USER_SELECTION: 'Válogatásra vár',
+  USER_SELECTION: 'Ön válogat',
   EDITOR_SELECTION: 'Retusálás alatt',
   FINAL_PHOTOS_UPLOAD: 'Retusálás alatt',
-  WAITING_FOR_PAYMENT: 'Fizetésre vár',
+  WAITING_FOR_EXTRA_PAYMENT: 'Fizetésre vár',
+  READY_TO_COMPLETE: 'Küldésre kész',
   COMPLETED: 'Elkészült',
-  CLOSED: 'Lezárt',
+  CANCELLED: 'Lemondott',
 };
 
-/*
- * A `PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME` shadcn-tokenekre épül (admin,
- * sötét mód), ami a krém hátterű portálon idegen lenne. Ezek a 2026-os
- * paletta idősáv-állapotszíneit használják, amelyek AA-t teljesítenek a saját
- * felületükön.
- *
- * Három állapot: az ügyfélre vár / dolgozunk rajta / nincs teendő.
- */
 const CLIENT_BADGE_ACTION_NEEDED =
   'bg-brand-taken-surface text-brand-taken border border-brand-taken-edge';
 const CLIENT_BADGE_IN_PROGRESS =
@@ -274,15 +286,17 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME: Record<
   string
 > = {
   USER_SELECTION: CLIENT_BADGE_ACTION_NEEDED,
-  WAITING_FOR_PAYMENT: CLIENT_BADGE_ACTION_NEEDED,
+  WAITING_FOR_EXTRA_PAYMENT: CLIENT_BADGE_ACTION_NEEDED,
 
   PHOTOGRAPHER_SELECTION: CLIENT_BADGE_IN_PROGRESS,
+  WAITING_FOR_BALANCE_PAYMENT: CLIENT_BADGE_IN_PROGRESS,
   RAW_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
   EDITOR_SELECTION: CLIENT_BADGE_IN_PROGRESS,
   FINAL_PHOTOS_UPLOAD: CLIENT_BADGE_IN_PROGRESS,
-  CLOSED: CLIENT_BADGE_IN_PROGRESS,
+  CANCELLED: CLIENT_BADGE_IN_PROGRESS,
 
   WAITING_FOR_THE_DATE: CLIENT_BADGE_SETTLED,
+  READY_TO_COMPLETE: CLIENT_BADGE_SETTLED,
   COMPLETED: CLIENT_BADGE_SETTLED,
 };
 
@@ -309,7 +323,7 @@ export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
 > = {
   // Az ügyfélen a sor.
   USER_SELECTION: 'image-selection',
-  WAITING_FOR_PAYMENT: 'invoices',
+  WAITING_FOR_EXTRA_PAYMENT: 'invoices',
 
   // Megvan minden, a számla a legérdekesebb.
   COMPLETED: 'invoices',
@@ -317,10 +331,12 @@ export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
   // Nincs teendő, csak tájékozódik.
   PHOTOGRAPHER_SELECTION: 'details',
   WAITING_FOR_THE_DATE: 'details',
+  WAITING_FOR_BALANCE_PAYMENT: 'details',
   RAW_PHOTOS_UPLOAD: 'details',
   EDITOR_SELECTION: 'details',
   FINAL_PHOTOS_UPLOAD: 'details',
-  CLOSED: 'details',
+  READY_TO_COMPLETE: 'details',
+  CANCELLED: 'details',
 };
 
 // Bg opacity/text-lightness pairs mirror the `destructive` Badge variant
@@ -337,16 +353,18 @@ export const PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME: Record<
   string
 > = {
   PHOTOGRAPHER_SELECTION: IN_PROGRESS_BADGE_CLASSNAME,
+  WAITING_FOR_BALANCE_PAYMENT: IN_PROGRESS_BADGE_CLASSNAME,
   RAW_PHOTOS_UPLOAD: IN_PROGRESS_BADGE_CLASSNAME,
   USER_SELECTION: IN_PROGRESS_BADGE_CLASSNAME,
   EDITOR_SELECTION: IN_PROGRESS_BADGE_CLASSNAME,
   FINAL_PHOTOS_UPLOAD: IN_PROGRESS_BADGE_CLASSNAME,
-  WAITING_FOR_PAYMENT: IN_PROGRESS_BADGE_CLASSNAME,
+  WAITING_FOR_EXTRA_PAYMENT: IN_PROGRESS_BADGE_CLASSNAME,
 
   WAITING_FOR_THE_DATE: NOTHING_TO_DO_BADGE_CLASSNAME,
+  READY_TO_COMPLETE: NOTHING_TO_DO_BADGE_CLASSNAME,
   COMPLETED: NOTHING_TO_DO_BADGE_CLASSNAME,
 
-  CLOSED:
+  CANCELLED:
     'bg-red-500/10 text-red-600 dark:bg-red-500/20 border border-red-500/80 dark:border-red-500/40 dark:text-red-400 uppercase font-mono font-medium',
 };
 
@@ -399,4 +417,5 @@ export const APP_URLS = {
   clientPortalVerify: '/api/client-portal/verify',
   clientPortalInvalidLink: '/client/ervenytelen-link',
   terms: '/aszf',
+  privacy: '/adatkezeles',
 };

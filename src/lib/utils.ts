@@ -3,8 +3,10 @@ import { addDays, format, parseISO } from 'date-fns';
 import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
+import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
 
+import type { LedgerEntry } from '@/generated/prisma/client';
 import type { Currency } from '@/generated/prisma/enums';
 
 export function cn(...inputs: ClassValue[]) {
@@ -122,4 +124,11 @@ export function dayBounds(datetime: Date) {
     start: fromZonedTime(`${day}T00:00:00`, STUDIO_TZ),
     end: fromZonedTime(`${nextDay}T00:00:00`, STUDIO_TZ),
   };
+}
+
+export function isBalanceCollected(ledgerEntries: LedgerEntry[]) {
+  return ledgerEntries.some(
+    (entry) =>
+      entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_BALANCE,
+  );
 }

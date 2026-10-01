@@ -12,6 +12,7 @@ type EditableTextFieldProps = {
   inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   displayValue?: React.ReactNode;
   onSave: (value: string | null) => Promise<{ error: string } | void>;
+  disabled?: boolean;
 };
 
 export function EditableTextField({
@@ -22,12 +23,14 @@ export function EditableTextField({
   inputMode,
   displayValue,
   onSave,
+  disabled = false,
 }: EditableTextFieldProps) {
   return (
     <EditableField<string>
       value={value}
       displayValue={displayValue ?? value ?? emptyLabel}
       onSave={(text) => onSave(text?.trim() || null)}
+      disabled={disabled}
       renderInput={({ value: draft, onChange }) => (
         <Field>
           <Input
@@ -36,6 +39,7 @@ export function EditableTextField({
             value={draft ?? ''}
             placeholder={placeholder}
             onChange={(event) => onChange(event.target.value)}
+            disabled={disabled}
             // oxlint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
           />

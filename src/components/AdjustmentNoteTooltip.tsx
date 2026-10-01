@@ -26,7 +26,9 @@ export function AdjustmentNoteTooltip({
         }
       />
       <TooltipContent>
-        <p>{`${note}\n- ${nickname}`}</p>
+        <p>
+          {nickname}: {note}
+        </p>
       </TooltipContent>
     </Tooltip>
   );

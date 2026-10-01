@@ -7,6 +7,9 @@ import BookingConfirmationEmail, {
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
+import ImageSelectionEmail, {
+  CLIENT_IMAGE_SELECTION_SUBJECT,
+} from '@/emails/ImageSelection';
 import ReminderOnTheDayEmail, {
   CLIENT_REMINDER_ON_THE_DAY_SUBJECT,
 } from '@/emails/ReminderOnTheDay';
@@ -78,6 +81,17 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <RescheduleNotificationEmail
         {...RescheduleNotificationEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-image-selection',
+    label: 'Kép válogatás kérése',
+    subject: CLIENT_IMAGE_SELECTION_SUBJECT,
+    element: () => (
+      <ImageSelectionEmail
+        {...ImageSelectionEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),

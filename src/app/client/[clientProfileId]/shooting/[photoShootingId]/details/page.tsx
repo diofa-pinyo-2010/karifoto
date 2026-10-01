@@ -116,18 +116,27 @@ export default async function ClientPortalShootingDetailsPage({
     {
       value: 'image-selection',
       trigger: 'Képválogatás',
+      // Lemondott fotózásnál nincs mit válogatni, és a `isStatusBefore()`
+      // szándékosan nem is válaszol rá: a CANCELLED nem a munkafolyamat vége,
+      // hanem kilépés belőle. Ezért kell itt külön ág — a fül le van tiltva,
+      // így ez a tartalom sosem jelenik meg.
+      //
       // A válogatás előtti szakaszban csak elmagyarázzuk, mi fog történni —
       // ilyenkor még nincs mit válogatni.
-      content: isStatusBefore(photoShooting.status, 'USER_SELECTION') ? (
-        <p className="text-brand-muted">
-          A fotózás után feltöltjük a nyers képeket, és itt fogjátok tudni
-          kiválasztani, melyeket retusáljuk. Szólunk emailben, amint elindulhat
-          a válogatás.
-        </p>
-      ) : (
-        <p>TODO: Képválogatás content</p>
-      ),
-      disabled: false,
+      content:
+        photoShooting.status === 'CANCELLED' ? null : isStatusBefore(
+            photoShooting.status,
+            'USER_SELECTION',
+          ) ? (
+          <p className="text-brand-muted">
+            A fotózás után feltöltjük a nyers képeket, és itt fogjátok tudni
+            kiválasztani, melyeket retusáljuk. Szólunk emailben, amint
+            elindulhat a válogatás.
+          </p>
+        ) : (
+          <p>TODO: Képválogatás content</p>
+        ),
+      disabled: photoShooting.status === 'CANCELLED',
       icon: ImagesIcon,
     },
     {

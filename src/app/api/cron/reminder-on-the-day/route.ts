@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
     const candidates = await prisma.photoShooting.findMany({
       where: {
-        status: { notIn: ['CLOSED', 'COMPLETED'] },
+        status: { notIn: ['CANCELLED', 'COMPLETED'] },
         timeSlot: { startTime: { gte, lt } },
       },
       include: {

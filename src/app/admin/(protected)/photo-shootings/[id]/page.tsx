@@ -11,17 +11,20 @@ import {
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
+import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
+import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
+import { SendRawImages } from '@/components/SendRawImages';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
-import { PaymentMethod } from '@/generated/prisma/client';
+import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
   booleanToYesNo,
@@ -49,31 +52,7 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShootingField,
 } from '@/server/admin';
-import { calculateRemainingAmount } from '@/server/pricing';
-
-export function DetailRow({
-  label,
-  value,
-  fullWidth = false,
-}: {
-  label: React.ReactNode;
-  value: React.ReactNode;
-  fullWidth?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0">
-      <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
-      <span
-        className={cn(
-          'text-right text-sm font-medium',
-          fullWidth && 'min-w-0 flex-1',
-        )}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
+import { calculatePricing } from '@/server/pricing';
 
 // Dedupes the query between generateMetadata and the page within one request
 const getCachedPhotoShooting = cache(getPhotoShooting);
@@ -146,19 +125,24 @@ export default async function PhotoShootingDetailPage({
     isLightPlaySelected,
     decorSet,
     sentEmails,
+    status,
   } = shooting;
 
-  const extraPeople = Math.max(
-    0,
-    shooting.numberOfGuests - pricing.extraPeopleThreshold,
-  );
-
-  const remainingAmount = calculateRemainingAmount({
+  const priceBreakdown = calculatePricing({
     pricing,
     shooting,
     adjustments,
     ledgerEntries,
   });
+
+  /**
+   * After balance is collected we don't want to be able
+   * to edit the photo shooting details.
+   */
+  const readOnlyDetails =
+    (shooting.selectionRequestedAt != null &&
+      shooting.selectionCompletedAt == null) ||
+    status === PhotoShootingStatus.CANCELLED;
 
   return (
     <div className="mx-auto flex w-full flex-col gap-10 lg:w-3xl">
@@ -231,87 +215,8 @@ export default async function PhotoShootingDetailPage({
       </div>
 
       <Separator />
-
       <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">Részletek</h3>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow label="Csomag" value={PACKAGE_LABEL[shooting.package]} />
-          <DetailRow
-            label="Díszlet"
-            value={
-              <EditableComboboxField
-                value={
-                  decorSet
-                    ? { value: decorSet, label: DECOR_SET_LABEL[decorSet] }
-                    : null
-                }
-                items={DECOR_SET_COMBOBOX_ITEMS}
-                placeholder="Válassz díszletet!"
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'decorSet',
-                )}
-                emptyLabel="–"
-                disabled={shooting.package !== 'MINI'}
-              />
-            }
-          />
-          <DetailRow
-            label="Fényjáték"
-            value={
-              <EditableComboboxField
-                value={{
-                  label: booleanToYesNo(isLightPlaySelected),
-                  value: booleanToYesNo(isLightPlaySelected),
-                }}
-                items={YES_NO_COMBOBOX_ITEMS}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'isLightPlaySelected',
-                )}
-                disabled={!isLightPlayChargeable(shooting.package)}
-              />
-            }
-          />
-          <DetailRow
-            label="Vendégek száma"
-            value={
-              <EditableTextField
-                type="number"
-                inputMode="numeric"
-                value={String(shooting.numberOfGuests)}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'numberOfGuests',
-                )}
-              />
-            }
-          />
-          <DetailRow
-            label="Kisállatok száma"
-            value={
-              <EditableTextField
-                type="number"
-                inputMode="numeric"
-                value={String(shooting.numberOfPets)}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'numberOfPets',
-                )}
-              />
-            }
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">A fotózás napja</h3>
+        <h3 className="text-lg font-medium">A csapat</h3>
         <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Fotós"
@@ -347,66 +252,189 @@ export default async function PhotoShootingDetailPage({
             }
           />
           <DetailRow
-            label="Csomag ára"
-            value={formatAmount(pricing.packagePriceInCents, 'HUF')}
+            label="Szerkesztő"
+            value={
+              <EditableComboboxField
+                value={
+                  editor ? { value: editor.id, label: editor.owner.name } : null
+                }
+                displayValue={
+                  editor && (
+                    <p>
+                      {editor.nickname} ({' '}
+                      <a
+                        href={`tel:${editor.owner.phoneNumber}`}
+                        className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                      >
+                        {editor.owner.phoneNumber}
+                      </a>{' '}
+                      )
+                    </p>
+                  )
+                }
+                items={editorItems}
+                placeholder="Válassz editort!"
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'editorId',
+                )}
+              />
+            }
           />
-          <DetailRow
-            label="Studio bérlet"
-            value={formatAmount(pricing.packageStudioPriceInCents, 'HUF')}
-          />
-          <DetailRow
-            label="Fényjáték ára"
-            value={formatAmount(
-              isLightPlayChargeable(shooting.package) && isLightPlaySelected
-                ? pricing.lightPlayPriceInCents
-                : 0,
-              'HUF',
-            )}
-          />
-          <DetailRow
-            label={`Extra személyek (${extraPeople})`}
-            value={formatAmount(
-              extraPeople * pricing.extraPeopleRateInCents,
-              'HUF',
-            )}
-          />
-          <DetailRow
-            label={`Kis kedvencek (${shooting.numberOfPets})`}
-            value={formatAmount(
-              shooting.numberOfPets * pricing.extraPetRateInCents,
-              'HUF',
-            )}
-          />
-          {adjustments.map((adjustment) => (
-            <DetailRow
-              key={adjustment.id}
-              label={
-                <span className="flex items-center gap-1">
-                  {adjustment.publicLabel}
-                  <AdjustmentNoteTooltip
-                    note={adjustment.internalNote}
-                    nickname={adjustment.createdBy.nickname}
-                  />
-                </span>
-              }
-              value={
-                <span className="flex items-center justify-end gap-3">
-                  {formatAmount(adjustment.amountInCents * -1, 'HUF')}
-                  <DeletePriceAdjustmentButton
-                    priceAdjustmentId={adjustment.id}
-                    target={{ photoShootingId: shooting.id }}
-                  />
-                </span>
-              }
-            />
-          ))}
         </div>
+      </div>
+      <Separator />
+
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-medium">A fotózás részletei</h3>
         <div className="rounded-lg border bg-card px-4">
+          <DetailRow label="Csomag" value={PACKAGE_LABEL[shooting.package]} />
+          <DetailRow
+            label="Díszlet"
+            value={
+              <EditableComboboxField
+                value={
+                  decorSet
+                    ? { value: decorSet, label: DECOR_SET_LABEL[decorSet] }
+                    : null
+                }
+                items={DECOR_SET_COMBOBOX_ITEMS}
+                placeholder="Válassz díszletet!"
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'decorSet',
+                )}
+                emptyLabel="–"
+                disabled={shooting.package !== 'MINI' || readOnlyDetails}
+              />
+            }
+          />
+          <DetailRow
+            label="Fényjáték extraként választva"
+            value={
+              <EditableComboboxField
+                value={{
+                  label: booleanToYesNo(isLightPlaySelected),
+                  value: booleanToYesNo(isLightPlaySelected),
+                }}
+                items={YES_NO_COMBOBOX_ITEMS}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'isLightPlaySelected',
+                )}
+                disabled={
+                  !isLightPlayChargeable(shooting.package) || readOnlyDetails
+                }
+              />
+            }
+          />
+          <DetailRow
+            label="Vendégek száma"
+            value={
+              <EditableTextField
+                type="number"
+                inputMode="numeric"
+                value={String(shooting.numberOfGuests)}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'numberOfGuests',
+                )}
+                disabled={readOnlyDetails}
+              />
+            }
+          />
+          <DetailRow
+            label="Kisállatok száma"
+            value={
+              <EditableTextField
+                type="number"
+                inputMode="numeric"
+                value={String(shooting.numberOfPets)}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'numberOfPets',
+                )}
+                disabled={readOnlyDetails}
+              />
+            }
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-medium">A fotózás napja & fizettetés</h3>
+        <div className="rounded-lg border bg-card px-4">
+          {/*
+            Every row comes from calculatePricing, so what is listed here always
+            sums to what it charges. Deriving these rows separately is what let
+            the light-play row show a fee the total did not include, and left
+            extra edited/retouched images off the list entirely.
+          */}
+          {priceBreakdown.lines.map((line) => {
+            const adjustment = line.adjustmentId
+              ? adjustments.find((adj) => adj.id === line.adjustmentId)
+              : undefined;
+
+            return (
+              <DetailRow
+                key={line.adjustmentId ?? line.label}
+                label={
+                  adjustment ? (
+                    <span className="flex items-center gap-1">
+                      {line.label}
+                      <AdjustmentNoteTooltip
+                        note={adjustment.internalNote}
+                        nickname={adjustment.createdBy.nickname}
+                      />
+                    </span>
+                  ) : (
+                    line.label
+                  )
+                }
+                value={
+                  adjustment ? (
+                    <span className="flex items-center justify-end gap-3">
+                      {formatAmount(line.amountInCents, 'HUF')}
+                      <DeletePriceAdjustmentButton
+                        priceAdjustmentId={adjustment.id}
+                        target={{ photoShootingId: shooting.id }}
+                        disabled={readOnlyDetails}
+                      />
+                    </span>
+                  ) : (
+                    formatAmount(line.amountInCents, 'HUF')
+                  )
+                }
+              />
+            );
+          })}
+        </div>
+        <div className="rounded-lg border bg-accent px-4 text-accent-foreground">
+          <DetailRow
+            label="ÖSSZESEN"
+            value={formatAmount(priceBreakdown.totalToBeInvoiced, 'HUF')}
+          />
+        </div>
+        <AddPriceAdjustmentDialog
+          title="Fizetés eltérés hozzáadása"
+          triggerLabel="Fizetés eltérés"
+          defaultType="DEDUCTION"
+          target={{ photoShootingId: shooting.id }}
+          disabled={readOnlyDetails}
+        />
+        <div className="mt-4 rounded-lg border bg-card px-4">
           {ledgerEntries.map((ledgerEntry) => {
             return (
               <DetailRow
                 key={ledgerEntry.id}
-                label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.invoice?.paymentMethod as PaymentMethod]})`}
+                label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
                 value={formatAmount(
                   ledgerEntry.category.startsWith('INCOME')
                     ? ledgerEntry.amountInCents * -1
@@ -417,17 +445,10 @@ export default async function PhotoShootingDetailPage({
             );
           })}
         </div>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow
-            label="Fizetendő még"
-            value={formatAmount(remainingAmount, 'HUF')}
-          />
-        </div>
-        <AddPriceAdjustmentDialog
-          title="Fizetés eltérés hozzáadása"
-          triggerLabel="Fizetés eltérés"
-          defaultType="DEDUCTION"
-          target={{ photoShootingId: shooting.id }}
+        <BalancePayment
+          remainingAmount={priceBreakdown.totalToBePaid}
+          currentShootingStatus={shooting.status}
+          shootingId={shooting.id}
         />
       </div>
 
@@ -465,37 +486,13 @@ export default async function PhotoShootingDetailPage({
               />
             }
           />
-          <DetailRow
-            label="Szerkesztő"
-            value={
-              <EditableComboboxField
-                value={
-                  editor ? { value: editor.id, label: editor.owner.name } : null
-                }
-                displayValue={
-                  editor && (
-                    <p>
-                      {editor.nickname} ({' '}
-                      <a
-                        href={`tel:${editor.owner.phoneNumber}`}
-                        className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
-                      >
-                        {editor.owner.phoneNumber}
-                      </a>{' '}
-                      )
-                    </p>
-                  )
-                }
-                items={editorItems}
-                placeholder="Válassz editort!"
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'editorId',
-                )}
-              />
-            }
+          <SendRawImages
+            id={shooting.id}
+            selectionRequestedAt={shooting.selectionRequestedAt}
+            rawImagesUrl={shooting.rawImagesUrl}
           />
+        </div>
+        <div className="rounded-lg border bg-card px-4">
           <DetailRow
             label="Végleges képek (PicDrop URL)"
             fullWidth

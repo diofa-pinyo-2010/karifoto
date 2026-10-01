@@ -4,12 +4,19 @@ import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
+import { createClientPortalToken } from '@/lib/auth';
+import { clientPortalLoginUrl } from '@/lib/client-portal';
 import { APP_URLS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
+import { sendImageSelectionEmail } from '@/lib/resend/image-selection';
 import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
+import {
+  recalculatePhotoShootingStatus,
+  updatePhotoShooting,
+} from '@/server/admin';
 
 const photoShootingsForDaySelect = {
   select: {
@@ -115,5 +122,60 @@ export async function changeTimeOfPhotoShooting({
     }
   });
 
+  await recalculatePhotoShootingStatus(shootingId);
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
+}
+
+export async function sendRawImagesForSelection({
+  shootingId,
+}: {
+  shootingId: string;
+}): Promise<{ error: string } | { success: true }> {
+  await verifySession();
+
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { id: shootingId },
+    select: {
+      client: {
+        select: {
+          id: true,
+          owner: { select: { id: true, name: true, email: true } },
+        },
+      },
+    },
+  });
+
+  if (shooting == null) {
+    return { error: 'Nem találjuk ezt a PhotoShootingot' };
+  }
+
+  const { raw: rawToken } = await createClientPortalToken(
+    shooting.client.owner.id,
+  );
+
+  const { error } = await sendImageSelectionEmail({
+    shootingId,
+    to: shooting.client.owner.email,
+    name: shooting.client.owner.name,
+    clientId: shooting.client.id,
+    clientPortalLoginLink: clientPortalLoginUrl({
+      rawToken,
+      clientProfileId: shooting.client.id,
+      shootingId,
+    }),
+  });
+
+  if (error != null) {
+    return { error: 'Nem tudtuk elküldeni az email. Próbáld újra!' };
+  }
+
+  const updateResult = await updatePhotoShooting(shootingId, {
+    selectionRequestedAt: new Date(),
+  });
+
+  if (updateResult != null && 'error' in updateResult) {
+    return updateResult;
+  }
+
+  return { success: true };
 }

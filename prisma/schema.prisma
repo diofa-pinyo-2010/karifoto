@@ -161,7 +161,8 @@ model PhotoShooting {
   finalImagesUrl String?
   clientNote     String?
 
-  closedAt DateTime?
+  completedAt DateTime? @db.Timestamptz()
+  cancelledAt DateTime? @db.Timestamptz()
 
   calendarEvent BookingCalendarEvent?
   pricing       PhotoShootingPricing?
@@ -263,6 +264,7 @@ model Invoice {
   id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   invoiceNumber String        @unique
   publicUrl     String
+  type          InvoiceType
   paymentMethod PaymentMethod
   amountInCents Int
   currency      Currency      @default(HUF)
@@ -275,6 +277,10 @@ model Invoice {
   stornoOf      Invoice? @relation("StornoInvoice", fields: [stornoOfId], references: [id])
   stornoOfId    String?  @unique @db.Uuid
   stornoInvoice Invoice? @relation("StornoInvoice")
+
+  advanceInvoice   Invoice? @relation("FinalInvoice", fields: [advanceInvoiceId], references: [id])
+  advanceInvoiceId String?  @unique @db.Uuid
+  finalInvoice     Invoice? @relation("FinalInvoice")
 
   @@index([photoShootingId])
 }
@@ -388,19 +394,28 @@ enum BookingIntentStatus {
 enum PhotoShootingStatus {
   PHOTOGRAPHER_SELECTION
   WAITING_FOR_THE_DATE
+  WAITING_FOR_BALANCE_PAYMENT
   RAW_PHOTOS_UPLOAD
   USER_SELECTION
   EDITOR_SELECTION
   FINAL_PHOTOS_UPLOAD
-  WAITING_FOR_PAYMENT
+  WAITING_FOR_EXTRA_PAYMENT
+  READY_TO_COMPLETE
   COMPLETED
-  CLOSED
+  CANCELLED
 }
 
 enum Currency {
   HUF
   EUR
   USD
+}
+
+enum InvoiceType {
+  NORMAL
+  ADVANCE // előlegszámla
+  FINAL // végszámla
+  STORNO
 }
 
 enum InvoiceStatus {
@@ -431,4 +446,5 @@ enum EmailType {
   DEPOSIT_REQUEST
   REMINDER_ON_THE_DAY
   RESCHEDULE_NOTIFICATION
+  IMAGE_SELECTION
 }

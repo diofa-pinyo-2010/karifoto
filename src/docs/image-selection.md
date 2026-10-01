@@ -79,7 +79,7 @@ selectionCompletedAt DateTime? @db.Timestamptz()
 Two deliberate splits here:
 
 - **`total*` vs `declared*`.** Only `total*` is read by
-  `calculateRemainingAmount()`, so there is exactly one input to the price.
+  `calculatePricing()`, so there is exactly one input to the price.
   `declared*` is written once and never used in arithmetic — it exists so that
   "the client said 12, the editor counted 15" is answerable months later. They
   are `Int?`, not `@default(0)`, so "never declared" is distinguishable from
@@ -160,22 +160,25 @@ The zero-extra path skips Stripe entirely and sets `selectionCompletedAt` in the
 server action.
 
 Show the client their price with the same function that will charge them.
-`calculateRemainingAmount()` is pure and takes `shooting` as a plain object, so
-the preview passes candidate values rather than reimplementing the maths:
+`calculatePricing()` is pure and takes `shooting` as a plain object, so the
+preview passes candidate values rather than reimplementing the maths:
 
 ```ts
-calculateRemainingAmount({
+calculatePricing({
   pricing,
   adjustments,
   ledgerEntries,
   shooting: { ...shooting, totalEditedImages: n, totalRetouchedImages: m },
-});
+}).totalToBePaid;
 ```
+
+It returns the itemised `lines` too, so the preview can show _why_ the price is
+what it is instead of only the total.
 
 ## The editor's correction is free
 
-`calculateRemainingAmount()` is a balance — `charges − deductions − payments` —
-not a one-shot invoice. So step 5 needs no new state:
+`totalToBePaid` is a balance — `charges − deductions − payments` — not a
+one-shot invoice. So step 5 needs no new state:
 
 - client declares 12 against an allowance of 10 → 2 extra → pays → an INCOME
   `LedgerEntry` appears → balance returns to 0
@@ -200,7 +203,7 @@ the confirmation dialog and Stripe's own summary handle those, and a client who
 genuinely pays for 100 images wants 100 images. It is a guard against a real
 hole.
 
-`calculateRemainingAmount()` clamps one of the two terms and not the other:
+`calculatePricing()` clamps one of the two terms and not the other:
 
 ```ts
 const extraEdited = Math.max(0, shooting.totalEditedImages - pricing.packageEditedImagesAllowance);
@@ -216,8 +219,8 @@ and `resolveStatus` finds `toBePaid > 0` false and returns `COMPLETED`. The
 client marks themselves paid up by submitting a form.
 
 Validate in the server action with `z.number().int().nonnegative()`, not by
-clamping inside `calculateRemainingAmount()` — that function is also the preview
-path and should report what is stored rather than quietly repairing it.
+clamping inside `calculatePricing()` — that function is also the preview path
+and should report what is stored rather than quietly repairing it.
 
 The same reasoning covers the below-allowance path generally: when the declared
 count is under the allowance there is no payment step at all, so form validation

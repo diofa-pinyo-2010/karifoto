@@ -12,4 +12,17 @@ export class InvoiceService {
   ): Promise<GeneratedInvoice> {
     return this.client.generateInvoice(input);
   }
+
+  async generateAdvanceInvoice(
+    input: GenerateInvoiceInput,
+  ): Promise<GeneratedInvoice> {
+    return this.client.generateAdvanceInvoice(input);
+  }
+
+  async generateFinalInvoice(
+    input: GenerateInvoiceInput,
+    advanceInvoiceNumber: string,
+  ): Promise<GeneratedInvoice> {
+    return this.client.generateFinalInvoice(input, advanceInvoiceNumber);
+  }
 }
