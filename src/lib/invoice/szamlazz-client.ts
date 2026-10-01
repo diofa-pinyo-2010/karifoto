@@ -1,9 +1,8 @@
-import SZClient, {
-  PaymentMethod as SzamlazzPaymentMethod,
-} from '@halftome/szamlazz-client';
+import SZClient from '@halftome/szamlazz-client';
 
 import { env } from '@/env';
 import { toSzamlazzLineItems } from '@/lib/invoice/line-items';
+import { toSzamlazzPaymentMethod } from '@/lib/invoice/payment-method';
 import {
   InvoiceClient,
   GenerateInvoiceInput,
@@ -40,7 +39,7 @@ async function issue(
       issueDate: now,
       completionDate: now,
       dueDate: now,
-      paymentMethod: SzamlazzPaymentMethod.Card,
+      paymentMethod: toSzamlazzPaymentMethod(input.paymentMethod),
       currency: 'HUF',
       language: 'hu',
       sendEmail: true,

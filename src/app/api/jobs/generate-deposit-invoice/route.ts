@@ -125,6 +125,7 @@ export const POST = verifySignatureAppRouter(
             vatRate: NamedVATRate.AAM,
           };
         }),
+        paymentMethod: 'CARD',
         comment: paymentIntent,
       });
     } catch (error) {
@@ -153,6 +154,7 @@ export const POST = verifySignatureAppRouter(
         const invoiceInDb = await tx.invoice.create({
           data: {
             status: 'SETTLED',
+            type: 'ADVANCE',
             invoiceNumber: invoice.invoiceNumber,
             publicUrl: invoice.publicUrl,
             amountInCents: amountTotal ?? 0,

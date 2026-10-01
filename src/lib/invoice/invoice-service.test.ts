@@ -25,6 +25,7 @@ const input: GenerateInvoiceInput = {
       vatRate: NamedVATRate.AAM,
     },
   ],
+  paymentMethod: 'CARD',
 };
 
 /**

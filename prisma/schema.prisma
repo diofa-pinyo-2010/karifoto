@@ -264,6 +264,7 @@ model Invoice {
   id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   invoiceNumber String        @unique
   publicUrl     String
+  type          InvoiceType
   paymentMethod PaymentMethod
   amountInCents Int
   currency      Currency      @default(HUF)
@@ -276,6 +277,10 @@ model Invoice {
   stornoOf      Invoice? @relation("StornoInvoice", fields: [stornoOfId], references: [id])
   stornoOfId    String?  @unique @db.Uuid
   stornoInvoice Invoice? @relation("StornoInvoice")
+
+  advanceInvoice   Invoice? @relation("FinalInvoice", fields: [advanceInvoiceId], references: [id])
+  advanceInvoiceId String?  @unique @db.Uuid
+  finalInvoice     Invoice? @relation("FinalInvoice")
 
   @@index([photoShootingId])
 }
@@ -404,6 +409,13 @@ enum Currency {
   HUF
   EUR
   USD
+}
+
+enum InvoiceType {
+  NORMAL
+  ADVANCE // előlegszámla
+  FINAL // végszámla
+  STORNO
 }
 
 enum InvoiceStatus {

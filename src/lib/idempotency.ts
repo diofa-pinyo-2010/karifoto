@@ -3,8 +3,8 @@ import { redis } from '@/lib/upstash';
 // Stripe could resend the event within 96 hours
 export const EVENT_TTL = 96 * 60 * 60; // 96 hours in seconds
 const REMINDER_TTL = 48 * 60 * 60; // 48 hours in seconds
-const DEPOSIT_INVOICE_CLAIM_TTL = 10 * 60; // 10 minutes
-const DEPOSIT_INVOICE_ISSUED_TTL = 30 * 24 * 60 * 60; // 30 days
+const INVOICE_CLAIM_TTL = 10 * 60; // 10 minutes
+const INVOICE_ISSUED_TTL = 30 * 24 * 60 * 60; // 30 days
 
 const eventKey = (eventId: string) => `stripe_evt:${eventId}`;
 const emailConfirmKey = (shootingId: string) =>
@@ -12,6 +12,7 @@ const emailConfirmKey = (shootingId: string) =>
 const reminderKey = (shootingId: string, dayKey: string) =>
   `reminder_on_the_day:${shootingId}:${dayKey}`;
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
+const finalInvoiceKey = (shootingId: string) => `final_inv:${shootingId}`;
 // Both times in the key: a later, different reschedule gets its own email.
 const rescheduleEmailKey = (shootingId: string, oldTime: Date, newTime: Date) =>
   `reschedule_email:${shootingId}:${oldTime.toISOString()}:${newTime.toISOString()}`;
@@ -160,7 +161,7 @@ export const claimDepositInvoice = async (
   const inserted = await redis.set(
     depositInvoiceKey(shootingId),
     `claimed_at:${new Date().toISOString()}`,
-    { nx: true, ex: DEPOSIT_INVOICE_CLAIM_TTL },
+    { nx: true, ex: INVOICE_CLAIM_TTL },
   );
   return inserted !== null; // null = someone already claimed it
 };
@@ -176,7 +177,7 @@ export const confirmDepositInvoice = async (
 ): Promise<void> => {
   try {
     await redis.set(depositInvoiceKey(shootingId), `issued:${invoiceNumber}`, {
-      ex: DEPOSIT_INVOICE_ISSUED_TTL,
+      ex: INVOICE_ISSUED_TTL,
     });
   } catch (error) {
     console.error(`Error confirming deposit invoice: ${shootingId}`, error);
@@ -190,5 +191,51 @@ export const releaseDepositInvoiceClaim = async (
     await redis.del(depositInvoiceKey(shootingId));
   } catch (error) {
     console.error(`Error releasing deposit invioce: ${shootingId}`, error);
+  }
+};
+
+/**
+ * Ugyanaz a három lépés, mint az előlegszámlánál, és ugyanazokkal a
+ * hozzáállásokkal: a foglalás **dob**, ha a Redis nem érhető el (a job
+ * inkább próbálkozzon újra, mint hogy tippeljen — egy valódi szamlazz.hu
+ * dokumentum újrakiállítása rosszabb, mint a késés), a megerősítés és az
+ * elengedés viszont lenyeli a hibát.
+ */
+export const claimFinalInvoice = async (
+  shootingId: string,
+): Promise<boolean> => {
+  const inserted = await redis.set(
+    finalInvoiceKey(shootingId),
+    `claimed_at:${new Date().toISOString()}`,
+    { nx: true, ex: INVOICE_CLAIM_TTL },
+  );
+  return inserted !== null; // null = someone already claimed it
+};
+
+/**
+ * szamlazz.hu issued a real document — upgrade the claim so no retry can ever
+ * re-issue it. No `nx`: we are deliberately overwriting our own claim.
+ * Never throws; the document exists whether or not Redis agrees.
+ */
+export const confirmFinalInvoice = async (
+  shootingId: string,
+  invoiceNumber: string,
+): Promise<void> => {
+  try {
+    await redis.set(finalInvoiceKey(shootingId), `issued:${invoiceNumber}`, {
+      ex: INVOICE_ISSUED_TTL,
+    });
+  } catch (error) {
+    console.error(`Error confirming final invoice: ${shootingId}`, error);
+  }
+};
+
+export const releaseFinalInvoiceClaim = async (
+  shootingId: string,
+): Promise<void> => {
+  try {
+    await redis.del(finalInvoiceKey(shootingId));
+  } catch (error) {
+    console.error(`Error releasing final invoice: ${shootingId}`, error);
   }
 };

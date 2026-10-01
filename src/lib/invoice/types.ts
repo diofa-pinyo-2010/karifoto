@@ -1,3 +1,5 @@
+import type { PaymentMethod } from '@/generated/prisma/enums';
+
 export enum NamedVATRate {
   AAM = 'AAM',
 }
@@ -23,6 +25,12 @@ export interface InvoiceLineItem {
 export interface GenerateInvoiceInput {
   customer: InvoiceCustomer;
   items: InvoiceLineItem[];
+  /**
+   * Ahogy az ügyfél fizetett. Ez lesz a számla `fizmod`-ja, ezért kötelező:
+   * a stúdióban készpénzt is átveszünk, és egy alapértelmezett "bankkártya"
+   * csendben rossz dokumentumot állítana ki.
+   */
+  paymentMethod: PaymentMethod;
   comment?: string;
 }
 
@@ -50,9 +58,12 @@ export interface InvoiceClient {
   /**
    * A final invoice (végszámla) settling an earlier advance.
    *
-   * `items` must list the **full** price of the shooting, not the remaining
-   * balance — szamlazz deducts the referenced advance itself, so passing the
-   * remainder would deduct it twice.
+   * `items` must list the **full** price of the shooting *and* the settled
+   * advance as a negative line, so the document totals to what is still
+   * payable. `advanceInvoiceNumber` only links the two documents —
+   * szamlazz deducts nothing on its own. See
+   * [`buildFinalInvoiceItems()`](./final-invoice-items.ts), which is the only
+   * thing that should build this list.
    */
   generateFinalInvoice(
     input: GenerateInvoiceInput,
