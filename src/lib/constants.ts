@@ -16,7 +16,7 @@ export const STUDIO_TZ = 'Europe/Budapest';
 
 export const SITE_NAME = 'Karifoto';
 
-export const STUDIO_ADDRESS = '1056 Budapest, Irányi utca 9. I. emelet 4.';
+export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
 
 /**
  * A stúdió Google-térkép beágyazása, a fenti címből származtatva — így egy
@@ -41,7 +41,7 @@ export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURICo
   STUDIO_ADDRESS,
 )}&z=${STUDIO_MAP_ZOOM}&output=embed`;
 
-export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/MLT1TbNYy8n1JMFKA';
+export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/6DymPCNXbgY6iN8c7';
 
 // const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
