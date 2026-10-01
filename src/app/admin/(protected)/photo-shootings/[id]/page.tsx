@@ -126,6 +126,8 @@ export default async function PhotoShootingDetailPage({
     decorSet,
     sentEmails,
     status,
+    totalEditedImages,
+    totalRetouchedImages,
   } = shooting;
 
   const priceBreakdown = calculatePricing({
@@ -490,9 +492,40 @@ export default async function PhotoShootingDetailPage({
             id={shooting.id}
             selectionRequestedAt={shooting.selectionRequestedAt}
             rawImagesUrl={shooting.rawImagesUrl}
+            status={shooting.status}
           />
         </div>
         <div className="rounded-lg border bg-card px-4">
+          <DetailRow
+            label="Megszerkesztett képek"
+            value={
+              <EditableTextField
+                type="number"
+                inputMode="numeric"
+                value={String(totalEditedImages)}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'totalEditedImages',
+                )}
+              />
+            }
+          />
+          <DetailRow
+            label="Beauty retus"
+            value={
+              <EditableTextField
+                type="number"
+                inputMode="numeric"
+                value={String(totalRetouchedImages)}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'totalRetouchedImages',
+                )}
+              />
+            }
+          />
           <DetailRow
             label="Végleges képek (PicDrop URL)"
             fullWidth

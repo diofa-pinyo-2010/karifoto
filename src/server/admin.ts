@@ -83,7 +83,6 @@ const PhotoShootingUpdateSchema = z.object({
   photographerId: z.uuid().nullable().optional(),
   editorId: z.uuid().nullable().optional(),
   rawImagesUrl: z.url().nullable().optional(),
-  finalImagesUrl: z.url().nullable().optional(),
   numberOfGuests: z.coerce.number().optional(),
   numberOfPets: z.coerce.number().optional(),
   isLightPlaySelected: z
@@ -96,6 +95,9 @@ const PhotoShootingUpdateSchema = z.object({
     .nullable()
     .optional(),
   selectionRequestedAt: z.date().optional(),
+  finalImagesUrl: z.url().nullable().optional(),
+  totalEditedImages: z.coerce.number().optional(),
+  totalRetouchedImages: z.coerce.number().optional(),
 });
 
 type PhotoShootingUpdateInput = z.infer<typeof PhotoShootingUpdateSchema>;

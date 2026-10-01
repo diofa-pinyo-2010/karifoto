@@ -9,6 +9,8 @@ export const env = createEnv({
     STRIPE_SECRET_KEY: z.string().min(1),
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     SZAMLAZZ_API_KEY: z.string().min(1),
+    // Opcionális: kulcs nélkül is működik, csak alacsonyabb rate limittel.
+    JINA_API_KEY: z.string().min(1).optional(),
     CRON_SECRET: z.string().min(1),
     COMING_SOON_ENABLED: z.stringbool().default(false),
     QSTASH_DEV: z.stringbool().default(false),
@@ -39,6 +41,7 @@ export const env = createEnv({
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     SZAMLAZZ_API_KEY: process.env.SZAMLAZZ_API_KEY,
+    JINA_API_KEY: process.env.JINA_API_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
     COMING_SOON_ENABLED: process.env.COMING_SOON_ENABLED,
     COMING_SOON_PREVIEW_TOKEN: process.env.COMING_SOON_PREVIEW_TOKEN,

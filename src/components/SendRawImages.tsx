@@ -32,20 +32,25 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { type PhotoShooting } from '@/generated/prisma/client';
+import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { sendRawImagesForSelection } from '@/server/photo-shootings';
-
-import type { PhotoShooting } from '@/generated/prisma/client';
 
 export function SendRawImages({
   selectionRequestedAt,
   rawImagesUrl,
   id,
-}: Pick<PhotoShooting, 'selectionRequestedAt' | 'rawImagesUrl' | 'id'>) {
+  status,
+}: Pick<
+  PhotoShooting,
+  'selectionRequestedAt' | 'rawImagesUrl' | 'id' | 'status'
+>) {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSending, startSaving] = useTransition();
-  const isSendingBlocked = rawImagesUrl == null;
+  const isSendingBlocked =
+    rawImagesUrl == null || status != PhotoShootingStatus.RAW_PHOTOS_UPLOAD;
 
   function handleConfirm() {
     setError(null);
@@ -108,18 +113,10 @@ export function SendRawImages({
                   <Button
                     disabled={isSendingBlocked}
                     variant={isSendingBlocked ? 'outline' : 'default'}
+                    className="disabled:cursor-not-allowed"
                   >
-                    {isSendingBlocked ? (
-                      <>
-                        <AlertTriangleIcon />
-                        Mentsd el a nyers képek URL-jét
-                      </>
-                    ) : (
-                      <>
-                        <SendIcon />
-                        Küldés
-                      </>
-                    )}
+                    <SendIcon />
+                    Küldés
                   </Button>
                 }
               />
@@ -146,6 +143,23 @@ export function SendRawImages({
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+            {isSendingBlocked && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button size="icon-sm" variant="ghost">
+                      <AlertTriangleIcon />
+                    </Button>
+                  }
+                />
+                <TooltipContent>
+                  <p>
+                    Nem küldhető: Az egyenlegnek fizetve kell lennie + nyers
+                    képeket fel kell tölteni.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         )
       }
