@@ -35,7 +35,7 @@ export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
  * Térkép nagyítás. Egész szám, nagyobb érték = közelebb:
  *   13 kerület · 15 utcák · 17 háztömb · 18 épület · 20 maximum
  */
-export const STUDIO_MAP_ZOOM = 16;
+export const STUDIO_MAP_ZOOM = 17;
 
 export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
   STUDIO_ADDRESS,
