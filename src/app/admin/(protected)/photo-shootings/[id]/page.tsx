@@ -490,6 +490,7 @@ export default async function PhotoShootingDetailPage({
             id={shooting.id}
             selectionRequestedAt={shooting.selectionRequestedAt}
             rawImagesUrl={shooting.rawImagesUrl}
+            status={shooting.status}
           />
         </div>
         <div className="rounded-lg border bg-card px-4">

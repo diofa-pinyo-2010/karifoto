@@ -4,8 +4,10 @@ import { useState, useTransition } from 'react';
 
 import {
   BadgeAlertIcon,
+  BadgeInfoIcon,
   CheckCircle2Icon,
   CheckIcon,
+  CoinsIcon,
   CreditCardIcon,
   TriangleAlertIcon,
   WalletIcon,
@@ -85,9 +87,15 @@ export function BalancePayment({
   }
 
   return (
-    <div className="flex flex-col-reverse items-center gap-6 rounded-lg py-6 lg:flex-row lg:justify-between">
-      <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:flex-row lg:items-center">
+    <div className="flex flex-col items-center gap-6 rounded-lg py-6 lg:flex-row lg:justify-between">
+      <p className="flex items-center gap-2 text-xl flex-1 font-bold">
         {shouldCollectBalancePayment && (
+          <TriangleAlertIcon className="text-amber-500" />
+        )}
+        <span>Még fizetendő: {formatMoney(remainingAmount)}</span>
+      </p>
+      <div className="flex w-full flex-col justify-end items-stretch gap-3 flex-1 lg:w-auto lg:flex-row lg:items-center">
+        {shouldCollectBalancePayment ? (
           <>
             <CashPaymentButton
               remainingAmount={remainingAmount}
@@ -99,14 +107,19 @@ export function BalancePayment({
               Bankkártya
             </Button>
           </>
+        ) : (
+          <Alert className="bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-800 dark:text-blue-50 dark:border-blue-800">
+            <BadgeInfoIcon />
+            <AlertTitle>
+              A fizetés a fotózás kezdetekor válik elérhetővé.
+            </AlertTitle>
+            <AlertDescription className="text-blue-700/70 dark:text-blue-50/70">
+              Ha valaki mégis korábban szeretne fizetni, mint amikor a fotózás
+              van, akkor állítsd korábbra az időpontot.
+            </AlertDescription>
+          </Alert>
         )}
       </div>
-      <p className="flex items-center gap-2 text-xl font-bold">
-        {shouldCollectBalancePayment && (
-          <TriangleAlertIcon className="text-amber-500" />
-        )}
-        Még fizetendő: {formatMoney(remainingAmount)}
-      </p>
     </div>
   );
 }
@@ -182,7 +195,7 @@ function CashPaymentButton({
           <AlertDialogFooter>
             <AlertDialogCancel>Mégse</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm} disabled={isSaving}>
-              {isSaving ? <Spinner /> : null}
+              {isSaving ? <Spinner /> : <CoinsIcon />}
               Átvettem
             </AlertDialogAction>
           </AlertDialogFooter>
