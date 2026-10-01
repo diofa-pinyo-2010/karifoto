@@ -1,8 +1,9 @@
 # Image selection — the client picks their photos
 
-**Not built yet.** The schema is in place; nothing writes it. This records the
-design and, more importantly, the two things about this codebase that will
-break a naive implementation.
+**Partly built.** The client side — counting the selection from PicDrop and
+completing it when nothing extra is owed — exists; the Stripe payment for
+extras does not. This records the design and, more importantly, the two things
+about this codebase that will break a naive implementation.
 
 ## Table of Contents
 
@@ -11,6 +12,7 @@ break a naive implementation.
 - [Schema](#schema)
 - [The one change to `resolveStatus`](#the-one-change-to-resolvestatus)
 - [Who writes what, and when](#who-writes-what-and-when)
+- [Counting the selection from PicDrop](#counting-the-selection-from-picdrop)
 - [The payment step](#the-payment-step)
 - [The editor's correction is free](#the-editors-correction-is-free)
 - [Validation: the negative-number hole](#validation-the-negative-number-hole)
@@ -28,9 +30,11 @@ break a naive implementation.
    the client. Status becomes `USER_SELECTION`.
 3. The client opens the **Képválogatás** section of
    [their portal details page](../../src/app/client/[clientProfileId]/shooting/[photoShootingId]/details/page.tsx)
-   and enters two numbers: how many images they want **edited**, and how many
-   **retouched**. They see the price this produces before committing.
-4. If the numbers cost nothing extra, submitting completes the step outright.
+   and marks images in PicDrop: **black flag** = edit, **red heart** = extra
+   retouch. **"Kész vagyok"** counts both from the gallery (see
+   [below](#counting-the-selection-from-picdrop)) and shows the price before
+   committing — the client never types a number.
+4. If the counts cost nothing extra, **Beküldés** completes the step outright.
    If they do cost extra, the client pays through Stripe Checkout and the step
    completes when the webhook confirms payment. Either way
    `selectionCompletedAt` is set and the status moves to `EDITOR_SELECTION`,
@@ -129,7 +133,7 @@ That doc is wrong; fix it when this is built.
 | ------ | --------------------------------------------- | ------------------------------------------ |
 | Admin  | pastes raw URL                                | `rawImagesUrl`                             |
 | Admin  | "Küldés válogatásra"                          | `selectionRequestedAt`                     |
-| Client | submits the form                              | `declared*` **and** `total*` (same values) |
+| Client | confirms the counted selection                | `declared*` **and** `total*` (same values) |
 | Client | on payment (or immediately, if nothing extra) | `selectionCompletedAt`                     |
 | Editor | any time after                                | `total*` only — never `declared*`          |
 
@@ -139,6 +143,37 @@ client submits, is sent to Stripe, and abandons checkout, then `declared*` and
 `USER_SELECTION`, the form stays open, and resubmitting overwrites both. That
 is the wanted behaviour — they can correct themselves before paying — and it
 means "locked after submit" really means _locked once paid_.
+
+## Counting the selection from PicDrop
+
+There is no form. [`countPicdropSelection()`](../../src/lib/picdrop.ts) reads
+two filtered views of `rawImagesUrl` — `?filterflags=final` (black flag) and
+`?filterliked=1` (red heart) — and parses PicDrop's "**N out of M** files are
+shown" text with
+[`parsePicdropFilterCount()`](../../src/lib/picdrop-filter.ts).
+
+- **Why Jina Reader.** The gallery is a JS app: a plain `fetch` gets metadata
+  (`numFiles`) but no flags and no "out of" text. `r.jina.ai` renders it in a
+  headless browser. `JINA_API_KEY` is optional (higher rate limit with it).
+  PicDrop's internal JSON API would be faster but is undocumented.
+- **Missing text reads as zero.** An empty filter (no retouch hearts) is the
+  common case, so the parser returns 0 when the "out of" text is absent. Only
+  a failed request (non-2xx, timeout, network) is an error. The guard against
+  a wrongly-read 0 is the dialog: the client sees both counts before
+  confirming, and Beküldés is disabled at 0 black flags.
+- **English text.** The regex matches PicDrop's English UI, so the request
+  sets `X-Locale: en-US`. A PicDrop copy change breaks counting loudly (error),
+  not silently.
+- **Re-counted on confirm.** `previewImageSelection` counts and writes
+  nothing; `confirmImageSelection` counts again and refuses if the numbers
+  differ from what the dialog showed.
+- **Host guard.** Only `https://*.picdrop.com` URLs are handed to the
+  scraper, since `rawImagesUrl` is typed in by staff.
+- **Hearts are per-visitor likes** in PicDrop. This only works because nobody
+  but the client hearts images in the raw gallery.
+
+`declared*` therefore means "what the gallery showed at confirmation", not a
+number the client typed.
 
 ## The payment step
 

@@ -333,8 +333,8 @@ export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
   WAITING_FOR_THE_DATE: 'details',
   WAITING_FOR_BALANCE_PAYMENT: 'details',
   RAW_PHOTOS_UPLOAD: 'details',
-  EDITOR_SELECTION: 'details',
-  FINAL_PHOTOS_UPLOAD: 'details',
+  EDITOR_SELECTION: 'image-selection',
+  FINAL_PHOTOS_UPLOAD: 'image-selection',
   READY_TO_COMPLETE: 'details',
   CANCELLED: 'details',
 };

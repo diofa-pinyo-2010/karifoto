@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import {
   ArrowLeftIcon,
   CameraIcon,
+  CheckIcon,
   ClockIcon,
   ExternalLinkIcon,
   FlagIcon,
@@ -20,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
+import { ImageSelectionDialog } from '@/components/ImageSelectionDialog';
 import {
   Accordion,
   AccordionTrigger,
@@ -28,9 +30,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ItemGroup } from '@/components/ui/item';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
   APP_URLS,
@@ -52,6 +52,7 @@ import {
 import { getPortalAccess } from '@/lib/dal';
 import { packages } from '@/lib/data';
 import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
+import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
@@ -144,7 +145,10 @@ export default async function ClientPortalShootingDetailsPage({
             elindulhat a válogatás.
           </p>
         ) : (
-          <ClientImageSelection {...photoShooting} />
+          <ClientImageSelection
+            {...photoShooting}
+            canSubmit={access.as === 'client'}
+          />
         ),
       disabled: photoShooting.status === 'CANCELLED',
       icon: ImagesIcon,
@@ -198,6 +202,7 @@ export default async function ClientPortalShootingDetailsPage({
         {PHOTO_SHOOTING_STATUS_CLIENT_LABEL[photoShooting.status]}
       </Badge>
       <Accordion
+        key={photoShooting.status}
         multiple={false}
         defaultValue={[openByDefault]}
         className="rounded-lg border bg-white"
@@ -402,16 +407,56 @@ function ClientPortalShootingDetails({
   );
 }
 
-function galleryFilterUrl(rawImagesUrl: string, filter: string) {
-  const url = new URL(rawImagesUrl);
-  url.searchParams.set(filter.split('=')[0], filter.split('=')[1]);
-  return url.toString();
-}
-
 function ClientImageSelection({
+  id,
+  clientId,
   rawImagesUrl,
   package: shootingPackage,
-}: PhotoShootingForClientPortal) {
+  selectionCompletedAt,
+  declaredEditedImages,
+  declaredRetouchedImages,
+  canSubmit,
+}: PhotoShootingForClientPortal & { canSubmit: boolean }) {
+  if (selectionCompletedAt != null) {
+    return (
+      <div className="flex flex-col gap-5 rounded-lg border border-brand-free-edge bg-brand-free-surface p-5 text-brand-free">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-free text-brand-paper">
+            <CheckIcon className="size-5" />
+          </span>
+          <div className="flex flex-col gap-1">
+            <p className="text-lg font-semibold">
+              Megkaptuk a válogatásotokat, köszönjük!
+            </p>
+            <p className="text-sm text-brand-free/80">
+              Már dolgozunk rajta. A kész képeket hamarosan küldjük emailben.
+            </p>
+          </div>
+        </div>
+        <dl className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1 rounded-md bg-white/70 p-3">
+            <dt className="flex items-center gap-1.5 text-xs font-medium">
+              <FlagIcon className="size-3.5 fill-current" />
+              Szerkesztésre
+            </dt>
+            <dd className="text-2xl font-semibold">
+              {declaredEditedImages ?? 0} db
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1 rounded-md bg-white/70 p-3">
+            <dt className="flex items-center gap-1.5 text-xs font-medium">
+              <HeartIcon className="size-3.5 fill-red-500 text-red-500" />
+              Extra retusra
+            </dt>
+            <dd className="text-2xl font-semibold">
+              {declaredRetouchedImages ?? 0} db
+            </dd>
+          </div>
+        </dl>
+      </div>
+    );
+  }
+
   const allowance = PACKAGE_PRICES[shootingPackage].editedImagesAllowance;
 
   return (
@@ -487,7 +532,7 @@ function ClientImageSelection({
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <a
-                href={galleryFilterUrl(rawImagesUrl, 'filterflags=final')}
+                href={buildPicdropFilterUrl(rawImagesUrl, 'final')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={buttonVariants({
@@ -500,7 +545,7 @@ function ClientImageSelection({
                 Fekete zászlós képek
               </a>
               <a
-                href={galleryFilterUrl(rawImagesUrl, 'filterliked=1')}
+                href={buildPicdropFilterUrl(rawImagesUrl, 'liked')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={buttonVariants({
@@ -525,46 +570,20 @@ function ClientImageSelection({
       <Separator />
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-semibold">Végeztél? Add meg a számokat</h3>
+        <h3 className="text-lg font-semibold">Végeztél a jelöléssel?</h3>
         <p className="text-brand-muted">
-          Ha a megjelölt képek száma megegyezik a csomagodéval, azonnal kezdjük
-          a szerkesztést. A kész képeket a jelölés beérkezésétől számított{' '}
+          Kattints a „Kész vagyok” gombra: megszámoljuk a galériában megjelölt
+          képeket, és megmutatjuk, jár-e vele extra díj. Ha a megjelölt képek
+          száma belefér a csomagodba, azonnal kezdjük a szerkesztést. A kész
+          képeket a jelölés beérkezésétől számított{' '}
           {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül
           küldjük.
         </p>
-        {/* TODO: bekötni egy server actionre (declaredEditedImages /
-            declaredRetouchedImages). Addig nincs bekötve, a gomb tiltott. */}
-        <form className="flex flex-col gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="editedImages">Fekete zászlós képek száma</Label>
-              <Input
-                id="editedImages"
-                name="editedImages"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step={1}
-                className="h-10"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="retouchedImages">Piros szíves képek száma</Label>
-              <Input
-                id="retouchedImages"
-                name="retouchedImages"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step={1}
-                className="h-10"
-              />
-            </div>
-          </div>
-          <Button type="submit" size="lg" disabled className="w-full sm:w-fit">
-            Válogatás beküldése
-          </Button>
-        </form>
+        <ImageSelectionDialog
+          clientProfileId={clientId}
+          shootingId={id}
+          disabled={!canSubmit}
+        />
       </div>
     </div>
   );
