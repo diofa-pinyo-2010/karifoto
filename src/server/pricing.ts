@@ -4,7 +4,10 @@ import {
   PhotoShootingPricing,
   PriceAdjustment,
 } from '@/generated/prisma/client';
-import { isLightPlayChargeable } from '@/lib/constants';
+import {
+  isLightPlayChargeable,
+  PRICE_ADJUSTMENT_TYPE_SIGN,
+} from '@/lib/constants';
 
 /**
  * One row of a bill. The sign is carried in the amount: charges are positive,
@@ -129,9 +132,11 @@ export function calculatePricing({
   // Every adjustment currently reduces the bill; `amountInCents` is stored as a
   // positive magnitude, so the sign is applied here. Adding `SURCHARGE` means
   // replacing this negation with a per-type sign map.
+  // Note: replaced with a per-type sign map.
   const adjustmentLines: PriceLine[] = adjustments.map((adjustment) => ({
     label: adjustment.publicLabel,
-    amountInCents: -adjustment.amountInCents,
+    amountInCents:
+      PRICE_ADJUSTMENT_TYPE_SIGN[adjustment.type] * adjustment.amountInCents,
     adjustmentId: adjustment.id,
   }));
 

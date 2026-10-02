@@ -1,6 +1,13 @@
 import 'server-only';
+import { cache } from 'react';
+
 import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
-import { UPCOMING_SHOOTINGS_TO_SHOW, UUID_RE } from '@/lib/constants';
+import {
+  AUTOMATIC_EARLY_BIRD_ENABLED,
+  SITE_SETTINGS_TABLE_ID,
+  UPCOMING_SHOOTINGS_TO_SHOW,
+  UUID_RE,
+} from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
@@ -190,4 +197,92 @@ export async function fetchPhotoShootingForClientPortal(
   const access = await getPortalAccess(photoShooting.clientId);
 
   return access == null ? null : photoShooting;
+}
+
+/**
+ * cache memoizes per request. If the booking-intent code and a page both call
+ *  getSiteSettings() in one request, only one DB query runs. It's the same
+ * pattern as in dal.ts.
+ */
+export const getSiteSettings = cache(async () => {
+  const row = await prisma.siteSettings.findUnique({
+    where: { id: SITE_SETTINGS_TABLE_ID },
+  });
+
+  return {
+    automaticEarlyBirdEnabled:
+      row?.automaticEarlyBirdEnabled ?? AUTOMATIC_EARLY_BIRD_ENABLED,
+  };
+});
+
+const bookingIntentWithTimeSlot = {
+  include: {
+    timeSlot: {
+      select: {
+        startTime: true,
+        revealed: true,
+        photoShooting: { select: { id: true } },
+      },
+    },
+    // Set once converted, and its time slot is the current one. The intent's
+    // own `timeSlot` is null once the freed slot is deleted — fall back to
+    // `requestedStartTime` for the originally booked time, never to `timeSlot`.
+    photoShooting: {
+      select: { timeSlot: { select: { startTime: true } } },
+    },
+    adjustments: {
+      include: { createdBy: { select: { nickname: true } } },
+      orderBy: { createdAt: 'asc' },
+    },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+export type BookingIntentWithTimeSlot = Prisma.BookingIntentGetPayload<
+  typeof bookingIntentWithTimeSlot
+>;
+
+export async function getBookingIntent(id: string) {
+  if (!UUID_RE.test(id)) return null;
+  return prisma.bookingIntent.findUnique({
+    where: { id },
+    ...bookingIntentWithTimeSlot,
+  });
+}
+
+const bookingIntentpublicSelect = {
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    status: true,
+    package: true,
+    isLightPlaySelected: true,
+    numberOfGuests: true,
+    numberOfPets: true,
+    requestedStartTime: true,
+    clientNote: true,
+    timeSlot: {
+      select: {
+        startTime: true,
+        photoShooting: {
+          select: { id: true },
+        },
+      },
+    },
+    photoShooting: { select: { timeSlot: { select: { startTime: true } } } },
+    adjustments: {
+      select: { id: true, amountInCents: true, publicLabel: true, type: true },
+    },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+export type BookingIntentPublic = Prisma.BookingIntentGetPayload<
+  typeof bookingIntentpublicSelect
+>;
+
+export async function getBookingIntentPublic(id: string) {
+  return prisma.bookingIntent.findUnique({
+    where: { id },
+    ...bookingIntentpublicSelect,
+  });
 }

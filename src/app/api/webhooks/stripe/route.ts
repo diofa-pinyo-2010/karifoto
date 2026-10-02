@@ -17,9 +17,9 @@ import { sendDiscordNotification } from '@/lib/discord';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
+import { getBookingIntent } from '@/lib/queries';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
-import { getBookingIntent } from '@/server/booking-intent';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();

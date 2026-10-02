@@ -46,13 +46,13 @@ export function Sets2() {
           >
             {decorSets.map(({ id, name, mainImage }) => (
               <a key={id} href={`#${id}`}>
-                <Card>
+                <Card className="shadow">
                   <Image src={mainImage} alt={mainImage.alt} />
                   <CardFooter className="p-3 lg:p-(--card-spacing)">
                     <Button
                       size="lg"
                       className="group w-full tracking-wide uppercase lg:text-lg"
-                      variant="brand"
+                      variant="outline"
                     >
                       {name}
                       <ArrowRightIcon className="hidden transition-transform group-hover:translate-x-1 lg:block" />
@@ -181,7 +181,7 @@ function SetSection({
   }, []);
 
   return (
-    <section id={id} className="flex scroll-mt-4 flex-col gap-12">
+    <section id={id} className="flex scroll-mt-8 flex-col gap-12">
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-x-16">
         <div className="flex flex-col gap-2 lg:gap-3 lg:self-end">
           <p className="text-brand-muted uppercase">{tagline}</p>
@@ -253,7 +253,7 @@ function SetSection({
           </AccordionItem>
         </Accordion>
       </div>
-      <ChristmasSeparator className="mb-4 lg:mb-8" />
+      <ChristmasSeparator className="mb-10 lg:mb-20" />
     </section>
   );
 }

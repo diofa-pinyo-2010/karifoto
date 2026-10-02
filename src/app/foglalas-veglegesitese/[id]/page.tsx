@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { BookingSummary } from '@/components/BookingSummary';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
-import { getBookingIntent } from '@/server/booking-intent';
+import { getBookingIntentPublic } from '@/lib/queries';
 
 export const metadata: Metadata = {
   title: 'Foglalás részletei · Karifoto',
@@ -16,7 +16,7 @@ export default async function BookingLightPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const bookingIntent = await getBookingIntent(id);
+  const bookingIntent = await getBookingIntentPublic(id);
   const isValid =
     bookingIntent != null &&
     bookingIntent.status === BookingIntentStatus.PENDING;

@@ -145,6 +145,16 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_OTHER: -1,
 };
 
+export const PRICE_ADJUSTMENT_TYPE_SIGN: Record<PriceAdjustmentType, 1 | -1> = {
+  DISCOUNT: -1,
+  DEDUCTION: -1,
+};
+
+export const SITE_SETTINGS_TABLE_ID = 'singleton';
+
+export const AUTOMATIC_EARLY_BIRD_ENABLED = false;
+export const EARLY_BIRD_DISCOUNT_AMOUNT = 10_000_00;
+
 export const UPCOMING_SHOOTINGS_TO_SHOW = 300;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;

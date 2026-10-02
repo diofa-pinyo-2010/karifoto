@@ -12,12 +12,14 @@ import {
   LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
+  PRICE_ADJUSTMENT_TYPE_SIGN,
 } from '@/lib/constants';
 import { packages, type PackageKey } from '@/lib/data';
 import { formatSlotDateTime } from '@/lib/formatters';
-import { formatMoney } from '@/lib/utils';
-import { BookingIntentWithTimeSlot } from '@/server/booking-intent';
+import { cn, formatAmount, formatMoney } from '@/lib/utils';
 import { createCheckoutSession } from '@/server/stripe';
+
+import type { BookingIntentPublic } from '@/lib/queries';
 
 const packageNameById = Object.fromEntries(
   packages.map((p) => [p.id, p.name]),
@@ -37,7 +39,7 @@ const PACKAGE_LABEL: Record<Package, string> = {
 export function BookingReview({
   bookingIntent,
 }: {
-  bookingIntent: BookingIntentWithTimeSlot;
+  bookingIntent: BookingIntentPublic;
 }) {
   const [state, formAction, isPending] = useActionState(
     createCheckoutSession.bind(null, bookingIntent.id),
@@ -57,74 +59,20 @@ export function BookingReview({
   );
   const headFee = extraHeads * EXTRA_FEE_PER_EXTRA_PERSON;
   const petFee = bookingIntent.numberOfPets * EXTRA_FEE_PER_PET;
+
+  const totalAdjustments = bookingIntent.adjustments.reduce((sum, adj) => {
+    return sum + adj.amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[adj.type];
+  }, 0);
   const total =
-    packageBasePrice + packageStudioFee + lightFee + headFee + petFee;
+    packageBasePrice +
+    packageStudioFee +
+    lightFee +
+    headFee +
+    petFee +
+    totalAdjustments;
 
   return (
     <form action={formAction}>
-      {/* <section className="border-b border-ink/12 bg-[#FCF5E8]">
-        <div className="mx-auto max-w-130 px-4.5 pt-5.5 pb-7 sm:px-10">
-          <div className="eyebrow">A foglalásod</div>
-          <div className="mt-3.5 text-[26px] leading-[1.2] text-ink sm:text-[34px]">
-            {formatLongDate(bookingIntent.requestedStartTime)}
-          </div>
-        </div>
-      </section> */}
-
-      {/* <section className="mx-auto max-w-130 px-4.5 pt-7.5 sm:px-10">
-        <h2 className="font-display text-2xl font-medium text-ink">
-          Amit lefoglaltál
-        </h2>
-        <dl className="mt-3.5 flex flex-col">
-          <ReviewRow
-            label="Csomag"
-            value={PACKAGE_LABEL[bookingIntent.package]}
-          />
-          <ReviewRow
-            label="Díszlet"
-            value={
-              bookingIntent.decorSet == null
-                ? 'Mindkét díszlet'
-                : DECOR_SET_LABEL[bookingIntent.decorSet]
-            }
-          />
-          <ReviewRow
-            label="Fényjáték"
-            value={
-              shouldShowLight
-                ? bookingIntent.isLightPlaySelected
-                  ? 'Igen'
-                  : 'Nem'
-                : 'A csomag része'
-            }
-          />
-          <ReviewRow
-            label="Létszám"
-            value={`${bookingIntent.numberOfGuests} fő`}
-          />
-          <ReviewRow
-            label="Kisállat"
-            value={
-              bookingIntent.numberOfPets === 0
-                ? 'Nem hozunk'
-                : `${bookingIntent.numberOfPets} db`
-            }
-          />
-          <ReviewRow label="Név" value={bookingIntent.name} />
-          <ReviewRow label="E-mail" value={bookingIntent.email} />
-          {bookingIntent.clientNote && (
-            <ReviewRow label="Megjegyzés" value={bookingIntent.clientNote} />
-          )}
-        </dl>
-
-        <Link
-          href="/"
-          className="mt-4 inline-block text-[13.5px] text-cream-muted underline underline-offset-4 transition-opacity hover:opacity-70"
-        >
-          Módosítanál? Kezdd újra a főoldalról.
-        </Link>
-      </section> */}
-
       <section className="bg-white/45 sm:rounded-t-[28px]">
         <div className="mx-auto max-w-130 px-4.5 pt-6 pb-7 sm:px-10">
           <div className="eyebrow-ink">Összefoglaló</div>
@@ -151,24 +99,35 @@ export function BookingReview({
                 state={bookingIntent.isLightPlaySelected ? 'base' : 'idle'}
               />
             )}
-            <PriceRow
-              label={
-                extraHeads > 0
-                  ? `Extra emberek · ${extraHeads} fő`
-                  : 'Extra emberek'
-              }
-              value={formatMoney(headFee)}
-              state={extraHeads > 0 ? 'accent' : 'idle'}
-            />
-            <PriceRow
-              label={
-                bookingIntent.numberOfPets > 0
-                  ? `Kisállat · ${bookingIntent.numberOfPets} db`
-                  : 'Kisállat'
-              }
-              value={formatMoney(petFee)}
-              state={bookingIntent.numberOfPets > 0 ? 'accent' : 'idle'}
-            />
+            {extraHeads > 0 && (
+              <PriceRow
+                label={`Extra emberek · ${extraHeads} fő`}
+                value={formatMoney(headFee)}
+                state="accent"
+              />
+            )}
+            {bookingIntent.numberOfPets > 0 && (
+              <PriceRow
+                label={`Kisállat · ${bookingIntent.numberOfPets} db`}
+                value={formatMoney(petFee)}
+                state="accent"
+              />
+            )}
+            {bookingIntent.adjustments.map(
+              ({ id, publicLabel, amountInCents, type }) => {
+                return (
+                  <PriceRow
+                    key={id}
+                    label={publicLabel}
+                    value={formatAmount(
+                      amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[type],
+                      'HUF',
+                    )}
+                    state="discount"
+                  />
+                );
+              },
+            )}
           </div>
 
           <div className="mt-4.5 flex items-baseline justify-between gap-4">
@@ -271,19 +230,28 @@ function PriceRow({
   label: string;
   value: string;
   /** base = fix tétel, accent = aktív felár, idle = 0 Ft-os helyfoglaló */
-  state?: 'base' | 'accent' | 'idle';
+  state?: 'base' | 'accent' | 'idle' | 'discount';
 }) {
-  const labelColor =
-    state === 'accent'
-      ? 'text-[#A2612F]'
-      : state === 'idle'
-        ? 'text-[#9AA89D]'
-        : 'text-cream-muted';
-  const valueColor = state === 'idle' ? 'text-[#9AA89D]' : 'text-ink';
   return (
     <div className="flex justify-between gap-4 border-b border-ink/10 py-3">
-      <span className={`text-[14.5px] ${labelColor}`}>{label}</span>
-      <span className={`text-[14.5px] whitespace-nowrap ${valueColor}`}>
+      <span
+        className={cn(
+          'text-[14.5px] text-cream-muted',
+          state === 'accent' && 'text-[#A2612F]',
+          state === 'idle' && 'text-[#9AA89D]',
+          state === 'discount' && 'text-rose-600',
+        )}
+      >
+        {label}
+      </span>
+      <span
+        className={cn(
+          'text-[14.5px] whitespace-nowrap text-ink',
+          state === 'accent' && 'text-[#A2612F]',
+          state === 'idle' && 'text-[#9AA89D]',
+          state === 'discount' && 'text-rose-600',
+        )}
+      >
         {value}
       </span>
     </div>
