@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import * as z from 'zod';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
+import { SITE_SETTINGS_TABLE_ID } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
@@ -24,7 +25,7 @@ export async function setAutomaticEarlyBirdEnabled(
 
   try {
     await prisma.siteSettings.upsert({
-      where: { id: 'singleton' },
+      where: { id: SITE_SETTINGS_TABLE_ID },
       update: { automaticEarlyBirdEnabled: parsed.data },
       create: { automaticEarlyBirdEnabled: parsed.data },
     });

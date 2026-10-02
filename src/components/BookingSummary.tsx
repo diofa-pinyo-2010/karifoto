@@ -13,13 +13,14 @@ import {
 } from '@/lib/constants';
 import { formatLongDate } from '@/lib/formatters';
 import { formatMoney } from '@/lib/utils';
-import { BookingIntentWithTimeSlot } from '@/server/booking-intent';
 import { createCheckoutSession } from '@/server/stripe';
+
+import type { BookingIntentPublic } from '@/lib/queries';
 
 export function BookingSummary({
   bookingIntent,
 }: {
-  bookingIntent: BookingIntentWithTimeSlot;
+  bookingIntent: BookingIntentPublic;
 }) {
   const [people, setPeople] = useState(0);
   const [pets, setPets] = useState(0);

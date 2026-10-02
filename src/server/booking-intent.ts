@@ -1,9 +1,11 @@
 'use server';
 
-import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
+import { DecorSet, Package } from '@/generated/prisma/client';
 import { MAX_PERSONS, MAX_PETS, UUID_RE } from '@/lib/constants';
 import { DecorSetKey, PackageKey } from '@/lib/data';
+import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
+import { getSiteSettings } from '@/lib/queries';
 
 const PACKAGE_KEY_TO_ENUM: Record<PackageKey, Package> = {
   mini: Package.MINI,
@@ -103,42 +105,21 @@ export async function createBookingIntent(
       },
       select: { id: true },
     });
+
+    try {
+      const { automaticEarlyBirdEnabled } = await getSiteSettings();
+      if (automaticEarlyBirdEnabled) {
+        const res = await attachEarlyBirdDiscount(intent.id);
+        if ('error' in res) {
+          console.error(res.error);
+        }
+      }
+    } catch (err) {
+      console.error('Early bird discount failed: ', err);
+    }
+
     return { id: intent.id };
   } catch {
     return { error: 'Nem sikerült létrehozni a foglalást. Próbáld újra.' };
   }
-}
-
-const bookingIntentWithTimeSlot = {
-  include: {
-    timeSlot: {
-      select: {
-        startTime: true,
-        revealed: true,
-        photoShooting: { select: { id: true } },
-      },
-    },
-    // Set once converted, and its time slot is the current one. The intent's
-    // own `timeSlot` is null once the freed slot is deleted — fall back to
-    // `requestedStartTime` for the originally booked time, never to `timeSlot`.
-    photoShooting: {
-      select: { timeSlot: { select: { startTime: true } } },
-    },
-    adjustments: {
-      include: { createdBy: { select: { nickname: true } } },
-      orderBy: { createdAt: 'asc' },
-    },
-  },
-} satisfies Prisma.BookingIntentDefaultArgs;
-
-export type BookingIntentWithTimeSlot = Prisma.BookingIntentGetPayload<
-  typeof bookingIntentWithTimeSlot
->;
-
-export async function getBookingIntent(id: string) {
-  if (!UUID_RE.test(id)) return null;
-  return prisma.bookingIntent.findUnique({
-    where: { id },
-    ...bookingIntentWithTimeSlot,
-  });
 }

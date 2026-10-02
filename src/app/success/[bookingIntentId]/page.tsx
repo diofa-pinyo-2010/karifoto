@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { packages } from '@/lib/data';
 import { formatLongDate } from '@/lib/formatters';
-import { getBookingIntent } from '@/server/booking-intent';
+import { getBookingIntentPublic } from '@/lib/queries';
 
 export const metadata: Metadata = {
   title: 'Sikeres foglalás · Karifoto',
@@ -19,7 +19,7 @@ export default async function SuccessPage(
   props: PageProps<'/success/[bookingIntentId]'>,
 ) {
   const { bookingIntentId } = await props.params;
-  const bookingIntent = await getBookingIntent(bookingIntentId);
+  const bookingIntent = await getBookingIntentPublic(bookingIntentId);
 
   // A webhook konvertálja a foglalást — amíg fut, a státusz még PENDING.
   const isConverted =

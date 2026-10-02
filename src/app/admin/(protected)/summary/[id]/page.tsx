@@ -8,8 +8,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DECOR_SET_LABEL, PACKAGE_LABEL } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { wasEmailSent } from '@/lib/idempotency';
+import { getBookingIntent } from '@/lib/queries';
 import { formatMoney } from '@/lib/utils';
-import { getBookingIntent } from '@/server/booking-intent';
 
 export default async function RemoteBookingSummaryPage({
   params,
