@@ -1,12 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { ArrowRightIcon, ShirtIcon } from 'lucide-react';
 
-// import { useBookingSelection } from '@/components/BookingSelectionProvider';
+import { useBookingSelection } from '@/components/BookingSelectionProvider';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import {
   Accordion,
@@ -45,7 +44,7 @@ export function Sets2() {
             className="grid grid-cols-2 gap-3 lg:mx-auto lg:max-w-3xl"
           >
             {decorSets.map(({ id, name, mainImage }) => (
-              <Link key={id} href={`#${id}`}>
+              <a key={id} href={`#${id}`}>
                 <Card>
                   <Image src={mainImage} alt={mainImage.alt} />
                   <CardFooter className="p-3 lg:p-(--card-spacing)">
@@ -59,7 +58,7 @@ export function Sets2() {
                     </Button>
                   </CardFooter>
                 </Card>
-              </Link>
+              </a>
             ))}
           </nav>
           <p className="text-base text-brand-muted lg:mx-auto lg:max-w-2xl lg:text-xl">
@@ -115,8 +114,12 @@ function SetSection({
   gallery,
   tips,
   showSeparator,
+  setKey,
 }: DecorSetSection & { showSeparator: boolean }) {
   const [openTips, setOpenTips] = useState<string[]>([]);
+  const { decorKey, selectDecorSet } = useBookingSelection();
+
+  const selected = decorKey === setKey;
 
   useEffect(() => {
     if (window.innerWidth >= MOBILE_BREAKPOINT) setOpenTips(['tip']);
@@ -159,12 +162,17 @@ function SetSection({
               </div>
             </div>
           )}
-          <Link
+          <a
             href="#foglalas"
+            onClick={() => {
+              if (setKey != null) {
+                selectDecorSet(setKey);
+              }
+            }}
             className="rounded-md bg-brand-champagne px-6 py-3 text-center font-bold text-brand-ink/80 uppercase lg:self-start"
           >
-            Időpontot foglalok
-          </Link>
+            {selected ? 'Kiválasztva ✓' : 'Ezt szeretném →'}
+          </a>
         </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-[2fr_3fr] lg:items-start lg:gap-x-16">
