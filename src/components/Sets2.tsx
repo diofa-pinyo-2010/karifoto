@@ -124,7 +124,7 @@ export function Sets2() {
                         if (!light) toggleLight();
                       }}
                       // className="rounded-md border border-brand-champagne bg-brand-champagne/20 hover:bg-brand-champagne/40 transition-colors  px-6 py-3 text-center font-bold text-brand-ink/80 uppercase lg:self-start"
-                      className="flex h-12 items-center justify-center rounded-lg border border-brand-champagne px-4 py-3 text-sm font-semibold transition-colors duration-200 hover:bg-brand-champagne/40"
+                      className="flex h-12 items-center justify-center rounded-lg border my-4 lg:my-0 border-brand-champagne px-4 py-3 text-sm font-semibold transition-colors duration-200 hover:bg-brand-champagne/40"
                     >
                       {light ? 'Kiválasztva ✓' : 'Tedd ezt is a kosárba →'}
                     </a>
@@ -253,7 +253,7 @@ function SetSection({
           </AccordionItem>
         </Accordion>
       </div>
-      <ChristmasSeparator className="mb-8" />
+      <ChristmasSeparator className="lg:mb-8" />
     </section>
   );
 }
