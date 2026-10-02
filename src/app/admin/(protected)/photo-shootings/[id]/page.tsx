@@ -393,7 +393,7 @@ export default async function PhotoShootingDetailPage({
                       {line.label}
                       <AdjustmentNoteTooltip
                         note={adjustment.internalNote}
-                        nickname={adjustment.createdBy.nickname}
+                        nickname={adjustment.createdBy?.nickname ?? 'Rendszer'}
                       />
                     </span>
                   ) : (

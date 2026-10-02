@@ -145,6 +145,8 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_OTHER: -1,
 };
 
+export const AUTOMATIC_EARLY_BIRD_ENABLED = false;
+
 export const UPCOMING_SHOOTINGS_TO_SHOW = 300;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;

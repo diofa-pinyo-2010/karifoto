@@ -15,10 +15,9 @@ export function RevealedSwitch({
   disabled: boolean;
 }) {
   const [optimistic, setOptimistic] = useOptimistic(revealed);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
-  function toggle() {
-    const next = !optimistic;
+  function toggle(next: boolean) {
     startTransition(async () => {
       setOptimistic(next);
       await updateTimeSlotRevealed(timeSlotId, next);
@@ -27,10 +26,10 @@ export function RevealedSwitch({
 
   return (
     <Switch
-      disabled={disabled}
+      disabled={disabled || isPending}
       checked={optimistic}
       aria-label="reveal switch"
-      onClick={toggle}
+      onCheckedChange={(checked) => toggle(checked)}
     />
   );
 }

@@ -96,7 +96,7 @@ export default async function RemoteBookingSummaryPage({
                 </p>
                 <AdjustmentNoteTooltip
                   note={adjustment.internalNote}
-                  nickname={adjustment.createdBy.nickname}
+                  nickname={adjustment.createdBy?.nickname ?? 'Rendszer'}
                 />
               </div>
               <div className="flex items-center gap-3">

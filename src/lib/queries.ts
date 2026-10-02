@@ -1,6 +1,12 @@
 import 'server-only';
+import { cache } from 'react';
+
 import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
-import { UPCOMING_SHOOTINGS_TO_SHOW, UUID_RE } from '@/lib/constants';
+import {
+  AUTOMATIC_EARLY_BIRD_ENABLED,
+  UPCOMING_SHOOTINGS_TO_SHOW,
+  UUID_RE,
+} from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
@@ -191,3 +197,19 @@ export async function fetchPhotoShootingForClientPortal(
 
   return access == null ? null : photoShooting;
 }
+
+/**
+ * cache memoizes per request. If the booking-intent code and a page both call
+ *  getSiteSettings() in one request, only one DB query runs. It's the same
+ * pattern as in dal.ts.
+ */
+export const getSiteSettings = cache(async () => {
+  const row = await prisma.siteSettings.findUnique({
+    where: { id: 'singleton' },
+  });
+
+  return {
+    automaticEarlyBirdEnabled:
+      row?.automaticEarlyBirdEnabled ?? AUTOMATIC_EARLY_BIRD_ENABLED,
+  };
+});

@@ -1,11 +1,14 @@
+import { AutomaticEarlyBirdSwitch } from '@/components/AutomaticEarlyBirdSwitch';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { requireNavAccess } from '@/lib/dal';
+import { getSiteSettings } from '@/lib/queries';
 import { fetchEditors, setDefaultEditor } from '@/server/admin';
 
 export default async function SettingsPage() {
   await requireNavAccess('/admin/settings');
 
+  const { automaticEarlyBirdEnabled } = await getSiteSettings();
   const editors = await fetchEditors();
   const defaultEditor = editors.find((editor) => editor.isDefaultEditor);
 
@@ -33,6 +36,16 @@ export default async function SettingsPage() {
               onSave={setDefaultEditor}
             />
           }
+        />
+        <DetailRow
+          label="Automatikus Early Bird"
+          value={
+            <AutomaticEarlyBirdSwitch
+              initial={automaticEarlyBirdEnabled}
+              id="automaticEarlyBirdEnabled"
+            />
+          }
+          htmlForId="automaticEarlyBirdEnabled"
         />
       </div>
     </div>
