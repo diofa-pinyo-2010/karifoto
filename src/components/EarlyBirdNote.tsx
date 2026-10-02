@@ -1,6 +1,7 @@
 import { Caveat } from 'next/font/google';
 
-import { cn } from '@/lib/utils';
+import { cn, formatAmount } from '@/lib/utils';
+import { EARLY_BIRD_DISCOUNT_AMOUNT } from '@/lib/constants';
 
 const caveat = Caveat({ subsets: ['latin', 'latin-ext'], weight: '600' });
 
@@ -17,7 +18,7 @@ export function EarlyBirdNote() {
         <br />
         most{' '}
         <span className="relative inline-block">
-          10&nbsp;000&nbsp;Ft
+          {formatAmount(EARLY_BIRD_DISCOUNT_AMOUNT, 'HUF')}
           <svg
             viewBox="0 0 100 8"
             preserveAspectRatio="none"
