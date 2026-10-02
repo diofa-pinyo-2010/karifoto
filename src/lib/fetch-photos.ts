@@ -16,7 +16,7 @@ import alomkastelyGallery2 from '@/photos/alomkastely-gallery-2.jpg';
 import alomkastelyGallery3 from '@/photos/alomkastely-gallery-3.jpg';
 import alomkastelyGallery4 from '@/photos/alomkastely-gallery-4.jpg';
 import alomkastelyGallery5 from '@/photos/alomkastely-gallery-5.jpg';
-import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
+// import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
 import fenyjatek2 from '@/photos/fenyjatek-gallery-2.jpg';
 import fenyjatek3 from '@/photos/fenyjatek-gallery-3.jpg';
 import fenyjatek4 from '@/photos/fenyjatek-gallery-4.jpg';
@@ -41,7 +41,7 @@ export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
     { ...hofeherGallery4, alt: 'Portrait in golden light s' },
   ],
   FENYJATEK: [
-    { ...fenyjatek1, alt: 'fenyjatek 1' },
+    // { ...fenyjatek1, alt: 'fenyjatek 1' },
     { ...fenyjatek2, alt: 'fenyjatek 2' },
     { ...fenyjatek3, alt: 'fenyjatek 3' },
     { ...fenyjatek4, alt: 'fenyjatek 4' },
@@ -69,3 +69,19 @@ export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
 // The only requirement is that each photo carries `src`, `width`, and `height`.
 // `blurDataURL` is optional — if your CMS provides one (or you generate it),
 // the blur placeholder keeps working; if not, the component just skips it.
+
+export const decorSetGalleries: Record<DecorSet, Photo[]> = {
+  HOFEHER: [
+    { ...hofeherGallery1, alt: 'Sunset over the beach' },
+    { ...hofeherGallery2, alt: 'Misty forest trail' },
+    { ...hofeherGallery3, alt: 'Portrait in golden light' },
+    { ...hofeherGallery4, alt: 'Portrait in golden light s' },
+  ],
+  ALOMKASTELY: [
+    { ...alomkastelyGallery1, alt: 'alomkastely 1' },
+    { ...alomkastelyGallery2, alt: 'alomkastely 2' },
+    { ...alomkastelyGallery3, alt: 'alomkastely 3' },
+    { ...alomkastelyGallery4, alt: 'alomkastely 4' },
+    { ...alomkastelyGallery5, alt: 'alomkastely 5' },
+  ],
+};

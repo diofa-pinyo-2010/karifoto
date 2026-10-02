@@ -27,7 +27,7 @@ export function BookingSelectionNote() {
       aria-live="polite"
       className="border-b border-brand-ink/10 bg-brand-ice/25 px-5 py-3 text-xs leading-6"
     >
-      A választásod: {parts.join(' · ')}
+      A választásod: {parts.join(' + ')}
     </p>
   );
 }

@@ -40,7 +40,7 @@ function renderNextImage(
       // A keret krém háttéren is látszik, hogy a világos képek ne folyjanak
       // össze a háttérrel. A korábbi `border-cream/30` a sötétzöld arculathoz
       // készült, krémen 1,0 kontraszttal gyakorlatilag láthatatlan volt.
-      className="group cursor-pointer overflow-hidden rounded-lg border border-[#acb9b0]"
+      className="group cursor-pointer overflow-hidden rounded-lg ring-1 ring-black/10"
     >
       <Image
         fill
@@ -62,7 +62,7 @@ export function PhotoGallery({
    * hangolva; szűkebb oszlopban (pl. a díszletszekciók kétoszlopos rácsában)
    * kisebb érték kell, különben egy sorba alig fér kép.
    */
-  targetRowHeight = 370,
+  targetRowHeight = 240,
 }: {
   photos: Photo[];
   targetRowHeight?: number;
@@ -78,7 +78,7 @@ export function PhotoGallery({
         render={{ image: renderNextImage }}
         spacing={12}
         // 5000 is just "a number bigger than any image could ever be tall," used as a trick.
-        targetRowHeight={isMobile ? 5000 : targetRowHeight}
+        targetRowHeight={isMobile ? 150 : targetRowHeight}
         /*
          * A galéria a díszletszekciók kétoszlopos rácsában ül, nem teljes
          * szélességben — enélkül a react-photo-album `100vw`-t ad az
