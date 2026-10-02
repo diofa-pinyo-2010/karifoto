@@ -1,33 +1,16 @@
-// import { useRouter } from 'next/navigation';
-// import { useState, useTransition } from 'react';
-
 import { BookingSelectionNote } from '@/components/BookingSelectionNote';
+import { EarlyBirdNote } from '@/components/EarlyBirdNote';
 import { TimeSlotAccordion } from '@/components/TimeSlotAccordion';
+import { getSiteSettings, type TimeSlotPublic } from '@/lib/queries';
 import { GroupedSlots } from '@/lib/utils';
 
-import type { TimeSlotPublic } from '@/lib/queries';
-
-// import {
-//   CircleCheckBigIcon,
-//   PlusIcon,
-//   SparkleIcon,
-//   SparklesIcon,
-// } from 'lucide-react';
-
-// import { useAppContext } from '@/components/AppContextProvider';
-// import { DaysAndTimes } from '@/components/DaysAndTimes';
-// import { Step } from '@/components/Step';
-// import { LIGHT_PLAY_FEE } from '@/lib/constants';
-// import { packages } from '@/lib/data';
-// import { shortFullDateFormatter } from '@/lib/formatters';
-// import { cn, formatMoney, GroupedSlots } from '@/lib/utils';
-// import { createBookingIntent } from '@/server/booking-intent';
-
-export function Booking({
+export async function Booking({
   groupedTimeSlots,
 }: {
   groupedTimeSlots: GroupedSlots<TimeSlotPublic>;
 }) {
+  const { automaticEarlyBirdEnabled } = await getSiteSettings();
+
   return (
     <section
       id="foglalas"
@@ -62,6 +45,7 @@ export function Booking({
               </li>
             ))}
           </ol>
+          {automaticEarlyBirdEnabled && <EarlyBirdNote />}
         </div>
 
         <div className="self-start overflow-hidden rounded-xl border border-[#cbd2c4] bg-brand-paper shadow-[0_12px_50px_#2a493408]">
