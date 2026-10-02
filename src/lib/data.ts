@@ -120,52 +120,6 @@ export const packages: Package[] = [
   },
 ];
 
-// TODO(backend): fetch availability instead of this constant.
-export const days: Day[] = [
-  {
-    id: '2026-12-05',
-    weekday: 'Szombat',
-    label: 'dec. 5.',
-    note: '4 hely',
-    slots: ['09:00', '10:30', '13:00', '15:30'],
-  },
-  {
-    id: '2026-12-06',
-    weekday: 'Vasárnap',
-    label: 'dec. 6.',
-    note: '2 hely',
-    slots: ['10:00', '12:00'],
-  },
-  {
-    id: '2026-12-12',
-    weekday: 'Szombat',
-    label: 'dec. 12.',
-    note: 'Betelt',
-    slots: [],
-  },
-  {
-    id: '2026-12-13',
-    weekday: 'Vasárnap',
-    label: 'dec. 13.',
-    note: '3 hely',
-    slots: ['09:30', '11:00', '14:00'],
-  },
-  {
-    id: '2026-12-19',
-    weekday: 'Szombat',
-    label: 'dec. 19.',
-    note: '5 hely',
-    slots: ['09:00', '10:30', '12:00', '14:00', '16:00'],
-  },
-  {
-    id: '2026-12-20',
-    weekday: 'Vasárnap',
-    label: 'dec. 20.',
-    note: '1 hely',
-    slots: ['15:00'],
-  },
-];
-
 export const reviews = [
   {
     initial: 'B',
