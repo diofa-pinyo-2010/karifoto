@@ -253,7 +253,7 @@ function SetSection({
           </AccordionItem>
         </Accordion>
       </div>
-      <ChristmasSeparator className="lg:mb-8" />
+      <ChristmasSeparator className="mb-4 lg:mb-8" />
     </section>
   );
 }
