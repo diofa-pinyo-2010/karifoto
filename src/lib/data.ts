@@ -263,10 +263,10 @@ export const decorSetSections: DecorSetSection[] = [
     gallery: decorSetGalleries.ALOMKASTELY,
   },
   {
-    id: 'diszlet-fenyjatek',
+    id: 'extra-fenyjatek',
     setKey: null,
-    name: 'Fényjáték',
-    tagline: 'Meleg izzók, meghitt közelik',
+    name: 'Fényjáték ✨',
+    tagline: 'Extra ajánlat, bármelyik díszlet mellé',
     description:
       'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
     tips: 'A stílust 4 éve a "HÓFEHÉR" díszlet ihlette, és idén is a díszlet megújult változatában készítjük a Fényjátékos fotókat.',

@@ -16,7 +16,7 @@ import alomkastelyGallery2 from '@/photos/alomkastely-gallery-2.jpg';
 import alomkastelyGallery3 from '@/photos/alomkastely-gallery-3.jpg';
 import alomkastelyGallery4 from '@/photos/alomkastely-gallery-4.jpg';
 import alomkastelyGallery5 from '@/photos/alomkastely-gallery-5.jpg';
-import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
+// import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
 import fenyjatek2 from '@/photos/fenyjatek-gallery-2.jpg';
 import fenyjatek3 from '@/photos/fenyjatek-gallery-3.jpg';
 import fenyjatek4 from '@/photos/fenyjatek-gallery-4.jpg';
@@ -41,7 +41,7 @@ export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
     { ...hofeherGallery4, alt: 'Portrait in golden light s' },
   ],
   FENYJATEK: [
-    { ...fenyjatek1, alt: 'fenyjatek 1' },
+    // { ...fenyjatek1, alt: 'fenyjatek 1' },
     { ...fenyjatek2, alt: 'fenyjatek 2' },
     { ...fenyjatek3, alt: 'fenyjatek 3' },
     { ...fenyjatek4, alt: 'fenyjatek 4' },

@@ -22,7 +22,8 @@ import { Button } from './ui/button';
 
 export function Sets2() {
   const decorSets = decorSetSections.filter((ds) => !ds.isExtra);
-  // const extras = decorSetSections.filter((s) => s.isExtra);
+  const extras = decorSetSections.filter((s) => s.isExtra);
+  const { light, toggleLight } = useBookingSelection();
 
   return (
     <section
@@ -68,15 +69,70 @@ export function Sets2() {
           </p>
           <ChristmasSeparator />
           <div>
-            {decorSets.map((set, idx) => {
+            {decorSets.map((set) => {
               return (
                 <SetSection
                   key={set.id}
-                  showSeparator={idx < decorSets.length - 1}
+
                   {...set}
                 />
               );
             })}
+          </div>
+          <div>
+            {extras.map(
+              ({ id, name, tagline, description, mainImage, gallery }) => {
+                return (
+                  <section
+                    key={id}
+                    id={id}
+                    className="grid gap-6 rounded-md border border-[#d5c5ab] bg-[#ece5d9] p-5 sm:p-8 lg:grid-cols-2 lg:gap-x-16"
+                  >
+                    <div className="flex flex-col gap-2 lg:gap-3 lg:self-end">
+                      <p className="text-brand-muted uppercase">{tagline}</p>
+                      <h2 className="font-display text-4xl font-bold lg:text-6xl">
+                        {name}
+                      </h2>
+                      <p className="text-brand-muted">{description}</p>
+                    </div>
+                    <Image
+                      src={mainImage}
+                      alt={mainImage.alt}
+                      className="rounded-lg ring-1 ring-black/10 lg:col-start-2 lg:row-span-2 lg:row-start-1"
+                    />
+                    <p className="text-brand-muted">
+                      A{' '}
+                      <a
+                        href="#csomagok"
+                        className="text-brand-night underline underline-offset-2 hover:text-brand-muted"
+                      >
+                        Family csomag
+                      </a>{' '}
+                      alapból tartalmazza, de bármelyik másik csomaghoz is külön
+                      kérhető az{' '}
+                      <a
+                        href="#foglalas"
+                        className="text-brand-night underline underline-offset-2 hover:text-brand-muted"
+                      >
+                        időpontfoglalás
+                      </a>{' '}
+                      során.
+                    </p>
+                    <a
+                      href="#foglalas"
+                      onClick={() => {
+                        if (!light) toggleLight();
+                      }}
+                      // className="rounded-md border border-brand-champagne bg-brand-champagne/20 hover:bg-brand-champagne/40 transition-colors  px-6 py-3 text-center font-bold text-brand-ink/80 uppercase lg:self-start"
+                      className="flex h-12 items-center justify-center rounded-lg border border-brand-champagne px-4 py-3 text-sm font-semibold transition-colors duration-200 hover:bg-brand-champagne/40"
+                    >
+                      {light ? 'Kiválasztva ✓' : 'Tedd ezt is a kosárba →'}
+                    </a>
+                    <PhotoGallery photos={gallery} targetRowHeight={120} />
+                  </section>
+                );
+              },
+            )}
           </div>
         </div>
       </div>
@@ -113,9 +169,8 @@ function SetSection({
   colors,
   gallery,
   tips,
-  showSeparator,
   setKey,
-}: DecorSetSection & { showSeparator: boolean }) {
+}: DecorSetSection) {
   const [openTips, setOpenTips] = useState<string[]>([]);
   const { decorKey, selectDecorSet } = useBookingSelection();
 
@@ -198,7 +253,7 @@ function SetSection({
           </AccordionItem>
         </Accordion>
       </div>
-      {showSeparator && <ChristmasSeparator className="mb-6" />}
+      <ChristmasSeparator className="mb-8" />
     </section>
   );
 }
