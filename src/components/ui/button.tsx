@@ -18,6 +18,9 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
         link: 'text-primary underline-offset-4 hover:underline',
+        // className=" px-6 py-3.5 text-sm font-semibold text-[#152b2e] transition-[background-color,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-[#e3bf8d] hover:shadow-[0_5px_22px_#00000015] sm:w-auto"
+        brand:
+          'bg-brand-champagne text-sm text-[#152b2e]/85 hover:bg-brand-champagne/80',
       },
       size: {
         default:

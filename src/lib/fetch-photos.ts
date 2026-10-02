@@ -69,3 +69,19 @@ export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
 // The only requirement is that each photo carries `src`, `width`, and `height`.
 // `blurDataURL` is optional — if your CMS provides one (or you generate it),
 // the blur placeholder keeps working; if not, the component just skips it.
+
+export const decorSetGalleries: Record<DecorSet, Photo[]> = {
+  HOFEHER: [
+    { ...hofeherGallery1, alt: 'Sunset over the beach' },
+    { ...hofeherGallery2, alt: 'Misty forest trail' },
+    { ...hofeherGallery3, alt: 'Portrait in golden light' },
+    { ...hofeherGallery4, alt: 'Portrait in golden light s' },
+  ],
+  ALOMKASTELY: [
+    { ...alomkastelyGallery1, alt: 'alomkastely 1' },
+    { ...alomkastelyGallery2, alt: 'alomkastely 2' },
+    { ...alomkastelyGallery3, alt: 'alomkastely 3' },
+    { ...alomkastelyGallery4, alt: 'alomkastely 4' },
+    { ...alomkastelyGallery5, alt: 'alomkastely 5' },
+  ],
+};
