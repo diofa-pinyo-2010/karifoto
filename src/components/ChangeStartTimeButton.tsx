@@ -221,7 +221,7 @@ export function ChangeStartTimeButton({
           {shootings && (
             <Card className="mt-3 bg-accent/50">
               <CardHeader>
-                <CardTitle>Többi fotózás aznap</CardTitle>
+                <CardTitle>Fotózások aznap</CardTitle>
               </CardHeader>
               <CardContent>
                 {error && (
@@ -241,14 +241,15 @@ export function ChangeStartTimeButton({
                         variant="outline"
                         size="xs"
                         className={cn(
-                          'bg-background/50',
+                          'bg-background/50 text-xs',
                           shooting.id === shootingId &&
                             'border-dashed border-green-400',
                         )}
                       >
                         {timeInputFormatter.format(shooting.timeSlot.startTime)}{' '}
                         • {PACKAGE_LABEL[shooting.package]}{' '}
-                        {shooting.isLightPlaySelected && '(+ Fényjáték)'}
+                        {shooting.isLightPlaySelected && '+ Fényjáték'} (
+                        {shooting.client.owner.name})
                       </Item>
                     ))}
                   </div>

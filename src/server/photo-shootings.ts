@@ -24,6 +24,7 @@ const photoShootingsForDaySelect = {
     package: true,
     isLightPlaySelected: true,
     timeSlot: { select: { startTime: true } },
+    client: { select: { owner: { select: { name: true } } } },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 

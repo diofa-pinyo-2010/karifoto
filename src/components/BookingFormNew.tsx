@@ -43,7 +43,6 @@ import {
   PERSONS_INCLUDED,
 } from '@/lib/constants';
 import {
-  PACKAGE_HIGHLIGHT_BADGE,
   packages,
   photoSets,
   photoShootingSets,
@@ -287,22 +286,25 @@ export function BookingFormNew({
                     <Field orientation="horizontal">
                       <FieldContent className="gap-1">
                         <FieldTitle className="text-lg text-ink">
-                          {pkg.name}
-                          {pkg.highlighted && (
+                          {pkg.name} •{' '}
+                          <span className="text-sm font-normal text-cream-dim">
+                            {pkg.price}
+                          </span>
+                          {/* {pkg.highlighted && (
                             <span className="rounded-full bg-gold/25 px-2 py-0.5 text-[11px] tracking-chip text-ink uppercase">
                               {PACKAGE_HIGHLIGHT_BADGE}
                             </span>
-                          )}
+                          )} */}
                         </FieldTitle>
-                        <FieldDescription className="text-base text-cream-muted">
+                        {/* <FieldDescription className="text-base text-cream-muted">
                           {pkg.sub}
-                        </FieldDescription>
-                        <FieldDescription className="mt-1 text-base text-ink">
+                        </FieldDescription> */}
+                        {/* <FieldDescription className="mt-1 text-base text-ink">
                           <span className="font-medium">{pkg.price}</span>{' '}
                           <span className="text-cream-dim">
                             {pkg.studioFee}
                           </span>
-                        </FieldDescription>
+                        </FieldDescription> */}
                       </FieldContent>
                       <RadioGroupItem
                         ref={
