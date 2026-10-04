@@ -68,7 +68,7 @@ export function booleanToYesNo(value: boolean): YesNoValue {
   return value ? 'IGEN' : 'NEM';
 }
 
-export const LIGHT_PLAY_FEE = 15000_00;
+export const LIGHT_PLAY_FEE = 10000_00;
 
 /**
  * Which packages already contain the light play, so selecting it costs nothing

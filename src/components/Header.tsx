@@ -118,7 +118,8 @@ export function Header() {
                     className="mt-3 flex min-h-13 items-center justify-center gap-5 rounded-lg border border-transparent bg-brand-champagne px-6 py-3.5 text-sm font-semibold text-[#152b2e]"
                     render={
                       <a href="#foglalas">
-                        Időpontot foglalok <span aria-hidden="true">→</span>
+                        Megnézem a szabad időpontokat{' '}
+                        <span aria-hidden="true">→</span>
                       </a>
                     }
                   />

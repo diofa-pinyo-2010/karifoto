@@ -140,19 +140,25 @@ export function BookingReview({
       </section>
 
       <section className="mx-auto max-w-130 px-4.5 py-7.5 sm:px-10">
-        <div className="flex items-start gap-3.25 rounded-[18px] border border-terracotta/26 bg-terracotta/20 p-4.5">
-          <span className="mt-0.5 font-display text-xl leading-none text-terracotta">
+        <div className="flex items-start gap-3.25 rounded-[18px] border border-brand-free-edge/75 bg-brand-free-surface/60 p-4.5">
+          <span className="mt-0.5 font-display text-xl leading-none text-brand-free-edge">
             ✦
           </span>
-          <span className="text-[15px] leading-[1.6] font-light text-pretty text-cream-muted">
-            A következő lépésben{' '}
-            <strong className="font-medium text-ink">
-              {formatMoney(DEPOSIT_AMOUNT)} előleget
-            </strong>{' '}
-            kell kifizetni — ezzel válik véglegessé a foglalás. A végleges
-            összeget a fotózás napján, a stúdióban fizetitek — az előleg ebből
-            levonásra kerül.
-          </span>
+          <div>
+            <span className="text-[15px] leading-[1.6] font-light text-pretty text-cream-muted">
+              A következő lépésben{' '}
+              <strong className="font-medium text-ink">
+                {formatMoney(DEPOSIT_AMOUNT)} előleget
+              </strong>{' '}
+              kérünk, ennek megfizetésével válik véglegessé a foglalásotok. A
+              fennmaradó összeget a fotózáskor készpénzben, vagy kártyával
+              tudjátok rendezni.
+            </span>
+            <p className="mt-2 text-sm">
+              Betegség esetén felár nélkül találunk Nektek másik időpontot
+              &#9825;
+            </p>
+          </div>
         </div>
         <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-muted-foreground">
           A fizetés biztonságos Stripe oldalon történik, bankkártya adataidat
@@ -196,11 +202,11 @@ export function BookingReview({
             disabled={isPending}
             className={`ml-auto max-w-70 flex-1 rounded-full px-5 py-4.25 text-base font-medium transition-colors ${
               isPending
-                ? 'cursor-not-allowed bg-cream/12 text-[#7C9083]'
-                : 'bg-terracotta text-[#FFF4E6] shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-terracotta-hover'
+                ? 'cursor-not-allowed bg-[#a67f4a]'
+                : 'bg-brand-champagne shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-brand-champagne-hover'
             }`}
           >
-            {isPending ? 'Feldolgozás…' : 'Fizetés →'}
+            {isPending ? 'Átirányítás…' : 'Tovább →'}
           </button>
         </div>
         {state?.error && (
@@ -239,7 +245,7 @@ function PriceRow({
           'text-[14.5px] text-cream-muted',
           state === 'accent' && 'text-[#A2612F]',
           state === 'idle' && 'text-[#9AA89D]',
-          state === 'discount' && 'text-rose-600',
+          state === 'discount' && 'text-green-600',
         )}
       >
         {label}
@@ -249,7 +255,7 @@ function PriceRow({
           'text-[14.5px] whitespace-nowrap text-ink',
           state === 'accent' && 'text-[#A2612F]',
           state === 'idle' && 'text-[#9AA89D]',
-          state === 'discount' && 'text-rose-600',
+          state === 'discount' && 'text-green-600',
         )}
       >
         {value}

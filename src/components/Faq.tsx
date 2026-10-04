@@ -26,16 +26,17 @@ export function Faq() {
       <div className="brand-shell grid gap-9 sm:px-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-20 lg:px-12">
         <div>
           <p className="brand-eyebrow">Mielőtt útnak indultok</p>
-          <h2 className="brand-heading">Jó, ha tudjátok.</h2>
+          <h2 className="brand-heading">Gyakori kérdések</h2>
           <p className="brand-intro">
-            Hogy a készülődés is olyan könnyű legyen, mint egy közös mosoly.
+            Sok kérdés felmerült az elmúlt években, amiket igyekeztünk mind
+            megválaszolni:
           </p>
-          <a
+          {/* <a
             href="mailto:info@karifoto.hu"
             className="mt-5 inline-flex min-h-11 items-center border-b border-[#9eaba3] text-xs"
           >
             Más kérdésed van? Írj nekünk ↗
-          </a>
+          </a> */}
         </div>
 
         <AccordionPrimitive.Root defaultValue={[faqs[0].q]}>

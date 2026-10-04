@@ -99,7 +99,7 @@ export async function createCheckoutSession(
             currency: 'huf',
             product_data: {
               name: 'Fotózás előleg',
-              // description: 'product_data.description example',
+              description: 'Betegség esetén találunk nektek másik időpontot',
               // images: ['https://picsum.photos/seed/karifoto/400/400'],
             },
             unit_amount: DEPOSIT_AMOUNT,

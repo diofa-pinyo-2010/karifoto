@@ -63,27 +63,25 @@ export function Hero() {
             id="hero-title"
             className="max-w-[620px] font-display text-[clamp(2.5rem,10.6vw,3.5rem)] leading-[1.02] font-medium tracking-[-.025em] text-balance max-[359px]:text-[36px] lg:text-[clamp(3.3rem,5.25vw,4.6rem)]"
           >
-            A karácsony, amire
-            <br className="hidden xl:block" /> jó lesz{' '}
-            <em className="not-italic">visszanézni.</em>
+            A karácsony élménye, képekben őrizve.
           </h1>
 
           <p className="mt-4 max-w-lg text-[13px] leading-[1.75] text-[#edece4] sm:text-base lg:mt-6 lg:max-w-[440px] lg:text-[15px]">
-            Mesés díszletek, felszabadult pillanatok és képek, amelyek évek
-            múlva is hazavisznek ebbe az érzésbe.
+            Az idő múlik, felnőnek a gyerekek, készítsünk együtt egy örök
+            emléket az idei karácsonyról.
           </p>
 
-          <p className="mt-3 flex flex-wrap items-center gap-2 text-[10px] text-[#bcd0cc] sm:text-xs lg:mt-[19px]">
+          {/* <p className="mt-3 flex flex-wrap items-center gap-2 text-[10px] text-[#bcd0cc] sm:text-xs lg:mt-[19px]">
             Saját budapesti stúdió <span aria-hidden="true">·</span> 2 mesés
             díszlet
-          </p>
+          </p> */}
 
           <div className="mt-5 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-6 lg:mt-[30px] lg:flex-wrap lg:gap-[15px] xl:gap-[23px]">
             <a
               href="#foglalas"
               className="inline-flex min-h-13 w-full items-center justify-center gap-5 rounded-lg border border-transparent bg-brand-champagne px-6 py-3.5 text-sm font-semibold text-[#152b2e] transition-[background-color,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-[#e3bf8d] hover:shadow-[0_5px_22px_#00000015] sm:w-auto"
             >
-              Időpontot foglalok <span aria-hidden="true">→</span>
+              Megnézem a szabad időpontokat <span aria-hidden="true">→</span>
             </a>
             <a
               href="#diszletek"
