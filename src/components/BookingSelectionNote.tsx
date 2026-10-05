@@ -1,7 +1,8 @@
 'use client';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
-import { packages, photoShootingSets } from '@/lib/data';
+import { PACKAGES } from '@/lib/catalog';
+import { photoShootingSets } from '@/lib/data';
 
 /**
  * A foglalási panel tetején megjelenő „A választásod” sor. Csak azért külön
@@ -15,7 +16,7 @@ export function BookingSelectionNote() {
   const { packageKey, decorKey, light } = useBookingSelection();
 
   const parts = [
-    packages.find((p) => p.id === packageKey)?.name,
+    packageKey ? PACKAGES[packageKey].label : null,
     decorKey ? photoShootingSets[decorKey].name : null,
     light ? 'Fényjáték' : null,
   ].filter(Boolean);

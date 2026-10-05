@@ -36,15 +36,19 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ADD_ONS } from '@/lib/catalog';
+import { Package } from '@/generated/prisma/enums';
+import {
+  ADD_ONS,
+  packageIncludesAddOn,
+  PRICING_TABLE_PACKAGES,
+  requiresDecorChoice,
+} from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS, PERSONS_INCLUDED } from '@/lib/constants';
 import {
-  packages,
   photoSets,
   photoShootingSets,
   SET_ORDER,
   type DecorSetKey,
-  type PackageKey,
 } from '@/lib/data';
 import { formatMoney } from '@/lib/utils';
 import { createBookingIntent } from '@/server/booking-intent';
@@ -53,13 +57,6 @@ import type { BookingSelection } from '@/lib/booking-selection';
 
 const NOTE_MAX_LENGTH = 500;
 
-/** A Mini csomagban egy díszletet lehet választani, a többiben mindkettő jár. */
-const SINGLE_DECOR_PACKAGE: PackageKey = 'mini';
-
-/** A Family csomagban a fényjáték benne van, nem külön kérhető extra. */
-const LIGHT_INCLUDED_PACKAGE: PackageKey = 'family';
-
-const PACKAGE_KEYS = packages.map((p) => p.id) as [PackageKey, ...PackageKey[]];
 const DECOR_KEYS = SET_ORDER as [DecorSetKey, ...DecorSetKey[]];
 
 const DECOR_TAGLINES = Object.fromEntries(
@@ -98,7 +95,7 @@ const TEXT_CONTROL_CLASS = 'h-12 bg-white/62 text-base';
 
 const bookingFormSchema = z
   .object({
-    packageKey: z.enum(PACKAGE_KEYS).nullable(),
+    packageKey: z.enum(Package).nullable(),
     decorKey: z.enum(DECOR_KEYS).nullable(),
     isLightPlaySelected: z.boolean(),
     numberOfPeople: z
@@ -120,7 +117,11 @@ const bookingFormSchema = z
         message: 'Válassz csomagot.',
       });
     }
-    if (values.packageKey === SINGLE_DECOR_PACKAGE && values.decorKey == null) {
+    if (
+      values.packageKey != null &&
+      requiresDecorChoice(values.packageKey) &&
+      values.decorKey == null
+    ) {
       ctx.addIssue({
         code: 'custom',
         path: ['decorKey'],
@@ -174,9 +175,11 @@ export function BookingFormNew({
   });
 
   const packageKey = useWatch({ control: form.control, name: 'packageKey' });
-  const isSingleDecorPackage = packageKey === SINGLE_DECOR_PACKAGE;
+  const isSingleDecorPackage =
+    packageKey != null && requiresDecorChoice(packageKey);
   const decorLocked = packageKey != null && !isSingleDecorPackage;
-  const lightLocked = packageKey === LIGHT_INCLUDED_PACKAGE;
+  const lightLocked =
+    packageKey != null && packageIncludesAddOn(packageKey, 'LIGHT_PLAY');
 
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
@@ -269,22 +272,22 @@ export function BookingFormNew({
               </FieldDescription>
               <RadioGroup
                 value={field.value ?? null}
-                onValueChange={(value) => field.onChange(value as PackageKey)}
+                onValueChange={(value) => field.onChange(value as Package)}
                 aria-invalid={fieldState.invalid}
                 className="gap-3"
               >
-                {packages.map((pkg, index) => (
+                {PRICING_TABLE_PACKAGES.map((pkg, index) => (
                   <FieldLabel
-                    key={pkg.id}
-                    htmlFor={`package-${pkg.id}`}
+                    key={pkg.key}
+                    htmlFor={`package-${pkg.key}`}
                     className={CHOICE_CARD_CLASS}
                   >
                     <Field orientation="horizontal">
                       <FieldContent className="gap-1">
                         <FieldTitle className="text-lg text-ink">
-                          {pkg.name} •{' '}
+                          {pkg.label} •{' '}
                           <span className="text-sm font-normal text-cream-dim">
-                            {pkg.price}
+                            {formatMoney(pkg.basePriceInCents)}
                           </span>
                           {/* {pkg.highlighted && (
                             <span className="rounded-full bg-gold/25 px-2 py-0.5 text-[11px] tracking-chip text-ink uppercase">
@@ -308,8 +311,8 @@ export function BookingFormNew({
                             ? controlRef('packageKey', field.ref)
                             : undefined
                         }
-                        value={pkg.id}
-                        id={`package-${pkg.id}`}
+                        value={pkg.key}
+                        id={`package-${pkg.key}`}
                         aria-invalid={fieldState.invalid}
                         className={CHOICE_CONTROL_CLASS}
                       />

@@ -154,6 +154,23 @@ export function packageIncludesAddOn(pkg: Package, addOn: AddOn) {
   return addOns.includes(addOn);
 }
 
+const withKey = (key: Package) => ({ key, ...PACKAGES[key] });
+
+export const ALL_PACKAGES = (Object.keys(PACKAGES) as Package[]).map(withKey);
+export const PRICING_TABLE_PACKAGES = ALL_PACKAGES.filter(
+  (pkg) => pkg.visibility === 'pricingTable',
+);
+
+export const packageSlug = (pkg: Package) => {
+  return PACKAGES[pkg].slug;
+};
+export const packageFromSlug = (slug: string | undefined): Package | null => {
+  return ALL_PACKAGES.find((pkg) => pkg.slug === slug)?.key ?? null;
+};
+export const requiresDecorChoice = (pkg: Package) => {
+  return PACKAGES[pkg].decorSetsIncluded === 1;
+};
+
 // type DecorSetDefinition = {
 //   slug: string;
 //   label: string;

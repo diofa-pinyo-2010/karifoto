@@ -1,9 +1,6 @@
-import {
-  packages,
-  photoShootingSets,
-  type DecorSetKey,
-  type PackageKey,
-} from '@/lib/data';
+import { Package } from '@/generated/prisma/enums';
+import { packageFromSlug, packageSlug } from '@/lib/catalog';
+import { photoShootingSets, type DecorSetKey } from '@/lib/data';
 
 /**
  * A főoldali CTA-kban összekattintott választások.
@@ -11,7 +8,7 @@ import {
  * a /foglalas/[timeSlotId] oldal onnan olvassa vissza.
  */
 export type BookingSelection = {
-  packageKey: PackageKey | null;
+  packageKey: Package | null;
   decorKey: DecorSetKey | null;
   light: boolean;
 };
@@ -25,7 +22,8 @@ export const EMPTY_BOOKING_SELECTION: BookingSelection = {
 /** → `?package=mini&decor=alomkastely&light=false` */
 export function selectionToQuery(selection: BookingSelection): string {
   const params = new URLSearchParams();
-  if (selection.packageKey) params.set('package', selection.packageKey);
+  if (selection.packageKey)
+    params.set('package', packageSlug(selection.packageKey));
   if (selection.decorKey) params.set('decor', selection.decorKey);
   params.set('light', String(selection.light));
   return `?${params.toString()}`;
@@ -40,13 +38,10 @@ const first = (value: string | string[] | undefined) =>
 export function selectionFromSearchParams(
   searchParams: RawSearchParams,
 ): BookingSelection {
-  const packageKey = first(searchParams.package);
   const decorKey = first(searchParams.decor);
 
   return {
-    packageKey: packages.some((p) => p.id === packageKey)
-      ? (packageKey as PackageKey)
-      : null,
+    packageKey: packageFromSlug(first(searchParams.package)),
     decorKey:
       decorKey != null && decorKey in photoShootingSets
         ? (decorKey as DecorSetKey)
@@ -54,9 +49,3 @@ export function selectionFromSearchParams(
     light: first(searchParams.light) === 'true',
   };
 }
-
-export const packageName = (key: PackageKey | null) =>
-  packages.find((p) => p.id === key)?.name ?? null;
-
-export const decorSetName = (key: DecorSetKey | null) =>
-  key ? photoShootingSets[key].name : null;

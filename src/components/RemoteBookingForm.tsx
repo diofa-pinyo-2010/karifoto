@@ -31,7 +31,7 @@ import {
   useRemoteBookingForm,
   type RemoteBookingFormValues,
 } from '@/hooks/use-remote-booking-form';
-import { PACKAGES } from '@/lib/catalog';
+import { ALL_PACKAGES } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { photoShootingSets, SET_ORDER } from '@/lib/data';
 import { shortFullDateFormatter } from '@/lib/formatters';
@@ -192,12 +192,12 @@ export function RemoteBookingForm() {
                 onValueChange={field.onChange}
                 aria-invalid={fieldState.invalid}
               >
-                {Object.values(PACKAGES).map((pkg) => (
-                  <FieldLabel key={pkg.slug} htmlFor={`package-${pkg.slug}`}>
+                {Object.values(ALL_PACKAGES).map((pkg) => (
+                  <FieldLabel key={pkg.key} htmlFor={`package-${pkg.slug}`}>
                     <Field orientation="horizontal">
                       {pkg.label}
                       <RadioGroupItem
-                        value={pkg.slug}
+                        value={pkg.key}
                         id={`package-${pkg.slug}`}
                       />
                     </Field>

@@ -1,17 +1,12 @@
 'use server';
 
-import { DecorSet, Package } from '@/generated/prisma/client';
+import { DecorSet, type Package } from '@/generated/prisma/client';
+import { PACKAGES, requiresDecorChoice } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS, UUID_RE } from '@/lib/constants';
-import { DecorSetKey, PackageKey } from '@/lib/data';
+import { DecorSetKey } from '@/lib/data';
 import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
 import { getSiteSettings } from '@/lib/queries';
-
-const PACKAGE_KEY_TO_ENUM: Record<PackageKey, Package> = {
-  mini: Package.MINI,
-  classic: Package.CLASSIC,
-  family: Package.FAMILY,
-};
 
 const DECOR_SET_KEY_TO_ENUM: Record<DecorSetKey, DecorSet> = {
   hofeher: DecorSet.HOFEHER,
@@ -22,7 +17,7 @@ export type CreateBookingIntentInput = {
   timeSlotId: string;
   name: string;
   email: string;
-  packageKey: PackageKey;
+  packageKey: Package;
   decorSetKey: DecorSetKey | null;
   isLightPlaySelected: boolean;
   numberOfGuests: number;
@@ -37,6 +32,10 @@ export async function createBookingIntent(
   const name = input.name.trim();
   const email = input.email.trim();
 
+  if (!Object.hasOwn(PACKAGES, input.packageKey)) {
+    return { error: 'Érvénytelen csomag.' };
+  }
+
   if (!input.timeSlotId || !UUID_RE.test(input.timeSlotId)) {
     return { error: 'Érvénytelen idősáv.' };
   }
@@ -47,7 +46,7 @@ export async function createBookingIntent(
     return { error: 'Add meg érvényes e-mail címed.' };
   }
 
-  const bothDecorSets = input.packageKey !== 'mini';
+  const bothDecorSets = !requiresDecorChoice(input.packageKey);
   if (!bothDecorSets && !input.decorSetKey) {
     return { error: 'Válassz díszletet!.' };
   }
@@ -90,7 +89,7 @@ export async function createBookingIntent(
       data: {
         name,
         email,
-        package: PACKAGE_KEY_TO_ENUM[input.packageKey],
+        package: input.packageKey,
         decorSet:
           bothDecorSets || !input.decorSetKey
             ? null
