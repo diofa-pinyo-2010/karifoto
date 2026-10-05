@@ -5,7 +5,12 @@ import { revalidatePath } from 'next/cache';
 import * as z from 'zod';
 
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
-import { APP_URLS, UUID_RE, YES_NO_VALUES } from '@/lib/constants';
+import {
+  APP_URLS,
+  isLightPlayChargeable,
+  UUID_RE,
+  YES_NO_VALUES,
+} from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
@@ -144,6 +149,7 @@ export async function updatePhotoShooting(
 
     await prisma.$transaction(async (tx) => {
       let effectivePricing = currentPricing;
+      let dataToSave = parsed.data;
 
       // Changing a package on the photoshooting
       if (
@@ -164,11 +170,18 @@ export async function updatePhotoShooting(
             packageEditedImagesAllowance,
           },
         });
+
+        // `isLightPlaySelected` csak akkor lehet igaz, ha a csomag felárat számol
+        // érte (mint a webhooknál) — különben a mező IGEN-t mutatna felár nélkül,
+        // és egy későbbi visszaváltásnál váratlanul visszajönne a felár.
+        if (!isLightPlayChargeable(parsed.data.package)) {
+          dataToSave = { ...dataToSave, isLightPlaySelected: false };
+        }
       }
 
       const status = resolveStatus({
         current,
-        updates: parsed.data,
+        updates: dataToSave,
         pricing: effectivePricing,
         adjustments: current.adjustments,
         ledgerEntries: current.ledgerEntries,
@@ -176,7 +189,7 @@ export async function updatePhotoShooting(
 
       await tx.photoShooting.update({
         where: { id },
-        data: { ...parsed.data, status },
+        data: { ...dataToSave, status },
       });
     });
   } catch (error) {
