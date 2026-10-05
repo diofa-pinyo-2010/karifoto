@@ -36,34 +36,22 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Package } from '@/generated/prisma/enums';
+import { DecorSet, Package } from '@/generated/prisma/enums';
 import {
   ADD_ONS,
+  ALL_DECOR_SETS,
   packageIncludesAddOn,
+  PACKAGES,
   PRICING_TABLE_PACKAGES,
   requiresDecorChoice,
 } from '@/lib/catalog';
-import { MAX_PERSONS, MAX_PETS, PERSONS_INCLUDED } from '@/lib/constants';
-import {
-  photoSets,
-  photoShootingSets,
-  SET_ORDER,
-  type DecorSetKey,
-} from '@/lib/data';
+import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 import { createBookingIntent } from '@/server/booking-intent';
 
 import type { BookingSelection } from '@/lib/booking-selection';
 
 const NOTE_MAX_LENGTH = 500;
-
-const DECOR_KEYS = SET_ORDER as [DecorSetKey, ...DecorSetKey[]];
-
-const DECOR_TAGLINES = Object.fromEntries(
-  photoSets
-    .filter((set) => set.key != null)
-    .map((set) => [set.key, set.tagline]),
-) as Record<DecorSetKey, string>;
 
 /**
  * Választható kártya. A kiválasztott állapot erdőzöld — a shadcn alapértelmezett
@@ -96,7 +84,7 @@ const TEXT_CONTROL_CLASS = 'h-12 bg-white/62 text-base';
 const bookingFormSchema = z
   .object({
     packageKey: z.enum(Package).nullable(),
-    decorKey: z.enum(DECOR_KEYS).nullable(),
+    decorKey: z.enum(DecorSet).nullable(),
     isLightPlaySelected: z.boolean(),
     numberOfPeople: z
       .number()
@@ -348,23 +336,23 @@ export function BookingFormNew({
 
               {decorLocked ? (
                 <div className="grid w-full gap-3">
-                  {SET_ORDER.map((key) => (
+                  {ALL_DECOR_SETS.map((set) => (
                     <FieldLabel
-                      key={key}
-                      htmlFor={`decor-${key}`}
+                      key={set.key}
+                      htmlFor={`decor-${set.key}`}
                       className={CHOICE_CARD_CLASS}
                     >
                       <Field orientation="horizontal">
                         <FieldContent className="gap-1">
                           <FieldTitle className="text-lg text-ink">
-                            {photoShootingSets[key].name}
+                            {set.label}
                           </FieldTitle>
                           <FieldDescription className="text-base text-cream-muted">
-                            {DECOR_TAGLINES[key]} · a csomag része
+                            {set.tagline} · a csomag része
                           </FieldDescription>
                         </FieldContent>
                         <Checkbox
-                          id={`decor-${key}`}
+                          id={`decor-${set.key}`}
                           checked
                           disabled
                           className={`${CHOICE_CONTROL_CLASS} disabled:opacity-100`}
@@ -376,25 +364,23 @@ export function BookingFormNew({
               ) : (
                 <RadioGroup
                   value={field.value ?? null}
-                  onValueChange={(value) =>
-                    field.onChange(value as DecorSetKey)
-                  }
+                  onValueChange={(value) => field.onChange(value as DecorSet)}
                   aria-invalid={fieldState.invalid}
                   className="gap-3"
                 >
-                  {SET_ORDER.map((key, index) => (
+                  {ALL_DECOR_SETS.map((set, index) => (
                     <FieldLabel
-                      key={key}
-                      htmlFor={`decor-${key}`}
+                      key={set.key}
+                      htmlFor={`decor-${set.key}`}
                       className={CHOICE_CARD_CLASS}
                     >
                       <Field orientation="horizontal">
                         <FieldContent className="gap-1">
                           <FieldTitle className="text-lg text-ink">
-                            {photoShootingSets[key].name}
+                            {set.label}
                           </FieldTitle>
                           <FieldDescription className="text-base text-cream-muted">
-                            {DECOR_TAGLINES[key]}
+                            {set.tagline}
                           </FieldDescription>
                         </FieldContent>
                         <RadioGroupItem
@@ -403,8 +389,8 @@ export function BookingFormNew({
                               ? controlRef('decorKey', field.ref)
                               : undefined
                           }
-                          value={key}
-                          id={`decor-${key}`}
+                          value={set.key}
+                          id={`decor-${set.key}`}
                           aria-invalid={fieldState.invalid}
                           className={CHOICE_CONTROL_CLASS}
                         />
@@ -471,7 +457,8 @@ export function BookingFormNew({
                   <span className="ml-1 text-terracotta">*</span>
                 </FieldTitle>
                 <FieldDescription className={HINT_CLASS}>
-                  {`Az ${PERSONS_INCLUDED} fő fölötti vendégekért felárat számolunk.`}
+                  {packageKey != null &&
+                    `Az ${PACKAGES[packageKey].personsIncluded} fő fölötti vendégekért felárat számolunk.`}
                 </FieldDescription>
                 <Stepper
                   inputRef={controlRef('numberOfPeople', field.ref)}
@@ -497,8 +484,9 @@ export function BookingFormNew({
                     {missingPeople
                       ? 'Legalább 1 fő :)'
                       : `Megvan! ${field.value === 1 ? 'egy' : field.value} főre készülünk.`}{' '}
-                    {field.value > PERSONS_INCLUDED &&
-                      `(${field.value - PERSONS_INCLUDED} extra fő)`}
+                    {packageKey != null &&
+                      field.value > PACKAGES[packageKey].personsIncluded &&
+                      `(${field.value - PACKAGES[packageKey].personsIncluded} extra fő)`}
                   </span>
                 </div>
               </Field>

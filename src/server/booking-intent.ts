@@ -1,24 +1,19 @@
 'use server';
 
-import { DecorSet, type Package } from '@/generated/prisma/client';
-import { PACKAGES, requiresDecorChoice } from '@/lib/catalog';
+import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS, UUID_RE } from '@/lib/constants';
-import { DecorSetKey } from '@/lib/data';
 import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
 import { getSiteSettings } from '@/lib/queries';
 
-const DECOR_SET_KEY_TO_ENUM: Record<DecorSetKey, DecorSet> = {
-  hofeher: DecorSet.HOFEHER,
-  alomkastely: DecorSet.ALOMKASTELY,
-};
+import type { DecorSet, Package } from '@/generated/prisma/client';
 
 export type CreateBookingIntentInput = {
   timeSlotId: string;
   name: string;
   email: string;
   packageKey: Package;
-  decorSetKey: DecorSetKey | null;
+  decorSetKey: DecorSet | null;
   isLightPlaySelected: boolean;
   numberOfGuests: number;
   numberOfPets: number;
@@ -34,6 +29,13 @@ export async function createBookingIntent(
 
   if (!Object.hasOwn(PACKAGES, input.packageKey)) {
     return { error: 'Érvénytelen csomag.' };
+  }
+
+  if (
+    input.decorSetKey != null &&
+    !Object.hasOwn(DECOR_SETS, input.decorSetKey)
+  ) {
+    return { error: 'Érvénytelen díszlet.' };
   }
 
   if (!input.timeSlotId || !UUID_RE.test(input.timeSlotId)) {
@@ -91,9 +93,7 @@ export async function createBookingIntent(
         email,
         package: input.packageKey,
         decorSet:
-          bothDecorSets || !input.decorSetKey
-            ? null
-            : DECOR_SET_KEY_TO_ENUM[input.decorSetKey],
+          bothDecorSets || !input.decorSetKey ? null : input.decorSetKey,
         isLightPlaySelected: input.isLightPlaySelected,
         numberOfGuests: input.numberOfGuests,
         numberOfPets: input.numberOfPets,

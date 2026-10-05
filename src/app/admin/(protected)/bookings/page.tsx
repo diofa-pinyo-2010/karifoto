@@ -11,6 +11,7 @@ import {
   ItemTitle,
 } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { requiresDecorChoice } from '@/lib/catalog';
 import {
   APP_URLS,
   DECOR_SET_LABEL,
@@ -81,7 +82,7 @@ export default async function BookingsPage() {
                         <ItemDescription>
                           {` 
                             ${PACKAGE_LABEL[shooting.package]}  
-                            ${shooting.package === 'MINI' && shooting.decorSet ? `// Dekor: ${DECOR_SET_LABEL[shooting.decorSet]}` : ''}
+                            ${requiresDecorChoice(shooting.package) && shooting.decorSet ? `// Dekor: ${DECOR_SET_LABEL[shooting.decorSet]}` : ''}
                             // Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
                           `}
                         </ItemDescription>

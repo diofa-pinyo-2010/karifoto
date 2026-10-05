@@ -5,14 +5,11 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import { Package } from '@/generated/prisma/enums';
+import { DecorSet, Package } from '@/generated/prisma/enums';
 import { packageIncludesAddOn, requiresDecorChoice } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
-import { SET_ORDER, type DecorSetKey } from '@/lib/data';
 
 const NOTE_MAX_LENGTH = 500;
-
-const DECOR_KEYS = SET_ORDER as [DecorSetKey, ...DecorSetKey[]];
 
 const remoteBookingSchema = z
   .object({
@@ -20,7 +17,7 @@ const remoteBookingSchema = z
     name: z.string().trim().min(2, 'Add meg a teljes nevet.'),
     email: z.email('Adj meg érvényes e-mail címet.'),
     packageKey: z.enum(Package).nullable(),
-    decorKey: z.enum(DECOR_KEYS).nullable(),
+    decorKey: z.enum(DecorSet).nullable(),
     isLightPlaySelected: z.boolean(),
     numberOfPeople: z.number().int().min(1, 'Legalább 1 fő.').max(MAX_PERSONS),
     numberOfPets: z.number().int().min(0).max(MAX_PETS),

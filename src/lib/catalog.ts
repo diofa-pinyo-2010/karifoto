@@ -1,14 +1,24 @@
-import type { Package } from '@/generated/prisma/enums';
+import type { DecorSet, Package } from '@/generated/prisma/enums';
 
-type AddOn = 'LIGHT_PLAY';
+export type AddOn = 'LIGHT_PLAY';
 
 type AddOnDefinition = {
   label: string;
   feeInCents: number;
+  tagline: string;
+  description: string;
+  tips: string;
 };
 
 export const ADD_ONS = {
-  LIGHT_PLAY: { label: 'Fényjáték', feeInCents: 10000_00 },
+  LIGHT_PLAY: {
+    label: 'Fényjáték',
+    feeInCents: 10000_00,
+    tagline: 'Extra ajánlat, bármelyik díszlet mellé',
+    description:
+      'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
+    tips: 'A stílust 4 éve a "HÓFEHÉR" díszlet ihlette, és idén is a díszlet megújult változatában készítjük a Fényjátékos fotókat.',
+  },
 } as const satisfies Record<AddOn, AddOnDefinition>;
 
 type Feature = { text: string; included: boolean; note?: string };
@@ -154,9 +164,16 @@ export function packageIncludesAddOn(pkg: Package, addOn: AddOn) {
   return addOns.includes(addOn);
 }
 
-const withKey = (key: Package) => ({ key, ...PACKAGES[key] });
+function withKeys<K extends string, V extends object>(
+  definitions: Record<K, V>,
+) {
+  return (Object.keys(definitions) as K[]).map((key) => ({
+    key,
+    ...definitions[key],
+  }));
+}
 
-export const ALL_PACKAGES = (Object.keys(PACKAGES) as Package[]).map(withKey);
+export const ALL_PACKAGES = withKeys(PACKAGES);
 export const PRICING_TABLE_PACKAGES = ALL_PACKAGES.filter(
   (pkg) => pkg.visibility === 'pricingTable',
 );
@@ -171,21 +188,50 @@ export const requiresDecorChoice = (pkg: Package) => {
   return PACKAGES[pkg].decorSetsIncluded === 1;
 };
 
-// type DecorSetDefinition = {
-//   slug: string;
-//   label: string;
-//   tagline: string;
-// };
+type DecorSetDefinition = {
+  slug: string;
+  label: string;
+  tagline: string;
+  description: string;
+  colors: { name: string; hex: string }[];
+  tips: string;
+};
 
-// const DECOR_SETS = {
-//   HOFEHER: {
-//     slug: 'hofeher',
-//     label: 'Hófehér',
-//     tagline: 'Világos, havas hangulat',
-//   },
-//   ALOMKASTELY: {
-//     slug: 'alomkastely',
-//     label: 'Álomkastély',
-//     tagline: 'Arany fények, sötétzöld fal',
-//   },
-// } as const satisfies Record<DecorSet, DecorSetDefinition>;
+export const DECOR_SETS = {
+  HOFEHER: {
+    slug: 'hofeher',
+    label: 'Hófehér',
+    tagline: 'Világos, havas hangulat',
+    description:
+      'A már ikonikus díszletünk idén új köntösben és még varázslatosabban vár Benneteket!',
+    colors: [
+      { name: 'Tört fehér', hex: '#F4F1EC' },
+      { name: 'Türkiz', hex: '#8FC7C9' },
+      { name: 'Bézs', hex: '#E3D3BC' },
+    ],
+    tips: 'A világos árnyalatokból összeállított „Hófehér” díszletünkhöz legjobban a világos ruhák illenek: fehér, bézs és pasztell színekből összeállított kombinációk kiválóan mutatnak a képeken. Szintén nagyszerű hatást érhettek el, ha összehangoltan öltöztök, akár otthonos, akár elegáns ruhákban. A világos, mintás pizsamák különösen jól mutatnak a sötétebb, fényjátékos beállításoknál (lásd lentebb). Ne féljetek kreatívnak lenni, így lesz tökéletes az élmény!',
+  },
+  RETRO: {
+    slug: 'retro',
+    label: 'Retro',
+    tagline: 'Családias, nosztalgikus hangulat',
+    description:
+      'Olyan karácsony, amilyenre a nagyszülők nappalijából emlékszünk: meleg lámpafény, kockás pléd, fa hintaló és régi képeslapok a falon. Gyertek, és legyetek ti is egy kicsit újra gyerekek!',
+    colors: [
+      { name: 'Piros', hex: '#B3262E' },
+      { name: 'Sötétzöld', hex: '#1F3D2E' },
+      { name: 'Krém', hex: '#EBDDC4' },
+    ],
+    tips: 'A piros, zöld és krém árnyalataiból összeállított „Retro” díszletünkhöz a kockás, kötött és vintage hatású ruhák illenek a legjobban: bordó és zöld pulóverek, kockás ingek és szoknyák, mintás pizsamák, kötött sapkák és sálak. A krémszínű, természetes anyagok is nagyon szépen mutatnak a meleg fények között. Ha összehangolt színekben öltöztök, a kép még harmonikusabb lesz; nagy feliratokat és feltűnő logókat érdemes kerülni, így a képek időtlenek maradnak.',
+  },
+} as const satisfies Record<DecorSet, DecorSetDefinition>;
+
+export const ALL_DECOR_SETS = withKeys(DECOR_SETS);
+
+export const decorSetSlug = (set: DecorSet) => {
+  return DECOR_SETS[set].slug;
+};
+
+export const decorSetFromSlug = (slug: string | undefined): DecorSet | null => {
+  return ALL_DECOR_SETS.find((set) => set.slug === slug)?.key ?? null;
+};

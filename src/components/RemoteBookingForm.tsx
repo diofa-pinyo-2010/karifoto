@@ -31,9 +31,8 @@ import {
   useRemoteBookingForm,
   type RemoteBookingFormValues,
 } from '@/hooks/use-remote-booking-form';
-import { ALL_PACKAGES } from '@/lib/catalog';
+import { ALL_DECOR_SETS, ALL_PACKAGES } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
-import { photoShootingSets, SET_ORDER } from '@/lib/data';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { createRemoteBookingIntent } from '@/server/remote-booking';
 
@@ -221,11 +220,14 @@ export function RemoteBookingForm() {
                   onValueChange={field.onChange}
                   aria-invalid={fieldState.invalid}
                 >
-                  {SET_ORDER.map((key) => (
-                    <FieldLabel key={key} htmlFor={`decor-${key}`}>
+                  {ALL_DECOR_SETS.map((set) => (
+                    <FieldLabel key={set.key} htmlFor={`decor-${set.key}`}>
                       <Field orientation="horizontal">
-                        {photoShootingSets[key].name}
-                        <RadioGroupItem value={key} id={`decor-${key}`} />
+                        {set.label}
+                        <RadioGroupItem
+                          value={set.key}
+                          id={`decor-${set.key}`}
+                        />
                       </Field>
                     </FieldLabel>
                   ))}

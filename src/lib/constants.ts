@@ -1,15 +1,18 @@
 import {
-  DecorSet,
   InvoiceStatus,
   LedgerEntryCategory,
-  Package,
   PaymentMethod,
   PhotoShootingStatus,
   PriceAdjustmentType,
 } from '@/generated/prisma/enums';
-import { packageIncludesAddOn } from '@/lib/catalog';
+import {
+  packageIncludesAddOn,
+  ALL_DECOR_SETS,
+  ALL_PACKAGES,
+} from '@/lib/catalog';
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
+import type { DecorSet, Package } from '@/generated/prisma/enums';
 
 export const BASE_URL_PROD = 'https://karifoto.hu';
 
@@ -79,14 +82,14 @@ export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) => {
 
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
-export const MAX_PERSONS = 8;
-export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
 export const MAX_PETS = 8;
-export const PERSONS_INCLUDED = 5;
 export const DEPOSIT_AMOUNT = 10000_00;
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_AFTERWORK_FEE = 10000_00;
+// TODO: Somehow get these numbers from catalog.ts after adding Party
+export const MAX_PERSONS = 8;
+export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;
@@ -124,16 +127,13 @@ export const TIME_SLOT_DURATION_MINUTES = 60;
 // Stripe Checkout session (default expiry: 24h), so its slot counts as held.
 export const PENDING_INTENT_HOLD_HOURS = 24;
 
-export const PACKAGE_LABEL: Record<Package, string> = {
-  MINI: 'Mini',
-  CLASSIC: 'Classic',
-  FAMILY: 'Family',
-};
+export const PACKAGE_LABEL = Object.fromEntries(
+  ALL_PACKAGES.map((pkg) => [pkg.key, pkg.label]),
+) as Record<Package, string>;
 
-export const DECOR_SET_LABEL: Record<DecorSet, string> = {
-  HOFEHER: 'Hófehér',
-  ALOMKASTELY: 'Álomkastély',
-};
+export const DECOR_SET_LABEL = Object.fromEntries(
+  ALL_DECOR_SETS.map((set) => [set.key, set.label]),
+) as Record<DecorSet, string>;
 
 export const PRICE_ADJUSTMENT_TYPE_LABEL: Record<PriceAdjustmentType, string> =
   {
@@ -141,13 +141,13 @@ export const PRICE_ADJUSTMENT_TYPE_LABEL: Record<PriceAdjustmentType, string> =
     DEDUCTION: 'Fizetés eltérés',
   };
 
-export const PACKAGE_COMBOBOX_ITEMS: ComboboxFieldItem[] = Object.entries(
-  PACKAGE_LABEL,
-).map(([value, label]) => ({ value, label }));
+export const PACKAGE_COMBOBOX_ITEMS: ComboboxFieldItem[] = ALL_PACKAGES.map(
+  (pkg) => ({ value: pkg.key, label: pkg.label }),
+);
 
-export const DECOR_SET_COMBOBOX_ITEMS: ComboboxFieldItem[] = Object.entries(
-  DECOR_SET_LABEL,
-).map(([value, label]) => ({ value, label }));
+export const DECOR_SET_COMBOBOX_ITEMS: ComboboxFieldItem[] = ALL_DECOR_SETS.map(
+  (set) => ({ value: set.key, label: set.label }),
+);
 
 export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
   {

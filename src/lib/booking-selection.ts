@@ -1,6 +1,10 @@
-import { Package } from '@/generated/prisma/enums';
-import { packageFromSlug, packageSlug } from '@/lib/catalog';
-import { photoShootingSets, type DecorSetKey } from '@/lib/data';
+import { type DecorSet, Package } from '@/generated/prisma/enums';
+import {
+  packageFromSlug,
+  packageSlug,
+  decorSetFromSlug,
+  decorSetSlug,
+} from '@/lib/catalog';
 
 /**
  * A főoldali CTA-kban összekattintott választások.
@@ -9,7 +13,7 @@ import { photoShootingSets, type DecorSetKey } from '@/lib/data';
  */
 export type BookingSelection = {
   packageKey: Package | null;
-  decorKey: DecorSetKey | null;
+  decorKey: DecorSet | null;
   light: boolean;
 };
 
@@ -19,12 +23,12 @@ export const EMPTY_BOOKING_SELECTION: BookingSelection = {
   light: false,
 };
 
-/** → `?package=mini&decor=alomkastely&light=false` */
+/** → `?package=mini&decor=retro&light=false` */
 export function selectionToQuery(selection: BookingSelection): string {
   const params = new URLSearchParams();
   if (selection.packageKey)
     params.set('package', packageSlug(selection.packageKey));
-  if (selection.decorKey) params.set('decor', selection.decorKey);
+  if (selection.decorKey) params.set('decor', decorSetSlug(selection.decorKey));
   params.set('light', String(selection.light));
   return `?${params.toString()}`;
 }
@@ -38,14 +42,9 @@ const first = (value: string | string[] | undefined) =>
 export function selectionFromSearchParams(
   searchParams: RawSearchParams,
 ): BookingSelection {
-  const decorKey = first(searchParams.decor);
-
   return {
     packageKey: packageFromSlug(first(searchParams.package)),
-    decorKey:
-      decorKey != null && decorKey in photoShootingSets
-        ? (decorKey as DecorSetKey)
-        : null,
+    decorKey: decorSetFromSlug(first(searchParams.decor)),
     light: first(searchParams.light) === 'true',
   };
 }

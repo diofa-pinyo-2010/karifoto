@@ -23,17 +23,14 @@ import {
 } from '@/lib/constants';
 import { formatLongDate } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
-import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
-import hofeherDiszlet from '@/photos/hofeher-diszlet.jpg';
+import hofeherDiszlet from '@/photos/2026/decor-sets/hofeher-diszlet.png';
+import retroDiszlet from '@/photos/2026/decor-sets/retro-diszlet.jpg';
 
 import type { DecorSet } from '@/generated/prisma/client';
 
-// A díszlet saját fotója, ember nélkül — a kártya az időpontot hirdeti, nem egy
-// másik család képét. `decorSet` nullázható (régi foglalások), ezért van
-// tartalék.
 const DECOR_SET_IMAGE: Record<DecorSet, typeof hofeherDiszlet> = {
   HOFEHER: hofeherDiszlet,
-  ALOMKASTELY: alomkastelyDiszlet,
+  RETRO: retroDiszlet,
 };
 
 // Public on purpose. The only thing protecting this page is the
