@@ -16,7 +16,7 @@ import {
 } from '@/lib/constants';
 import { packages, type PackageKey } from '@/lib/data';
 import { formatSlotDateTime } from '@/lib/formatters';
-import { cn, formatAmount, formatMoney } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import { createCheckoutSession } from '@/server/stripe';
 
 import type { BookingIntentPublic } from '@/lib/queries';
@@ -30,11 +30,6 @@ const PACKAGE_LABEL: Record<Package, string> = {
   [Package.CLASSIC]: packageNameById.classic,
   [Package.FAMILY]: packageNameById.family,
 };
-
-// const DECOR_SET_LABEL: Record<DecorSet, string> = {
-//   [DecorSet.HOFEHER]: photoShootingSets.hofeher.name,
-//   [DecorSet.ALOMKASTELY]: photoShootingSets.alomkastely.name,
-// };
 
 export function BookingReview({
   bookingIntent,
@@ -119,9 +114,8 @@ export function BookingReview({
                   <PriceRow
                     key={id}
                     label={publicLabel}
-                    value={formatAmount(
+                    value={formatMoney(
                       amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[type],
-                      'HUF',
                     )}
                     state="discount"
                   />
@@ -219,15 +213,6 @@ export function BookingReview({
   );
 }
 
-// function ReviewRow({ label, value }: { label: string; value: string }) {
-//   return (
-//     <div className="flex justify-between gap-6 border-b border-ink/10 py-3">
-//       <dt className="text-[14.5px] text-cream-muted">{label}</dt>
-//       <dd className="text-right text-[14.5px] text-ink">{value}</dd>
-//     </div>
-//   );
-// }
-
 function PriceRow({
   label,
   value,
@@ -235,7 +220,6 @@ function PriceRow({
 }: {
   label: string;
   value: string;
-  /** base = fix tétel, accent = aktív felár, idle = 0 Ft-os helyfoglaló */
   state?: 'base' | 'accent' | 'idle' | 'discount';
 }) {
   return (

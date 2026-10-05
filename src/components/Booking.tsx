@@ -2,8 +2,11 @@ import { BookingSelectionNote } from '@/components/BookingSelectionNote';
 import { EarlyBirdNote } from '@/components/EarlyBirdNote';
 import { TimeSlotAccordion } from '@/components/TimeSlotAccordion';
 import { DEPOSIT_AMOUNT } from '@/lib/constants';
-import { getSiteSettings, type TimeSlotPublic } from '@/lib/queries';
-import { formatAmount, GroupedSlots } from '@/lib/utils';
+import { getSiteSettings } from '@/lib/queries';
+import { formatMoney } from '@/lib/utils';
+
+import type { TimeSlotPublic } from '@/lib/queries';
+import type { GroupedSlots } from '@/lib/utils';
 
 export async function Booking({
   groupedTimeSlots,
@@ -36,7 +39,7 @@ export async function Booking({
             {[
               'Válaszd ki az időpontod',
               'Töltsd ki rövid űrlapunkat',
-              `Egyszerűen, bankkártyával fizetheted ki az előleget (${formatAmount(DEPOSIT_AMOUNT, 'HUF')})*`,
+              `Egyszerűen, bankkártyával fizetheted ki az előleget (${formatMoney(DEPOSIT_AMOUNT)})*`,
             ].map((step, i) => (
               <li key={step} className="flex items-center gap-3 text-xs">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-brand-ink/20 text-[10px]">

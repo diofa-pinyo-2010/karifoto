@@ -45,7 +45,7 @@ import {
 } from '@/lib/formatters';
 import { getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
-import { capitalize, cn, formatAmount } from '@/lib/utils';
+import { capitalize, cn, formatMoney } from '@/lib/utils';
 import {
   fetchPhotographers,
   fetchEditors,
@@ -403,7 +403,7 @@ export default async function PhotoShootingDetailPage({
                 value={
                   adjustment ? (
                     <span className="flex items-center justify-end gap-3">
-                      {formatAmount(line.amountInCents, 'HUF')}
+                      {formatMoney(line.amountInCents)}
                       <DeletePriceAdjustmentButton
                         priceAdjustmentId={adjustment.id}
                         target={{ photoShootingId: shooting.id }}
@@ -411,7 +411,7 @@ export default async function PhotoShootingDetailPage({
                       />
                     </span>
                   ) : (
-                    formatAmount(line.amountInCents, 'HUF')
+                    formatMoney(line.amountInCents)
                   )
                 }
               />
@@ -421,7 +421,7 @@ export default async function PhotoShootingDetailPage({
         <div className="rounded-lg border bg-accent px-4 text-accent-foreground">
           <DetailRow
             label="ÖSSZESEN"
-            value={formatAmount(priceBreakdown.totalToBeInvoiced, 'HUF')}
+            value={formatMoney(priceBreakdown.totalToBeInvoiced)}
           />
         </div>
         <AddPriceAdjustmentDialog
@@ -437,11 +437,10 @@ export default async function PhotoShootingDetailPage({
               <DetailRow
                 key={ledgerEntry.id}
                 label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
-                value={formatAmount(
+                value={formatMoney(
                   ledgerEntry.category.startsWith('INCOME')
                     ? ledgerEntry.amountInCents * -1
                     : ledgerEntry.amountInCents,
-                  ledgerEntry.currency,
                 )}
               />
             );
@@ -571,7 +570,7 @@ export default async function PhotoShootingDetailPage({
             {ledgerEntries.map((entry) => (
               <ExternalLinkItem
                 key={entry.id}
-                title={`${formatAmount(entry.amountInCents, entry.currency)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
+                title={`${formatMoney(entry.amountInCents)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
                 description={PAYMENT_METHOD_LABEL[entry.method]}
                 href={entry.invoice?.publicUrl}
                 linkLabel="Számla"

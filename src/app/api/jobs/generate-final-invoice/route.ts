@@ -12,6 +12,7 @@ import {
 import { invoiceService } from '@/lib/invoice';
 import { buildFinalInvoiceItems } from '@/lib/invoice/final-invoice-items';
 import { prisma } from '@/lib/prisma';
+import { centsToHuf } from '@/lib/utils';
 import { calculatePricing } from '@/server/pricing';
 
 import type { GeneratedInvoice } from '@/lib/invoice/types';
@@ -187,9 +188,9 @@ export const POST = verifySignatureAppRouter(
         content: [
           '**A végszámla végösszege nem egyezik az átvett összeggel!**\n',
           `Shooting ID: ${shootingId}`,
-          `Átvett összeg: ${ledgerEntry.amountInCents / 100} Ft`,
-          `Végszámla végösszege: ${invoiceTotalInCents / 100} Ft`,
-          `Beszámított előleg (${advanceInvoice.invoiceNumber}): ${advanceInvoice.amountInCents / 100} Ft`,
+          `Átvett összeg: ${centsToHuf(ledgerEntry.amountInCents)} Ft`,
+          `Végszámla végösszege: ${centsToHuf(invoiceTotalInCents)} Ft`,
+          `Beszámított előleg (${advanceInvoice.invoiceNumber}): ${centsToHuf(advanceInvoice.amountInCents)} Ft`,
           'A számlát kiállítjuk, de nézd meg: valószínűleg korrekció került a fotózásra a fizetés után.',
         ].join('\n'),
         type: 'warning',

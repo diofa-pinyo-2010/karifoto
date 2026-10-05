@@ -58,7 +58,7 @@ import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
-import { formatAmount, formatMoney } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
 import type { PhotoShootingForClientPortal } from '@/lib/queries';
@@ -293,7 +293,7 @@ function ClientPortalInvoices({
       {invoices.map((invoice) => (
         <ExternalLinkItem
           key={invoice.id}
-          title={formatAmount(invoice.amountInCents, invoice.currency)}
+          title={formatMoney(invoice.amountInCents)}
           description={`${invoice.invoiceNumber} · ${INVOICE_STATUS_LABEL[invoice.status]}`}
           href={invoice.publicUrl}
           linkLabel="Számla"
@@ -490,8 +490,8 @@ function ClientImageSelection({
         <h3 className="text-lg font-semibold">➕ Plusz képek rendelése</h3>
         <p>
           Több képet is választhattok, mint amennyit a csomagotok tartalmaz. A
-          plusz képek ára{' '}
-          <strong>{formatAmount(EXTRA_EDIT_PER_IMAGE, 'HUF')}</strong>/kép,
+          plusz képek ára <strong>{formatMoney(EXTRA_EDIT_PER_IMAGE)}</strong>
+          /kép,
         </p>
         <p>
           <strong>

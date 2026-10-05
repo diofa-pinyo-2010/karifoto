@@ -10,7 +10,7 @@ import {
   EXPRESS_AFTERWORK_FEE,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
 } from '@/lib/constants';
-import { formatAmount } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 
 /**
  * A GYIK válaszai formázott szöveget (kiemelés, bekezdések, árlisták)
@@ -30,7 +30,7 @@ export const faqs: FaqItem[] = [
           <strong>maximum {MAX_PERSONS} főt</strong> fotózunk egy alkalommal,
           így biztosítva, hogy mindenkire jusson elegendő figyelem és idő. 5 fő
           felett a plusz résztvevők díja +
-          {formatAmount(EXTRA_FEE_PER_EXTRA_PERSON, 'HUF')}/fő.
+          {formatMoney(EXTRA_FEE_PER_EXTRA_PERSON)}/fő.
         </p>
         <p>
           A Party csomagban viszont{' '}
@@ -143,8 +143,7 @@ export const faqs: FaqItem[] = [
         <ul>
           <li>
             <strong>
-              Beauty Retouch –{' '}
-              {formatAmount(EXTRA_BEAUTY_RETOUCH_PER_IMAGE, 'HUF')}
+              Beauty Retouch – {formatMoney(EXTRA_BEAUTY_RETOUCH_PER_IMAGE)}
               /kép
             </strong>
           </li>
@@ -188,7 +187,7 @@ export const faqs: FaqItem[] = [
           Kérheted az általad választott további képek szerkesztését is. Az
           utómunka díja ez esetben{' '}
           <strong className="nowrap">
-            {formatAmount(EXTRA_EDIT_PER_IMAGE, 'HUF')}
+            {formatMoney(EXTRA_EDIT_PER_IMAGE)}
           </strong>{' '}
           /kép (csak a <strong>csomagban foglalt mennyiség feletti</strong>{' '}
           darabszámra vonatkozik).
@@ -257,7 +256,7 @@ export const faqs: FaqItem[] = [
         <p>
           Aki hamarabb szeretné megkapni a kész képeket, az kérheti az{' '}
           <strong>
-            expressz utómunka (+{formatAmount(EXPRESS_AFTERWORK_FEE, 'HUF')})
+            expressz utómunka (+{formatMoney(EXPRESS_AFTERWORK_FEE)})
           </strong>{' '}
           szolgáltatásunkat. Ebben az esetben a képeket (a kiválasztás után){' '}
           <strong>
@@ -301,7 +300,7 @@ export const faqs: FaqItem[] = [
           Igen. A panda stúdió <strong>kisállat-barát</strong> hely. Amennyiben
           kedvenced szobatiszta, hozhatod a fotózásra. A fotózás{' '}
           <strong>
-            extra díja {formatAmount(EXTRA_FEE_PER_PET, 'HUF')} / kisállat
+            extra díja {formatMoney(EXTRA_FEE_PER_PET)} / kisállat
           </strong>
           .
         </p>
