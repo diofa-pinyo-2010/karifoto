@@ -112,8 +112,6 @@ function makeLedgerEntry(overrides: Partial<LedgerEntry> = {}): LedgerEntry {
     photoShootingId: 'shooting-1',
     createdAt: NOW,
     updatedAt: NOW,
-    stripeRefundId: 'sr_1',
-    refundedEntryId: 're_1',
     ...overrides,
   };
 }
