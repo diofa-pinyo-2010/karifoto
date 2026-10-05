@@ -149,6 +149,11 @@ export function buildFeatures({
   return { features, footnotes };
 }
 
+export function packageIncludesAddOn(pkg: Package, addOn: AddOn) {
+  const addOns: readonly AddOn[] = PACKAGES[pkg].includedAddOns;
+  return addOns.includes(addOn);
+}
+
 // type DecorSetDefinition = {
 //   slug: string;
 //   label: string;

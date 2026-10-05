@@ -7,6 +7,7 @@ import {
   PhotoShootingStatus,
   PriceAdjustmentType,
 } from '@/generated/prisma/enums';
+import { packageIncludesAddOn } from '@/lib/catalog';
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
 
@@ -68,34 +69,14 @@ export function booleanToYesNo(value: boolean): YesNoValue {
   return value ? 'IGEN' : 'NEM';
 }
 
-/**
- * Which packages already contain the light play, so selecting it costs nothing
- * extra. This is the single fact behind both questions the app asks about
- * light play — do not re-express it as `package !== 'FAMILY'` or
- * `package === 'MINI' || package === 'CLASSIC'` anywhere else.
- *
- * Exhaustive on purpose: a new package fails to compile here until someone
- * answers the question, rather than silently defaulting to charged (which
- * over-bills a client) or to included (which under-bills the studio).
- */
-const LIGHT_PLAY_INCLUDED_IN_PACKAGE: Record<Package, boolean> = {
-  MINI: false,
-  CLASSIC: false,
-  FAMILY: true,
+export const isLightPlayChargeable = (selectedPackage: Package) => {
+  return !packageIncludesAddOn(selectedPackage, 'LIGHT_PLAY');
 };
 
-/** Does choosing light play add a fee on top of this package? */
-export const isLightPlayChargeable = (selectedPackage: Package) =>
-  !LIGHT_PLAY_INCLUDED_IN_PACKAGE[selectedPackage];
+export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) => {
+  return packageIncludesAddOn(selectedPackage, 'LIGHT_PLAY') || isSelected;
+};
 
-/**
- * Will the shooting actually have light play — whether because the package
- * includes it or because the client paid for it? Not the same question as
- * {@link isLightPlayChargeable}: a FAMILY shooting always has it and is never
- * charged for it.
- */
-export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) =>
-  LIGHT_PLAY_INCLUDED_IN_PACKAGE[selectedPackage] || isSelected;
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PERSONS = 8;
