@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { buildSub, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
@@ -50,7 +51,6 @@ import {
   STUDIO_MAP_LINK,
 } from '@/lib/constants';
 import { getPortalAccess } from '@/lib/dal';
-import { packages } from '@/lib/data';
 import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
 import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
@@ -268,12 +268,6 @@ function ClientPortalAccessDenied({
   );
 }
 
-// A csomagok ügyfélnek szóló szövege (`sub`) a landing oldal adataiból jön, nem
-// írjuk le még egyszer. Az enum értéke nagybetűs, a `data.ts` id-je kisbetűs.
-const PACKAGE_BY_ENUM = new Map(
-  packages.map((item) => [item.id.toUpperCase(), item]),
-);
-
 function ClientPortalInvoices({
   invoices,
 }: {
@@ -328,8 +322,6 @@ function ClientPortalShootingDetails({
 }: {
   shooting: PhotoShootingForClientPortal;
 }) {
-  const packageInfo = PACKAGE_BY_ENUM.get(shooting.package);
-
   const lightPlay = hasLightPlay(
     shooting.package,
     shooting.isLightPlaySelected,
@@ -370,11 +362,9 @@ function ClientPortalShootingDetails({
 
       <DetailRow icon={PackageIcon} label="Csomag">
         <span className="font-medium">{PACKAGE_LABEL[shooting.package]}</span>
-        {packageInfo && (
-          <span className="block text-[13px] text-brand-muted">
-            {packageInfo.sub}
-          </span>
-        )}
+        <span className="block text-[13px] text-brand-muted">
+          {buildSub(PACKAGES[shooting.package])}
+        </span>
       </DetailRow>
 
       {chosenDecorSet && (
