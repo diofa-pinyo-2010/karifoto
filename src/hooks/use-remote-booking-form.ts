@@ -5,32 +5,19 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
+import { DecorSet, Package } from '@/generated/prisma/enums';
+import { packageIncludesAddOn, requiresDecorChoice } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
-import {
-  packages,
-  SET_ORDER,
-  type DecorSetKey,
-  type PackageKey,
-} from '@/lib/data';
 
 const NOTE_MAX_LENGTH = 500;
-
-/** A Mini csomagban egy díszletet lehet választani, a többiben mindkettő jár. */
-const SINGLE_DECOR_PACKAGE: PackageKey = 'mini';
-
-/** A Family csomagban a fényjáték benne van, nem külön kérhető extra. */
-const LIGHT_INCLUDED_PACKAGE: PackageKey = 'family';
-
-const PACKAGE_KEYS = packages.map((p) => p.id) as [PackageKey, ...PackageKey[]];
-const DECOR_KEYS = SET_ORDER as [DecorSetKey, ...DecorSetKey[]];
 
 const remoteBookingSchema = z
   .object({
     startTime: z.date({ error: 'Add meg az időpontot.' }),
     name: z.string().trim().min(2, 'Add meg a teljes nevet.'),
     email: z.email('Adj meg érvényes e-mail címet.'),
-    packageKey: z.enum(PACKAGE_KEYS).nullable(),
-    decorKey: z.enum(DECOR_KEYS).nullable(),
+    packageKey: z.enum(Package).nullable(),
+    decorKey: z.enum(DecorSet).nullable(),
     isLightPlaySelected: z.boolean(),
     numberOfPeople: z.number().int().min(1, 'Legalább 1 fő.').max(MAX_PERSONS),
     numberOfPets: z.number().int().min(0).max(MAX_PETS),
@@ -45,7 +32,11 @@ const remoteBookingSchema = z
         message: 'Válassz csomagot.',
       });
     }
-    if (values.packageKey === SINGLE_DECOR_PACKAGE && values.decorKey == null) {
+    if (
+      values.packageKey != null &&
+      requiresDecorChoice(values.packageKey) &&
+      values.decorKey == null
+    ) {
       ctx.addIssue({
         code: 'custom',
         path: ['decorKey'],
@@ -76,8 +67,10 @@ export function useRemoteBookingForm() {
   });
 
   const packageKey = useWatch({ control: form.control, name: 'packageKey' });
-  const isSingleDecorPackage = packageKey === SINGLE_DECOR_PACKAGE;
-  const lightLocked = packageKey === LIGHT_INCLUDED_PACKAGE;
+  const isSingleDecorPackage =
+    packageKey != null && requiresDecorChoice(packageKey);
+  const lightLocked =
+    packageKey != null && packageIncludesAddOn(packageKey, 'LIGHT_PLAY');
 
   return { form, isSingleDecorPackage, lightLocked };
 }

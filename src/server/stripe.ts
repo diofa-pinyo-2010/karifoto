@@ -9,6 +9,9 @@ import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { DEPOSIT_AMOUNT, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+import hofeherDiszlet from '@/photos/2026/decor-sets/hofeher-diszlet.png';
+
+const stripeCheckoutImageUrl = `${env.NEXT_PUBLIC_SITE_URL}/_next/image?url=${encodeURIComponent(hofeherDiszlet.src)}&w=640&q=75`;
 
 import type { CheckoutMetadata } from '@/lib/checkout-metadata';
 
@@ -100,7 +103,10 @@ export async function createCheckoutSession(
             product_data: {
               name: 'Fotózás előleg',
               description: 'Betegség esetén találunk nektek másik időpontot',
-              // images: ['https://picsum.photos/seed/karifoto/400/400'],
+              images:
+                process.env.NODE_ENV === 'development'
+                  ? []
+                  : [stripeCheckoutImageUrl],
             },
             unit_amount: DEPOSIT_AMOUNT,
           },

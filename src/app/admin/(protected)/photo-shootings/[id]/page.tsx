@@ -30,6 +30,7 @@ import {
   booleanToYesNo,
   DECOR_SET_COMBOBOX_ITEMS,
   DECOR_SET_LABEL,
+  PACKAGE_COMBOBOX_ITEMS,
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_LABEL,
   PACKAGE_LABEL,
@@ -45,7 +46,7 @@ import {
 } from '@/lib/formatters';
 import { getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
-import { capitalize, cn, formatAmount } from '@/lib/utils';
+import { capitalize, cn, formatMoney } from '@/lib/utils';
 import {
   fetchPhotographers,
   fetchEditors,
@@ -141,6 +142,12 @@ export default async function PhotoShootingDetailPage({
    * After balance is collected we don't want to be able
    * to edit the photo shooting details.
    */
+  // A végszámla a csomag árát már tartalmazza, ezért utána a csomag nem cserélhető
+  // (a szerver is ellenőrzi, lásd `updatePhotoShooting`).
+  const hasFinalInvoice = ledgerEntries.some(
+    (entry) => entry.invoice?.type === 'FINAL',
+  );
+
   const readOnlyDetails =
     (shooting.selectionRequestedAt != null &&
       shooting.selectionCompletedAt == null) ||
@@ -291,7 +298,25 @@ export default async function PhotoShootingDetailPage({
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-medium">A fotózás részletei</h3>
         <div className="rounded-lg border bg-card px-4">
-          <DetailRow label="Csomag" value={PACKAGE_LABEL[shooting.package]} />
+          <DetailRow
+            label="Csomag"
+            value={
+              <EditableComboboxField
+                value={{
+                  value: shooting.package,
+                  label: PACKAGE_LABEL[shooting.package],
+                }}
+                items={PACKAGE_COMBOBOX_ITEMS}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'package',
+                )}
+                disabled={readOnlyDetails || hasFinalInvoice}
+                isClearable={false}
+              />
+            }
+          />
           <DetailRow
             label="Díszlet"
             value={
@@ -403,7 +428,7 @@ export default async function PhotoShootingDetailPage({
                 value={
                   adjustment ? (
                     <span className="flex items-center justify-end gap-3">
-                      {formatAmount(line.amountInCents, 'HUF')}
+                      {formatMoney(line.amountInCents)}
                       <DeletePriceAdjustmentButton
                         priceAdjustmentId={adjustment.id}
                         target={{ photoShootingId: shooting.id }}
@@ -411,7 +436,7 @@ export default async function PhotoShootingDetailPage({
                       />
                     </span>
                   ) : (
-                    formatAmount(line.amountInCents, 'HUF')
+                    formatMoney(line.amountInCents)
                   )
                 }
               />
@@ -421,7 +446,7 @@ export default async function PhotoShootingDetailPage({
         <div className="rounded-lg border bg-accent px-4 text-accent-foreground">
           <DetailRow
             label="ÖSSZESEN"
-            value={formatAmount(priceBreakdown.totalToBeInvoiced, 'HUF')}
+            value={formatMoney(priceBreakdown.totalToBeInvoiced)}
           />
         </div>
         <AddPriceAdjustmentDialog
@@ -437,11 +462,10 @@ export default async function PhotoShootingDetailPage({
               <DetailRow
                 key={ledgerEntry.id}
                 label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
-                value={formatAmount(
+                value={formatMoney(
                   ledgerEntry.category.startsWith('INCOME')
                     ? ledgerEntry.amountInCents * -1
                     : ledgerEntry.amountInCents,
-                  ledgerEntry.currency,
                 )}
               />
             );
@@ -571,7 +595,7 @@ export default async function PhotoShootingDetailPage({
             {ledgerEntries.map((entry) => (
               <ExternalLinkItem
                 key={entry.id}
-                title={`${formatAmount(entry.amountInCents, entry.currency)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
+                title={`${formatMoney(entry.amountInCents)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
                 description={PAYMENT_METHOD_LABEL[entry.method]}
                 href={entry.invoice?.publicUrl}
                 linkLabel="Számla"

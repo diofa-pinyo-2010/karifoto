@@ -2,60 +2,42 @@
 
 import { useActionState } from 'react';
 
-import { Package } from '@/generated/prisma/enums';
+import { ADD_ONS, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
   DEPOSIT_AMOUNT,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   isLightPlayChargeable,
-  LIGHT_PLAY_FEE,
-  PACKAGE_PRICES,
-  PERSONS_INCLUDED,
   PRICE_ADJUSTMENT_TYPE_SIGN,
 } from '@/lib/constants';
-import { packages, type PackageKey } from '@/lib/data';
 import { formatSlotDateTime } from '@/lib/formatters';
-import { cn, formatAmount, formatMoney } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import { createCheckoutSession } from '@/server/stripe';
 
 import type { BookingIntentPublic } from '@/lib/queries';
-
-const packageNameById = Object.fromEntries(
-  packages.map((p) => [p.id, p.name]),
-) as Record<PackageKey, string>;
-
-const PACKAGE_LABEL: Record<Package, string> = {
-  [Package.MINI]: packageNameById.mini,
-  [Package.CLASSIC]: packageNameById.classic,
-  [Package.FAMILY]: packageNameById.family,
-};
-
-// const DECOR_SET_LABEL: Record<DecorSet, string> = {
-//   [DecorSet.HOFEHER]: photoShootingSets.hofeher.name,
-//   [DecorSet.ALOMKASTELY]: photoShootingSets.alomkastely.name,
-// };
 
 export function BookingReview({
   bookingIntent,
 }: {
   bookingIntent: BookingIntentPublic;
 }) {
+  const pkg = PACKAGES[bookingIntent.package];
+
   const [state, formAction, isPending] = useActionState(
     createCheckoutSession.bind(null, bookingIntent.id),
     undefined,
   );
 
-  const { base: packageBasePrice, studio: packageStudioFee } =
-    PACKAGE_PRICES[bookingIntent.package];
-
   const shouldShowLight = isLightPlayChargeable(bookingIntent.package);
   const lightFee =
-    shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
+    shouldShowLight && bookingIntent.isLightPlaySelected
+      ? ADD_ONS.LIGHT_PLAY.feeInCents
+      : 0;
 
   const extraHeads = Math.max(
     0,
-    bookingIntent.numberOfGuests - PERSONS_INCLUDED,
+    bookingIntent.numberOfGuests - pkg.personsIncluded,
   );
   const headFee = extraHeads * EXTRA_FEE_PER_EXTRA_PERSON;
   const petFee = bookingIntent.numberOfPets * EXTRA_FEE_PER_PET;
@@ -64,8 +46,8 @@ export function BookingReview({
     return sum + adj.amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[adj.type];
   }, 0);
   const total =
-    packageBasePrice +
-    packageStudioFee +
+    pkg.basePriceInCents +
+    pkg.studioPriceInCents +
     lightFee +
     headFee +
     petFee +
@@ -85,12 +67,12 @@ export function BookingReview({
               </span>
             </div>
             <PriceRow
-              label={`${PACKAGE_LABEL[bookingIntent.package]} csomag`}
-              value={formatMoney(packageBasePrice)}
+              label={`${pkg.label} csomag`}
+              value={formatMoney(pkg.basePriceInCents)}
             />
             <PriceRow
               label="Stúdió bérlet"
-              value={formatMoney(packageStudioFee)}
+              value={formatMoney(pkg.studioPriceInCents)}
             />
             {shouldShowLight && (
               <PriceRow
@@ -119,9 +101,8 @@ export function BookingReview({
                   <PriceRow
                     key={id}
                     label={publicLabel}
-                    value={formatAmount(
+                    value={formatMoney(
                       amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[type],
-                      'HUF',
                     )}
                     state="discount"
                   />
@@ -219,15 +200,6 @@ export function BookingReview({
   );
 }
 
-// function ReviewRow({ label, value }: { label: string; value: string }) {
-//   return (
-//     <div className="flex justify-between gap-6 border-b border-ink/10 py-3">
-//       <dt className="text-[14.5px] text-cream-muted">{label}</dt>
-//       <dd className="text-right text-[14.5px] text-ink">{value}</dd>
-//     </div>
-//   );
-// }
-
 function PriceRow({
   label,
   value,
@@ -235,7 +207,6 @@ function PriceRow({
 }: {
   label: string;
   value: string;
-  /** base = fix tétel, accent = aktív felár, idle = 0 Ft-os helyfoglaló */
   state?: 'base' | 'accent' | 'idle' | 'discount';
 }) {
   return (

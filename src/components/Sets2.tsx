@@ -13,16 +13,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
 import { Card, CardFooter } from '@/components/ui/card';
 import { MOBILE_BREAKPOINT } from '@/hooks/use-mobile';
-import { DecorSetSection, decorSetSections } from '@/lib/data';
+import { ALL_PACKAGES, packageIncludesAddOn } from '@/lib/catalog';
+import { decorSetSections, lightPlaySection } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
-import { Button } from './ui/button';
+type DecorSetSectionData = (typeof decorSetSections)[number];
 
 export function Sets2() {
-  const decorSets = decorSetSections.filter((ds) => !ds.isExtra);
-  const extras = decorSetSections.filter((s) => s.isExtra);
   const { light, toggleLight } = useBookingSelection();
 
   return (
@@ -44,17 +44,21 @@ export function Sets2() {
             aria-label="Díszletek"
             className="grid grid-cols-2 gap-3 lg:mx-auto lg:max-w-3xl"
           >
-            {decorSets.map(({ id, name, mainImage }) => (
-              <a key={id} href={`#${id}`}>
-                <Card className="shadow">
-                  <Image src={mainImage} alt={mainImage.alt} />
+            {decorSetSections.map(({ key, anchor, label, mainImage }) => (
+              <a key={key} href={`#${anchor}`}>
+                <Card className="gap-0 shadow">
+                  <Image
+                    src={mainImage}
+                    alt={mainImage.alt}
+                    className="aspect-4/3 w-full object-cover"
+                  />
                   <CardFooter className="p-3 lg:p-(--card-spacing)">
                     <Button
                       size="lg"
                       className="group w-full tracking-wide uppercase lg:text-lg"
                       variant="outline"
                     >
-                      {name}
+                      {label}
                       <ArrowRightIcon className="hidden transition-transform group-hover:translate-x-1 lg:block" />
                     </Button>
                   </CardFooter>
@@ -69,71 +73,65 @@ export function Sets2() {
           </p>
           <ChristmasSeparator />
           <div>
-            {decorSets.map((set) => {
-              return (
-                <SetSection
-                  key={set.id}
-
-                  {...set}
-                />
-              );
+            {decorSetSections.map((set) => {
+              return <SetSection key={set.key} set={set} />;
             })}
           </div>
-          <div>
-            {extras.map(
-              ({ id, name, tagline, description, mainImage, gallery }) => {
-                return (
-                  <section
-                    key={id}
-                    id={id}
-                    className="grid gap-6 rounded-md border border-[#d5c5ab] bg-[#ece5d9] p-5 sm:p-8 lg:grid-cols-2 lg:gap-x-16"
-                  >
-                    <div className="flex flex-col gap-2 lg:gap-3 lg:self-end">
-                      <p className="text-brand-muted uppercase">{tagline}</p>
-                      <h2 className="font-display text-4xl font-bold lg:text-6xl">
-                        {name}
-                      </h2>
-                      <p className="text-brand-muted">{description}</p>
-                    </div>
-                    <Image
-                      src={mainImage}
-                      alt={mainImage.alt}
-                      className="rounded-lg ring-1 ring-black/10 lg:col-start-2 lg:row-span-2 lg:row-start-1"
-                    />
-                    <p className="text-brand-muted">
-                      A{' '}
-                      <a
-                        href="#csomagok"
-                        className="text-brand-night underline underline-offset-2 hover:text-brand-muted"
-                      >
-                        Family csomag
-                      </a>{' '}
-                      alapból tartalmazza, de bármelyik másik csomaghoz is külön
-                      kérhető az{' '}
-                      <a
-                        href="#foglalas"
-                        className="text-brand-night underline underline-offset-2 hover:text-brand-muted"
-                      >
-                        időpontfoglalás
-                      </a>{' '}
-                      során.
-                    </p>
-                    <a
-                      href="#foglalas"
-                      onClick={() => {
-                        if (!light) toggleLight();
-                      }}
-                      // className="rounded-md border border-brand-champagne bg-brand-champagne/20 hover:bg-brand-champagne/40 transition-colors  px-6 py-3 text-center font-bold text-brand-ink/80 uppercase lg:self-start"
-                      className="my-4 flex h-12 items-center justify-center rounded-lg border border-brand-champagne px-4 py-3 text-sm font-semibold transition-colors duration-200 hover:bg-brand-champagne/40 lg:my-0"
-                    >
-                      {light ? 'Kiválasztva ✓' : 'Tedd ezt is a kosárba →'}
-                    </a>
-                    <PhotoGallery photos={gallery} targetRowHeight={120} />
-                  </section>
-                );
-              },
-            )}
-          </div>
+          <section
+            id={lightPlaySection.anchor}
+            className="grid gap-6 rounded-md border border-[#d5c5ab] bg-[#ece5d9] p-5 sm:p-8 lg:grid-cols-2 lg:gap-x-16"
+          >
+            <div className="flex flex-col gap-2 lg:gap-3 lg:self-end">
+              <p className="text-brand-muted uppercase">
+                {lightPlaySection.tagline}
+              </p>
+              <h2 className="font-display text-4xl font-bold lg:text-6xl">
+                {lightPlaySection.label}
+              </h2>
+              <p className="text-brand-muted">{lightPlaySection.description}</p>
+            </div>
+            <Image
+              src={lightPlaySection.mainImage}
+              alt={lightPlaySection.mainImage.alt}
+              className="rounded-lg ring-1 ring-black/10 lg:col-start-2 lg:row-span-2 lg:row-start-1"
+            />
+            <p className="text-brand-muted">
+              A{' '}
+              <a
+                href="#csomagok"
+                className="text-brand-night underline underline-offset-2 hover:text-brand-muted"
+              >
+                {ALL_PACKAGES.filter((p) =>
+                  packageIncludesAddOn(p.key, 'LIGHT_PLAY'),
+                )
+                  .map((p) => p.label)
+                  .join(', ')}
+              </a>{' '}
+              csomag alapból tartalmazza, de bármelyik másik csomaghoz is külön
+              kérhető az{' '}
+              <a
+                href="#foglalas"
+                className="text-brand-night underline underline-offset-2 hover:text-brand-muted"
+              >
+                időpontfoglalás
+              </a>{' '}
+              során.
+            </p>
+            <a
+              href="#foglalas"
+              onClick={() => {
+                if (!light) toggleLight();
+              }}
+              // className="rounded-md border border-brand-champagne bg-brand-champagne/20 hover:bg-brand-champagne/40 transition-colors  px-6 py-3 text-center font-bold text-brand-ink/80 uppercase lg:self-start"
+              className="my-4 flex h-12 items-center justify-center rounded-lg border border-brand-champagne px-4 py-3 text-sm font-semibold transition-colors duration-200 hover:bg-brand-champagne/40 lg:my-0"
+            >
+              {light ? 'Kiválasztva ✓' : 'Tedd ezt is a kosárba →'}
+            </a>
+            <PhotoGallery
+              photos={lightPlaySection.gallery}
+              targetRowHeight={120}
+            />
+          </section>
         </div>
       </div>
     </section>
@@ -160,33 +158,34 @@ function ChristmasSeparator({ className }: { className?: string }) {
   );
 }
 
-function SetSection({
-  id,
-  tagline,
-  name,
-  description,
-  mainImage,
-  colors,
-  gallery,
-  tips,
-  setKey,
-}: DecorSetSection) {
+function SetSection({ set }: { set: DecorSetSectionData }) {
+  const {
+    key,
+    anchor,
+    tagline,
+    label,
+    description,
+    mainImage,
+    colors,
+    gallery,
+    tips,
+  } = set;
   const [openTips, setOpenTips] = useState<string[]>([]);
   const { decorKey, selectDecorSet } = useBookingSelection();
 
-  const selected = decorKey === setKey;
+  const selected = decorKey === key;
 
   useEffect(() => {
     if (window.innerWidth >= MOBILE_BREAKPOINT) setOpenTips(['tip']);
   }, []);
 
   return (
-    <section id={id} className="flex scroll-mt-8 flex-col gap-12">
+    <section id={anchor} className="flex scroll-mt-8 flex-col gap-12">
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-x-16">
         <div className="flex flex-col gap-2 lg:gap-3 lg:self-end">
           <p className="text-brand-muted uppercase">{tagline}</p>
           <h2 className="font-display text-4xl font-bold lg:text-6xl">
-            {name}
+            {label}
           </h2>
           <p className="text-brand-muted">{description}</p>
         </div>
@@ -202,16 +201,16 @@ function SetSection({
             <div className="flex flex-col gap-2">
               <p className="text-sm">Uralkodó színek</p>
               <div className="flex flex-wrap items-center gap-2">
-                {colors.map((c) => (
+                {colors.map((color) => (
                   <span
-                    key={c.name}
+                    key={color.name}
                     className="flex items-center gap-2 rounded-full border bg-white/70 py-1.5 pr-3 pl-2 text-sm"
                   >
                     <i
                       className="block size-3 rounded-full border border-black/10"
-                      style={{ background: c.hex }}
+                      style={{ background: color.hex }}
                     />
-                    {c.name}
+                    {color.name}
                   </span>
                 ))}
               </div>
@@ -219,11 +218,7 @@ function SetSection({
           )}
           <a
             href="#foglalas"
-            onClick={() => {
-              if (setKey != null) {
-                selectDecorSet(setKey);
-              }
-            }}
+            onClick={() => selectDecorSet(key)}
             className="rounded-md bg-brand-champagne px-6 py-3 text-center font-bold text-brand-ink/80 uppercase lg:self-start"
           >
             {selected ? 'Kiválasztva ✓' : 'Ezt szeretném →'}
@@ -245,7 +240,7 @@ function SetSection({
           <AccordionItem value="tip">
             <AccordionTrigger className="flex items-center gap-2 text-sm font-medium text-brand-muted">
               <ShirtIcon className="size-4 text-brand-champagne" />
-              Öltözködési tippek: {name}
+              Öltözködési tippek: {label}
             </AccordionTrigger>
             <AccordionContent>
               <p className="text-sm leading-relaxed text-brand-muted">{tips}</p>

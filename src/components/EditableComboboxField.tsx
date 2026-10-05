@@ -25,6 +25,7 @@ type EditableComboboxFieldProps = {
   displayValue?: React.ReactNode;
   onSave: (value: string | null) => Promise<{ error: string } | void>;
   disabled?: boolean;
+  isClearable?: boolean;
 };
 
 export function EditableComboboxField({
@@ -35,6 +36,7 @@ export function EditableComboboxField({
   displayValue,
   onSave,
   disabled = false,
+  isClearable = true,
 }: EditableComboboxFieldProps) {
   return (
     <EditableField<ComboboxFieldItem>
@@ -50,7 +52,7 @@ export function EditableComboboxField({
             onValueChange={onChange}
             isItemEqualToValue={(a, b) => a.value === b.value}
           >
-            <ComboboxInput placeholder={placeholder} showClear />
+            <ComboboxInput placeholder={placeholder} showClear={isClearable} />
             <ComboboxContent>
               <ComboboxEmpty>Nincs találat.</ComboboxEmpty>
               <ComboboxList>

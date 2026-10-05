@@ -126,8 +126,8 @@ function Impresszum() {
       <h2>A szolgáltatás</h2>
       <p>
         A Karifoto budapesti, saját stúdióban szervezett karácsonyi fotózást
-        kínál. A stúdióban két díszlet található: Hófehér és Álomkastély. A
-        Fényjáték a díszletekben igénybe vehető extra szolgáltatás.
+        kínál. A stúdióban két díszlet található: Hófehér és Retro. A Fényjáték
+        a díszletekben igénybe vehető extra szolgáltatás.
       </p>
       <h2>Stúdió és tárhely</h2>
       <p className={pending}>
@@ -258,9 +258,9 @@ function Aszf() {
       <p>
         A választott csomag határozza meg a fotózás időtartamát, az igénybe
         vehető díszleteket, valamint az átadott és retusált képek mennyiségét.
-        Hófehér és Álomkastély két külön díszlet; a Fényjáték a díszletekben
-        nyújtott extra szolgáltatás. A csomag tartalmát és az extrákat a
-        megrendelés összesítése rögzíti.
+        Hófehér és Retro két külön díszlet; a Fényjáték a díszletekben nyújtott
+        extra szolgáltatás. A csomag tartalmát és az extrákat a megrendelés
+        összesítése rögzíti.
       </p>
       <h2>3. Foglalás és szerződéskötés</h2>
       <p>

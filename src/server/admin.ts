@@ -7,11 +7,12 @@ import * as z from 'zod';
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
 import {
   APP_URLS,
-  PACKAGE_PRICES,
+  isLightPlayChargeable,
   UUID_RE,
   YES_NO_VALUES,
 } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
+import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { resolveStatus } from '@/server/photo-shooting-status';
 
@@ -123,42 +124,64 @@ export async function updatePhotoShooting(
       ...photoShootingWithTimeSlotInclude,
     });
 
-    if (current.pricing == null) {
+    const currentPricing = current.pricing;
+    if (currentPricing == null) {
       throw new Error(`PhotoShooting ${id} has no pricing record`);
     }
 
-    await prisma.$transaction(async (tx) => {
-      // TypeScript's narrowing doesn't carry over into
-      // the async (tx) => {} callback, that's why the bang.
-      let effectivePricing = current.pricing!;
+    // A kiállított végszámla már az eddigi csomag árát tartalmazza, az utólagos
+    // csomagcsere csak a számítást írná át, a számlát nem.
+    if (
+      parsed.data.package != null &&
+      parsed.data.package !== current.package
+    ) {
+      const finalInvoice = await prisma.invoice.findFirst({
+        where: { photoShootingId: id, type: 'FINAL' },
+        select: { id: true },
+      });
+      if (finalInvoice != null) {
+        return {
+          error:
+            'A végszámla már kiállításra került, a csomag nem módosítható.',
+        };
+      }
+    }
 
+    await prisma.$transaction(async (tx) => {
+      let effectivePricing = currentPricing;
+      let dataToSave = parsed.data;
+
+      // Changing a package on the photoshooting
       if (
         parsed.data.package != null &&
         parsed.data.package !== current.package
       ) {
-        await tx.photoShootingPricing.update({
+        const {
+          packagePriceInCents,
+          packageStudioPriceInCents,
+          packageEditedImagesAllowance,
+        } = buildPricingSnapshot(parsed.data.package);
+
+        effectivePricing = await tx.photoShootingPricing.update({
           where: { photoShootingId: id },
           data: {
-            packagePriceInCents: PACKAGE_PRICES[parsed.data.package].base,
-            packageStudioPriceInCents:
-              PACKAGE_PRICES[parsed.data.package].studio,
-            packageEditedImagesAllowance:
-              PACKAGE_PRICES[parsed.data.package].editedImagesAllowance,
+            packagePriceInCents,
+            packageStudioPriceInCents,
+            packageEditedImagesAllowance,
           },
         });
 
-        effectivePricing = {
-          ...current.pricing,
-          packagePriceInCents: PACKAGE_PRICES[parsed.data.package].base,
-          packageStudioPriceInCents: PACKAGE_PRICES[parsed.data.package].studio,
-          packageEditedImagesAllowance:
-            PACKAGE_PRICES[parsed.data.package].editedImagesAllowance,
-        } as NonNullable<typeof current.pricing>;
+        // `isLightPlaySelected` csak akkor lehet igaz, ha a csomag felárat számol
+        // érte (mint a webhooknál) — különben a mező IGEN-t mutatna felár nélkül,
+        // és egy későbbi visszaváltásnál váratlanul visszajönne a felár.
+        if (!isLightPlayChargeable(parsed.data.package)) {
+          dataToSave = { ...dataToSave, isLightPlaySelected: false };
+        }
       }
 
       const status = resolveStatus({
         current,
-        updates: parsed.data,
+        updates: dataToSave,
         pricing: effectivePricing,
         adjustments: current.adjustments,
         ledgerEntries: current.ledgerEntries,
@@ -166,7 +189,7 @@ export async function updatePhotoShooting(
 
       await tx.photoShooting.update({
         where: { id },
-        data: { ...parsed.data, status },
+        data: { ...dataToSave, status },
       });
     });
   } catch (error) {

@@ -3,17 +3,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { BookingIntentStatus } from '@/generated/prisma/enums';
-import { packages } from '@/lib/data';
+import { PACKAGES } from '@/lib/catalog';
 import { formatLongDate } from '@/lib/formatters';
 import { getBookingIntentPublic } from '@/lib/queries';
 
 export const metadata: Metadata = {
   title: 'Sikeres foglalás · Karifoto',
 };
-
-const packageNameByEnum = Object.fromEntries(
-  packages.map((p) => [p.id.toUpperCase(), p.name]),
-);
 
 export default async function SuccessPage(
   props: PageProps<'/success/[bookingIntentId]'>,
@@ -82,10 +78,7 @@ export default async function SuccessPage(
               />
               <SuccessRow
                 label="Csomag"
-                value={
-                  packageNameByEnum[bookingIntent.package] ??
-                  bookingIntent.package
-                }
+                value={PACKAGES[bookingIntent.package].label}
               />
               <SuccessRow
                 label="Létszám"

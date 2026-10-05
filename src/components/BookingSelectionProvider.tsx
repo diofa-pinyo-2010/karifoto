@@ -2,19 +2,18 @@
 
 import { createContext, useContext, useMemo, useState } from 'react';
 
+import { Package, DecorSet } from '@/generated/prisma/enums';
 import {
   EMPTY_BOOKING_SELECTION,
   selectionToQuery,
   type BookingSelection,
 } from '@/lib/booking-selection';
 
-import type { DecorSetKey, PackageKey } from '@/lib/data';
-
 type BookingSelectionApi = BookingSelection & {
-  selectPackage: (key: PackageKey) => void;
-  selectDecorSet: (key: DecorSetKey) => void;
+  selectPackage: (key: Package) => void;
+  selectDecorSet: (key: DecorSet) => void;
   toggleLight: () => void;
-  /** `?package=mini&decor=alomkastely&light=false` — a foglalás linkjéhez. */
+  /** `?package=mini&decor=retro&light=false` — a foglalás linkjéhez. */
   selectionQuery: string;
 };
 

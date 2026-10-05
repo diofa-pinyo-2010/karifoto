@@ -348,16 +348,16 @@ If `pricing` and `adjustments` aren't included yet in `getPhotoShooting`, we'd n
   <div className="rounded-lg border px-4">
     <DetailRow
       label="Csomag ára"
-      value={formatAmount(shooting.pricing.packagePriceInCents, 'HUF')}
+      value={formatMoney(shooting.pricing.packagePriceInCents)}
     />
     <DetailRow
       label="Extra személyek"
-      value={formatAmount(extraPeople * shooting.pricing.extraPeopleRateInCents, 'HUF')}
+      value={formatMoney(extraPeople * shooting.pricing.extraPeopleRateInCents)}
     />
     {/* ... more rows ... */}
     <DetailRow
       label="Remaining amount"
-      value={formatAmount(remainingAmount, 'HUF')}
+      value={formatMoney(remainingAmount)}
     />
   </div>
 </div>

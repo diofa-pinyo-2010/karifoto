@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { buildSub, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
   CLIENT_PORTAL_DEFAULT_SECTION,
@@ -42,7 +43,6 @@ import {
   INVOICE_STATUS_LABEL,
   isStatusBefore,
   PACKAGE_LABEL,
-  PACKAGE_PRICES,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
@@ -50,7 +50,6 @@ import {
   STUDIO_MAP_LINK,
 } from '@/lib/constants';
 import { getPortalAccess } from '@/lib/dal';
-import { packages } from '@/lib/data';
 import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
 import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
@@ -58,7 +57,7 @@ import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
-import { formatAmount, formatMoney } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
 import type { PhotoShootingForClientPortal } from '@/lib/queries';
@@ -268,12 +267,6 @@ function ClientPortalAccessDenied({
   );
 }
 
-// A csomagok ügyfélnek szóló szövege (`sub`) a landing oldal adataiból jön, nem
-// írjuk le még egyszer. Az enum értéke nagybetűs, a `data.ts` id-je kisbetűs.
-const PACKAGE_BY_ENUM = new Map(
-  packages.map((item) => [item.id.toUpperCase(), item]),
-);
-
 function ClientPortalInvoices({
   invoices,
 }: {
@@ -293,7 +286,7 @@ function ClientPortalInvoices({
       {invoices.map((invoice) => (
         <ExternalLinkItem
           key={invoice.id}
-          title={formatAmount(invoice.amountInCents, invoice.currency)}
+          title={formatMoney(invoice.amountInCents)}
           description={`${invoice.invoiceNumber} · ${INVOICE_STATUS_LABEL[invoice.status]}`}
           href={invoice.publicUrl}
           linkLabel="Számla"
@@ -328,8 +321,6 @@ function ClientPortalShootingDetails({
 }: {
   shooting: PhotoShootingForClientPortal;
 }) {
-  const packageInfo = PACKAGE_BY_ENUM.get(shooting.package);
-
   const lightPlay = hasLightPlay(
     shooting.package,
     shooting.isLightPlaySelected,
@@ -370,11 +361,9 @@ function ClientPortalShootingDetails({
 
       <DetailRow icon={PackageIcon} label="Csomag">
         <span className="font-medium">{PACKAGE_LABEL[shooting.package]}</span>
-        {packageInfo && (
-          <span className="block text-[13px] text-brand-muted">
-            {packageInfo.sub}
-          </span>
-        )}
+        <span className="block text-[13px] text-brand-muted">
+          {buildSub(PACKAGES[shooting.package])}
+        </span>
       </DetailRow>
 
       {chosenDecorSet && (
@@ -457,7 +446,7 @@ function ClientImageSelection({
     );
   }
 
-  const allowance = PACKAGE_PRICES[shootingPackage].editedImagesAllowance;
+  const allowance = PACKAGES[shootingPackage].editedImagesAllowance;
 
   return (
     <div className="flex flex-col gap-6">
@@ -490,8 +479,8 @@ function ClientImageSelection({
         <h3 className="text-lg font-semibold">➕ Plusz képek rendelése</h3>
         <p>
           Több képet is választhattok, mint amennyit a csomagotok tartalmaz. A
-          plusz képek ára{' '}
-          <strong>{formatAmount(EXTRA_EDIT_PER_IMAGE, 'HUF')}</strong>/kép,
+          plusz képek ára <strong>{formatMoney(EXTRA_EDIT_PER_IMAGE)}</strong>
+          /kép,
         </p>
         <p>
           <strong>

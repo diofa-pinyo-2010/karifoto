@@ -10,78 +10,49 @@ import type { Photo } from 'react-photo-album';
 // gets processed by the bundler, e.g. a top-level /photos folder or /src/photos.
 // The "@/photos/..." alias below assumes a /photos folder mapped in tsconfig
 // (adjust the path to wherever you actually keep them).
-import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
-import alomkastelyGallery1 from '@/photos/alomkastely-gallery-1.jpg';
-import alomkastelyGallery2 from '@/photos/alomkastely-gallery-2.jpg';
-import alomkastelyGallery3 from '@/photos/alomkastely-gallery-3.jpg';
-import alomkastelyGallery4 from '@/photos/alomkastely-gallery-4.jpg';
-import alomkastelyGallery5 from '@/photos/alomkastely-gallery-5.jpg';
-// import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
-import fenyjatek2 from '@/photos/fenyjatek-gallery-2.jpg';
-import fenyjatek3 from '@/photos/fenyjatek-gallery-3.jpg';
-import fenyjatek4 from '@/photos/fenyjatek-gallery-4.jpg';
-import fenyjatek5 from '@/photos/fenyjatek-gallery-5.jpg';
-import fenyjatek6 from '@/photos/fenyjatek-gallery-6.jpg';
-import hofeherDiszlet from '@/photos/hofeher-diszlet.jpg';
-import hofeherGallery1 from '@/photos/hofeher-gallery-1.jpg';
-import hofeherGallery2 from '@/photos/hofeher-gallery-2.jpg';
-import hofeherGallery3 from '@/photos/hofeher-gallery-3.jpg';
-import hofeherGallery4 from '@/photos/hofeher-gallery-4.jpg';
+import hofeherPelda1 from '@/photos/2026/decor-sets/hofeher-minta-1.jpg';
+import hofeherPelda2 from '@/photos/2026/decor-sets/hofeher-minta-2.jpg';
+import hofeherPelda3 from '@/photos/2026/decor-sets/hofeher-minta-3.jpg';
+import hofeherPelda4 from '@/photos/2026/decor-sets/hofeher-minta-4.jpg';
+import hofeherPelda5 from '@/photos/2026/decor-sets/hofeher-minta-5.jpg';
+import hofeherPelda6 from '@/photos/2026/decor-sets/hofeher-minta-6.jpg';
+import retroMinta1 from '@/photos/2026/decor-sets/retro-minta_1.jpg';
+import retroMinta2 from '@/photos/2026/decor-sets/retro-minta_2.jpg';
+import retroMinta3 from '@/photos/2026/decor-sets/retro-minta_3.jpg';
+import retroMinta4 from '@/photos/2026/decor-sets/retro-minta_4.jpg';
+import retroMinta5 from '@/photos/2026/decor-sets/retro-minta_5.jpg';
+import retroMinta6 from '@/photos/2026/decor-sets/retro-minta_6.jpg';
+import fenyjatekPelda from '@/photos/2026/fenyjatek/fenyjatek-pelda-1.jpg';
+import fenyjatekPelda2 from '@/photos/2026/fenyjatek/fenyjatek-pelda-2.jpg';
+import fenyjatekPelda3 from '@/photos/2026/fenyjatek/fenyjatek-pelda-3.jpg';
+import fenyjatekPelda5 from '@/photos/2026/fenyjatek/fenyjatek-pelda-5.jpg';
+import fenyjatekPelda6 from '@/photos/2026/fenyjatek/fenyjatek-pelda-6.jpg';
 
 import type { DecorSet } from '@/generated/prisma/client';
 
-// The spread pulls in src/width/height/blurDataURL from the static import;
-// we just add an `alt` for accessibility. Order here is the display order.
-export const gallery: Record<DecorSet | 'FENYJATEK', Photo[]> = {
-  HOFEHER: [
-    { ...hofeherDiszlet, alt: 'Hófehér díszlet' },
-    { ...hofeherGallery1, alt: 'Sunset over the beach' },
-    { ...hofeherGallery2, alt: 'Misty forest trail' },
-    { ...hofeherGallery3, alt: 'Portrait in golden light' },
-    { ...hofeherGallery4, alt: 'Portrait in golden light s' },
-  ],
-  FENYJATEK: [
-    // { ...fenyjatek1, alt: 'fenyjatek 1' },
-    { ...fenyjatek2, alt: 'fenyjatek 2' },
-    { ...fenyjatek3, alt: 'fenyjatek 3' },
-    { ...fenyjatek4, alt: 'fenyjatek 4' },
-    { ...fenyjatek5, alt: 'fenyjatek 5' },
-    { ...fenyjatek6, alt: 'fenyjatek 6' },
-  ],
-  ALOMKASTELY: [
-    { ...alomkastelyDiszlet, alt: 'álomkastély díszlet' },
-    { ...alomkastelyGallery1, alt: 'alomkastely 1' },
-    { ...alomkastelyGallery2, alt: 'alomkastely 2' },
-    { ...alomkastelyGallery3, alt: 'alomkastely 3' },
-    { ...alomkastelyGallery4, alt: 'alomkastely 4' },
-    { ...alomkastelyGallery5, alt: 'alomkastely 5' },
-  ],
-};
-
-// --- Later: switching to an API / CMS -------------------------------------
-// The <PhotoGallery> component takes `photos: Photo[]` as a prop and doesn't
-// care where they come from. To move to a CMS, fetch in a Server Component and
-// pass the array down:
-//
-//   const photos = await fetchPhotosFromCMS(); // must include width + height
-//   return <PhotoGallery photos={photos} />;
-//
-// The only requirement is that each photo carries `src`, `width`, and `height`.
-// `blurDataURL` is optional — if your CMS provides one (or you generate it),
-// the blur placeholder keeps working; if not, the component just skips it.
-
 export const decorSetGalleries: Record<DecorSet, Photo[]> = {
   HOFEHER: [
-    { ...hofeherGallery1, alt: 'Sunset over the beach' },
-    { ...hofeherGallery2, alt: 'Misty forest trail' },
-    { ...hofeherGallery3, alt: 'Portrait in golden light' },
-    { ...hofeherGallery4, alt: 'Portrait in golden light s' },
+    { ...hofeherPelda1, alt: 'Hófehér példa' },
+    { ...hofeherPelda2, alt: 'Hófehér példa 2' },
+    { ...hofeherPelda3, alt: 'Hófehér példa 3' },
+    { ...hofeherPelda4, alt: 'Hófehér példa 4' },
+    { ...hofeherPelda5, alt: 'Hófehér példa 5' },
+    { ...hofeherPelda6, alt: 'Hófehér példa 6' },
   ],
-  ALOMKASTELY: [
-    { ...alomkastelyGallery1, alt: 'alomkastely 1' },
-    { ...alomkastelyGallery2, alt: 'alomkastely 2' },
-    { ...alomkastelyGallery3, alt: 'alomkastely 3' },
-    { ...alomkastelyGallery4, alt: 'alomkastely 4' },
-    { ...alomkastelyGallery5, alt: 'alomkastely 5' },
+  RETRO: [
+    { ...retroMinta1, alt: 'retro díszlet minta' },
+    { ...retroMinta2, alt: 'retro díszlet minta 2' },
+    { ...retroMinta3, alt: 'retro díszlet minta 3' },
+    { ...retroMinta4, alt: 'retro díszlet minta 4' },
+    { ...retroMinta5, alt: 'retro díszlet minta 5' },
+    { ...retroMinta6, alt: 'retro díszlet minta 6' },
   ],
 };
+
+export const lightPlayGallery: Photo[] = [
+  { ...fenyjatekPelda, alt: 'Fényjáték példa' },
+  { ...fenyjatekPelda2, alt: 'fenyjatek 2' },
+  { ...fenyjatekPelda3, alt: 'fenyjatek 3' },
+  { ...fenyjatekPelda5, alt: 'fenyjatek 5' },
+  { ...fenyjatekPelda6, alt: 'fenyjatek 6' },
+];

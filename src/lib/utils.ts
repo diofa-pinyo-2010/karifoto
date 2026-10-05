@@ -7,22 +7,17 @@ import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
 
 import type { LedgerEntry } from '@/generated/prisma/client';
-import type { Currency } from '@/generated/prisma/enums';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatMoney = (cents: number) => {
-  return `${new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(cents / 100)} Ft`;
-};
-
-export const formatAmount = (cents: number, currency: Currency) => {
-  if (currency === 'HUF') return formatMoney(cents);
-  return `${(cents / 100).toLocaleString('hu-HU')} ${currency}`;
-};
-
 export const hufToCents = (huf: number) => Math.round(huf) * 100;
+export const centsToHuf = (cents: number) => Math.round(cents / 100);
+
+export const formatMoney = (cents: number) => {
+  return `${new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(centsToHuf(cents))} Ft`;
+};
 
 export const capitalize = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);

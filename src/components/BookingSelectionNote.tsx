@@ -1,22 +1,14 @@
 'use client';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
-import { packages, photoShootingSets } from '@/lib/data';
+import { DECOR_SETS, PACKAGES } from '@/lib/catalog';
 
-/**
- * A foglalási panel tetején megjelenő „A választásod” sor. Csak azért külön
- * komponens, hogy a `Booking` szerver oldali maradhasson: a kiválasztás a
- * `BookingSelectionProvider` kliens kontextusából jön.
- *
- * Amíg nincs választás, semmit nem rendereltünk — a panel ilyenkor egyből a
- * szabad időpontokkal indul.
- */
 export function BookingSelectionNote() {
   const { packageKey, decorKey, light } = useBookingSelection();
 
   const parts = [
-    packages.find((p) => p.id === packageKey)?.name,
-    decorKey ? photoShootingSets[decorKey].name : null,
+    packageKey ? PACKAGES[packageKey].label : null,
+    decorKey ? DECOR_SETS[decorKey].label : null,
     light ? 'Fényjáték' : null,
   ].filter(Boolean);
 

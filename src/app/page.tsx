@@ -9,7 +9,6 @@ import { Location } from '@/components/Location';
 import { MobileBookingBar } from '@/components/MobileBookingBar';
 import { Pricing } from '@/components/Pricing';
 import { Reviews } from '@/components/Reviews';
-// import { Sets } from '@/components/Sets';
 import { Sets2 } from '@/components/Sets2';
 import { Video } from '@/components/Video';
 import { getSession } from '@/lib/dal';
@@ -37,14 +36,8 @@ export default async function Home() {
         elejére" hivatkozásának a célpontja.
       */}
       <main id="tartalom">
-        {/*
-          A Sets közvetlenül a Hero után jön, ahogy a látványtervben: a hero
-          alját lezáró krém hullám ennek a szekciónak a háttérszínébe olvad
-          (mindkettő #f5f1e9), így nincs látható él a kettő között.
-        */}
         <Hero />
         <Sets2 />
-        {/* <Sets /> */}
         <Reviews />
         <Pricing />
         <Video />

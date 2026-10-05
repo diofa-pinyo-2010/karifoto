@@ -1,4 +1,5 @@
 import { NamedVATRate } from '@/lib/invoice/types';
+import { centsToHuf } from '@/lib/utils';
 
 import type { InvoiceLineItem } from '@/lib/invoice/types';
 import type { PriceLine } from '@/server/pricing';
@@ -51,7 +52,7 @@ export function buildFinalInvoiceItems(
   const items: InvoiceLineItem[] = lines.map((line) => ({
     name: line.label.replace(LEADING_EMOJI, '').trim(),
     quantity: 1,
-    unitPriceGross: line.amountInCents / 100,
+    unitPriceGross: centsToHuf(line.amountInCents),
     vatRate: NamedVATRate.AAM,
   }));
 
@@ -60,7 +61,7 @@ export function buildFinalInvoiceItems(
     items.unshift({
       name: 'Fotózás előleg',
       quantity: 1,
-      unitPriceGross: -advance.amountInCents / 100,
+      unitPriceGross: -centsToHuf(advance.amountInCents),
       vatRate: NamedVATRate.AAM,
     });
   }

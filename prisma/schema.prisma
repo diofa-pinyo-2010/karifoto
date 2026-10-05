@@ -444,7 +444,7 @@ enum Package {
 
 enum DecorSet {
   HOFEHER
-  ALOMKASTELY
+  RETRO
 }
 
 // Client emails only — admin emails are never recorded in SentEmail.

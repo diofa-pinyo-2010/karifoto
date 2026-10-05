@@ -13,6 +13,7 @@ import { invoiceService } from '@/lib/invoice';
 import { NamedVATRate } from '@/lib/invoice/types';
 import { prisma } from '@/lib/prisma';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
+import { centsToHuf } from '@/lib/utils';
 
 import type { GeneratedInvoice } from '@/lib/invoice/types';
 
@@ -121,7 +122,7 @@ export const POST = verifySignatureAppRouter(
           return {
             name: item.description ?? 'tétel',
             quantity,
-            unitPriceGross: item.amount_total / 100,
+            unitPriceGross: centsToHuf(item.amount_total),
             vatRate: NamedVATRate.AAM,
           };
         }),

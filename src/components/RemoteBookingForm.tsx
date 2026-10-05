@@ -31,8 +31,8 @@ import {
   useRemoteBookingForm,
   type RemoteBookingFormValues,
 } from '@/hooks/use-remote-booking-form';
+import { ALL_DECOR_SETS, ALL_PACKAGES } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
-import { packages, photoShootingSets, SET_ORDER } from '@/lib/data';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { createRemoteBookingIntent } from '@/server/remote-booking';
 
@@ -191,11 +191,14 @@ export function RemoteBookingForm() {
                 onValueChange={field.onChange}
                 aria-invalid={fieldState.invalid}
               >
-                {packages.map((pkg) => (
-                  <FieldLabel key={pkg.id} htmlFor={`package-${pkg.id}`}>
+                {Object.values(ALL_PACKAGES).map((pkg) => (
+                  <FieldLabel key={pkg.key} htmlFor={`package-${pkg.slug}`}>
                     <Field orientation="horizontal">
-                      {pkg.name}
-                      <RadioGroupItem value={pkg.id} id={`package-${pkg.id}`} />
+                      {pkg.label}
+                      <RadioGroupItem
+                        value={pkg.key}
+                        id={`package-${pkg.slug}`}
+                      />
                     </Field>
                   </FieldLabel>
                 ))}
@@ -217,11 +220,14 @@ export function RemoteBookingForm() {
                   onValueChange={field.onChange}
                   aria-invalid={fieldState.invalid}
                 >
-                  {SET_ORDER.map((key) => (
-                    <FieldLabel key={key} htmlFor={`decor-${key}`}>
+                  {ALL_DECOR_SETS.map((set) => (
+                    <FieldLabel key={set.key} htmlFor={`decor-${set.key}`}>
                       <Field orientation="horizontal">
-                        {photoShootingSets[key].name}
-                        <RadioGroupItem value={key} id={`decor-${key}`} />
+                        {set.label}
+                        <RadioGroupItem
+                          value={set.key}
+                          id={`decor-${set.key}`}
+                        />
                       </Field>
                     </FieldLabel>
                   ))}

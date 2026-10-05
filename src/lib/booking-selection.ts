@@ -1,9 +1,10 @@
+import { type DecorSet, Package } from '@/generated/prisma/enums';
 import {
-  packages,
-  photoShootingSets,
-  type DecorSetKey,
-  type PackageKey,
-} from '@/lib/data';
+  packageFromSlug,
+  packageSlug,
+  decorSetFromSlug,
+  decorSetSlug,
+} from '@/lib/catalog';
 
 /**
  * A főoldali CTA-kban összekattintott választások.
@@ -11,8 +12,8 @@ import {
  * a /foglalas/[timeSlotId] oldal onnan olvassa vissza.
  */
 export type BookingSelection = {
-  packageKey: PackageKey | null;
-  decorKey: DecorSetKey | null;
+  packageKey: Package | null;
+  decorKey: DecorSet | null;
   light: boolean;
 };
 
@@ -22,11 +23,12 @@ export const EMPTY_BOOKING_SELECTION: BookingSelection = {
   light: false,
 };
 
-/** → `?package=mini&decor=alomkastely&light=false` */
+/** → `?package=mini&decor=retro&light=false` */
 export function selectionToQuery(selection: BookingSelection): string {
   const params = new URLSearchParams();
-  if (selection.packageKey) params.set('package', selection.packageKey);
-  if (selection.decorKey) params.set('decor', selection.decorKey);
+  if (selection.packageKey)
+    params.set('package', packageSlug(selection.packageKey));
+  if (selection.decorKey) params.set('decor', decorSetSlug(selection.decorKey));
   params.set('light', String(selection.light));
   return `?${params.toString()}`;
 }
@@ -40,23 +42,9 @@ const first = (value: string | string[] | undefined) =>
 export function selectionFromSearchParams(
   searchParams: RawSearchParams,
 ): BookingSelection {
-  const packageKey = first(searchParams.package);
-  const decorKey = first(searchParams.decor);
-
   return {
-    packageKey: packages.some((p) => p.id === packageKey)
-      ? (packageKey as PackageKey)
-      : null,
-    decorKey:
-      decorKey != null && decorKey in photoShootingSets
-        ? (decorKey as DecorSetKey)
-        : null,
+    packageKey: packageFromSlug(first(searchParams.package)),
+    decorKey: decorSetFromSlug(first(searchParams.decor)),
     light: first(searchParams.light) === 'true',
   };
 }
-
-export const packageName = (key: PackageKey | null) =>
-  packages.find((p) => p.id === key)?.name ?? null;
-
-export const decorSetName = (key: DecorSetKey | null) =>
-  key ? photoShootingSets[key].name : null;
