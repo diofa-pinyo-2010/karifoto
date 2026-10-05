@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import background from '@/photos/fenyjatek-gallery-6.jpg';
+import background from '@/photos/2026/decor-sets/hofeher-diszlet.png';
 
 /**
  * A panel legalább a fejléc alatti teljes képernyőt kitölti (mobilon így sosem
