@@ -275,7 +275,7 @@ export function BookingFormNew({
                         <FieldTitle className="text-lg text-ink">
                           {pkg.label} •{' '}
                           <span className="text-sm font-normal text-cream-dim">
-                            {formatMoney(pkg.basePriceInCents)}
+                            {pkg.durationMinutes} perc
                           </span>
                           {/* {pkg.highlighted && (
                             <span className="rounded-full bg-gold/25 px-2 py-0.5 text-[11px] tracking-chip text-ink uppercase">
@@ -643,8 +643,8 @@ export function BookingFormNew({
             disabled={pending}
             className={`w-full max-w-90 rounded-full px-5 py-4.25 text-base font-medium transition-colors ${
               pending
-                ? 'cursor-not-allowed bg-cream/12 text-[#7C9083]'
-                : 'bg-terracotta text-[#FFF4E6] shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-terracotta-hover'
+                ? 'cursor-not-allowed bg-[#a67f4a]'
+                : 'bg-brand-champagne shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-brand-champagne-hover'
             }`}
           >
             {pending ? 'Feldolgozás…' : 'Tovább →'}
