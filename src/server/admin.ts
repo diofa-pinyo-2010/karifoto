@@ -5,13 +5,9 @@ import { revalidatePath } from 'next/cache';
 import * as z from 'zod';
 
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
-import {
-  APP_URLS,
-  PACKAGE_PRICES,
-  UUID_RE,
-  YES_NO_VALUES,
-} from '@/lib/constants';
+import { APP_URLS, UUID_RE, YES_NO_VALUES } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
+import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { resolveStatus } from '@/server/photo-shooting-status';
 
@@ -123,37 +119,33 @@ export async function updatePhotoShooting(
       ...photoShootingWithTimeSlotInclude,
     });
 
-    if (current.pricing == null) {
+    const currentPricing = current.pricing;
+    if (currentPricing == null) {
       throw new Error(`PhotoShooting ${id} has no pricing record`);
     }
 
     await prisma.$transaction(async (tx) => {
-      // TypeScript's narrowing doesn't carry over into
-      // the async (tx) => {} callback, that's why the bang.
-      let effectivePricing = current.pricing!;
+      let effectivePricing = currentPricing;
 
+      // Changing a package on the photoshooting
       if (
         parsed.data.package != null &&
         parsed.data.package !== current.package
       ) {
-        await tx.photoShootingPricing.update({
+        const {
+          packagePriceInCents,
+          packageStudioPriceInCents,
+          packageEditedImagesAllowance,
+        } = buildPricingSnapshot(parsed.data.package);
+
+        effectivePricing = await tx.photoShootingPricing.update({
           where: { photoShootingId: id },
           data: {
-            packagePriceInCents: PACKAGE_PRICES[parsed.data.package].base,
-            packageStudioPriceInCents:
-              PACKAGE_PRICES[parsed.data.package].studio,
-            packageEditedImagesAllowance:
-              PACKAGE_PRICES[parsed.data.package].editedImagesAllowance,
+            packagePriceInCents,
+            packageStudioPriceInCents,
+            packageEditedImagesAllowance,
           },
         });
-
-        effectivePricing = {
-          ...current.pricing,
-          packagePriceInCents: PACKAGE_PRICES[parsed.data.package].base,
-          packageStudioPriceInCents: PACKAGE_PRICES[parsed.data.package].studio,
-          packageEditedImagesAllowance:
-            PACKAGE_PRICES[parsed.data.package].editedImagesAllowance,
-        } as NonNullable<typeof current.pricing>;
       }
 
       const status = resolveStatus({

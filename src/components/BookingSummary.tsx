@@ -2,12 +2,12 @@
 
 import { useActionState, useState } from 'react';
 
+import { ADD_ONS } from '@/lib/catalog';
 import {
   DEPOSIT_AMOUNT,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   isLightPlayChargeable,
-  LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
 } from '@/lib/constants';
@@ -39,7 +39,9 @@ export function BookingSummary({
 
   const shouldShowLight = isLightPlayChargeable(bookingIntent.package);
   const lightFee =
-    shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
+    shouldShowLight && bookingIntent.isLightPlaySelected
+      ? ADD_ONS.LIGHT_PLAY.feeInCents
+      : 0;
 
   const extraHeads = Math.max(0, people - PERSONS_INCLUDED);
   const headFee = extraHeads * EXTRA_FEE_PER_EXTRA_PERSON;
@@ -179,7 +181,7 @@ export function BookingSummary({
                 label="Fényjáték extra"
                 value={
                   bookingIntent.isLightPlaySelected
-                    ? formatMoney(LIGHT_PLAY_FEE)
+                    ? formatMoney(ADD_ONS.LIGHT_PLAY.feeInCents)
                     : formatMoney(0)
                 }
               />

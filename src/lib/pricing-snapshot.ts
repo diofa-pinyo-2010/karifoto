@@ -1,11 +1,9 @@
+import { ADD_ONS, PACKAGES } from '@/lib/catalog';
 import {
   EXTRA_EDIT_PER_IMAGE,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
-  LIGHT_PLAY_FEE,
-  PACKAGE_PRICES,
-  PERSONS_INCLUDED,
 } from '@/lib/constants';
 
 import type { Package, PhotoShootingPricing } from '@/generated/prisma/client';
@@ -30,16 +28,16 @@ export type PricingSnapshot = Omit<
 export function buildPricingSnapshot(
   selectedPackage: Package,
 ): PricingSnapshot {
-  const prices = PACKAGE_PRICES[selectedPackage];
+  const pkg = PACKAGES[selectedPackage];
 
   return {
-    packagePriceInCents: prices.base,
-    packageStudioPriceInCents: prices.studio,
-    packageEditedImagesAllowance: prices.editedImagesAllowance,
+    packagePriceInCents: pkg.basePriceInCents,
+    packageStudioPriceInCents: pkg.studioPriceInCents,
+    packageEditedImagesAllowance: pkg.editedImagesAllowance,
 
-    lightPlayPriceInCents: LIGHT_PLAY_FEE,
+    lightPlayPriceInCents: ADD_ONS.LIGHT_PLAY.feeInCents,
 
-    extraPeopleThreshold: PERSONS_INCLUDED,
+    extraPeopleThreshold: pkg.personsIncluded,
     extraPeopleRateInCents: EXTRA_FEE_PER_EXTRA_PERSON,
     extraPetRateInCents: EXTRA_FEE_PER_PET,
 

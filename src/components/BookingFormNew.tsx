@@ -36,12 +36,8 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  LIGHT_PLAY_FEE,
-  MAX_PERSONS,
-  MAX_PETS,
-  PERSONS_INCLUDED,
-} from '@/lib/constants';
+import { ADD_ONS } from '@/lib/catalog';
+import { MAX_PERSONS, MAX_PETS, PERSONS_INCLUDED } from '@/lib/constants';
 import {
   packages,
   photoSets,
@@ -440,7 +436,7 @@ export function BookingFormNew({
                     <FieldDescription className="text-base text-cream-muted">
                       {lightLocked
                         ? 'A csomag része'
-                        : `+${formatMoney(LIGHT_PLAY_FEE)}`}
+                        : `+${formatMoney(ADD_ONS.LIGHT_PLAY.feeInCents)}`}
                     </FieldDescription>
                   </FieldContent>
                   <Checkbox

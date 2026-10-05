@@ -3,13 +3,13 @@
 import { useActionState } from 'react';
 
 import { Package } from '@/generated/prisma/enums';
+import { ADD_ONS } from '@/lib/catalog';
 import {
   APP_URLS,
   DEPOSIT_AMOUNT,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   isLightPlayChargeable,
-  LIGHT_PLAY_FEE,
   PACKAGE_PRICES,
   PERSONS_INCLUDED,
   PRICE_ADJUSTMENT_TYPE_SIGN,
@@ -46,7 +46,9 @@ export function BookingReview({
 
   const shouldShowLight = isLightPlayChargeable(bookingIntent.package);
   const lightFee =
-    shouldShowLight && bookingIntent.isLightPlaySelected ? LIGHT_PLAY_FEE : 0;
+    shouldShowLight && bookingIntent.isLightPlaySelected
+      ? ADD_ONS.LIGHT_PLAY.feeInCents
+      : 0;
 
   const extraHeads = Math.max(
     0,

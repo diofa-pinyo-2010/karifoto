@@ -7,7 +7,7 @@ type AddOnDefinition = {
   feeInCents: number;
 };
 
-const ADD_ONS = {
+export const ADD_ONS = {
   LIGHT_PLAY: { label: 'Fényjáték', feeInCents: 10000_00 },
 } as const satisfies Record<AddOn, AddOnDefinition>;
 
