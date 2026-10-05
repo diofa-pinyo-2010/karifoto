@@ -36,7 +36,7 @@ export async function Booking({
             {[
               'Válaszd ki az időpontod',
               'Töltsd ki rövid űrlapunkat',
-              `Fizesd ki a ${formatAmount(DEPOSIT_AMOUNT, 'HUF')} előleget* egyszerűen, bankkártyával`,
+              `Egyszerűen, bankkártyával fizetheted ki az előleget (${formatAmount(DEPOSIT_AMOUNT, 'HUF')})*`,
             ].map((step, i) => (
               <li key={step} className="flex items-center gap-3 text-xs">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-brand-ink/20 text-[10px]">
