@@ -30,6 +30,7 @@ import {
   booleanToYesNo,
   DECOR_SET_COMBOBOX_ITEMS,
   DECOR_SET_LABEL,
+  PACKAGE_COMBOBOX_ITEMS,
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_LABEL,
   PACKAGE_LABEL,
@@ -141,6 +142,12 @@ export default async function PhotoShootingDetailPage({
    * After balance is collected we don't want to be able
    * to edit the photo shooting details.
    */
+  // A végszámla a csomag árát már tartalmazza, ezért utána a csomag nem cserélhető
+  // (a szerver is ellenőrzi, lásd `updatePhotoShooting`).
+  const hasFinalInvoice = ledgerEntries.some(
+    (entry) => entry.invoice?.type === 'FINAL',
+  );
+
   const readOnlyDetails =
     (shooting.selectionRequestedAt != null &&
       shooting.selectionCompletedAt == null) ||
@@ -291,7 +298,25 @@ export default async function PhotoShootingDetailPage({
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-medium">A fotózás részletei</h3>
         <div className="rounded-lg border bg-card px-4">
-          <DetailRow label="Csomag" value={PACKAGE_LABEL[shooting.package]} />
+          <DetailRow
+            label="Csomag"
+            value={
+              <EditableComboboxField
+                value={{
+                  value: shooting.package,
+                  label: PACKAGE_LABEL[shooting.package],
+                }}
+                items={PACKAGE_COMBOBOX_ITEMS}
+                onSave={updatePhotoShootingField.bind(
+                  null,
+                  shooting.id,
+                  'package',
+                )}
+                disabled={readOnlyDetails || hasFinalInvoice}
+                isClearable={false}
+              />
+            }
+          />
           <DetailRow
             label="Díszlet"
             value={

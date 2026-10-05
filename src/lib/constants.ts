@@ -178,6 +178,10 @@ export const PRICE_ADJUSTMENT_TYPE_LABEL: Record<PriceAdjustmentType, string> =
     DEDUCTION: 'Fizetés eltérés',
   };
 
+export const PACKAGE_COMBOBOX_ITEMS: ComboboxFieldItem[] = Object.entries(
+  PACKAGE_LABEL,
+).map(([value, label]) => ({ value, label }));
+
 export const DECOR_SET_COMBOBOX_ITEMS: ComboboxFieldItem[] = Object.entries(
   DECOR_SET_LABEL,
 ).map(([value, label]) => ({ value, label }));

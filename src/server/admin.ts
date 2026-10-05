@@ -124,6 +124,24 @@ export async function updatePhotoShooting(
       throw new Error(`PhotoShooting ${id} has no pricing record`);
     }
 
+    // A kiállított végszámla már az eddigi csomag árát tartalmazza, az utólagos
+    // csomagcsere csak a számítást írná át, a számlát nem.
+    if (
+      parsed.data.package != null &&
+      parsed.data.package !== current.package
+    ) {
+      const finalInvoice = await prisma.invoice.findFirst({
+        where: { photoShootingId: id, type: 'FINAL' },
+        select: { id: true },
+      });
+      if (finalInvoice != null) {
+        return {
+          error:
+            'A végszámla már kiállításra került, a csomag nem módosítható.',
+        };
+      }
+    }
+
     await prisma.$transaction(async (tx) => {
       let effectivePricing = currentPricing;
 
