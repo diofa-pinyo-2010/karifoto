@@ -2,127 +2,13 @@
 
 import { Photo } from 'react-photo-album';
 
-import { PACKAGE_PRICES } from '@/lib/constants';
 import { decorSetGalleries, gallery } from '@/lib/fetch-photos';
-import { formatMoney } from '@/lib/utils';
 import alomkastelyDiszlet from '@/photos/alomkastely-diszlet.jpg';
 import fenyjatek1 from '@/photos/fenyjatek-gallery-1.jpg';
 import hofeherDiszlet from '@/photos/hofeher-diszlet.jpg';
 
-export type Feature = { text: string; ok: boolean; note?: string };
-
-export type PackageKey = 'mini' | 'classic' | 'family';
-
-export type Package = {
-  id: PackageKey;
-  name: string;
-  sub: string;
-  price: string;
-  priceHuf: number;
-  studioFee: string;
-  studioFeeHuf: number;
-  /** Vizuálisan kiemelt csomag (keret + badge). Statikus, nem a user választása. */
-  highlighted?: boolean;
-  features: Feature[];
-  footnotes: string[];
-};
-
 /** A `highlighted: true` csomag badge-e. */
 export const PACKAGE_HIGHLIGHT_BADGE = 'Népszerű';
-
-export const packages: Package[] = [
-  {
-    id: 'mini',
-    name: 'Mini',
-    sub: '30 perc · egy választható díszlet',
-    price: `${formatMoney(PACKAGE_PRICES.MINI.base)}`,
-    priceHuf: PACKAGE_PRICES.MINI.base,
-    studioFee: `+${formatMoney(PACKAGE_PRICES.MINI.studio)} stúdió bérlet`,
-    studioFeeHuf: PACKAGE_PRICES.MINI.studio,
-    features: [
-      { text: '30 perces fotózás', ok: true },
-      {
-        text: 'Meghitt karácsonyi fotós díszlet, kreatív kellékek, professzionális világítás',
-        ok: true,
-      },
-      {
-        text: 'Legalább 100 db felhőből letölthető fotó',
-        ok: true,
-        note: 'a nyers képeket is átadjuk',
-      },
-      {
-        text: `${PACKAGE_PRICES['MINI'].editedImagesAllowance} db szerkesztett kép*`,
-        ok: true,
-      },
-      { text: 'Választható díszlet', ok: true },
-      { text: 'Átöltözés', ok: false },
-      { text: 'Fényjátékos képek', ok: false },
-    ],
-    footnotes: ['* további szerkesztett képeket lehet kérni fotózás után'],
-  },
-  {
-    id: 'classic',
-    name: 'Classic',
-    sub: '40 perc · két díszlet',
-    price: `${formatMoney(PACKAGE_PRICES.CLASSIC.base)}`,
-    priceHuf: PACKAGE_PRICES.CLASSIC.base,
-    studioFee: `+${formatMoney(PACKAGE_PRICES.CLASSIC.studio)} stúdió bérlet`,
-    studioFeeHuf: PACKAGE_PRICES.CLASSIC.studio,
-    highlighted: true,
-    features: [
-      { text: '40 perces fotózás', ok: true },
-      {
-        text: 'Meghitt karácsonyi fotós díszlet, kreatív kellékek, professzionális világítás',
-        ok: true,
-      },
-      {
-        text: 'Legalább 150 db felhőből letölthető fotó',
-        ok: true,
-        note: 'a nyers képeket is átadjuk',
-      },
-      {
-        text: `${PACKAGE_PRICES['CLASSIC'].editedImagesAllowance} db szerkesztett kép*`,
-        ok: true,
-      },
-      { text: 'Fotózás két díszlettel', ok: true },
-      { text: 'Átöltözés', ok: true },
-      { text: 'Fényjátékos képek', ok: false },
-    ],
-    footnotes: ['* további szerkesztett képeket lehet kérni fotózás után'],
-  },
-  {
-    id: 'family',
-    name: 'Family',
-    sub: '50 perc · két díszlet, fényjáték',
-    price: `${formatMoney(PACKAGE_PRICES.FAMILY.base)}`,
-    priceHuf: PACKAGE_PRICES.FAMILY.base,
-    studioFee: `+${formatMoney(PACKAGE_PRICES.FAMILY.studio)} Ft stúdió bérlet`,
-    studioFeeHuf: PACKAGE_PRICES.FAMILY.studio,
-    features: [
-      { text: '50 perces fotózás', ok: true },
-      {
-        text: 'Meghitt karácsonyi fotós díszlet, kreatív kellékek, professzionális világítás',
-        ok: true,
-      },
-      {
-        text: 'Legalább 200 db felhőből letölthető fotó',
-        ok: true,
-        note: 'a nyers képeket is átadjuk',
-      },
-      {
-        text: `${PACKAGE_PRICES['FAMILY'].editedImagesAllowance} db szerkesztett kép*`,
-        ok: true,
-      },
-      { text: 'Fotózás két díszlettel', ok: true },
-      { text: 'Átöltözés', ok: true },
-      { text: 'Fényjátékos képek**', ok: true },
-    ],
-    footnotes: [
-      '* további szerkesztett képeket lehet kérni fotózás után',
-      '** otthonos, sötétebb stílusú képek',
-    ],
-  },
-];
 
 export const reviews = [
   {

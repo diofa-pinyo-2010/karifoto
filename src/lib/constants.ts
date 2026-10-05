@@ -91,24 +91,6 @@ export const EXPRESS_AFTERWORK_FEE = 10000_00;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;
 
-export const PACKAGE_PRICES = {
-  MINI: {
-    base: 39000_00,
-    studio: 6000_00,
-    editedImagesAllowance: 10,
-  },
-  CLASSIC: {
-    base: 49000_00,
-    studio: 9000_00,
-    editedImagesAllowance: 15,
-  },
-  FAMILY: {
-    base: 59000_00,
-    studio: 12000_00,
-    editedImagesAllowance: 20,
-  },
-};
-
 // LedgerEntry.amountInCents is signed: positive = income, negative = expense.
 // Callers pass a positive raw amount; this maps it to the correct sign.
 export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {

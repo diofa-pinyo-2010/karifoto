@@ -43,7 +43,6 @@ import {
   INVOICE_STATUS_LABEL,
   isStatusBefore,
   PACKAGE_LABEL,
-  PACKAGE_PRICES,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
@@ -447,7 +446,7 @@ function ClientImageSelection({
     );
   }
 
-  const allowance = PACKAGE_PRICES[shootingPackage].editedImagesAllowance;
+  const allowance = PACKAGES[shootingPackage].editedImagesAllowance;
 
   return (
     <div className="flex flex-col gap-6">
