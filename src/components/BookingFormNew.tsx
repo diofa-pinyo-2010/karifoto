@@ -98,6 +98,16 @@ const bookingFormSchema = z
     optOutFromMarketingEmails: z.boolean(),
   })
   .superRefine((values, ctx) => {
+    if (
+      values.packageKey != null &&
+      values.numberOfPeople > PACKAGES[values.packageKey].maxGuests
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['numberOfPeople'],
+        message: `Legfeljebb ${PACKAGES[values.packageKey].maxGuests} fő.`,
+      });
+    }
     if (values.packageKey == null) {
       ctx.addIssue({
         code: 'custom',
@@ -466,7 +476,11 @@ export function BookingFormNew({
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   min={0}
-                  max={MAX_PERSONS}
+                  max={
+                    packageKey != null
+                      ? PACKAGES[packageKey].maxGuests
+                      : MAX_PERSONS
+                  }
                   display={missingPeople ? '–' : String(field.value)}
                   unit="fő"
                   ariaLabel="Hányan jönnétek"

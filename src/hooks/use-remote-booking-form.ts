@@ -6,7 +6,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 import { DecorSet, Package } from '@/generated/prisma/enums';
-import { packageIncludesAddOn, requiresDecorChoice } from '@/lib/catalog';
+import {
+  PACKAGES,
+  packageIncludesAddOn,
+  requiresDecorChoice,
+} from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 
 const NOTE_MAX_LENGTH = 500;
@@ -25,6 +29,16 @@ const remoteBookingSchema = z
     optOutFromMarketingEmails: z.boolean(),
   })
   .superRefine((values, ctx) => {
+    if (
+      values.packageKey != null &&
+      values.numberOfPeople > PACKAGES[values.packageKey].maxGuests
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['numberOfPeople'],
+        message: `Legfeljebb ${PACKAGES[values.packageKey].maxGuests} fő.`,
+      });
+    }
     if (values.packageKey == null) {
       ctx.addIssue({
         code: 'custom',
@@ -72,5 +86,5 @@ export function useRemoteBookingForm() {
   const lightLocked =
     packageKey != null && packageIncludesAddOn(packageKey, 'LIGHT_PLAY');
 
-  return { form, isSingleDecorPackage, lightLocked };
+  return { form, packageKey, isSingleDecorPackage, lightLocked };
 }

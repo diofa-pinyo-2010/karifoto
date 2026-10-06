@@ -6,6 +6,7 @@ import * as z from 'zod';
 
 import { env } from '@/env';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { PACKAGES } from '@/lib/catalog';
 import { DEPOSIT_AMOUNT, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
@@ -61,6 +62,10 @@ export async function createCheckoutSession(
     return {
       error: 'Ez a foglalás nem elérhető. Kezdd újra a foglalást a főoldalról.',
     };
+  }
+
+  if (numberOfGuests > PACKAGES[bookingIntent.package].maxGuests) {
+    return { error: 'Túl sok vendég ehhez a csomaghoz.' };
   }
 
   // `timeSlot` is null if the slot was deleted while this intent was pending.

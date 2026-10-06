@@ -31,7 +31,7 @@ import {
   useRemoteBookingForm,
   type RemoteBookingFormValues,
 } from '@/hooks/use-remote-booking-form';
-import { ALL_DECOR_SETS, ALL_PACKAGES } from '@/lib/catalog';
+import { ALL_DECOR_SETS, ALL_PACKAGES, PACKAGES } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { createRemoteBookingIntent } from '@/server/remote-booking';
@@ -40,7 +40,8 @@ const NOTE_MAX_LENGTH = 500;
 const DEFAULT_TIME = '09:00';
 
 export function RemoteBookingForm() {
-  const { form, isSingleDecorPackage, lightLocked } = useRemoteBookingForm();
+  const { form, packageKey, isSingleDecorPackage, lightLocked } =
+    useRemoteBookingForm();
   const [time, setTime] = useState(DEFAULT_TIME);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -271,7 +272,11 @@ export function RemoteBookingForm() {
                 type="number"
                 inputMode="numeric"
                 min={1}
-                max={MAX_PERSONS}
+                max={
+                  packageKey != null
+                    ? PACKAGES[packageKey].maxGuests
+                    : MAX_PERSONS
+                }
                 value={field.value}
                 onChange={(event) => field.onChange(event.target.valueAsNumber)}
                 onBlur={field.onBlur}

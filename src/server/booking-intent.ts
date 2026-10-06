@@ -1,12 +1,7 @@
 'use server';
 
 import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
-import {
-  EARLY_BIRD_DATE_DEADLINE,
-  MAX_PERSONS,
-  MAX_PETS,
-  UUID_RE,
-} from '@/lib/constants';
+import { EARLY_BIRD_DATE_DEADLINE, MAX_PETS, UUID_RE } from '@/lib/constants';
 import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
 
@@ -60,7 +55,7 @@ export async function createBookingIntent(
   if (
     !Number.isInteger(input.numberOfGuests) ||
     input.numberOfGuests < 1 ||
-    input.numberOfGuests > MAX_PERSONS
+    input.numberOfGuests > PACKAGES[input.packageKey].maxGuests
   ) {
     return { error: 'Add meg, hányan jöttök (legalább 1 fő).' };
   }

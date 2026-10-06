@@ -22,8 +22,10 @@ export function SendDepositRequestButton({
   const [pending, startTransition] = useTransition();
 
   function handleClick() {
+    console.log('handleclick....');
     setError(null);
     startTransition(async () => {
+      console.log('startTransition....');
       const result = await sendDepositRequest(bookingIntentId);
       if ('error' in result) {
         setError(result.error);
