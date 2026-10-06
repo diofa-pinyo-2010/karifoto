@@ -1,10 +1,14 @@
 'use server';
 
 import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
-import { MAX_PERSONS, MAX_PETS, UUID_RE } from '@/lib/constants';
+import {
+  EARLY_BIRD_DATE_DEADLINE,
+  MAX_PERSONS,
+  MAX_PETS,
+  UUID_RE,
+} from '@/lib/constants';
 import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
-import { getSiteSettings } from '@/lib/queries';
 
 import type { DecorSet, Package } from '@/generated/prisma/client';
 
@@ -102,12 +106,17 @@ export async function createBookingIntent(
         requestedStartTime: timeSlot.startTime,
         optOutFromMarketingEmails: input.optOutFromMarketingEmails,
       },
-      select: { id: true },
+      select: { id: true, timeSlot: { select: { startTime: true } } },
     });
 
     try {
-      const { automaticEarlyBirdEnabled } = await getSiteSettings();
-      if (automaticEarlyBirdEnabled) {
+      if (intent.timeSlot?.startTime == null) {
+        return {
+          error: `Nem találtunk TimeSlot-ot a Booking Intenthez: ${intent.id}`,
+        };
+      }
+
+      if (intent.timeSlot.startTime <= new Date(EARLY_BIRD_DATE_DEADLINE)) {
         const res = await attachEarlyBirdDiscount(intent.id);
         if ('error' in res) {
           console.error(res.error);

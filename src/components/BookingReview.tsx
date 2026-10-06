@@ -135,7 +135,7 @@ export function BookingReview({
               fennmaradó összeget a fotózáskor készpénzben, vagy kártyával
               tudjátok rendezni.
             </span>
-            <p className="mt-2 text-sm">
+            <p className="mt-2 text-xs">
               Betegség esetén felár nélkül találunk Nektek másik időpontot
               &#9825;
             </p>

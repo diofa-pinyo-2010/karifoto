@@ -1,11 +1,10 @@
 import { BookingTable } from '@/components/BookingTable';
 import { EarlyBirdNote } from '@/components/EarlyBirdNote';
 import { DEPOSIT_AMOUNT } from '@/lib/constants';
-import { fetchEarlyBirdTimeSlotsPublic, getSiteSettings } from '@/lib/queries';
+import { fetchEarlyBirdTimeSlotsPublic } from '@/lib/queries';
 import { formatMoney, groupByDay } from '@/lib/utils';
 
 export async function BookingEarlyBird() {
-  const { automaticEarlyBirdEnabled } = await getSiteSettings();
   const earlyBirdTimeSlots = await fetchEarlyBirdTimeSlotsPublic();
 
   const groupedSlots = groupByDay(earlyBirdTimeSlots, (slot) => slot.startTime);
@@ -45,14 +44,10 @@ export async function BookingEarlyBird() {
           <p className="mt-2 text-xs text-brand-muted">
             *Betegség esetén találunk nektek másik időpontot.
           </p>
-          {automaticEarlyBirdEnabled && <EarlyBirdNote />}
+          <EarlyBirdNote />
         </div>
         <BookingTable
-          label={
-            automaticEarlyBirdEnabled
-              ? 'Early Bird időpontok'
-              : 'Szabad időpontok'
-          }
+          label="Early Bird időpontok"
           groupedTimeSlots={nextSixDays}
           showBookingSelection
         />
