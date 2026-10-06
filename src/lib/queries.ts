@@ -170,7 +170,6 @@ const photoShootingForClientPortalSelect = {
         invoiceNumber: true,
         publicUrl: true,
         amountInCents: true,
-        currency: true,
         status: true,
       },
       orderBy: { invoiceNumber: 'asc' },

@@ -253,7 +253,6 @@ export const POST = verifySignatureAppRouter(
              */
             amountInCents: ledgerEntry.amountInCents,
             invoiceNumber: invoice.invoiceNumber,
-            paymentMethod: ledgerEntry.method,
             photoShooting: { connect: { id: shootingId } },
             publicUrl: invoice.publicUrl,
             status: 'SETTLED',

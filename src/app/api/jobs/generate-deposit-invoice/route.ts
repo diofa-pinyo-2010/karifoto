@@ -159,7 +159,6 @@ export const POST = verifySignatureAppRouter(
             invoiceNumber: invoice.invoiceNumber,
             publicUrl: invoice.publicUrl,
             amountInCents: amountTotal ?? 0,
-            paymentMethod: 'CARD',
             photoShooting: { connect: { id: shootingId } },
           },
         });
