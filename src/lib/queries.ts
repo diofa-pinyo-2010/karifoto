@@ -57,7 +57,12 @@ export async function fetchAllPhotoShootings({
     where: search
       ? {
           client: {
-            owner: { email: { contains: search, mode: 'insensitive' } },
+            owner: {
+              OR: [
+                { email: { contains: search, mode: 'insensitive' } },
+                { name: { contains: search, mode: 'insensitive' } },
+              ],
+            },
           },
         }
       : undefined,

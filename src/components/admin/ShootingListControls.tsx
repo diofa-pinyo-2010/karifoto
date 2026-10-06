@@ -76,8 +76,8 @@ export function ShootingListControls({
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Keresés e-mail cím alapján"
-          aria-label="Keresés e-mail cím alapján"
+          placeholder="Keresés név vagy e-mail cím alapján"
+          aria-label="Keresés név vagy e-mail cím alapján"
         />
       </InputGroup>
       <div className="flex justify-end">

@@ -61,7 +61,7 @@ export default async function AllPhotoShootingsPage({
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
                     href={APP_URLS.photoShootingAdminPage(shooting.id)}
-                    className="font-semibold underline-offset-4 hover:underline"
+                    className="font-semibold underline underline-offset-4 hover:no-underline"
                   >
                     {formatSlotDateTime(shooting.timeSlot.startTime)}
                   </Link>
@@ -78,7 +78,7 @@ export default async function AllPhotoShootingsPage({
                   {owner.name} •{' '}
                   <a
                     href={`tel:${owner.phoneNumber}`}
-                    className="underline-offset-4 hover:underline"
+                    className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
                   >
                     {owner.phoneNumber}
                   </a>
