@@ -38,7 +38,7 @@ export default async function SettingsPage() {
           }
         />
         <DetailRow
-          label="Automatikus Early Bird"
+          label="Automatikus Early Bird (nem ez alapján történik)"
           value={
             <AutomaticEarlyBirdSwitch
               initial={automaticEarlyBirdEnabled}

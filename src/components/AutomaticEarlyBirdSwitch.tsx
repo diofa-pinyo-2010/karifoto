@@ -37,7 +37,8 @@ export function AutomaticEarlyBirdSwitch({
       id={id}
       checked={optimistic}
       onCheckedChange={(checked) => toggle(checked)}
-      disabled={isPending}
+      // temporarily disabled
+      disabled={isPending || true}
     />
   );
 }
