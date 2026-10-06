@@ -9,7 +9,7 @@ import { Location } from '@/components/Location';
 import { MobileBookingBar } from '@/components/MobileBookingBar';
 import { Pricing } from '@/components/Pricing';
 import { Reviews } from '@/components/Reviews';
-import { Sets2 } from '@/components/Sets2';
+import { Sets } from '@/components/Sets';
 import { Video } from '@/components/Video';
 import { getSession } from '@/lib/dal';
 import { fetchTimeSlotsPublic } from '@/lib/queries';
@@ -37,7 +37,7 @@ export default async function Home() {
       */}
       <main id="tartalom">
         <Hero />
-        <Sets2 />
+        <Sets />
         <Reviews />
         <Pricing />
         <Video />

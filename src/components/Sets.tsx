@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 
 type DecorSetSectionData = (typeof decorSetSections)[number];
 
-export function Sets2() {
+export function Sets() {
   const { light, toggleLight } = useBookingSelection();
 
   return (
