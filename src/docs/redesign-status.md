@@ -53,10 +53,7 @@ before they can be restyled — that is a design task, not an implementation one
 
 ### 2. `/coming-soon`
 
-21 old-palette hits. Still served at `/` whenever `COMING_SOON_ENABLED` is on,
-so it is the first thing a visitor sees until launch. See
-[COMING_SOON_TEARDOWN.md](../COMING_SOON_TEARDOWN.md) — if that gate is being
-removed at launch anyway, this page may simply be deleted rather than restyled.
+Deleted at launch together with the coming-soon gate; nothing to restyle.
 
 ### 3. Admin
 
@@ -113,8 +110,8 @@ search results; it does not keep them from customers.
 - **`PhotoGallery` still imports `ui/carousel` and `ui/dialog`** — the last
   public components depending on shadcn wrappers. See the Base UI convention
   below.
-- **`Wordmark.tsx`** defaults to `text-gold` and is now only used by
-  `/coming-soon`.
+- **`Wordmark.tsx`** defaults to `text-gold` and is no longer used
+  anywhere (its only user, `/coming-soon`, was deleted).
 - **`Booking.tsx` lines 55+** are a large commented-out form (46 old-palette
   hits). Dead code; delete or revive deliberately.
 - **`Experience.tsx`** exists in the skeleton but is intentionally unused — the
