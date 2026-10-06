@@ -11,6 +11,7 @@ import {
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
 
 const photoShootingWithClientInclude = {
   include: {
@@ -39,6 +40,28 @@ export async function fetchUpcomingPhotoShootings(): Promise<
     },
     take: UPCOMING_SHOOTINGS_TO_SHOW,
     orderBy: { timeSlot: { startTime: 'asc' } },
+    ...photoShootingWithClientInclude,
+  });
+}
+
+export async function fetchAllPhotoShootings({
+  search,
+  order,
+}: {
+  search: string;
+  order: ShootingOrder;
+}): Promise<PhotoShootingWithClient[]> {
+  await verifySession();
+
+  return prisma.photoShooting.findMany({
+    where: search
+      ? {
+          client: {
+            owner: { email: { contains: search, mode: 'insensitive' } },
+          },
+        }
+      : undefined,
+    orderBy: SHOOTING_ORDER_BY[order],
     ...photoShootingWithClientInclude,
   });
 }
