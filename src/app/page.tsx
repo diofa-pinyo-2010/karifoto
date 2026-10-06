@@ -1,4 +1,5 @@
-import { Booking } from '@/components/Booking';
+import { BookingEarlyBird } from '@/components/BookingEarlyBird';
+import { BookingNormal } from '@/components/BookingNormal';
 import { BookingSelectionProvider } from '@/components/BookingSelectionProvider';
 import { Faq } from '@/components/Faq';
 import { FloatingAdminButton } from '@/components/FloatingAdminButton';
@@ -12,17 +13,11 @@ import { Reviews } from '@/components/Reviews';
 import { Sets } from '@/components/Sets';
 import { Video } from '@/components/Video';
 import { getSession } from '@/lib/dal';
-import { fetchTimeSlotsPublic } from '@/lib/queries';
-import { groupByDay } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const [session, availableTimeSlots] = await Promise.all([
-    getSession(),
-    fetchTimeSlotsPublic(),
-  ]);
-  const groups = groupByDay(availableTimeSlots, (slot) => slot.startTime);
+  const session = await getSession();
 
   return (
     <BookingSelectionProvider>
@@ -41,7 +36,8 @@ export default async function Home() {
         <Reviews />
         <Pricing />
         <Video />
-        <Booking groupedTimeSlots={groups} />
+        <BookingEarlyBird />
+        <BookingNormal />
         <Faq />
         <Location />
       </main>

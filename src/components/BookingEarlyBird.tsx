@@ -1,19 +1,15 @@
-import { BookingSelectionNote } from '@/components/BookingSelectionNote';
+import { BookingTable } from '@/components/BookingTable';
 import { EarlyBirdNote } from '@/components/EarlyBirdNote';
-import { TimeSlotAccordion } from '@/components/TimeSlotAccordion';
 import { DEPOSIT_AMOUNT } from '@/lib/constants';
-import { getSiteSettings } from '@/lib/queries';
-import { formatMoney } from '@/lib/utils';
+import { fetchEarlyBirdTimeSlotsPublic, getSiteSettings } from '@/lib/queries';
+import { formatMoney, groupByDay } from '@/lib/utils';
 
-import type { TimeSlotPublic } from '@/lib/queries';
-import type { GroupedSlots } from '@/lib/utils';
-
-export async function Booking({
-  groupedTimeSlots,
-}: {
-  groupedTimeSlots: GroupedSlots<TimeSlotPublic>;
-}) {
+export async function BookingEarlyBird() {
   const { automaticEarlyBirdEnabled } = await getSiteSettings();
+  const earlyBirdTimeSlots = await fetchEarlyBirdTimeSlotsPublic();
+
+  const groupedSlots = groupByDay(earlyBirdTimeSlots, (slot) => slot.startTime);
+  const nextSixDays = new Map([...groupedSlots].slice(0, 6));
 
   return (
     <section
@@ -32,9 +28,6 @@ export async function Booking({
             TODO: Nálunk nem kell emailt írogatni, kurva egyszerű foglalni,
             stb...
           </p> */}
-
-          {/* A lépések csak desktopon jelennek meg: mobilon a panel közvetlenül
-              a szöveg alá kerül, ott a felsorolás csak távolabb tolná. */}
           <ol className="mt-7 space-y-3 lg:block">
             {[
               'Válaszd ki az időpontod',
@@ -54,24 +47,15 @@ export async function Booking({
           </p>
           {automaticEarlyBirdEnabled && <EarlyBirdNote />}
         </div>
-
-        <div className="self-start overflow-hidden rounded-xl border border-[#cbd2c4] bg-brand-paper shadow-[0_12px_50px_#2a493408]">
-          <div className="flex items-center justify-between gap-3 bg-brand-ink px-5 py-5 text-brand-cream">
-            <span className="font-display text-2xl">
-              {automaticEarlyBirdEnabled
-                ? 'Early Bird időpontok:'
-                : 'Szabad időpontok'}
-            </span>
-            <span className="text-xs text-brand-champagne">2026</span>
-          </div>
-          <BookingSelectionNote />
-          <div className="px-5">
-            <TimeSlotAccordion groupedTimeSlots={groupedTimeSlots} />
-          </div>
-          <p className="px-5 py-4 text-[10px] leading-5 text-brand-muted">
-            Az időpontokra kattintva tudod folytatni a foglalást.
-          </p>
-        </div>
+        <BookingTable
+          label={
+            automaticEarlyBirdEnabled
+              ? 'Early Bird időpontok'
+              : 'Szabad időpontok'
+          }
+          groupedTimeSlots={nextSixDays}
+          showBookingSelection
+        />
       </div>
     </section>
   );

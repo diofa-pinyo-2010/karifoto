@@ -22,6 +22,8 @@ export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
 
+export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
+
 /**
  * A stúdió Google-térkép beágyazása, a fenti címből származtatva — így egy
  * forrásból jön a cím és a térkép pin.

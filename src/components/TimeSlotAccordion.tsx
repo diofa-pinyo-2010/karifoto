@@ -54,7 +54,7 @@ export function TimeSlotAccordion({
         <AccordionPrimitive.Item
           key={dayKey}
           value={dayKey}
-          className="border-b border-brand-ink/15"
+          className="border-b border-brand-ink/15 last:border-b-0"
         >
           <AccordionPrimitive.Header className="flex">
             <AccordionPrimitive.Trigger className="group flex min-h-16 flex-1 items-center justify-between gap-2 py-4 text-left text-[11px] font-semibold tracking-wide focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
@@ -68,7 +68,7 @@ export function TimeSlotAccordion({
               </span>
             </AccordionPrimitive.Trigger>
           </AccordionPrimitive.Header>
-          <AccordionPrimitive.Panel className="h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+          <AccordionPrimitive.Panel className="h-(--accordion-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
             <div>
               {/* Két oszlop `sm`-től: a panel `lg`-n a rács fele, de ott is elég
                   széles két idősávhoz. */}
