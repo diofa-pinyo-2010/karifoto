@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
+  EARLY_BIRD_DATE_DEADLINE,
   SITE_SETTINGS_TABLE_ID,
   UPCOMING_SHOOTINGS_TO_SHOW,
   UUID_RE,
@@ -66,7 +67,17 @@ export async function getTimeSlot(id: string) {
 
 export async function fetchTimeSlotsPublic() {
   return prisma.timeSlot.findMany({
-    where: { startTime: { gte: new Date() } },
+    where: { startTime: { gte: new Date(EARLY_BIRD_DATE_DEADLINE) } },
+    ...timeSlotsPublicSelect,
+    orderBy: { startTime: 'asc' },
+  });
+}
+
+export async function fetchEarlyBirdTimeSlotsPublic() {
+  return prisma.timeSlot.findMany({
+    where: {
+      startTime: { gte: new Date(), lt: new Date(EARLY_BIRD_DATE_DEADLINE) },
+    },
     ...timeSlotsPublicSelect,
     orderBy: { startTime: 'asc' },
   });
