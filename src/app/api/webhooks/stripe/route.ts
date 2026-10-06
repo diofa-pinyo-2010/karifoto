@@ -12,8 +12,10 @@ import { parseCheckoutMetadata } from '@/lib/checkout-metadata';
 import {
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_SIGN,
+  PACKAGE_LABEL,
 } from '@/lib/constants';
 import { sendDiscordNotification } from '@/lib/discord';
+import { formatSlotDateTime } from '@/lib/formatters';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
@@ -469,6 +471,20 @@ async function handleBookingDeposit(
         throw err;
       }
     }
+  }
+
+  // Only for a freshly created shooting — a webhook retry finds it existing.
+  if (existingShooting == null) {
+    await sendDiscordNotification({
+      type: 'info',
+      content: [
+        '🎉 **Új foglalás érkezett!**\n',
+        `Név: ${bookingIntent.name}`,
+        `Csomag: ${PACKAGE_LABEL[selectedPackage]}`,
+        `Időpont: ${formatSlotDateTime(shooting.timeSlot.startTime)}`,
+        `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${shooting.id})`,
+      ].join('\n'),
+    });
   }
 
   // Publish email sending and invoice generation, and Google Event Creation to QStash
