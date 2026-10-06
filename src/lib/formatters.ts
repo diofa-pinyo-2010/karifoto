@@ -73,3 +73,13 @@ export const dateWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
   month: 'short',
   day: 'numeric',
 });
+
+// 2026. dec. 10. 14:30
+export const dateTimeWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
+  timeZone: STUDIO_TZ,
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+});

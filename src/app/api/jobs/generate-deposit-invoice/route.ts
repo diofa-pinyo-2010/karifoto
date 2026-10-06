@@ -195,7 +195,7 @@ export const POST = verifySignatureAppRouter(
       await sendDiscordNotification({
         type: 'error',
         content: [
-          '**Számla kiállítva a szamlazz.hu-n, de nem sikerült elmenteni a DB-be!**\n',
+          '**Előlegszámla kiállítva a szamlazz.hu-n, de nem sikerült elmenteni a DB-be!**\n',
           `Shooting ID: ${shootingId}`,
           `Payment Intent: [${paymentIntent}](${stripePaymentIntentUrl(paymentIntent)})`,
           `Számla: [${invoice.invoiceNumber}](${invoice.publicUrl})`,
