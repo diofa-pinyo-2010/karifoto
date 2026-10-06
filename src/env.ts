@@ -12,9 +12,7 @@ export const env = createEnv({
     // Opcionális: kulcs nélkül is működik, csak alacsonyabb rate limittel.
     JINA_API_KEY: z.string().min(1).optional(),
     CRON_SECRET: z.string().min(1),
-    COMING_SOON_ENABLED: z.stringbool().default(false),
     QSTASH_DEV: z.stringbool().default(false),
-    COMING_SOON_PREVIEW_TOKEN: z.string().min(16).optional(),
     UPSTASH_REDIS_REST_URL: z.string().min(1),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     QSTASH_TOKEN: z.string().min(1),
@@ -43,8 +41,6 @@ export const env = createEnv({
     SZAMLAZZ_API_KEY: process.env.SZAMLAZZ_API_KEY,
     JINA_API_KEY: process.env.JINA_API_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
-    COMING_SOON_ENABLED: process.env.COMING_SOON_ENABLED,
-    COMING_SOON_PREVIEW_TOKEN: process.env.COMING_SOON_PREVIEW_TOKEN,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     QSTASH_TOKEN: process.env.QSTASH_TOKEN,

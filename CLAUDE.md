@@ -77,8 +77,7 @@ Groups: Postgres (`DATABASE_URL` pooled for the app via the `PrismaPg` adapter i
 `prisma7.config.ts`), Stripe, `SUMUP_API_KEY`, `RESEND_API_KEY`,
 `SZAMLAZZ_API_KEY`, Upstash (`QSTASH_*`, `UPSTASH_REDIS_REST_*`), Google service
 account (`GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY` /
-`GOOGLE_CALENDAR_ID`), `DISCORD_WEBHOOK_URL`, `CRON_SECRET`, the coming-soon pair,
-`NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CLARITY_ID`.
+`GOOGLE_CALENDAR_ID`), `DISCORD_WEBHOOK_URL`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CLARITY_ID`.
 
 ## The booking flow
 
@@ -274,13 +273,6 @@ decided but unbuilt across billing, payments and pricing — the invoice wrapper
 végszámla generation, SumUp + `PaymentAttempt`, the `calculateRemainingAmount`
 breakdown, and `PriceAdjustment` surcharges. Read it before starting any of
 those, and keep its open-questions list current.
-
-## Coming-soon gate
-
-`proxy.ts` rewrites `/` to `/coming-soon` when `COMING_SOON_ENABLED` is true, unless
-the request carries the bypass cookie set by `/?preview=<COMING_SOON_PREVIEW_TOKEN>`.
-Removal checklist: [COMING_SOON_TEARDOWN.md](COMING_SOON_TEARDOWN.md) — delete that
-file when done.
 
 ## Migrations
 

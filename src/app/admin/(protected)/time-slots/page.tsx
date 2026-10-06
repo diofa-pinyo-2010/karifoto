@@ -29,6 +29,10 @@ export default async function AdminTimeSlotsPage() {
   const groupedDays = groupByDay(timeSlots, (slot) => slot.startTime);
   const days = Array.from(groupedDays.entries());
 
+  if (days.length === 0) {
+    return <p>Nincsenek timeslot-ok.</p>;
+  }
+
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <div className="flex items-center justify-between gap-4">
