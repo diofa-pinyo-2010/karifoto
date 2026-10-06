@@ -265,9 +265,7 @@ model Invoice {
   invoiceNumber String        @unique
   publicUrl     String
   type          InvoiceType
-  paymentMethod PaymentMethod
   amountInCents Int
-  currency      Currency      @default(HUF)
   status        InvoiceStatus @default(WAITING_FOR_PAYMENT)
   ledgerEntry   LedgerEntry?
 
