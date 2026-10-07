@@ -114,11 +114,14 @@ export async function recordCashBalancePayment(
       url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-final-invoice`,
     });
   } catch (error) {
-    console.error('[balance-payment] failed to queue final invoice job', {
-      error,
-      ledgerEntryId,
-      shootingId,
-    });
+    console.error(
+      '[balance-payment] failed to queue final invoice job (CASH)',
+      {
+        error,
+        ledgerEntryId,
+        shootingId,
+      },
+    );
     await sendDiscordNotification({
       content: [
         '**Készpénz rögzítve, de a végszámla job nem indult el!**\n',

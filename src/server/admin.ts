@@ -15,6 +15,7 @@ import { verifySession } from '@/lib/dal';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { resolveStatus } from '@/server/photo-shooting-status';
+import { syncPhotoShootingStatus } from '@/server/sync-photo-shooting-status';
 
 const photoShootingWithTimeSlotInclude = {
   include: {
@@ -211,5 +212,16 @@ export async function updatePhotoShootingField(
 export async function recalculatePhotoShootingStatus(
   shootingId: string,
 ): Promise<{ error: string } | void> {
-  return updatePhotoShooting(shootingId, {});
+  await verifySession();
+
+  if (!UUID_RE.test(shootingId)) {
+    return { error: 'Érvénytelen PhotoShooting ID.' };
+  }
+
+  try {
+    await syncPhotoShootingStatus(shootingId);
+  } catch (error) {
+    console.error(error);
+    return { error: 'Nem sikerült menteni a módosítást.' };
+  }
 }
