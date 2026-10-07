@@ -28,6 +28,7 @@ export function PackageInfoDialog({ packageKey }: { packageKey: Package }) {
     <ResponsiveDialog
       open={open}
       onOpenChange={setOpen}
+      showCloseButton
       title="Csomag részletei"
       description={`Mit tartalmaz a ${pkg.label} csomag?`}
       trigger={

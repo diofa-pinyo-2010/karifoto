@@ -2,6 +2,7 @@
 
 import type { ReactElement, ReactNode } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,8 +13,10 @@ import {
 } from '@/components/ui/dialog';
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -26,6 +29,7 @@ export function ResponsiveDialog({
   trigger,
   title,
   description,
+  showCloseButton = false,
   children,
 }: {
   open: boolean;
@@ -33,6 +37,7 @@ export function ResponsiveDialog({
   trigger: ReactElement;
   title: string;
   description?: string;
+  showCloseButton?: boolean;
   children: ReactNode;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -64,7 +69,16 @@ export function ResponsiveDialog({
             <DrawerDescription>{description}</DrawerDescription>
           )}
         </DrawerHeader>
-        <div className="p-4 pt-0 mt-4">{children}</div>
+        <div className="mt-4 p-4 pt-0">{children}</div>
+        {showCloseButton && (
+          <DrawerFooter>
+            <DrawerClose
+              render={<Button variant="brand" size="lg" className="w-full" />}
+            >
+              Bezárás
+            </DrawerClose>
+          </DrawerFooter>
+        )}
       </DrawerContent>
     </Drawer>
   );
