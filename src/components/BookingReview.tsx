@@ -187,7 +187,7 @@ export function BookingReview({
                 : 'bg-brand-champagne shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-brand-champagne-hover'
             }`}
           >
-            {isPending ? 'Átirányítás…' : 'Tovább →'}
+            {isPending ? 'Átirányítás…' : 'Tovább a fizetéshez →'}
           </button>
         </div>
         {state?.error && (

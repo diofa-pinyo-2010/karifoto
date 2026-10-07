@@ -649,7 +649,7 @@ export function BookingFormNew({
                 : 'bg-brand-champagne shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-brand-champagne-hover'
             }`}
           >
-            {pending ? 'Feldolgozás…' : 'Tovább →'}
+            {pending ? 'Feldolgozás…' : 'Összegzés →'}
           </button>
         </div>
         {form.formState.errors.root != null ? (
