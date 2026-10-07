@@ -164,10 +164,11 @@ model PhotoShooting {
   completedAt DateTime? @db.Timestamptz()
   cancelledAt DateTime? @db.Timestamptz()
 
-  calendarEvent BookingCalendarEvent?
-  pricing       PhotoShootingPricing?
-  adjustments   PriceAdjustment[]
-  sentEmails    SentEmail[]
+  calendarEvent         BookingCalendarEvent?
+  pricing               PhotoShootingPricing?
+  adjustments           PriceAdjustment[]
+  sentEmails            SentEmail[]
+  sumupCheckoutAttempts SumupCheckoutAttempt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -279,6 +280,23 @@ model Invoice {
   advanceInvoice   Invoice? @relation("FinalInvoice", fields: [advanceInvoiceId], references: [id])
   advanceInvoiceId String?  @unique @db.Uuid
   finalInvoice     Invoice? @relation("FinalInvoice")
+
+  @@index([photoShootingId])
+}
+
+model SumupCheckoutAttempt {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status              SumupCheckoutAttemptStatus @default(INITIATED)
+  clientTransactionId String?                    @unique
+  checkoutId          String?
+  failureReason       String?
+  amountInCents       Int
+
+  photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
+  photoShootingId String        @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([photoShootingId])
 }
@@ -452,4 +470,12 @@ enum EmailType {
   REMINDER_ON_THE_DAY
   RESCHEDULE_NOTIFICATION
   IMAGE_SELECTION
+}
+
+enum SumupCheckoutAttemptStatus {
+  INITIATED
+  PENDING
+  SUCCESSFUL
+  CANCELLED
+  FAILED
 }
