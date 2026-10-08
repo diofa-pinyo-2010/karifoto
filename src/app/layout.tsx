@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
+import { GoogleTagManager } from '@next/third-parties/google';
 // A 2026-os arculat kenyérbetűje. Az `index.css` minden subsetet deklarál, de a
 // böngésző csak az `unicode-range`-nek megfelelőt tölti le — magyar szöveghez a
 // latin + latin-ext párost. Szándékosan nem `next/font/local`: a variable
@@ -89,6 +90,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       )}
       suppressHydrationWarning
     >
+      <GoogleTagManager gtmId="GTM-MDZ7PG3Q" />
       <head>
         <InlineScript html={THEME_SCRIPT} />
       </head>
