@@ -1,7 +1,12 @@
 import 'server-only';
 import { cache } from 'react';
 
-import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
+import {
+  BookingIntentStatus,
+  PhotoShootingStatus,
+  Prisma,
+  StaffProfileRole,
+} from '@/generated/prisma/client';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
   EARLY_BIRD_DATE_DEADLINE,
@@ -323,4 +328,54 @@ export async function getBookingIntentPublic(id: string) {
     where: { id },
     ...bookingIntentpublicSelect,
   });
+}
+
+const converted = await prisma.bookingIntent.findMany({
+  where: { status: BookingIntentStatus.CONVERTED },
+  select: { email: true },
+  distinct: ['email'],
+});
+
+const adminLeadSelect = {
+  select: {
+    id: true,
+    createdAt: true,
+    name: true,
+    optOutFromMarketingEmails: true,
+    timeSlot: {
+      select: {
+        startTime: true,
+        revealed: true,
+        photoShooting: { select: { id: true } },
+      },
+    },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+type AdminLead = Prisma.BookingIntentGetPayload<typeof adminLeadSelect>;
+
+export async function getAdminLeads(): Promise<
+  { success: true; leads: AdminLead[] } | { error: string }
+> {
+  const { staffProfile } = await verifySession();
+  if (staffProfile.role !== StaffProfileRole.SUPERADMIN) {
+    return { error: 'Nincs jogosultságod ehhez a művelethez.' };
+  }
+
+  const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+  const leads = await prisma.bookingIntent.findMany({
+    where: {
+      status: BookingIntentStatus.PENDING,
+      createdAt: { lt: new Date(Date.now() - THREE_HOURS_MS) },
+      email: {
+        notIn: converted.map((intent) => intent.email),
+        mode: 'insensitive',
+      },
+    },
+    distinct: ['email'],
+    ...adminLeadSelect,
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return { success: true, leads };
 }
