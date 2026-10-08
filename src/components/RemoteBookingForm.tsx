@@ -1,19 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 
+import { StartTimeDrawer } from '@/components/StartTimeDrawer';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import {
   Field,
   FieldError,
@@ -37,12 +28,9 @@ import { shortFullDateFormatter } from '@/lib/formatters';
 import { createRemoteBookingIntent } from '@/server/remote-booking';
 
 const NOTE_MAX_LENGTH = 500;
-const DEFAULT_TIME = '09:00';
 
 export function RemoteBookingForm() {
   const { form, isSingleDecorPackage, lightLocked } = useRemoteBookingForm();
-  const [time, setTime] = useState(DEFAULT_TIME);
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   async function onSubmit(values: RemoteBookingFormValues) {
     const result = await createRemoteBookingIntent({
@@ -69,60 +57,18 @@ export function RemoteBookingForm() {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-                <DialogTrigger
-                  render={<Button type="button" size="lg" variant="outline" />}
-                >
-                  {field.value
-                    ? shortFullDateFormatter.format(field.value)
-                    : 'Válassz időpontot!'}
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Időpont</DialogTitle>
-                  </DialogHeader>
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    defaultMonth={field.value}
-                    onSelect={(date) => {
-                      if (!date) {
-                        field.onChange(undefined);
-                        return;
-                      }
-                      const [hours, minutes] = time.split(':').map(Number);
-                      const merged = new Date(date);
-                      merged.setHours(hours, minutes, 0, 0);
-                      field.onChange(merged);
-                    }}
-                    classNames={{ root: 'w-full' }}
-                  />
-                  <Input
-                    id="remote-booking-time"
-                    type="time"
-                    value={time}
-                    onChange={(event) => {
-                      const nextTime = event.target.value;
-                      setTime(nextTime);
-                      if (!field.value) return;
-                      const [hours, minutes] = nextTime.split(':').map(Number);
-                      const merged = new Date(field.value);
-                      merged.setHours(hours, minutes, 0, 0);
-                      field.onChange(merged);
-                    }}
-                  />
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => setPickerOpen(false)}
-                    >
-                      Kész
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <StartTimeDrawer
+                value={field.value}
+                confirmLabel="Kész"
+                onConfirm={field.onChange}
+                trigger={
+                  <Button type="button" size="lg" variant="outline">
+                    {field.value
+                      ? shortFullDateFormatter.format(field.value)
+                      : 'Válassz időpontot!'}
+                  </Button>
+                }
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
