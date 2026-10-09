@@ -90,7 +90,10 @@ export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_AFTERWORK_FEE = 10000_00;
 // TODO: Somehow get these numbers from catalog.ts after adding Party
-export const MAX_PERSONS = 8;
+// Upper bound across all packages; the per-package limit is `maxGuests`.
+export const MAX_PERSONS = Math.max(
+  ...ALL_PACKAGES.map((pkg) => pkg.maxGuests),
+);
 export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;

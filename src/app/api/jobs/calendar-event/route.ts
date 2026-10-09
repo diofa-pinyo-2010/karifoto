@@ -5,6 +5,7 @@ import { env } from '@/env';
 import { APP_URLS } from '@/lib/constants';
 import { createCalendarEvent } from '@/lib/google-calendar';
 import { prisma } from '@/lib/prisma';
+import { getShootingEndTime } from '@/lib/utils';
 
 export const POST = verifySignatureAppRouter(
   async (req: Request) => {
@@ -25,7 +26,7 @@ export const POST = verifySignatureAppRouter(
         id: true,
         clientNote: true,
         package: true,
-        timeSlot: { select: { startTime: true, endTime: true } },
+        timeSlot: { select: { startTime: true } },
         client: {
           select: {
             owner: { select: { email: true, name: true, phoneNumber: true } },
@@ -46,7 +47,7 @@ export const POST = verifySignatureAppRouter(
     }
 
     const startTime = photoShooting.timeSlot.startTime;
-    const endTime = photoShooting.timeSlot.endTime;
+    const endTime = getShootingEndTime(startTime, photoShooting.package);
 
     try {
       const event = await createCalendarEvent({

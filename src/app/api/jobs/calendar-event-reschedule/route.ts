@@ -4,6 +4,7 @@ import z from 'zod';
 import { env } from '@/env';
 import { rescheduleCalendarEvent } from '@/lib/google-calendar';
 import { prisma } from '@/lib/prisma';
+import { getShootingEndTime } from '@/lib/utils';
 
 // Moves the Google Calendar event to the shooting's *current* time slot, so a
 // retried or out-of-order job still ends up with the right time.
@@ -25,7 +26,7 @@ export const POST = verifySignatureAppRouter(
     const photoShooting = await prisma.photoShooting.findUnique({
       where: { id: shootingId },
       include: {
-        timeSlot: { select: { startTime: true, endTime: true } },
+        timeSlot: { select: { startTime: true } },
         calendarEvent: { select: { id: true, eventId: true } },
       },
     });
@@ -55,7 +56,7 @@ export const POST = verifySignatureAppRouter(
       await rescheduleCalendarEvent({
         eventId: calendarEvent.eventId,
         startTime: timeSlot.startTime,
-        endTime: timeSlot.endTime,
+        endTime: getShootingEndTime(timeSlot.startTime, photoShooting.package),
       });
     } catch (error) {
       const status = (error as { status?: number }).status;

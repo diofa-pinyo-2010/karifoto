@@ -4,9 +4,11 @@ import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
+import { PACKAGES } from '@/lib/catalog';
 import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
 
 import type { LedgerEntry } from '@/generated/prisma/client';
+import type { Package } from '@/generated/prisma/enums';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -82,6 +84,11 @@ export function generateAddToGoogleCalendarLink({
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+// The time slot is always 60 min; the shooting itself lasts as long as its package.
+export function getShootingEndTime(startTime: Date, pkg: Package) {
+  return new Date(startTime.getTime() + PACKAGES[pkg].durationMinutes * 60_000);
 }
 
 // The "add to my calendar" link sent to clients in booking/reschedule emails.
