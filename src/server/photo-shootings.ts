@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
-import { Prisma } from '@/generated/prisma/client';
 import { createClientPortalToken } from '@/lib/auth';
+import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { clientPortalLoginUrl } from '@/lib/client-portal';
 import { APP_URLS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
@@ -17,6 +17,8 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShooting,
 } from '@/server/admin';
+
+import type { Prisma } from '@/generated/prisma/client';
 
 const photoShootingsForDaySelect = {
   select: {
@@ -32,14 +34,27 @@ export type PhotoShootingsForDay = Prisma.PhotoShootingGetPayload<
   typeof photoShootingsForDaySelect
 >;
 
-export async function getPhotoShootingsForDay(
+const pendingBookingIntentsSelect = {
+  select: {
+    id: true,
+    createdAt: true,
+    name: true,
+    timeSlot: { select: { startTime: true } },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+export type PendingBookingIntent = Prisma.BookingIntentGetPayload<
+  typeof pendingBookingIntentsSelect
+>;
+
+export async function getPhotoShootingsAndIntentsForDay(
   date: Date,
   excludeShootingId?: string,
 ) {
   await verifySession();
 
   const { start, end } = dayBounds(date);
-  return prisma.photoShooting.findMany({
+  const shootings = await prisma.photoShooting.findMany({
     where: {
       timeSlot: { startTime: { gte: start, lt: end } },
       id: { not: excludeShootingId },
@@ -47,6 +62,18 @@ export async function getPhotoShootingsForDay(
     ...photoShootingsForDaySelect,
     orderBy: { timeSlot: { startTime: 'asc' } },
   });
+
+  const pendingBookingIntents = await prisma.bookingIntent.findMany({
+    where: {
+      timeSlot: {
+        startTime: { gte: start, lt: end },
+      },
+      ...livePendingIntentWhere(),
+    },
+    ...pendingBookingIntentsSelect,
+  });
+
+  return { shootings, pendingBookingIntents };
 }
 
 export async function changeTimeOfPhotoShooting({

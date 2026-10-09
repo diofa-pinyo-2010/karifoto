@@ -384,6 +384,7 @@ export const APP_URLS = {
   photoShootingAdminPage: (shootingId: string) =>
     `/admin/photo-shootings/${shootingId}`,
   upcomingShootings: '/admin/bookings',
+  allShootings: '/admin/photo-shootings',
 
   // Client portal. The first two are public and meant to be shared; only
   // `clientPortalShootingDetails` is gated. Built here so the confirmation

@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { MinusIcon, PlusIcon } from 'lucide-react';
 import * as z from 'zod';
 
+import { PackageInfoDialog } from '@/components/PackageInfoDialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Field,
@@ -287,6 +288,7 @@ export function BookingFormNew({
                           <span className="text-sm font-normal text-cream-dim">
                             {pkg.durationMinutes} perc
                           </span>
+                          <PackageInfoDialog packageKey={pkg.key} />
                           {/* {pkg.highlighted && (
                             <span className="rounded-full bg-gold/25 px-2 py-0.5 text-[11px] tracking-chip text-ink uppercase">
                               {PACKAGE_HIGHLIGHT_BADGE}
@@ -661,7 +663,7 @@ export function BookingFormNew({
                 : 'bg-brand-champagne shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-brand-champagne-hover'
             }`}
           >
-            {pending ? 'Feldolgozás…' : 'Tovább →'}
+            {pending ? 'Feldolgozás…' : 'Összegzés →'}
           </button>
         </div>
         {form.formState.errors.root != null ? (

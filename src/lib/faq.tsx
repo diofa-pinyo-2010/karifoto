@@ -9,6 +9,7 @@ import {
   EXTRA_FEE_PER_PET,
   EXPRESS_AFTERWORK_FEE,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
+  DEPOSIT_AMOUNT,
 } from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 
@@ -317,8 +318,10 @@ export const faqs: FaqItem[] = [
     q: 'Hogyan történik a fizetés?',
     a: (
       <p>
-        Fizetni a <strong>helyszínen</strong> tudtok,{' '}
-        <strong>csak készpénzzel</strong>.
+        A foglalást <strong>{formatMoney(DEPOSIT_AMOUNT)}</strong> bankkártyás
+        (Stripe) befizetéssel véglegesítitek. A fennmaradó összeget a fotózáskor
+        a helyszínen fizethetitek <strong>készpénzzel</strong> vagy{' '}
+        <strong>bankkártyával</strong>.
       </p>
     ),
   },

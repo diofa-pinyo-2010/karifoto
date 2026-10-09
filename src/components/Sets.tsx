@@ -67,9 +67,9 @@ export function Sets() {
             ))}
           </nav>
           <p className="text-base text-brand-muted lg:mx-auto lg:max-w-2xl lg:text-xl">
-            2026-ban is két csodálatos díszlettel várunk benneteket. Winter
-            wonderland, vagy cosy cocooning a kandalló melegénél? Nézzétek meg
-            korábbi képeinket, és találjátok meg a hozzátok illőt.
+            2026-ban is két csodálatos díszlettel várunk benneteket. Mesés téli
+            varázslat, vagy otthonos meghitt hangulat? Nézzétek meg korábbi
+            képeinket, és találjátok meg a hozzátok illőt.
           </p>
           <ChristmasSeparator />
           <div>
