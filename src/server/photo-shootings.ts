@@ -77,6 +77,8 @@ export async function getPhotoShootingsAndIntentsForDay(
     ...pendingBookingIntentsSelect,
   });
 
+  console.log({ pendingBookingIntents });
+
   return { shootings, pendingBookingIntents };
 }
 
