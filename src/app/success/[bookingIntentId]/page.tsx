@@ -89,8 +89,8 @@ export default async function SuccessPage(
 
             {isConverted && (
               <p className="mx-auto mt-4 max-w-125 text-[13px] leading-[1.6] text-pretty text-brand-muted">
-                A végleges összeget a fotózás napján, a stúdióban fizetitek — a
-                foglaló ebből levonásra kerül.
+                A végleges összeget a fotózás napján, a stúdióban fizetitek — az
+                előleg ebből levonásra kerül.
               </p>
             )}
           </>

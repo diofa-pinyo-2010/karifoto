@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
-import { Prisma } from '@/generated/prisma/client';
+import { BookingIntentStatus, Prisma } from '@/generated/prisma/client';
 import { createClientPortalToken } from '@/lib/auth';
 import { clientPortalLoginUrl } from '@/lib/client-portal';
-import { APP_URLS } from '@/lib/constants';
+import { APP_URLS, PENDING_INTENT_HOLD_HOURS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
@@ -32,14 +32,27 @@ export type PhotoShootingsForDay = Prisma.PhotoShootingGetPayload<
   typeof photoShootingsForDaySelect
 >;
 
-export async function getPhotoShootingsForDay(
+const pendingBookingIntentsSelect = {
+  select: {
+    id: true,
+    createdAt: true,
+    name: true,
+    timeSlot: { select: { startTime: true } },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+export type PendingBookingIntent = Prisma.BookingIntentGetPayload<
+  typeof pendingBookingIntentsSelect
+>;
+
+export async function getPhotoShootingsAndIntentsForDay(
   date: Date,
   excludeShootingId?: string,
 ) {
   await verifySession();
 
   const { start, end } = dayBounds(date);
-  return prisma.photoShooting.findMany({
+  const shootings = await prisma.photoShooting.findMany({
     where: {
       timeSlot: { startTime: { gte: start, lt: end } },
       id: { not: excludeShootingId },
@@ -47,6 +60,24 @@ export async function getPhotoShootingsForDay(
     ...photoShootingsForDaySelect,
     orderBy: { timeSlot: { startTime: 'asc' } },
   });
+
+  const PENDING_INTENT_HOLD_HOURS_MS =
+    PENDING_INTENT_HOLD_HOURS * 60 * 60 * 1000;
+
+  const pendingBookingIntents = await prisma.bookingIntent.findMany({
+    where: {
+      timeSlot: {
+        startTime: { gte: start, lt: end },
+        createdAt: {
+          gt: new Date(Date.now() - PENDING_INTENT_HOLD_HOURS_MS),
+        },
+      },
+      status: BookingIntentStatus.PENDING,
+    },
+    ...pendingBookingIntentsSelect,
+  });
+
+  return { shootings, pendingBookingIntents };
 }
 
 export async function changeTimeOfPhotoShooting({
