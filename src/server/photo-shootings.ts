@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
-import { BookingIntentStatus, Prisma } from '@/generated/prisma/client';
 import { createClientPortalToken } from '@/lib/auth';
+import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { clientPortalLoginUrl } from '@/lib/client-portal';
-import { APP_URLS, PENDING_INTENT_HOLD_HOURS } from '@/lib/constants';
+import { APP_URLS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
@@ -17,6 +17,8 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShooting,
 } from '@/server/admin';
+
+import type { Prisma } from '@/generated/prisma/client';
 
 const photoShootingsForDaySelect = {
   select: {
@@ -61,23 +63,15 @@ export async function getPhotoShootingsAndIntentsForDay(
     orderBy: { timeSlot: { startTime: 'asc' } },
   });
 
-  const PENDING_INTENT_HOLD_HOURS_MS =
-    PENDING_INTENT_HOLD_HOURS * 60 * 60 * 1000;
-
   const pendingBookingIntents = await prisma.bookingIntent.findMany({
     where: {
       timeSlot: {
         startTime: { gte: start, lt: end },
-        createdAt: {
-          gt: new Date(Date.now() - PENDING_INTENT_HOLD_HOURS_MS),
-        },
       },
-      status: BookingIntentStatus.PENDING,
+      ...livePendingIntentWhere(),
     },
     ...pendingBookingIntentsSelect,
   });
-
-  console.log({ pendingBookingIntents });
 
   return { shootings, pendingBookingIntents };
 }
