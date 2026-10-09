@@ -4,7 +4,8 @@ import { useEffect, useState, useTransition } from 'react';
 
 import { fromBudapestDayAndTime, getBudapestDayKey } from '@/lib/utils';
 import {
-  getPhotoShootingsForDay,
+  getPhotoShootingsAndIntentsForDay,
+  PendingBookingIntent,
   type PhotoShootingsForDay,
 } from '@/server/photo-shootings';
 
@@ -15,6 +16,7 @@ export function useShootingsForDay(
   excludeShootingId?: string,
 ) {
   const [shootings, setShootings] = useState<PhotoShootingsForDay[]>();
+  const [intents, setIntents] = useState<PendingBookingIntent[]>();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, startLoading] = useTransition();
   const dayKey = date ? getBudapestDayKey(date) : undefined;
@@ -26,12 +28,14 @@ export function useShootingsForDay(
     startLoading(async () => {
       try {
         // Any instant inside the Budapest day works for `dayBounds` on the server.
-        const data = await getPhotoShootingsForDay(
-          fromBudapestDayAndTime(dayKey, '12:00'),
-          excludeShootingId,
-        );
+        const { shootings: shootingsFromDb, pendingBookingIntents } =
+          await getPhotoShootingsAndIntentsForDay(
+            fromBudapestDayAndTime(dayKey, '12:00'),
+            excludeShootingId,
+          );
         if (ignore) return;
-        setShootings(data);
+        setShootings(shootingsFromDb);
+        setIntents(pendingBookingIntents);
         setError(null);
       } catch (e) {
         console.error(e);
@@ -43,5 +47,5 @@ export function useShootingsForDay(
     };
   }, [dayKey, excludeShootingId]);
 
-  return { shootings, isLoading, error };
+  return { shootings, isLoading, error, intents };
 }

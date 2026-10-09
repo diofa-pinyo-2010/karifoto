@@ -2,9 +2,16 @@
 
 import { useState, useTransition } from 'react';
 
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { BadgeQuestionMarkIcon, Clock2Icon, RotateCcwIcon } from 'lucide-react';
+import { hu } from 'date-fns/locale';
+import {
+  BadgeQuestionMarkIcon,
+  CircleCheckBigIcon,
+  ClipboardClockIcon,
+  Clock2Icon,
+  RotateCcwIcon,
+} from 'lucide-react';
 
 import {
   AlertDialog,
@@ -23,6 +30,7 @@ import { Calendar } from '@/components/ui/calendar';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -44,7 +52,11 @@ import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useShootingsForDay } from '@/hooks/use-shootings-for-day';
-import { PACKAGE_LABEL, STUDIO_TZ } from '@/lib/constants';
+import {
+  PACKAGE_LABEL,
+  PENDING_INTENT_HOLD_HOURS,
+  STUDIO_TZ,
+} from '@/lib/constants';
 import { shortFullDateFormatter, timeInputFormatter } from '@/lib/formatters';
 import { fromBudapestDayAndTime, getBudapestDayKey } from '@/lib/utils';
 
@@ -89,7 +101,7 @@ export function StartTimeDrawer({
   const [month, setMonth] = useState(() => toZonedTime(startTime, STUDIO_TZ));
   const [isSaving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { shootings, isLoading, error } = useShootingsForDay(
+  const { shootings, intents, isLoading, error } = useShootingsForDay(
     isOpen ? startTime : undefined,
     excludeShootingId,
   );
@@ -204,7 +216,12 @@ export function StartTimeDrawer({
           {(shootings || error) && (
             <Card className="mt-3 bg-accent/50">
               <CardHeader>
-                <CardTitle>Fotózások aznap</CardTitle>
+                <CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CircleCheckBigIcon className="size-5 text-primary dark:text-purple-400" />{' '}
+                    Fotózások aznap
+                  </div>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {error && (
@@ -229,6 +246,53 @@ export function StartTimeDrawer({
                         • {PACKAGE_LABEL[shooting.package]}{' '}
                         {shooting.isLightPlaySelected && '+ Fényjáték'} (
                         {shooting.client.owner.name})
+                      </Item>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          {intents && intents.length > 0 && (
+            <Card className="mt-3 bg-accent/50">
+              <CardHeader>
+                <CardTitle>
+                  <div className="flex items-center gap-2">
+                    <ClipboardClockIcon className="size-5 text-brand-muted" />{' '}
+                    Folyamatban levő foglalások
+                  </div>
+                </CardTitle>
+                <CardDescription>
+                  {PENDING_INTENT_HOLD_HOURS} órán belül megkezdett foglalásokat
+                  tartjuk.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {error && (
+                  <p className="mb-2 text-red-700 dark:text-red-400">{error}</p>
+                )}
+                {isLoading && <Spinner />}
+                {!isLoading && !error && intents?.length === 0 && (
+                  <p className="text-muted-foreground">
+                    Nincs még foglalási szándék erre a napra.
+                  </p>
+                )}
+                {!isLoading && intents && intents.length > 0 && (
+                  <div className="flex flex-col gap-1">
+                    {intents.map(({ id, name, createdAt, timeSlot }) => (
+                      <Item
+                        key={id}
+                        variant="outline"
+                        size="xs"
+                        className="bg-background/50 text-xs"
+                      >
+                        {timeInputFormatter.format(timeSlot?.startTime)} •{' '}
+                        {name} (
+                        {formatDistanceToNow(createdAt, {
+                          addSuffix: true,
+                          locale: hu,
+                        })}
+                        )
                       </Item>
                     ))}
                   </div>
