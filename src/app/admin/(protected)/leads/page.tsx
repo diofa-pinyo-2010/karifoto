@@ -59,7 +59,8 @@ export default async function LeadsAdminPage() {
                         <span
                           className={cn(
                             'font-semibold text-green-600 dark:text-green-500',
-                            timeSlotTaken && 'text-brand-muted line-through',
+                            timeSlotTaken &&
+                              'text-brand-muted line-through dark:text-brand-muted',
                           )}
                         >
                           {shortFullDateFormatter.format(timeSlot?.startTime)} (
