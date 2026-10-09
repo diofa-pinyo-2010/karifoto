@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/toast';
 import {
   useRemoteBookingForm,
   type RemoteBookingFormValues,
@@ -45,6 +46,10 @@ export function RemoteBookingForm() {
       clientNote: values.customerNote.trim() || null,
       optOutFromMarketingEmails: values.optOutFromMarketingEmails,
     });
+
+    if (result.error) {
+      toast.add({ type: 'error', title: result.error });
+    }
 
     form.setError('root', { message: result.error });
   }
