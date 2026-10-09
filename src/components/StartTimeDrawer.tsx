@@ -259,7 +259,7 @@ export function StartTimeDrawer({
                 <CardTitle>
                   <div className="flex items-center gap-2">
                     <ClipboardClockIcon className="size-5 text-brand-muted" />{' '}
-                    Folyamatban levő foglalások
+                    Elkezdett foglalások
                   </div>
                 </CardTitle>
                 <CardDescription>
