@@ -24,9 +24,24 @@ const nav = [
  *
  * A panel a fejléchez van horgonyozva (nem a hamburgerhez), így teljes
  * szélességben nyílik, ahogy a látványtervben.
+ *
+ * Horgonylinkre kattintva a fókusz NEM tér vissza a hamburgerre. A Base UI
+ * bezáráskor `focus({ preventScroll: true })`-szal visszaadná a fókuszt, de az
+ * Android Chrome nem ismeri a `preventScroll`-t, így a lap tetején ülő gomb
+ * fókuszálása félúton visszarántotta az oldalt a tetejére. Escape-re és
+ * kívülre kattintásra a visszaadás marad.
  */
 export function Header() {
   const header = useRef<HTMLElement>(null);
+  const navigated = useRef(false);
+  const onNavigate = () => {
+    navigated.current = true;
+  };
+  const finalFocus = () => {
+    const returnFocus = !navigated.current;
+    navigated.current = false;
+    return returnFocus;
+  };
 
   return (
     <header
@@ -93,7 +108,10 @@ export function Header() {
               sideOffset={-6}
               className="z-40 lg:hidden"
             >
-              <Popover.Popup className="w-[calc(100vw-1.5rem)] rounded-xl border border-white/15 bg-[#102c32fa] p-5 text-brand-cream shadow-2xl backdrop-blur-[16px] transition-[opacity,scale] duration-150 ease-out data-ending-style:scale-[.98] data-ending-style:opacity-0 data-starting-style:scale-[.98] data-starting-style:opacity-0">
+              <Popover.Popup
+                finalFocus={finalFocus}
+                className="w-[calc(100vw-1.5rem)] rounded-xl border border-white/15 bg-[#102c32fa] p-5 text-brand-cream shadow-2xl backdrop-blur-[16px] transition-[opacity,scale] duration-150 ease-out data-ending-style:scale-[.98] data-ending-style:opacity-0 data-starting-style:scale-[.98] data-starting-style:opacity-0"
+              >
                 <nav aria-label="Mobil navigáció" className="flex flex-col">
                   {[
                     ...nav,
@@ -104,6 +122,7 @@ export function Header() {
                       // Linkként renderel, nem gombként — a Base UI alapból
                       // natív <button>-t vár, ezt kell kikapcsolni.
                       nativeButton={false}
+                      onClick={onNavigate}
                       className="flex min-h-13 items-center justify-between border-b border-white/10 text-sm"
                       render={
                         <a href={n.href}>
@@ -115,6 +134,7 @@ export function Header() {
                   ))}
                   <Popover.Close
                     nativeButton={false}
+                    onClick={onNavigate}
                     className="mt-3 flex min-h-13 items-center justify-center gap-5 rounded-lg border border-transparent bg-brand-champagne px-6 py-3.5 text-sm font-semibold text-[#152b2e]"
                     render={
                       <a href="#foglalas">
