@@ -13,7 +13,6 @@ declare global {
   interface Window {
     // A layout `CONSENT_DEFAULT_SCRIPT`-je definiálja, még a GTM előtt.
     gtag?: (...args: unknown[]) => void;
-    dataLayer?: unknown[];
   }
 }
 
