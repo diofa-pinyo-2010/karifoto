@@ -13,10 +13,12 @@ declare global {
   interface Window {
     // A layout `CONSENT_DEFAULT_SCRIPT`-je definiálja, még a GTM előtt.
     gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
 let clarityStarted = false;
+let analyticsConsentEventPushed = false;
 
 // Google Consent Mode v2: a GTM-ben lévő GA4 csak `analytics_storage: granted`
 // mellett fut / ír sütit. Az alapértelmezett `denied`-ot a layout állítja be.
@@ -24,6 +26,16 @@ function setGoogleAnalyticsConsent(granted: boolean) {
   window.gtag?.('consent', 'update', {
     analytics_storage: granted ? 'granted' : 'denied',
   });
+
+  // A GTM a consentet csak a trigger pillanatában nézi, a blokkolt taget később
+  // nem futtatja újra — ezért a GA4 tag nem page loadra, hanem erre az eventre
+  // fut. Oldalbetöltésenként egyszer: a kliensoldali navigáció nem új page load,
+  // a page_view-kat onnan a GA4 enhanced measurementje (history change) méri.
+  if (granted && !analyticsConsentEventPushed) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'analytics_consent_granted' });
+    analyticsConsentEventPushed = true;
+  }
 }
 
 export function CookieConsentBanner() {
