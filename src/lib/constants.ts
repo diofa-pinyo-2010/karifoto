@@ -405,3 +405,11 @@ export const APP_URLS = {
   terms: '/aszf',
   privacy: '/adatkezeles',
 };
+
+// dataLayer event names. GTM triggers match these strings exactly, so renaming
+// one here means renaming its trigger in the GTM container too.
+export const GTM_EVENTS = {
+  analyticsConsentGranted: 'analytics_consent_granted',
+  marketingConsentGranted: 'marketing_consent_granted',
+  bookingCompleted: 'booking_completed',
+} as const;

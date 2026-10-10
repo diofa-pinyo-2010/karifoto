@@ -1,3 +1,5 @@
+import { GTM_EVENTS } from '@/lib/constants';
+
 /**
  * The `booking_completed` dataLayer event, pushed once on the success page when
  * the Stripe webhook has turned the booking into a `PhotoShooting`. GTM decides
@@ -11,7 +13,7 @@
  * swap it for a client-generated id: the server could never reproduce it.
  */
 export type BookingCompletedEvent = {
-  event: 'booking_completed';
+  event: typeof GTM_EVENTS.bookingCompleted;
   event_id: string;
   /** Whole forints, as the ad platforms expect — not fillér. */
   value: number;
@@ -26,7 +28,7 @@ export function buildBookingCompletedEvent({
   totalToBeInvoicedInCents: number;
 }): BookingCompletedEvent {
   return {
-    event: 'booking_completed',
+    event: GTM_EVENTS.bookingCompleted,
     event_id: photoShootingId,
     value: totalToBeInvoicedInCents / 100,
     currency: 'HUF',

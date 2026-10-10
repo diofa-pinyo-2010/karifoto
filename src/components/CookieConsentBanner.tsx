@@ -9,6 +9,7 @@ import { sendGTMEvent } from '@next/third-parties/google';
 import * as CookieConsent from 'vanilla-cookieconsent';
 
 import { env } from '@/env';
+import { GTM_EVENTS } from '@/lib/constants';
 
 declare global {
   interface Window {
@@ -39,11 +40,11 @@ function setGoogleConsent({ analytics, marketing }: GoogleConsent) {
   // navigáció nem új page load, a page_view-kat onnan a GA4 enhanced
   // measurementje (history change) méri.
   if (analytics && !analyticsConsentEventPushed) {
-    sendGTMEvent({ event: 'analytics_consent_granted' });
+    sendGTMEvent({ event: GTM_EVENTS.analyticsConsentGranted });
     analyticsConsentEventPushed = true;
   }
   if (marketing && !marketingConsentEventPushed) {
-    sendGTMEvent({ event: 'marketing_consent_granted' });
+    sendGTMEvent({ event: GTM_EVENTS.marketingConsentGranted });
     marketingConsentEventPushed = true;
   }
 }
