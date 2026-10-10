@@ -16,6 +16,7 @@ import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
+import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 import { InlineScript } from '@/components/InlineScript';
 import { Providers } from '@/components/Providers';
 import { ThemeScope } from '@/components/ThemeScope';
@@ -29,6 +30,7 @@ import { cn } from '@/lib/utils';
 // Az `admin` osztály (rendszerfontok) és a sötét mód csak az adminban él —
 // a sötét mód ne fusson le publikus oldalon.
 const THEME_SCRIPT = `(function(){try{var a=location.pathname.startsWith('/admin');document.documentElement.classList.toggle('admin',a);if(!a)return;var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
+const CONSENT_DEFAULT_SCRIPT = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});`;
 
 // Self-hosted (src/fonts) so dev/build never depends on reaching Google Fonts.
 // Files are the official google/fonts variable TTFs, weight-limited and
@@ -90,15 +92,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       )}
       suppressHydrationWarning
     >
-      <GoogleTagManager gtmId="GTM-MDZ7PG3Q" />
       <head>
         <InlineScript html={THEME_SCRIPT} />
+        <InlineScript html={CONSENT_DEFAULT_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <ThemeScope />
         <Providers>{children}</Providers>
         <CookieConsentBanner />
-        {/* <CookiePreferencesButton /> */}
+        <CookiePreferencesButton />
+        <GoogleTagManager gtmId="GTM-MDZ7PG3Q" />
       </body>
     </html>
   );
