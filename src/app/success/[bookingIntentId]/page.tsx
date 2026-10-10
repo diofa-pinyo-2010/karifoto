@@ -7,10 +7,7 @@ import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { buildBookingCompletedEvent } from '@/lib/booking-tracking';
 import { PACKAGES } from '@/lib/catalog';
 import { formatLongDate } from '@/lib/formatters';
-import {
-  getBookingIntentPublic,
-  getCompletedBookingShooting,
-} from '@/lib/queries';
+import { getBookingIntentPublic, getCreatedShooting } from '@/lib/queries';
 import { calculatePricing } from '@/server/pricing';
 
 export const metadata: Metadata = {
@@ -34,7 +31,7 @@ export default async function SuccessPage(
   // fizetésnél pedig nem is lesz — egyikre sem megy event.
   const completedShooting =
     bookingIntent?.status === BookingIntentStatus.CONVERTED
-      ? await getCompletedBookingShooting(bookingIntentId)
+      ? await getCreatedShooting(bookingIntentId)
       : null;
   const bookingCompletedEvent =
     completedShooting?.pricing != null

@@ -335,7 +335,7 @@ export async function getBookingIntentPublic(id: string) {
  * által létrehozott fotózás, a `calculatePricing()` bemeneteivel. `null`, amíg
  * a webhook nem futott le (vagy ha a fizetés árva maradt).
  */
-export async function getCompletedBookingShooting(bookingIntentId: string) {
+export async function getCreatedShooting(bookingIntentId: string) {
   return prisma.photoShooting.findUnique({
     where: { bookingIntentId },
     include: { pricing: true, adjustments: true, ledgerEntries: true },
