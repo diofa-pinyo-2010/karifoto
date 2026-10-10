@@ -12,6 +12,17 @@ import { centsToHuf } from '@/lib/utils';
  * Meta Conversions API call sent from there can reuse it as its `event_id` and
  * Meta deduplicates the browser and server events against each other. Do not
  * swap it for a client-generated id: the server could never reproduce it.
+ *
+ * **Ordering — this shapes the GTM setup.** On the success page the
+ * `BookingCompletedTracker` effect runs before the `CookieConsentBanner`
+ * effect, so `booking_completed` reaches the dataLayer *before* the consent
+ * update and `marketing_consent_granted`, even for a visitor who accepted
+ * marketing cookies long ago. A tag that requires `ad_storage` and triggers on
+ * `booking_completed` alone is therefore blocked, and GTM never re-runs it.
+ * The Purchase / conversion tags must use a **Trigger Group** of
+ * `booking_completed` + `marketing_consent_granted`, so they fire once both
+ * have happened on the page, in either order. The push order is deliberately
+ * left as is: the trigger group handles it, and it holds for any page load.
  */
 export type BookingCompletedEvent = {
   event: typeof GTM_EVENTS.bookingCompleted;

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { BookingCompletedTracker } from '@/components/BookingCompletedTracker';
+import { PendingBookingPoller } from '@/components/PendingBookingPoller';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { buildBookingCompletedEvent } from '@/lib/booking-tracking';
 import { PACKAGES } from '@/lib/catalog';
@@ -89,9 +90,10 @@ export default async function SuccessPage(
             </h1>
             <p className="mx-auto mt-5 max-w-125 text-[15px] leading-[1.85] text-pretty text-brand-muted">
               {isProcessing
-                ? 'A fizetés megtörtént, a visszaigazolás pár másodpercen belül megérkezik. Frissítsd az oldalt.'
+                ? 'A fizetés megtörtént, a visszaigazolás pár másodpercen belül megjelenik ezen az oldalon.'
                 : `Kedves ${bookingIntent.name}! Köszönjük a foglalást! A visszaigazolást elküldtük e-mailben is.`}
             </p>
+            {isProcessing && <PendingBookingPoller />}
 
             <dl className="mx-auto mt-7 max-w-125 rounded-2xl border border-[#d9d3c7] bg-brand-paper px-5 py-1.5 text-left">
               <SuccessRow

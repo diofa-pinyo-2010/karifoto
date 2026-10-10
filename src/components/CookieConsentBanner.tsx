@@ -9,6 +9,7 @@ import { sendGTMEvent } from '@next/third-parties/google';
 import * as CookieConsent from 'vanilla-cookieconsent';
 
 import { env } from '@/env';
+import { buildGoogleConsentUpdate } from '@/lib/consent';
 import { GTM_EVENTS } from '@/lib/constants';
 
 declare global {
@@ -24,19 +25,17 @@ let marketingConsentEventPushed = false;
 
 type GoogleConsent = { analytics: boolean; marketing: boolean };
 
-// Google Consent Mode v2: a GTM-ben lévő GA4 csak `analytics_storage`, a GTM-ből
-// betöltött Meta Pixel csak `ad_storage: granted` mellett fut / ír sütit. Az
-// alapértelmezett `denied`-ot a layout állítja be. Az `ad_user_data` és az
-// `ad_personalization` szándékosan marad `denied`.
-function setGoogleConsent({ analytics, marketing }: GoogleConsent) {
-  window.gtag?.('consent', 'update', {
-    analytics_storage: analytics ? 'granted' : 'denied',
-    ad_storage: marketing ? 'granted' : 'denied',
-  });
+// Google Consent Mode v2 — hogy melyik kategória mit enged, azt a
+// `buildGoogleConsentUpdate()` írja le. Röviden: `analytics` → GA4,
+// `marketing` → `ad_storage` + `ad_user_data` (Meta Pixel, Google Ads); az
+// `ad_personalization` mindig `denied`.
+function setGoogleConsent(consent: GoogleConsent) {
+  const { analytics, marketing } = consent;
+  window.gtag?.('consent', 'update', buildGoogleConsentUpdate(consent));
 
   // A GTM a consentet csak a trigger pillanatában nézi, a blokkolt taget később
-  // nem futtatja újra — ezért a GA4 és a Meta Pixel tag nem page loadra, hanem
-  // ezekre az eventekre fut. Oldalbetöltésenként egyszer: a kliensoldali
+  // nem futtatja újra — ezért a GA4 és a hirdetési tagek nem page loadra, hanem
+  // ezekre az eventekre futnak. Oldalbetöltésenként egyszer: a kliensoldali
   // navigáció nem új page load, a page_view-kat onnan a GA4 enhanced
   // measurementje (history change) méri.
   if (analytics && !analyticsConsentEventPushed) {
@@ -129,7 +128,7 @@ export function CookieConsentBanner() {
                 {
                   title: 'Marketing sütik',
                   description:
-                    'A Meta (Facebook, Instagram) sütijeivel mérjük, hogy a hirdetéseink hatására hányan foglalnak nálunk időpontot. Így látjuk, melyik hirdetésünk működik, és melyiket érdemes inkább leállítani.',
+                    'A Meta (Facebook, Instagram) és a Google Ads sütijeivel mérjük, hogy a hirdetéseink hatására hányan foglalnak nálunk időpontot. Így látjuk, melyik hirdetésünk működik, és melyiket érdemes inkább leállítani.',
                   linkedCategory: 'marketing',
                 },
               ],
