@@ -1,4 +1,5 @@
 import { GTM_EVENTS } from '@/lib/constants';
+import { centsToHuf } from '@/lib/utils';
 
 /**
  * The `booking_completed` dataLayer event, pushed once on the success page when
@@ -30,7 +31,7 @@ export function buildBookingCompletedEvent({
   return {
     event: GTM_EVENTS.bookingCompleted,
     event_id: photoShootingId,
-    value: totalToBeInvoicedInCents / 100,
+    value: centsToHuf(totalToBeInvoicedInCents),
     currency: 'HUF',
   };
 }
