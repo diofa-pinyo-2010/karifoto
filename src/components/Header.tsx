@@ -50,12 +50,12 @@ export function Header() {
     >
       <a
         href="#tartalom"
-        className="absolute top-[-150px] left-5 bg-brand-cream p-3 text-brand-ink focus:top-2.5 focus:z-100"
+        className="absolute -top-37.5 left-5 bg-brand-cream p-3 text-brand-ink focus:top-2.5 focus:z-100"
       >
         Ugrás a tartalomra
       </a>
 
-      <div className="brand-shell flex min-h-[82px] items-center justify-between gap-5 lg:min-h-24">
+      <div className="brand-shell flex min-h-20.5 items-center justify-between gap-5 lg:min-h-24">
         <Link href="/" aria-label="Karifoto – kezdőlap" className="shrink-0">
           <Image
             src="/images/karifoto-logo-krem.png"
