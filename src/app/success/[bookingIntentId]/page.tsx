@@ -9,7 +9,7 @@ import { buildBookingCompletedEvent } from '@/lib/booking-tracking';
 import { PACKAGES } from '@/lib/catalog';
 import { formatLongDate } from '@/lib/formatters';
 import { getBookingIntentPublic, getCreatedShooting } from '@/lib/queries';
-import { calculatePricing } from '@/server/pricing';
+import { bookingPurchaseTotalInCents } from '@/server/pricing';
 
 export const metadata: Metadata = {
   title: 'Sikeres foglalás · Karifoto',
@@ -38,12 +38,10 @@ export default async function SuccessPage(
     completedShooting?.pricing != null
       ? buildBookingCompletedEvent({
           photoShootingId: completedShooting.id,
-          totalToBeInvoicedInCents: calculatePricing({
+          totalToBeInvoicedInCents: bookingPurchaseTotalInCents({
+            ...completedShooting,
             pricing: completedShooting.pricing,
-            shooting: completedShooting,
-            adjustments: completedShooting.adjustments,
-            ledgerEntries: completedShooting.ledgerEntries,
-          }).totalToBeInvoiced,
+          }),
         })
       : null;
 

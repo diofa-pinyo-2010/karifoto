@@ -221,7 +221,30 @@ function Adatkezeles() {
         beágyazásokhoz szükséges hozzájáruláskezelést az indulás előtt fel kell
         mérni és összehangolni e tájékoztatóval.
       </p>
-      <h2>6. A jogaid</h2>
+      <h2>6. Hirdetésmérés (Meta)</h2>
+      <p>
+        Ha a süti beállításoknál hozzájárulsz a marketing sütikhez, a foglalás
+        fizetésének indításakor eltároljuk a Meta sütiazonosítóidat (_fbp,
+        _fbc), az IP-címedet és a böngésződ adatait (user agent). Sikeres
+        foglalás után ezeket, valamint a foglaláskor megadott e-mail-címed
+        egyirányú titkosítással (SHA-256 hash) képzett változatát és a foglalás
+        értékét elküldjük a Meta Platforms Ireland Ltd. részére (Conversions
+        API), hogy mérni tudjuk hirdetéseink eredményességét. Az e-mail-cím
+        olvasható formában nem kerül továbbításra. Az adatkezelés jogalapja a
+        hozzájárulásod (GDPR 6. cikk (1) a) pont), amelyet a süti beállításoknál
+        bármikor visszavonhatsz. Hozzájárulás nélkül semmilyen adatot nem
+        tárolunk és nem küldünk a Metának ehhez a célhoz, a foglalás ettől
+        függetlenül ugyanúgy működik.{' '}
+        <a
+          href="https://www.facebook.com/privacy/policy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Meta adatvédelmi szabályzat
+        </a>
+        .
+      </p>
+      <h2>7. A jogaid</h2>
       <p>
         A jogszabályi feltételek szerint kérhetsz hozzáférést, helyesbítést,
         törlést, korlátozást és adathordozhatóságot; jogos érdeken alapuló

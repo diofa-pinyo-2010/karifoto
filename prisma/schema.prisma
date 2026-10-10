@@ -99,6 +99,16 @@ model BookingIntent {
   adjustments               PriceAdjustment[]
   optOutFromMarketingEmails Boolean           @default(false)
 
+  // Captured when the client starts Stripe Checkout, for the server-side Meta
+  // Conversions API Purchase the webhook sends. `marketingConsent` mirrors the
+  // cookie banner's `marketing` category; without it the other fields stay
+  // null. Kept here, not in Stripe metadata, so this data never reaches Stripe.
+  marketingConsent Boolean @default(false)
+  fbp              String?
+  fbc              String?
+  clientIp         String?
+  userAgent        String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 

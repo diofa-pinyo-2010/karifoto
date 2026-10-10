@@ -17,6 +17,7 @@ import {
 import { sendDiscordNotification } from '@/lib/discord';
 import { formatSlotDateTime } from '@/lib/formatters';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
+import { sendBookingPurchaseToMeta } from '@/lib/meta-capi';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { getBookingIntent } from '@/lib/queries';
@@ -472,6 +473,12 @@ async function handleBookingDeposit(
       }
     }
   }
+
+  // Server-side twin of the success page's Pixel Purchase, sent after the
+  // shooting, its adjustments and its ledger entry exist so the value matches.
+  // Consent-gated and never throws; a retry resends the same event_id, which
+  // Meta drops as a duplicate.
+  await sendBookingPurchaseToMeta({ bookingIntentId, bookingIntent });
 
   // Only for a freshly created shooting — a webhook retry finds it existing.
   if (existingShooting == null) {
