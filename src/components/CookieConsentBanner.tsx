@@ -128,7 +128,7 @@ export function CookieConsentBanner() {
                 {
                   title: 'Marketing sütik',
                   description:
-                    'A Meta (Facebook, Instagram) és a Google Ads sütijeivel mérjük, hogy a hirdetéseink hatására hányan foglalnak nálunk időpontot. Így látjuk, melyik hirdetésünk működik, és melyiket érdemes inkább leállítani.',
+                    'A Meta (Facebook, Instagram) és a Google Ads sütijei segítenek, hogy a hirdetéseinket azoknak mutassuk meg, akiket tényleg érdekelhet egy karácsonyi fotózás, és ne zavarjunk vele feleslegesen másokat. Ezekkel mérjük azt is, melyik hirdetésünk működik.',
                   linkedCategory: 'marketing',
                 },
               ],
