@@ -337,8 +337,8 @@ export const faqs: FaqItem[] = [
         </p>
         <p>
           Ezután nincs más dolgotok, mint eljönni a stúdióba a megbeszélt
-          időpontban. A fotózás után feltöltjük a képeket, és{' '}
-          <strong>e-mailben szólunk</strong>, amikor kiválogathatjátok a
+          időpontban. A fotózás után feltöltjük a nyers képeket, és{' '}
+          <strong>e-mailben jelezzük</strong>, amikor kiválogathatjátok a
           kedvenceiteket — minden további lépésről is így értesítünk.
         </p>
         <p>
@@ -376,7 +376,8 @@ export const faqs: FaqItem[] = [
             megtalálni a <strong>befizetéseket és a számlákat</strong>,
           </li>
           <li>
-            a végén pedig innen érhetitek el a <strong>kész képeket</strong> is.
+            a végén pedig innen érhetitek el a{' '}
+            <strong>kész képek linkjét</strong> is.
           </li>
         </ul>
         <p>
