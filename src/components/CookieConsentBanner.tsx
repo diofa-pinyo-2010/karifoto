@@ -9,17 +9,33 @@ import * as CookieConsent from 'vanilla-cookieconsent';
 
 import { env } from '@/env';
 
+declare global {
+  interface Window {
+    // A layout `CONSENT_DEFAULT_SCRIPT`-je definiálja, még a GTM előtt.
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 let clarityStarted = false;
+
+// Google Consent Mode v2: a GTM-ben lévő GA4 csak `analytics_storage: granted`
+// mellett fut / ír sütit. Az alapértelmezett `denied`-ot a layout állítja be.
+function setGoogleAnalyticsConsent(granted: boolean) {
+  window.gtag?.('consent', 'update', {
+    analytics_storage: granted ? 'granted' : 'denied',
+  });
+}
 
 export function CookieConsentBanner() {
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
   pathnameRef.current = pathname;
 
-  const syncClarity = useRef(() => {
+  const syncTracking = useRef(() => {
     const isAdmin = pathnameRef.current?.startsWith('/admin');
 
     const start = () => {
+      setGoogleAnalyticsConsent(true);
       if (env.NEXT_PUBLIC_VERCEL_ENV !== 'production') return;
       if (!env.NEXT_PUBLIC_CLARITY_ID) return;
       if (clarityStarted) {
@@ -31,6 +47,7 @@ export function CookieConsentBanner() {
       clarityStarted = true;
     };
     const stop = () => {
+      setGoogleAnalyticsConsent(false);
       if (clarityStarted) Clarity.consent(false);
     };
 
@@ -51,7 +68,12 @@ export function CookieConsentBanner() {
       mode: 'opt-in',
       categories: {
         necessary: { enabled: true, readOnly: true },
-        analytics: {},
+        analytics: {
+          // Visszavont hozzájárulásnál a GA4 sütijeit is töröljük.
+          autoClear: {
+            cookies: [{ name: /^_ga/ }, { name: '_gid' }],
+          },
+        },
       },
       language: {
         default: 'hu',
@@ -82,7 +104,7 @@ export function CookieConsentBanner() {
                 {
                   title: 'Statisztikai sütik',
                   description:
-                    'Anonim, statisztikai elemzéseket végzünk, hogy növeljük a felhasználói élményt. Segít javítanunk az oldalt, hogy érthetőbb, és könnyebben használható legyen.',
+                    'A Google Analytics és a Microsoft Clarity segítségével anonim, statisztikai elemzéseket végzünk, hogy növeljük a felhasználói élményt. Segít javítanunk az oldalt, hogy érthetőbb, és könnyebben használható legyen.',
                   linkedCategory: 'analytics',
                 },
               ],
@@ -90,14 +112,14 @@ export function CookieConsentBanner() {
           },
         },
       },
-      onConsent: syncClarity,
-      onChange: syncClarity,
+      onConsent: syncTracking,
+      onChange: syncTracking,
     });
-  }, [syncClarity]);
+  }, [syncTracking]);
 
   useEffect(() => {
-    syncClarity();
-  }, [pathname, syncClarity]);
+    syncTracking();
+  }, [pathname, syncTracking]);
 
   return null;
 }
