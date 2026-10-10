@@ -160,3 +160,25 @@ export function calculatePricing({
     totalToBePaid: totalToBeInvoiced - totalPaid,
   };
 }
+
+/**
+ * The amount a booking's Purchase is reported to the ad platforms with: the
+ * full price of the shooting, not the deposit. The success page's
+ * `booking_completed` event and the webhook's Meta Conversions API event both
+ * call this on the shooting `getCreatedShooting()` returns, so the browser and
+ * server Purchase carry the same value and Meta can merge them.
+ */
+export function bookingPurchaseTotalInCents(
+  shooting: PhotoShooting & {
+    pricing: PhotoShootingPricing;
+    adjustments: PriceAdjustment[];
+    ledgerEntries: LedgerEntry[];
+  },
+): number {
+  return calculatePricing({
+    pricing: shooting.pricing,
+    shooting,
+    adjustments: shooting.adjustments,
+    ledgerEntries: shooting.ledgerEntries,
+  }).totalToBeInvoiced;
+}

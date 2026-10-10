@@ -23,6 +23,12 @@ export const env = createEnv({
     GOOGLE_PRIVATE_KEY: z.string().min(1),
     GOOGLE_CALENDAR_ID: z.string().min(1),
     DISCORD_WEBHOOK_URL: z.url(),
+    // Meta Conversions API — opcionális: id vagy token nélkül a szerveroldali
+    // Purchase event csendben kimarad. A teszt kód beállítva mindenhol küld,
+    // de csak az Events Manager Test Events nézetébe.
+    META_PIXEL_ID: z.string().min(1).optional(),
+    META_CAPI_ACCESS_TOKEN: z.string().min(1).optional(),
+    META_CAPI_TEST_EVENT_CODE: z.string().min(1).optional(),
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {
@@ -52,6 +58,9 @@ export const env = createEnv({
     GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
     GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID,
     DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL,
+    META_PIXEL_ID: process.env.META_PIXEL_ID,
+    META_CAPI_ACCESS_TOKEN: process.env.META_CAPI_ACCESS_TOKEN,
+    META_CAPI_TEST_EVENT_CODE: process.env.META_CAPI_TEST_EVENT_CODE,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
     NEXT_PUBLIC_CLARITY_ID: process.env.NEXT_PUBLIC_CLARITY_ID,
