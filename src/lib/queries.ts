@@ -330,6 +330,18 @@ export async function getBookingIntentPublic(id: string) {
   });
 }
 
+/**
+ * A sikeres foglalás `booking_completed` eventjéhez: a foglalásból a webhook
+ * által létrehozott fotózás, a `calculatePricing()` bemeneteivel. `null`, amíg
+ * a webhook nem futott le (vagy ha a fizetés árva maradt).
+ */
+export async function getCompletedBookingShooting(bookingIntentId: string) {
+  return prisma.photoShooting.findUnique({
+    where: { bookingIntentId },
+    include: { pricing: true, adjustments: true, ledgerEntries: true },
+  });
+}
+
 const converted = await prisma.bookingIntent.findMany({
   where: { status: BookingIntentStatus.CONVERTED },
   select: { email: true },

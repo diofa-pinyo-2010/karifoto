@@ -2,10 +2,16 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BookingCompletedTracker } from '@/components/BookingCompletedTracker';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { buildBookingCompletedEvent } from '@/lib/booking-tracking';
 import { PACKAGES } from '@/lib/catalog';
 import { formatLongDate } from '@/lib/formatters';
-import { getBookingIntentPublic } from '@/lib/queries';
+import {
+  getBookingIntentPublic,
+  getCompletedBookingShooting,
+} from '@/lib/queries';
+import { calculatePricing } from '@/server/pricing';
 
 export const metadata: Metadata = {
   title: 'Sikeres foglalás · Karifoto',
@@ -23,8 +29,31 @@ export default async function SuccessPage(
     bookingIntent?.status === BookingIntentStatus.PAYMENT_ORPHANED;
   const isProcessing = bookingIntent?.status === BookingIntentStatus.PENDING;
 
+  // A látogató szemszögéből itt teljes a foglalás: a webhook létrehozta a
+  // fotózást. PENDING alatt még nincs (az oldal frissítésre vár), árva
+  // fizetésnél pedig nem is lesz — egyikre sem megy event.
+  const completedShooting =
+    bookingIntent?.status === BookingIntentStatus.CONVERTED
+      ? await getCompletedBookingShooting(bookingIntentId)
+      : null;
+  const bookingCompletedEvent =
+    completedShooting?.pricing != null
+      ? buildBookingCompletedEvent({
+          photoShootingId: completedShooting.id,
+          totalToBeInvoicedInCents: calculatePricing({
+            pricing: completedShooting.pricing,
+            shooting: completedShooting,
+            adjustments: completedShooting.adjustments,
+            ledgerEntries: completedShooting.ledgerEntries,
+          }).totalToBeInvoiced,
+        })
+      : null;
+
   return (
     <div className="min-h-screen bg-brand-cream font-brand-sans text-brand-ink">
+      {bookingCompletedEvent != null && (
+        <BookingCompletedTracker event={bookingCompletedEvent} />
+      )}
       <header className="bg-[#102a31] py-4.5 text-brand-cream">
         <div className="brand-shell flex items-center justify-between gap-5">
           <Link href="/" aria-label="Karifoto – kezdőlap">
