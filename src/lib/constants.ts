@@ -22,6 +22,8 @@ export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
 
+const EXTENDED_STUDIO_ADDRESS = `Karifoto Fotóstúdió Karácsonyi Fotózás ${STUDIO_ADDRESS}`;
+
 export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
 
 /**
@@ -44,10 +46,10 @@ export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
 export const STUDIO_MAP_ZOOM = 17;
 
 export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
-  STUDIO_ADDRESS,
+  EXTENDED_STUDIO_ADDRESS,
 )}&z=${STUDIO_MAP_ZOOM}&output=embed`;
 
-export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/6DymPCNXbgY6iN8c7';
+export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/jZdJxyHiKPq9baa36';
 
 // const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
