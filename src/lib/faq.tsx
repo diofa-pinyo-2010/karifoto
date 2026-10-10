@@ -326,6 +326,69 @@ export const faqs: FaqItem[] = [
     ),
   },
   {
+    q: 'Mi történik a foglalás után?',
+    a: (
+      <>
+        <p>
+          A foglaló befizetése után pár percen belül kaptok tőlünk egy{' '}
+          <strong>visszaigazoló e-mailt</strong>. Ebben benne van a fotózás
+          időpontja, egy gomb, amivel a naptáratokba is beírhatjátok, és egy{' '}
+          <strong>„Ügyfélportál” gomb</strong>.
+        </p>
+        <p>
+          Ezután nincs más dolgotok, mint eljönni a stúdióba a megbeszélt
+          időpontban. A fotózás után feltöltjük a nyers képeket, és{' '}
+          <strong>e-mailben jelezzük</strong>, amikor kiválogathatjátok a
+          kedvenceiteket — minden további lépésről is így értesítünk.
+        </p>
+        <p>
+          Ha nem találjátok a visszaigazoló e-mailt, nézzétek meg a
+          spam/promóciók mappát is, vagy írjatok nekünk.
+        </p>
+      </>
+    ),
+  },
+  {
+    q: 'Mi az az Ügyfélportál, és mire jó?',
+    a: (
+      <>
+        <p>
+          Az Ügyfélportál a <strong>saját oldalatok</strong> a weboldalunkon,
+          ahol a fotózásotokkal kapcsolatos minden egy helyen megtalálható. Nem
+          kell hozzá regisztrálni, sem jelszót megjegyezni: elég a visszaigazoló
+          e-mailben lévő <strong>„Ügyfélportál” gombra</strong> kattintani, és
+          már bent is vagytok.
+        </p>
+        <p>Itt tudjátok:</p>
+        <ul>
+          <li>
+            megnézni a foglalás <strong>részleteit</strong> (időpont, csomag,
+            díszlet, a stúdió címe),
+          </li>
+          <li>
+            a fotózás után <strong>kiválogatni a képeket</strong>, amelyeket
+            szerkesszünk,
+          </li>
+          <li>
+            nyomon követni, <strong>hol tart</strong> a képeitek elkészítése,
+          </li>
+          <li>
+            megtalálni a <strong>befizetéseket és a számlákat</strong>,
+          </li>
+          <li>
+            a végén pedig innen érhetitek el a{' '}
+            <strong>kész képek linkjét</strong> is.
+          </li>
+        </ul>
+        <p>
+          A gomb <strong>nem jár le</strong>, hónapokkal később, másik
+          telefonról vagy gépről is működik — ezért érdemes megtartani a
+          visszaigazoló e-mailt. Ha mégis elveszne, írjatok nekünk, és segítünk.
+        </p>
+      </>
+    ),
+  },
+  {
     q: 'Hogy néznek ki a nyers képek, amelyeket közvetlenül a fotózás másnapján küldünk el?',
     a: (
       <>
