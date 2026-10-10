@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 
 import 'vanilla-cookieconsent/dist/cookieconsent.css';
 import Clarity from '@microsoft/clarity';
+import { sendGTMEvent } from '@next/third-parties/google';
 import * as CookieConsent from 'vanilla-cookieconsent';
 
 import { env } from '@/env';
@@ -38,13 +39,11 @@ function setGoogleConsent({ analytics, marketing }: GoogleConsent) {
   // navigáció nem új page load, a page_view-kat onnan a GA4 enhanced
   // measurementje (history change) méri.
   if (analytics && !analyticsConsentEventPushed) {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: 'analytics_consent_granted' });
+    sendGTMEvent({ event: 'analytics_consent_granted' });
     analyticsConsentEventPushed = true;
   }
   if (marketing && !marketingConsentEventPushed) {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: 'marketing_consent_granted' });
+    sendGTMEvent({ event: 'marketing_consent_granted' });
     marketingConsentEventPushed = true;
   }
 }

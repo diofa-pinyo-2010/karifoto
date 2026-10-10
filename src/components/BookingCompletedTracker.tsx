@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { sendGTMEvent } from '@next/third-parties/google';
+
 import { bookingCompletedStorageKey } from '@/lib/booking-tracking';
 
 import type { BookingCompletedEvent } from '@/lib/booking-tracking';
@@ -33,8 +35,7 @@ export function BookingCompletedTracker({
       // A storage nem olvasható — az in-memory jelölőre hagyatkozunk.
     }
 
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ ...event });
+    sendGTMEvent({ ...event });
     pushedEventIds.add(event.event_id);
 
     try {
