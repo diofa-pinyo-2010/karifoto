@@ -1,11 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { OpenCookiePreferenciesButton } from '@/components/OpenCookiePreferenciesButton';
 import { cn } from '@/lib/utils';
 
-const linkClass =
+export const linkClass =
   'flex min-h-11 items-center gap-2.5 text-sm transition-colors hover:text-[#e6be88]';
-const rowClass = 'justify-between md:justify-start';
+export const rowClass = 'justify-between md:justify-start';
 // Ugyanaz a hover, mint a körvonalas gomboké: halvány háttér és a
 // szöveghez igazodó keret (`border-current`).
 const socialClass =
@@ -173,6 +174,7 @@ export function Footer({
                   →
                 </span>
               </Link>
+              <OpenCookiePreferenciesButton />
             </nav>
           </div>
         </div>

@@ -16,7 +16,7 @@ import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
-import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
+// import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 import { InlineScript } from '@/components/InlineScript';
 import { Providers } from '@/components/Providers';
 import { ThemeScope } from '@/components/ThemeScope';
@@ -100,7 +100,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <ThemeScope />
         <Providers>{children}</Providers>
         <CookieConsentBanner />
-        <CookiePreferencesButton />
+        {/* <CookiePreferencesButton /> */}
         <GoogleTagManager gtmId="GTM-MDZ7PG3Q" />
       </body>
     </html>
