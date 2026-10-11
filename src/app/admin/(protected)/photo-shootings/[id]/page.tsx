@@ -13,7 +13,7 @@ import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog'
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
-import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
+// import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
@@ -429,11 +429,11 @@ export default async function PhotoShootingDetailPage({
                   adjustment ? (
                     <span className="flex items-center justify-end gap-3">
                       {formatMoney(line.amountInCents)}
-                      <DeletePriceAdjustmentButton
+                      {/* <DeletePriceAdjustmentButton
                         priceAdjustmentId={adjustment.id}
                         target={{ photoShootingId: shooting.id }}
                         disabled={readOnlyDetails}
-                      />
+                      /> */}
                     </span>
                   ) : (
                     formatMoney(line.amountInCents)
