@@ -18,6 +18,7 @@ import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
+import { ItemsCollapsible } from '@/components/ItemsCollapsible';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
 import { SendRawImages } from '@/components/SendRawImages';
 import { Badge } from '@/components/ui/badge';
@@ -584,46 +585,54 @@ export default async function PhotoShootingDetailPage({
 
       <Separator />
 
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Pénzügyi tételek</h2>
-        {ledgerEntries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nincsenek pénzügyi tételek.
-          </p>
-        ) : (
-          <ItemGroup>
-            {ledgerEntries.map((entry) => (
-              <ExternalLinkItem
-                key={entry.id}
-                title={`${formatMoney(entry.amountInCents)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
-                description={PAYMENT_METHOD_LABEL[entry.method]}
-                href={entry.invoice?.publicUrl}
-                linkLabel="Számla"
-              />
-            ))}
-          </ItemGroup>
-        )}
-      </div>
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Elküldött email-ek</h2>
-        {sentEmails.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nincsenek még elküldött email-ek.
-          </p>
-        ) : (
-          <ItemGroup>
-            {sentEmails.map((email) => (
-              <ExternalLinkItem
-                key={email.id}
-                title={shortFullDateFormatter.format(email.sentAt)}
-                description={email.subject}
-                href={resendEmailUrl(email.resendId)}
-                linkLabel="Resend"
-              />
-            ))}
-          </ItemGroup>
-        )}
-      </div>
+      <ItemsCollapsible
+        title="Pénzmozgások"
+        content={
+          <>
+            {ledgerEntries.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nincsenek pénzügyi tételek.
+              </p>
+            ) : (
+              <ItemGroup>
+                {ledgerEntries.map((entry) => (
+                  <ExternalLinkItem
+                    key={entry.id}
+                    title={`${formatMoney(entry.amountInCents)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
+                    description={PAYMENT_METHOD_LABEL[entry.method]}
+                    href={entry.invoice?.publicUrl}
+                    linkLabel="Számla"
+                  />
+                ))}
+              </ItemGroup>
+            )}
+          </>
+        }
+      />
+      <ItemsCollapsible
+        title="Elküldött email-ek"
+        content={
+          <>
+            {sentEmails.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nincsenek még elküldött email-ek.
+              </p>
+            ) : (
+              <ItemGroup>
+                {sentEmails.map((email) => (
+                  <ExternalLinkItem
+                    key={email.id}
+                    title={shortFullDateFormatter.format(email.sentAt)}
+                    description={email.subject}
+                    href={resendEmailUrl(email.resendId)}
+                    linkLabel="Resend"
+                  />
+                ))}
+              </ItemGroup>
+            )}
+          </>
+        }
+      />
     </div>
   );
 }
