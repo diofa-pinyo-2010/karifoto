@@ -530,7 +530,7 @@ export function BookingFormNew({
                   Kutya, cica, nyuszi is jöhet — kisállatonként felárat
                   számolunk.
                 </span>{' '}
-                <span className="text-brand-selected font-medium">
+                <span className="font-medium text-brand-selected">
                   {field.value > 0 &&
                     `+${formatMoney(EXTRA_FEE_PER_PET * field.value)}`}
                 </span>
