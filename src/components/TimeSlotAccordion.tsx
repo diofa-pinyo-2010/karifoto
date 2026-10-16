@@ -47,7 +47,9 @@ export function TimeSlotAccordion({
   return (
     <AccordionPrimitive.Root
       multiple={false}
-      defaultValue={[days[0][0]]}
+      // Mindegyik nap maradjon csukva, mert sok helyet foglal mobilon nyitott
+      // helyzetben, és nem tudják használni.
+      // defaultValue={[days[0][0]]}
       className="flex flex-col"
     >
       {days.map(([dayKey, daySlots]) => (
