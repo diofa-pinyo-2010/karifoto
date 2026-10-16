@@ -55,7 +55,7 @@ import type { BookingSelection } from '@/lib/booking-selection';
 const NOTE_MAX_LENGTH = 500;
 
 /**
- * Választható kártya. A kiválasztott állapot erdőzöld — a shadcn alapértelmezett
+ * Választható kártya. A kiválasztott állapot élénkzöld — a shadcn alapértelmezett
  * `primary` pirosas, és a terrakotta is az, így a hibaállapottól nem lenne
  * megkülönböztethető.
  */
@@ -64,15 +64,18 @@ const CHOICE_CARD_CLASS = [
   'has-[>[data-slot=field]]:rounded-2xl has-[>[data-slot=field]]:border-ink/20',
   '*:data-[slot=field]:p-4',
   'has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-white/80',
-  'has-data-checked:border-forest has-data-checked:bg-forest/8 has-data-checked:ring-1 has-data-checked:ring-forest/30',
+  // A kijelölt kártya hoverre se fehéredjen ki. Ugyanaz az előtag, mint fent, plusz
+  // egy `:has`, így nagyobb a specificitása — nem a CSS-sorrenden múlik.
+  'has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:has-data-checked:hover:bg-brand-selected/10',
+  'has-data-checked:border-brand-selected has-data-checked:bg-brand-selected/10 has-data-checked:ring-1 has-data-checked:ring-brand-selected/40',
 ].join(' ');
 
-/** Rádiógomb / checkbox a kártyákon — nagyobb fogófelület, erdőzöld kitöltés. */
+/** Rádiógomb / checkbox a kártyákon — nagyobb fogófelület, élénkzöld kitöltés. */
 const CHOICE_CONTROL_CLASS = [
   'size-5 border-ink/30',
-  'data-checked:border-forest data-checked:bg-forest data-checked:text-cream',
-  'group-has-[:focus-visible]/field-label:data-checked:border-forest',
-  'focus-visible:border-forest focus-visible:ring-forest/30',
+  'data-checked:border-brand-selected data-checked:bg-brand-selected data-checked:text-cream',
+  'group-has-[:focus-visible]/field-label:data-checked:border-brand-selected',
+  'focus-visible:border-brand-selected focus-visible:ring-brand-selected/30',
 ].join(' ');
 
 /** A sticky header magassága, hogy a hibára görgetés ne csússzon alá. */
@@ -174,6 +177,7 @@ export function BookingFormNew({
   });
 
   const packageKey = useWatch({ control: form.control, name: 'packageKey' });
+  const decorKey = useWatch({ control: form.control, name: 'decorKey' });
   const isSingleDecorPackage =
     packageKey != null && requiresDecorChoice(packageKey);
   const decorLocked = packageKey != null && !isSingleDecorPackage;
@@ -342,8 +346,8 @@ export function BookingFormNew({
               </FieldLegend>
               <FieldDescription className={HINT_CLASS}>
                 {decorLocked
-                  ? 'Ebben a csomagban mindkét díszletben fotózunk.'
-                  : 'A Mini csomaghoz egy díszletet választhatsz.'}
+                  ? `✅ A ${packageKey} csomagban mindkét díszletben fotózunk.`
+                  : `${decorKey != null ? '✅' : ''} A Mini csomaghoz válassz egy díszletet.`}
               </FieldDescription>
 
               {decorLocked ? (
@@ -608,6 +612,7 @@ export function BookingFormNew({
                   name="opt-out-from-marketing-emails"
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  className={CHOICE_CONTROL_CLASS}
                 />
                 <FieldLabel
                   htmlFor="opt-out-from-marketing-emails"
@@ -629,8 +634,12 @@ export function BookingFormNew({
                 Megjegyzés
               </FieldLabel>
               <FieldDescription className={HINT_CLASS}>
-                Bármi, amit jó, ha tudunk: babakocsi, allergia, kedvenc pléd,
-                ünnepi szett.
+                Írd ide, amit a fotósnak tudnia érdemes. Ha kérdésed van, akkor
+                viszont{' '}
+                <a href="/#helyszin" target="_blank" rel="noopener noreferrer">
+                  elérhetőségeinken
+                </a>{' '}
+                keress minket.
               </FieldDescription>
               <InputGroup className="bg-white/62">
                 <InputGroupTextarea

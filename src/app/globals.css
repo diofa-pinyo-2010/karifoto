@@ -116,6 +116,13 @@
   --color-brand-taken-edge: #e2cfc9;
   --color-brand-accent: #7b2d3b;
 
+  /*
+   * Kiválasztott kártya / rádiógomb / checkbox az űrlapokon. A `forest` túl
+   * sötét volt, a vendégek nem látták egyértelműen, mi van bejelölve. A krém
+   * pipa ezen 3:1 fölött van (nem szöveg, tehát ez a mérce).
+   */
+  --color-brand-selected: #2e8f55;
+
   /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
 
   --font-display: var(--ui-font-display);
