@@ -97,7 +97,11 @@ export const WEEKDAY_DISCOUNT_AMOUNT = 5000_00;
 export const MAX_PERSONS = Math.max(
   ...ALL_PACKAGES.map((pkg) => pkg.maxGuests),
 );
-export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
+export const MAX_PERSONS_EXCLUDED_PARTY = Math.max(
+  ...ALL_PACKAGES.filter((p) => p.label !== 'Party').map(
+    (pkg) => pkg.maxGuests,
+  ),
+);
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;

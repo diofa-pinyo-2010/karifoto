@@ -474,7 +474,7 @@ export function BookingFormNew({
                 </FieldTitle>
                 <FieldDescription className={HINT_CLASS}>
                   {packageKey != null &&
-                    `Az ${PACKAGES[packageKey].personsIncluded} fő fölötti vendégekért felárat számolunk.`}
+                    `Legfeljebb ${PACKAGES[packageKey].personsIncluded} fő. Ha ennél többen szeretnétek jönni, keressetek minket.`}
                 </FieldDescription>
                 <Stepper
                   inputRef={controlRef('numberOfPeople', field.ref)}
@@ -528,7 +528,8 @@ export function BookingFormNew({
               <FieldDescription className={HINT_CLASS}>
                 <span>
                   Kutya, cica, nyuszi is jöhet — kisállatonként felárat
-                  számolunk.
+                  <br />
+                  számolunk{field.value > 0 ? ':' : '.'}
                 </span>{' '}
                 <span className="font-medium text-brand-selected">
                   {field.value > 0 &&
