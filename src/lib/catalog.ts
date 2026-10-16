@@ -55,7 +55,7 @@ export const PACKAGES = {
     visibility: 'pricingTable',
     highlighted: false,
     maxGuests: 8,
-    personsIncluded: 5,
+    personsIncluded: 8,
   },
   CLASSIC: {
     slug: 'classic',
@@ -71,7 +71,7 @@ export const PACKAGES = {
     visibility: 'pricingTable',
     highlighted: true,
     maxGuests: 8,
-    personsIncluded: 5,
+    personsIncluded: 8,
   },
   FAMILY: {
     slug: 'family',
@@ -87,7 +87,7 @@ export const PACKAGES = {
     visibility: 'pricingTable',
     highlighted: false,
     maxGuests: 8,
-    personsIncluded: 5,
+    personsIncluded: 8,
   },
   PARTY: {
     slug: 'party',

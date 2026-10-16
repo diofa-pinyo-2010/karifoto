@@ -29,7 +29,7 @@ export async function BookingEarlyBird() {
           </p> */}
           <ol className="mt-7 space-y-3 lg:block">
             {[
-              'Válaszd ki az időpontod',
+              'Kattints valamelyik napra, hogy lásd a SZABAD időpontokat.',
               'Töltsd ki rövid űrlapunkat',
               `Egyszerűen, bankkártyával fizetheted ki az előleget (${formatMoney(DEPOSIT_AMOUNT)})*`,
             ].map((step, i) => (

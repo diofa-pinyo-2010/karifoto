@@ -43,12 +43,14 @@ export function Pricing() {
               <div className="font-display text-4xl">{pkg.label}</div>
               <div className="mt-2 text-xs opacity-80">{buildSub(pkg)}</div>
 
-              <div className="mt-7 font-display text-[42px] leading-tight">
-                <span>{formatMoney(pkg.basePriceInCents)}</span>
+              <div className="mt-7 mb-6 font-display text-[42px] leading-tight">
+                <span>
+                  {formatMoney(pkg.basePriceInCents + pkg.studioPriceInCents)}
+                </span>
               </div>
-              <div className="mt-1 mb-6 text-xs opacity-80">
+              {/* <div className="mt-1 mb-6 text-xs opacity-80">
                 +{formatMoney(pkg.studioPriceInCents)} stúdió bérlet
-              </div>
+              </div> */}
 
               <ul className="mb-5 space-y-3 border-t border-[#80948a55] pt-6">
                 {features.map((feat) => (
