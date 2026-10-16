@@ -46,7 +46,7 @@ import {
   PRICING_TABLE_PACKAGES,
   requiresDecorChoice,
 } from '@/lib/catalog';
-import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
+import { EXTRA_FEE_PER_PET, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 import { createBookingIntent } from '@/server/booking-intent';
 
@@ -474,7 +474,7 @@ export function BookingFormNew({
                 </FieldTitle>
                 <FieldDescription className={HINT_CLASS}>
                   {packageKey != null &&
-                    `Az ${PACKAGES[packageKey].personsIncluded} fő fölötti vendégekért felárat számolunk.`}
+                    `Legfeljebb ${PACKAGES[packageKey].personsIncluded} fő. Ha ennél többen szeretnétek jönni, keressetek minket.`}
                 </FieldDescription>
                 <Stepper
                   inputRef={controlRef('numberOfPeople', field.ref)}
@@ -526,7 +526,15 @@ export function BookingFormNew({
                 Hoztok-e kisállatot?
               </FieldTitle>
               <FieldDescription className={HINT_CLASS}>
-                Kutya, cica, nyuszi is jöhet — kisállatonként felárat számolunk.
+                <span>
+                  Kutya, cica, nyuszi is jöhet — kisállatonként felárat
+                  <br />
+                  számolunk{field.value > 0 ? ':' : '.'}
+                </span>{' '}
+                <span className="font-medium text-brand-selected">
+                  {field.value > 0 &&
+                    `+${formatMoney(EXTRA_FEE_PER_PET * field.value)}`}
+                </span>
               </FieldDescription>
               <Stepper
                 value={field.value}

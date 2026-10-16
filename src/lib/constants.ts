@@ -5,6 +5,7 @@ import {
   PhotoShootingStatus,
   PriceAdjustmentType,
 } from '@/generated/prisma/enums';
+import { Package } from '@/generated/prisma/enums';
 import {
   packageIncludesAddOn,
   ALL_DECOR_SETS,
@@ -12,7 +13,7 @@ import {
 } from '@/lib/catalog';
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
-import type { DecorSet, Package } from '@/generated/prisma/enums';
+import type { DecorSet } from '@/generated/prisma/enums';
 
 export const BASE_URL_PROD = 'https://karifoto.hu';
 
@@ -86,17 +87,22 @@ export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) => {
 
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
-export const MAX_PETS = 8;
+export const MAX_PETS = 3;
 export const DEPOSIT_AMOUNT = 10000_00;
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_AFTERWORK_FEE = 10000_00;
+export const WEEKDAY_DISCOUNT_AMOUNT = 5000_00;
 // TODO: Somehow get these numbers from catalog.ts after adding Party
 // Upper bound across all packages; the per-package limit is `maxGuests`.
 export const MAX_PERSONS = Math.max(
   ...ALL_PACKAGES.map((pkg) => pkg.maxGuests),
 );
-export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
+export const MAX_PERSONS_EXCLUDED_PARTY = Math.max(
+  ...ALL_PACKAGES.filter((p) => p.key !== Package.PARTY).map(
+    (pkg) => pkg.maxGuests,
+  ),
+);
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;

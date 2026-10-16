@@ -128,6 +128,7 @@
   --font-display: var(--ui-font-display);
   --font-sans: var(--ui-font-sans);
   --font-script: var(--ui-font-script);
+  --font-handwritten: var(--ui-font-handwritten);
 
   /*
    * A 2026-os arculat kenyérbetűje, külön tokenen. Az átstílusozás alatt a
@@ -212,6 +213,7 @@
   --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
   /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
   --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
+  --ui-font-handwritten: var(--font-caveat-brush), 'Caveat Brush', cursive;
 }
 
 .dark {

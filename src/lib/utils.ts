@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
-import { addDays, format, parseISO } from 'date-fns';
-import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
+import { addDays, format, isWeekend, parseISO } from 'date-fns';
+import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
@@ -133,4 +133,12 @@ export function isBalanceCollected(ledgerEntries: LedgerEntry[]) {
     (entry) =>
       entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_BALANCE,
   );
+}
+
+export function isWeekday(date: Date) {
+  return !isWeekend(toZonedTime(date, STUDIO_TZ));
+}
+
+export function isWeekdayKey(dayKey: string) {
+  return !isWeekend(parseISO(dayKey));
 }

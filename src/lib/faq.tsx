@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react';
 
+import { PACKAGES } from '@/lib/catalog';
 import {
-  EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
-  MAX_PERSONS,
-  MAX_PERSONS_IN_PARTY_PACKAGE,
   EXTRA_EDIT_PER_IMAGE,
   EXTRA_FEE_PER_PET,
   EXPRESS_AFTERWORK_FEE,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
   DEPOSIT_AMOUNT,
+  MAX_PERSONS_EXCLUDED_PARTY,
 } from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 
@@ -28,15 +27,14 @@ export const faqs: FaqItem[] = [
         <p>
           Szeretnénk, hogy a fotózás ne kapkodás legyen, hanem élmény, és minden
           képen a legjobbat hozzuk ki belőletek. Ezért{' '}
-          <strong>maximum {MAX_PERSONS} főt</strong> fotózunk egy alkalommal,
-          így biztosítva, hogy mindenkire jusson elegendő figyelem és idő. 5 fő
-          felett a plusz résztvevők díja +
-          {formatMoney(EXTRA_FEE_PER_EXTRA_PERSON)}/fő.
+          <strong>maximum {MAX_PERSONS_EXCLUDED_PARTY} főt</strong> fotózunk egy
+          alkalommal, így biztosítva, hogy mindenkire jusson elegendő figyelem
+          és idő.
         </p>
         <p>
           A Party csomagban viszont{' '}
-          <strong>akár {MAX_PERSONS_IN_PARTY_PACKAGE}-en</strong> is jöhettek,
-          hiszen másfél óra áll rendelkezésre és itt nincs létszámfelár!
+          <strong>akár {PACKAGES.PARTY.maxGuests}-en</strong> is jöhettek,
+          hiszen másfél-két óra áll rendelkezésre!
         </p>
       </>
     ),
