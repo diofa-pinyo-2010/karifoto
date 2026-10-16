@@ -91,6 +91,7 @@ export const DEPOSIT_AMOUNT = 10000_00;
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_AFTERWORK_FEE = 10000_00;
+export const WEEKDAY_DISCOUNT_AMOUNT = 5000_00;
 // TODO: Somehow get these numbers from catalog.ts after adding Party
 // Upper bound across all packages; the per-package limit is `maxGuests`.
 export const MAX_PERSONS = Math.max(

@@ -23,7 +23,7 @@ import {
 
 const caveat = Caveat({ subsets: ['latin', 'latin-ext'], weight: '600' });
 
-import { WEEKDAY_DISCOUNT } from '@/lib/constants';
+import { WEEKDAY_DISCOUNT_AMOUNT } from '@/lib/constants';
 
 import type { TimeSlotPublic } from '@/lib/queries';
 
@@ -88,7 +88,7 @@ export function TimeSlotAccordion({
                       aria-hidden
                       className="absolute inset-x-0 top-[30%] bottom-[8%] -z-10 -rotate-1 rounded-[3px_10px_4px_12px] bg-[#ffe27a]/70"
                     />
-                    {formatMoney(WEEKDAY_DISCOUNT)} kedvezmény!
+                    {formatMoney(WEEKDAY_DISCOUNT_AMOUNT)} kedvezmény!
                   </span>
                 )}
                 <span
