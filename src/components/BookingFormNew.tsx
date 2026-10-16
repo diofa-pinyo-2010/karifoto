@@ -46,7 +46,7 @@ import {
   PRICING_TABLE_PACKAGES,
   requiresDecorChoice,
 } from '@/lib/catalog';
-import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
+import { EXTRA_FEE_PER_PET, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 import { createBookingIntent } from '@/server/booking-intent';
 
@@ -526,7 +526,14 @@ export function BookingFormNew({
                 Hoztok-e kisállatot?
               </FieldTitle>
               <FieldDescription className={HINT_CLASS}>
-                Kutya, cica, nyuszi is jöhet — kisállatonként felárat számolunk.
+                <span>
+                  Kutya, cica, nyuszi is jöhet — kisállatonként felárat
+                  számolunk.
+                </span>{' '}
+                <span className="text-brand-selected font-medium">
+                  {field.value > 0 &&
+                    `+${formatMoney(EXTRA_FEE_PER_PET * field.value)}`}
+                </span>
               </FieldDescription>
               <Stepper
                 value={field.value}

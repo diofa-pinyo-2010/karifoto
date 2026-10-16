@@ -86,7 +86,7 @@ export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) => {
 
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
-export const MAX_PETS = 8;
+export const MAX_PETS = 3;
 export const DEPOSIT_AMOUNT = 10000_00;
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
