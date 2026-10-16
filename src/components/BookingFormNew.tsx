@@ -487,6 +487,7 @@ export function BookingFormNew({
                   unit="fő"
                   ariaLabel="Hányan jönnétek"
                   invalid={fieldState.invalid}
+                  disabled={packageKey == null}
                 />
                 <div
                   className={`mt-1 flex items-center gap-2.25 rounded-2xl border px-3.5 py-2.75 text-[13.5px] leading-[1.45] ${
@@ -497,9 +498,11 @@ export function BookingFormNew({
                 >
                   <span className="flex-none">{missingPeople ? '✱' : '✓'}</span>
                   <span>
-                    {missingPeople
-                      ? 'Legalább 1 fő :)'
-                      : `Megvan! ${field.value === 1 ? 'egy' : field.value} főre készülünk.`}{' '}
+                    {packageKey == null
+                      ? 'Válassz csomagot!'
+                      : missingPeople
+                        ? 'Legalább 1 fő :)'
+                        : `Megvan! ${field.value === 1 ? 'egy' : field.value} főre készülünk.`}{' '}
                     {packageKey != null &&
                       field.value > PACKAGES[packageKey].personsIncluded &&
                       `(${field.value - PACKAGES[packageKey].personsIncluded} extra fő)`}
@@ -695,6 +698,7 @@ function Stepper({
   unit,
   ariaLabel,
   invalid,
+  disabled,
 }: {
   inputRef?: React.Ref<HTMLInputElement>;
   value: number;
@@ -706,6 +710,7 @@ function Stepper({
   unit: string;
   ariaLabel: string;
   invalid?: boolean;
+  disabled?: boolean;
 }) {
   return (
     // Az InputGroup `has-disabled:` stílusa a *vezérlő* letiltására való; itt a
@@ -715,7 +720,7 @@ function Stepper({
         <InputGroupButton
           size="icon-sm"
           aria-label={`${ariaLabel} — csökkentés`}
-          disabled={value <= min}
+          disabled={value <= min || disabled}
           onClick={() => onChange(Math.max(min, value - 1))}
         >
           <MinusIcon className="size-7" />
@@ -729,12 +734,13 @@ function Stepper({
         aria-label={ariaLabel}
         aria-invalid={invalid}
         className="text-center text-lg text-ink"
+        disabled={disabled}
       />
       <InputGroupAddon align="inline-end">
         <InputGroupButton
           size="icon-sm"
           aria-label={`${ariaLabel} — növelés`}
-          disabled={value >= max}
+          disabled={value >= max || disabled}
           onClick={() => onChange(Math.min(max, value + 1))}
         >
           <PlusIcon className="size-7" />
