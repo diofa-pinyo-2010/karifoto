@@ -2,8 +2,12 @@
 
 import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
 import { EARLY_BIRD_DATE_DEADLINE, MAX_PETS, UUID_RE } from '@/lib/constants';
-import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
+import {
+  attachEarlyBirdDiscount,
+  attachWeekdayDiscount,
+} from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
+import { isWeekday } from '@/lib/utils';
 
 import type { DecorSet, Package } from '@/generated/prisma/client';
 
@@ -113,6 +117,13 @@ export async function createBookingIntent(
 
       if (intent.timeSlot.startTime <= new Date(EARLY_BIRD_DATE_DEADLINE)) {
         const res = await attachEarlyBirdDiscount(intent.id);
+        if ('error' in res) {
+          console.error(res.error);
+        }
+      }
+
+      if (isWeekday(intent.timeSlot.startTime)) {
+        const res = await attachWeekdayDiscount(intent.id);
         if ('error' in res) {
           console.error(res.error);
         }
