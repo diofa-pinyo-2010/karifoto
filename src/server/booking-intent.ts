@@ -129,7 +129,7 @@ export async function createBookingIntent(
         }
       }
     } catch (err) {
-      console.error('Early bird discount failed: ', err);
+      console.error('Early bird and/or Weekday discount failed: ', err);
     }
 
     return { id: intent.id };

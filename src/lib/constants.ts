@@ -5,6 +5,7 @@ import {
   PhotoShootingStatus,
   PriceAdjustmentType,
 } from '@/generated/prisma/enums';
+import { Package } from '@/generated/prisma/enums';
 import {
   packageIncludesAddOn,
   ALL_DECOR_SETS,
@@ -12,7 +13,7 @@ import {
 } from '@/lib/catalog';
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
-import type { DecorSet, Package } from '@/generated/prisma/enums';
+import type { DecorSet } from '@/generated/prisma/enums';
 
 export const BASE_URL_PROD = 'https://karifoto.hu';
 
@@ -98,7 +99,7 @@ export const MAX_PERSONS = Math.max(
   ...ALL_PACKAGES.map((pkg) => pkg.maxGuests),
 );
 export const MAX_PERSONS_EXCLUDED_PARTY = Math.max(
-  ...ALL_PACKAGES.filter((p) => p.label !== 'Party').map(
+  ...ALL_PACKAGES.filter((p) => p.key !== Package.PARTY).map(
     (pkg) => pkg.maxGuests,
   ),
 );

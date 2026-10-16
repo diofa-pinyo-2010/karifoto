@@ -1,11 +1,8 @@
 'use client';
 
-import { Caveat } from 'next/font/google';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-
-const caveat = Caveat({ subsets: ['latin', 'latin-ext'], weight: '600' });
 
 export function EarlyBirdNote() {
   const ref = useRef<HTMLDivElement>(null);
@@ -43,12 +40,7 @@ export function EarlyBirdNote() {
       ref={ref}
       className="mt-6 -mb-6 flex flex-col items-center gap-1 lg:mt-10 lg:-mr-12 lg:mb-0 lg:flex-row lg:justify-end lg:gap-3"
     >
-      <p
-        className={cn(
-          caveat.className,
-          '-rotate-3 text-center text-[1.75rem] leading-tight text-brand-accent lg:text-left lg:text-4xl',
-        )}
-      >
+      <p className="-rotate-3 text-center font-handwritten text-[1.75rem] leading-tight text-brand-accent lg:text-left lg:text-4xl">
         Csapj le az Early Bird helyekre,
         <br />
         most{' '}

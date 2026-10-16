@@ -1,12 +1,12 @@
 'use client';
 
-import { Caveat } from 'next/font/google';
 import Link from 'next/link';
 
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 import { FaceSlightlyFrowningIcon } from 'lucide-react';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
+import { WEEKDAY_DISCOUNT_AMOUNT } from '@/lib/constants';
 import {
   monthDayFormatter,
   shortDateFormatter,
@@ -20,10 +20,6 @@ import {
   isWeekdayKey,
   type GroupedSlots,
 } from '@/lib/utils';
-
-const caveat = Caveat({ subsets: ['latin', 'latin-ext'], weight: '600' });
-
-import { WEEKDAY_DISCOUNT_AMOUNT } from '@/lib/constants';
 
 import type { TimeSlotPublic } from '@/lib/queries';
 
@@ -78,12 +74,7 @@ export function TimeSlotAccordion({
               <AccordionPrimitive.Trigger className="group flex min-h-16 flex-1 items-center justify-between gap-2 py-4 text-left text-[11px] font-semibold tracking-wide focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
                 {formatDayTitle(daySlots[0].startTime)}
                 {isWeekday && (
-                  <span
-                    className={cn(
-                      caveat.className,
-                      'relative isolate inline-block px-1.5 font-sans text-base text-brand-accent lg:text-xl',
-                    )}
-                  >
+                  <span className="relative isolate inline-block px-1.5 font-handwritten text-base text-brand-accent lg:text-xl">
                     <span
                       aria-hidden
                       className="absolute inset-x-0 top-[30%] bottom-[8%] -z-10 -rotate-1 rounded-[3px_10px_4px_12px] bg-[#ffe27a]/70"

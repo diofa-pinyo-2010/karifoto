@@ -61,6 +61,13 @@ const mono = localFont({
   fallback: ['monospace'],
 });
 
+const caveat = localFont({
+  src: '../fonts/Caveat-Bold.woff2',
+  weight: '700',
+  variable: '--font-caveat',
+  fallback: ['cursive'],
+});
+
 export const metadata: Metadata = {
   title: {
     template: `%s • ${SITE_NAME} 🎄 • karácsonyi fotózás Budapesten`,
@@ -88,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         script.variable,
         sans.variable,
         mono.variable,
+        caveat.variable,
         'font-sans',
       )}
       suppressHydrationWarning
