@@ -9,7 +9,7 @@ subset to latin + latin-ext.
 
 ## Copyright notices
 
-- **Caveat**: Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)
+- **Caveat Brush**: Copyright 2015 Google Inc. All Rights Reserved.
 - **Cormorant Garamond**: Copyright 2015 the Cormorant Project Authors (github.com/CatharsisFonts/Cormorant)
 - **Geist Mono**: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)
 - **Jost**: Copyright 2020 The Jost Project Authors (https://github.com/indestructible-type)

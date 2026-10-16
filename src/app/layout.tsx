@@ -63,7 +63,7 @@ const mono = localFont({
 
 const caveatBrush = localFont({
   src: '../fonts/caveat-brush-regular.woff2',
-  weight: '700',
+  weight: '400',
   variable: '--font-caveat-brush',
   fallback: ['cursive'],
 });
