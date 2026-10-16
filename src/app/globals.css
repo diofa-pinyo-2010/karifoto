@@ -213,7 +213,7 @@
   --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
   /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
   --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
-  --ui-font-handwritten: var(--font-caveat), 'Caveat', cursive;
+  --ui-font-handwritten: var(--font-caveat-brush), 'Caveat Brush', cursive;
 }
 
 .dark {

@@ -61,10 +61,10 @@ const mono = localFont({
   fallback: ['monospace'],
 });
 
-const caveat = localFont({
-  src: '../fonts/Caveat-Bold.woff2',
+const caveatBrush = localFont({
+  src: '../fonts/caveat-brush-regular.woff2',
   weight: '700',
-  variable: '--font-caveat',
+  variable: '--font-caveat-brush',
   fallback: ['cursive'],
 });
 
@@ -95,7 +95,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         script.variable,
         sans.variable,
         mono.variable,
-        caveat.variable,
+        caveatBrush.variable,
         'font-sans',
       )}
       suppressHydrationWarning
