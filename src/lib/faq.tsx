@@ -328,7 +328,10 @@ export const faqs: FaqItem[] = [
         <p>
           Amint végeztetek a válogatással az {clientPortalLink}-on jelezzétek és
           onnantól számított{' '}
-          {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül
+          <strong>
+            {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon
+            belül
+          </strong>
           feltöltjük nektek a kész szerkesztett fotókat is, amit ugyancsak
           elértek. Na hol? Igen, az {clientPortalLink}-on :-)
         </p>
