@@ -1,5 +1,6 @@
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 
+import { FaqAccordionRoot } from '@/components/FaqAccordionRoot';
 import { faqs } from '@/lib/faq';
 
 /**
@@ -16,9 +17,10 @@ import { faqs } from '@/lib/faq';
  * elromlanának.
  *
  * Egyszerre egy panel nyílik (a `multiple` alapértelmezésben false), az első
- * kérdés nyitva indul, a magasságanimáció a `--accordion-panel-height`
- * változóra épül. A Base UI saját `'use client'`-tel jön, így ez a komponens
- * szerver oldali marad.
+ * kérdés nyitva indul, kivéve ha a URL hash egy kérdés slugja (`/#faq-kisallat`) —
+ * ezt a `FaqAccordionRoot` kezeli. A magasságanimáció a
+ * `--accordion-panel-height` változóra épül. Csak a gyökér kliens oldali, ez a
+ * komponens szerver oldali marad.
  */
 export function Faq() {
   return (
@@ -39,12 +41,13 @@ export function Faq() {
           </a> */}
         </div>
 
-        <AccordionPrimitive.Root defaultValue={[faqs[0].q]}>
+        <FaqAccordionRoot slugs={faqs.map((f) => f.slug)}>
           {faqs.map((f) => (
             <AccordionPrimitive.Item
-              key={f.q}
-              value={f.q}
-              className="border-b border-brand-ink/20"
+              id={f.slug}
+              key={f.slug}
+              value={f.slug}
+              className="scroll-mt-8 border-brand-ink/20 not-last:border-b"
             >
               <AccordionPrimitive.Header>
                 <AccordionPrimitive.Trigger className="group flex min-h-17 w-full items-center justify-between gap-4 py-5 text-left text-sm font-semibold select-none focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ad7135]">
@@ -57,14 +60,14 @@ export function Faq() {
                   </span>
                 </AccordionPrimitive.Trigger>
               </AccordionPrimitive.Header>
-              <AccordionPrimitive.Panel className="h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+              <AccordionPrimitive.Panel className="h-(--accordion-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
                 <div className="space-y-3 pb-6 text-sm leading-7 text-brand-muted [&_strong]:font-semibold [&_strong]:text-brand-ink [&_ul]:list-disc [&_ul]:pl-5">
                   {f.a}
                 </div>
               </AccordionPrimitive.Panel>
             </AccordionPrimitive.Item>
           ))}
-        </AccordionPrimitive.Root>
+        </FaqAccordionRoot>
       </div>
 
       <div className="brand-shell mt-12 flex flex-col items-center justify-center gap-5 border-t border-brand-ink/15 pt-10 text-center sm:flex-row sm:gap-9">
