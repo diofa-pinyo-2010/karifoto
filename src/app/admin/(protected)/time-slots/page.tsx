@@ -56,10 +56,10 @@ export default async function AdminTimeSlotsPage() {
 
           const fillClass =
             percentage < 50
-              ? 'bg-[linear-gradient(var(--color-red-100),var(--color-red-100))] dark:bg-[linear-gradient(var(--color-red-950),var(--color-red-950))]'
+              ? 'bg-[linear-gradient(var(--color-red-100),var(--color-red-100))] dark:bg-[linear-gradient(var(--color-red-800),var(--color-red-800))]'
               : percentage < 80
-                ? 'bg-[linear-gradient(var(--color-amber-100),var(--color-amber-100))] dark:bg-[linear-gradient(var(--color-amber-950),var(--color-amber-950))]'
-                : 'bg-[linear-gradient(var(--color-green-100),var(--color-green-100))] dark:bg-[linear-gradient(var(--color-green-950),var(--color-green-950))]';
+                ? 'bg-[linear-gradient(var(--color-amber-100),var(--color-amber-100))] dark:bg-[linear-gradient(var(--color-amber-800),var(--color-amber-800))]'
+                : 'bg-[linear-gradient(var(--color-green-100),var(--color-green-100))] dark:bg-[linear-gradient(var(--color-green-800),var(--color-green-800))]';
 
           return (
             <AccordionItem key={dayKey} value={dayKey}>
