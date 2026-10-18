@@ -41,7 +41,10 @@ export default async function AdminTimeSlotsPage() {
         </h1>
         <CreateTimeSlotDialog />
       </div>
-      <Accordion multiple={false} defaultValue={[days[0][0]]}>
+      <Accordion
+        multiple={false}
+        // defaultValue={[days[0][0]]}
+      >
         {days.map(([dayKey, slots]) => {
           const numberOfBookedSlots = slots.filter(
             (slot) => slot.photoShooting != null,
