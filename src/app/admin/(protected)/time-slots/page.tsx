@@ -48,16 +48,16 @@ export default async function AdminTimeSlotsPage() {
           ).length;
 
           // Eg. 9:00-20:00, the last starting at 19:00, there is 11 slots.
-          const estimatedMaxPhotoShootingADay = 8;
+          const estimatedMaxPhotoShootingADay = 11;
           const percentage =
             (Math.max(numberOfBookedSlots, 0.5) /
               estimatedMaxPhotoShootingADay) *
             100;
 
           const fillClass =
-            percentage < 50
+            percentage < 40
               ? 'bg-[linear-gradient(var(--color-red-100),var(--color-red-100))] dark:bg-[linear-gradient(var(--color-red-800),var(--color-red-800))]'
-              : percentage < 80
+              : percentage < 70
                 ? 'bg-[linear-gradient(var(--color-amber-100),var(--color-amber-100))] dark:bg-[linear-gradient(var(--color-amber-800),var(--color-amber-800))]'
                 : 'bg-[linear-gradient(var(--color-green-100),var(--color-green-100))] dark:bg-[linear-gradient(var(--color-green-800),var(--color-green-800))]';
 
