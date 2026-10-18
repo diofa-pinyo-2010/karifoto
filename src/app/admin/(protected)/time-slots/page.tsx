@@ -48,7 +48,7 @@ export default async function AdminTimeSlotsPage() {
           ).length;
 
           // Eg. 9:00-20:00, the last starting at 19:00, there is 11 slots.
-          const estimatedMaxPhotoShootingADay = 11;
+          const estimatedMaxPhotoShootingADay = 8;
           const percentage =
             (Math.max(numberOfBookedSlots, 1) / estimatedMaxPhotoShootingADay) *
             100;
