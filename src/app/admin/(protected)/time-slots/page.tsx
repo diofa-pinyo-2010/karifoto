@@ -46,9 +46,29 @@ export default async function AdminTimeSlotsPage() {
           const numberOfBookedSlots = slots.filter(
             (slot) => slot.photoShooting != null,
           ).length;
+
+          // Eg. 9:00-20:00, the last starting at 19:00, there is 11 slots.
+          const estimatedMaxPhotoShootingADay = 11;
+          const percentage =
+            (Math.max(numberOfBookedSlots, 1) / estimatedMaxPhotoShootingADay) *
+            100;
+
+          const fillClass =
+            percentage < 50
+              ? 'bg-[linear-gradient(var(--color-red-100),var(--color-red-100))] dark:bg-[linear-gradient(var(--color-red-950),var(--color-red-950))]'
+              : percentage < 80
+                ? 'bg-[linear-gradient(var(--color-amber-100),var(--color-amber-100))] dark:bg-[linear-gradient(var(--color-amber-950),var(--color-amber-950))]'
+                : 'bg-[linear-gradient(var(--color-green-100),var(--color-green-100))] dark:bg-[linear-gradient(var(--color-green-950),var(--color-green-950))]';
+
           return (
             <AccordionItem key={dayKey} value={dayKey}>
-              <AccordionTrigger className="text-lg">
+              <AccordionTrigger
+                className={cn(
+                  'bg-left bg-no-repeat px-3 text-lg transition-[background-size] duration-500',
+                  fillClass,
+                )}
+                style={{ backgroundSize: `${percentage}% 100%` }}
+              >
                 {dateFormatter.format(slots[0].startTime)}{' '}
                 {numberOfBookedSlots > 0 && `(${numberOfBookedSlots} fotózás)`}
               </AccordionTrigger>
