@@ -78,8 +78,10 @@ export default async function BookingsPage() {
                             #{shooting.sequenceNumber}
                           </span>{' '}
                           {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
-                          <mark>{shooting.package}</mark> •{' '}
-                          {shooting.client.owner.name}
+                          <span className="text-primary dark:text-primary-foreground">
+                            {shooting.package}
+                          </span>{' '}
+                          • {shooting.client.owner.name}
                         </ItemTitle>
                         <ItemDescription>
                           {` 
