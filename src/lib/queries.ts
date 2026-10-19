@@ -411,6 +411,10 @@ export async function getAdminLeads(): Promise<
 }
 
 const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
+// Növeld, ha a `buildAdminStats()` visszatérési alakja változik! A Vercel Data
+// Cache túléli a deployt, és a kulcs csak a callback forrásából + ebből áll,
+// ezért enélkül az új kód a régi alakú cache-elt adatot kapná vissza.
+const ADMIN_STATS_CACHE_VERSION = 'v2';
 
 /**
  * Az összes fotózás és könyvelési tétel alapján számolt statisztika, egy óráig
@@ -442,6 +446,6 @@ export const getAdminStats = unstable_cache(
 
     return { ...stats, syncedAt: new Date().toISOString() };
   },
-  [ADMIN_STATS_TAG],
+  [ADMIN_STATS_TAG, ADMIN_STATS_CACHE_VERSION],
   { tags: [ADMIN_STATS_TAG], revalidate: ADMIN_STATS_REVALIDATE_SECONDS },
 );
