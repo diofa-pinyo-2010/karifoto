@@ -1,4 +1,5 @@
 import 'server-only';
+import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 
 import {
@@ -7,6 +8,7 @@ import {
   Prisma,
   StaffProfileRole,
 } from '@/generated/prisma/client';
+import { ADMIN_STATS_TAG, buildAdminStats } from '@/lib/admin-stats';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
   EARLY_BIRD_DATE_DEADLINE,
@@ -407,3 +409,39 @@ export async function getAdminLeads(): Promise<
 
   return { success: true, leads };
 }
+
+const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
+
+/**
+ * Az összes fotózás és könyvelési tétel alapján számolt statisztika, egy óráig
+ * cache-elve. Az oldal "Refresh" gombja a `refreshAdminStats()` actionnel
+ * azonnal érvényteleníti. Nincs benne jogosultság-ellenőrzés, mert
+ * `unstable_cache`-en belül nem olvasható cookie — a hívó oldal
+ * (`requireNavAccess`) felel érte. A `syncedAt` string, mert a cache
+ * JSON-ként tárolja az eredményt.
+ */
+export const getAdminStats = unstable_cache(
+  async () => {
+    const [shootings, ledgerGroups] = await Promise.all([
+      prisma.photoShooting.findMany({
+        include: { pricing: true, adjustments: true },
+      }),
+      prisma.ledgerEntry.groupBy({
+        by: ['category'],
+        _sum: { amountInCents: true },
+      }),
+    ]);
+
+    const stats = buildAdminStats({
+      shootings,
+      ledgerSums: ledgerGroups.map((group) => ({
+        category: group.category,
+        amountInCents: group._sum.amountInCents ?? 0,
+      })),
+    });
+
+    return { ...stats, syncedAt: new Date().toISOString() };
+  },
+  [ADMIN_STATS_TAG],
+  { tags: [ADMIN_STATS_TAG], revalidate: ADMIN_STATS_REVALIDATE_SECONDS },
+);
