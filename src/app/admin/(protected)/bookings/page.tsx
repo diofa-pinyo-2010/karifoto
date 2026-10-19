@@ -15,7 +15,6 @@ import { requiresDecorChoice } from '@/lib/catalog';
 import {
   APP_URLS,
   DECOR_SET_LABEL,
-  PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
 } from '@/lib/constants';
