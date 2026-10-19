@@ -2,8 +2,13 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package } from '@/generated/prisma/enums';
+import { isLightPlayChargeable } from '@/lib/constants';
 
 const MONEY_CARD_COUNT = 5;
+const SHOOTING_ROW_COUNT = Object.values(Package).reduce(
+  (sum, pkg) => sum + (isLightPlayChargeable(pkg) ? 2 : 1),
+  0,
+);
 
 export default function StatsAdminLoading() {
   return (
@@ -38,8 +43,8 @@ export default function StatsAdminLoading() {
           <Skeleton className="h-9 w-16" />
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          {Object.values(Package).map((pkg) => (
-            <div key={pkg} className="flex items-center justify-between">
+          {Array.from({ length: SHOOTING_ROW_COUNT }, (_, index) => (
+            <div key={index} className="flex items-center justify-between">
               <Skeleton className="h-5 w-20" />
               <Skeleton className="h-7 w-8" />
             </div>

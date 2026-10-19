@@ -7,8 +7,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Package } from '@/generated/prisma/enums';
-import { PACKAGE_LABEL } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { dateTimeWithYearFormatter } from '@/lib/formatters';
 import { getAdminStats } from '@/lib/queries';
@@ -76,9 +74,9 @@ export default async function StatsAdminPage() {
               <CardDescription>{card.title}</CardDescription>
               <CardTitle
                 className={cn(
-                  'text-2xl font-bold tabular-nums',
+                  'text-2xl font-black tabular-nums',
                   card.amount < 0 && 'text-destructive',
-                  card.estimated && 'text-brand-muted',
+                  card.estimated && 'font-bold text-brand-muted',
                 )}
               >
                 {formatMoney(card.amount)}
@@ -99,18 +97,18 @@ export default async function StatsAdminPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          {Object.values(Package).map((pkg) => (
-            <div key={pkg} className="flex items-center justify-between">
-              <span>{PACKAGE_LABEL[pkg]}</span>
-              <span className="text-lg tabular-nums">
-                {stats.shootings.byPackage[pkg]}
+          {stats.shootings.rows.map((row) => (
+            <div key={row.key} className="flex items-center justify-between">
+              <span>{row.label}</span>
+              <span className="text-lg font-bold tabular-nums">
+                {row.count}
               </span>
             </div>
           ))}
           <Separator />
           <div className="flex items-center justify-between text-muted-foreground">
             <span>Lemondott</span>
-            <span className="text-lg tabular-nums">
+            <span className="text-lg font-bold tabular-nums">
               {stats.shootings.cancelled}
             </span>
           </div>
