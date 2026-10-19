@@ -247,6 +247,7 @@ model LedgerEntry {
   currency      Currency            @default(HUF)
   method        PaymentMethod
   paymentIntent String?             @unique
+  description   String?
 
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
   invoiceId String?  @unique @db.Uuid
