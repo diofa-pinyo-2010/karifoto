@@ -133,5 +133,7 @@ function rowKey(pkg: Package, isLightPlaySelected: boolean) {
 
 function rowLabel(pkg: Package, withLightPlay: boolean) {
   if (!isLightPlayChargeable(pkg)) return PACKAGE_LABEL[pkg];
-  return `${PACKAGE_LABEL[pkg]} ${withLightPlay ? '+ fényjáték' : ''}`;
+  return withLightPlay
+    ? `${PACKAGE_LABEL[pkg]} + fényjáték`
+    : PACKAGE_LABEL[pkg];
 }
