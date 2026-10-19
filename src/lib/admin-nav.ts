@@ -6,6 +6,7 @@ import {
   MailIcon,
   CircleQuestionMarkIcon,
   SearchIcon,
+  TrendingUpIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -51,6 +52,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
   {
     label: 'Csak admin',
     items: [
+      {
+        title: 'Statisztikák',
+        href: '/admin/stats',
+        icon: TrendingUpIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
       {
         title: 'Idősávok',
         href: '/admin/time-slots',
