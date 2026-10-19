@@ -74,6 +74,9 @@ export default async function BookingsPage() {
                           {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
                         </Badge>
                         <ItemTitle>
+                          <span className="text-muted-foreground">
+                            #{shooting.sequenceNumber}
+                          </span>{' '}
                           {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
                           <mark>{shooting.package}</mark> •{' '}
                           {shooting.client.owner.name}

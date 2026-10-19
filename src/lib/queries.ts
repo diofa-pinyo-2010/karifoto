@@ -30,11 +30,11 @@ type PhotoShootingWithClient = Prisma.PhotoShootingGetPayload<
 >;
 
 export async function fetchUpcomingPhotoShootings(): Promise<
-  PhotoShootingWithClient[]
+  (PhotoShootingWithClient & { sequenceNumber: number })[]
 > {
   await verifySession();
 
-  return prisma.photoShooting.findMany({
+  const shootings = await prisma.photoShooting.findMany({
     where: {
       AND: {
         timeSlot: { endTime: { gte: new Date() } },
@@ -47,6 +47,22 @@ export async function fetchUpcomingPhotoShootings(): Promise<
     orderBy: { timeSlot: { startTime: 'asc' } },
     ...photoShootingWithClientInclude,
   });
+
+  if (shootings.length === 0) return [];
+
+  // The list itself is the boundary: everything before its first item has
+  // already happened, so the sequence continues from that count.
+  const precedingCount = await prisma.photoShooting.count({
+    where: {
+      timeSlot: { startTime: { lt: shootings[0].timeSlot.startTime } },
+      status: { not: PhotoShootingStatus.CANCELLED },
+    },
+  });
+
+  return shootings.map((shooting, index) => ({
+    ...shooting,
+    sequenceNumber: precedingCount + index + 1,
+  }));
 }
 
 export async function fetchAllPhotoShootings({
