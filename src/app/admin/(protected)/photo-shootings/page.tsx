@@ -63,7 +63,8 @@ export default async function AllPhotoShootingsPage({
                     href={APP_URLS.photoShootingAdminPage(shooting.id)}
                     className="font-semibold underline underline-offset-4 hover:no-underline"
                   >
-                    {formatSlotDateTime(shooting.timeSlot.startTime)}
+                    {formatSlotDateTime(shooting.timeSlot.startTime)} •{' '}
+                    {shooting.package}
                   </Link>
                   <Badge
                     variant="secondary"

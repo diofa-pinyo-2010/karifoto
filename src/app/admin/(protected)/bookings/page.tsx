@@ -76,13 +76,13 @@ export default async function BookingsPage() {
                         </Badge>
                         <ItemTitle>
                           {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
+                          <mark>{shooting.package}</mark> •{' '}
                           {shooting.client.owner.name}
                         </ItemTitle>
                         <ItemDescription>
                           {` 
-                            ${PACKAGE_LABEL[shooting.package]}  
-                            ${requiresDecorChoice(shooting.package) && shooting.decorSet ? `// Dekor: ${DECOR_SET_LABEL[shooting.decorSet]}` : ''}
-                            // Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
+                            ${requiresDecorChoice(shooting.package) && shooting.decorSet ? `Dekor: ${DECOR_SET_LABEL[shooting.decorSet]} //` : ''}
+                            Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
                           `}
                         </ItemDescription>
                       </ItemContent>

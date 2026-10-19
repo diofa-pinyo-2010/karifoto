@@ -127,6 +127,7 @@ export async function fetchTimeSlotsAdmin() {
       photoShooting: {
         select: {
           id: true,
+          package: true,
           client: { select: { owner: { select: { name: true } } } },
         },
       },

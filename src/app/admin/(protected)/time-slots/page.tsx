@@ -117,6 +117,7 @@ export default async function AdminTimeSlotsPage() {
                                       photoShooting.id,
                                     )}
                                   >
+                                    {photoShooting.package} •{' '}
                                     {photoShooting.client.owner.name}
                                   </Link>
                                 ) : (
