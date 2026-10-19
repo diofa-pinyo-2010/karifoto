@@ -29,10 +29,6 @@ export default async function AdminTimeSlotsPage() {
   const groupedDays = groupByDay(timeSlots, (slot) => slot.startTime);
   const days = Array.from(groupedDays.entries());
 
-  if (days.length === 0) {
-    return <p>Nincsenek timeslot-ok.</p>;
-  }
-
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <div className="flex items-center justify-between gap-4">
@@ -41,110 +37,115 @@ export default async function AdminTimeSlotsPage() {
         </h1>
         <CreateTimeSlotDialog />
       </div>
-      <Accordion
-        multiple={false}
-        // defaultValue={[days[0][0]]}
-      >
-        {days.map(([dayKey, slots]) => {
-          const numberOfBookedSlots = slots.filter(
-            (slot) => slot.photoShooting != null,
-          ).length;
+      {days.length === 0 ? (
+        <p>Nincsenek timeslot-ok.</p>
+      ) : (
+        <Accordion
+          multiple={false}
+          // defaultValue={[days[0][0]]}
+        >
+          {days.map(([dayKey, slots]) => {
+            const numberOfBookedSlots = slots.filter(
+              (slot) => slot.photoShooting != null,
+            ).length;
 
-          // Eg. 9:00-20:00, the last starting at 19:00, there is 11 slots.
-          const estimatedMaxPhotoShootingADay = 11;
-          const percentage =
-            (Math.max(numberOfBookedSlots, 0.2) /
-              estimatedMaxPhotoShootingADay) *
-            100;
+            // Eg. 9:00-20:00, the last starting at 19:00, there is 11 slots.
+            const estimatedMaxPhotoShootingADay = 11;
+            const percentage =
+              (Math.max(numberOfBookedSlots, 0.2) /
+                estimatedMaxPhotoShootingADay) *
+              100;
 
-          const fillClass =
-            percentage < 40
-              ? 'bg-[linear-gradient(var(--color-red-100),var(--color-red-100))] dark:bg-[linear-gradient(var(--color-red-800),var(--color-red-800))]'
-              : percentage < 70
-                ? 'bg-[linear-gradient(var(--color-amber-100),var(--color-amber-100))] dark:bg-[linear-gradient(var(--color-amber-800),var(--color-amber-800))]'
-                : 'bg-[linear-gradient(var(--color-green-100),var(--color-green-100))] dark:bg-[linear-gradient(var(--color-green-800),var(--color-green-800))]';
+            const fillClass =
+              percentage < 40
+                ? 'bg-[linear-gradient(var(--color-red-100),var(--color-red-100))] dark:bg-[linear-gradient(var(--color-red-800),var(--color-red-800))]'
+                : percentage < 70
+                  ? 'bg-[linear-gradient(var(--color-amber-100),var(--color-amber-100))] dark:bg-[linear-gradient(var(--color-amber-800),var(--color-amber-800))]'
+                  : 'bg-[linear-gradient(var(--color-green-100),var(--color-green-100))] dark:bg-[linear-gradient(var(--color-green-800),var(--color-green-800))]';
 
-          return (
-            <AccordionItem key={dayKey} value={dayKey}>
-              <AccordionTrigger
-                className={cn(
-                  'bg-left bg-no-repeat px-3 text-lg transition-[background-size] duration-500',
-                  fillClass,
-                )}
-                style={{ backgroundSize: `${percentage}% 100%` }}
-              >
-                {dateFormatter.format(slots[0].startTime)}{' '}
-                {numberOfBookedSlots > 0 && `(${numberOfBookedSlots} fotózás)`}
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="flex flex-col gap-3">
-                  {slots.map(({ id, revealed, startTime, photoShooting }) => {
-                    return (
-                      <li key={id} className="flex items-center gap-2">
-                        <Item
-                          variant="outline"
-                          className={cn(
-                            photoShooting != null && 'bg-primary/5',
-                          )}
-                        >
-                          <ItemMedia>
-                            {photoShooting != null ? (
-                              <div className="rounded-full bg-primary p-1">
-                                <CameraIcon className="text-primary-foreground" />
-                              </div>
-                            ) : revealed ? (
-                              <div className="rounded-full bg-muted p-1">
-                                <CalendarPlusIcon className="text-accent-foreground" />
-                              </div>
-                            ) : (
-                              <div className="rounded-full bg-muted p-1">
-                                <CalendarOffIcon className="text-muted-foreground/50" />
-                              </div>
+            return (
+              <AccordionItem key={dayKey} value={dayKey}>
+                <AccordionTrigger
+                  className={cn(
+                    'bg-left bg-no-repeat px-3 text-lg transition-[background-size] duration-500',
+                    fillClass,
+                  )}
+                  style={{ backgroundSize: `${percentage}% 100%` }}
+                >
+                  {dateFormatter.format(slots[0].startTime)}{' '}
+                  {numberOfBookedSlots > 0 &&
+                    `(${numberOfBookedSlots} fotózás)`}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="flex flex-col gap-3">
+                    {slots.map(({ id, revealed, startTime, photoShooting }) => {
+                      return (
+                        <li key={id} className="flex items-center gap-2">
+                          <Item
+                            variant="outline"
+                            className={cn(
+                              photoShooting != null && 'bg-primary/5',
                             )}
-                          </ItemMedia>
-                          <ItemContent>
-                            <ItemTitle
-                              className={cn(
-                                !revealed && 'text-muted-foreground',
-                              )}
-                            >
-                              {timeFormatter.format(startTime)}
-                            </ItemTitle>
-                            <ItemDescription>
+                          >
+                            <ItemMedia>
                               {photoShooting != null ? (
-                                <Link
-                                  href={APP_URLS.photoShootingAdminPage(
-                                    photoShooting.id,
-                                  )}
-                                >
-                                  {photoShooting.client.owner.name}
-                                </Link>
+                                <div className="rounded-full bg-primary p-1">
+                                  <CameraIcon className="text-primary-foreground" />
+                                </div>
+                              ) : revealed ? (
+                                <div className="rounded-full bg-muted p-1">
+                                  <CalendarPlusIcon className="text-accent-foreground" />
+                                </div>
                               ) : (
-                                'szabad'
+                                <div className="rounded-full bg-muted p-1">
+                                  <CalendarOffIcon className="text-muted-foreground/50" />
+                                </div>
                               )}
-                            </ItemDescription>
-                          </ItemContent>
-                          <ItemActions>
-                            <RevealedSwitch
-                              disabled={photoShooting != null}
-                              timeSlotId={id}
-                              revealed={revealed}
-                            />
-                          </ItemActions>
-                        </Item>
-                        <DeleteTimeSlotButton
-                          timeSlotId={id}
-                          disabled={photoShooting != null}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+                            </ItemMedia>
+                            <ItemContent>
+                              <ItemTitle
+                                className={cn(
+                                  !revealed && 'text-muted-foreground',
+                                )}
+                              >
+                                {timeFormatter.format(startTime)}
+                              </ItemTitle>
+                              <ItemDescription>
+                                {photoShooting != null ? (
+                                  <Link
+                                    href={APP_URLS.photoShootingAdminPage(
+                                      photoShooting.id,
+                                    )}
+                                  >
+                                    {photoShooting.client.owner.name}
+                                  </Link>
+                                ) : (
+                                  'szabad'
+                                )}
+                              </ItemDescription>
+                            </ItemContent>
+                            <ItemActions>
+                              <RevealedSwitch
+                                disabled={photoShooting != null}
+                                timeSlotId={id}
+                                revealed={revealed}
+                              />
+                            </ItemActions>
+                          </Item>
+                          <DeleteTimeSlotButton
+                            timeSlotId={id}
+                            disabled={photoShooting != null}
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+      )}
     </div>
   );
 }

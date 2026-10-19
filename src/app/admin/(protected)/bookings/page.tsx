@@ -18,7 +18,6 @@ import {
   PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
-  UPCOMING_SHOOTINGS_TO_SHOW,
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchUpcomingPhotoShootings } from '@/lib/queries';
@@ -48,7 +47,7 @@ export default async function BookingsPage() {
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        A következő (max) {UPCOMING_SHOOTINGS_TO_SHOW} fotózás
+        A következő fotózások
       </h1>
       {days.map(([dayKey, dayPhotoShootings]) => {
         return (
