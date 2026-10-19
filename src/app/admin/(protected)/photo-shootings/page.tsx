@@ -40,7 +40,7 @@ export default async function AllPhotoShootingsPage({
   return (
     <div className="mx-auto flex w-full flex-col gap-4">
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        Összes foglalás
+        Kereső
       </h1>
       <ShootingListControls search={search ?? ''} order={order} />
 
