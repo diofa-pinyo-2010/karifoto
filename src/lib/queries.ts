@@ -120,7 +120,6 @@ export async function fetchTimeSlotsAdmin() {
   await verifySession();
 
   return prisma.timeSlot.findMany({
-    where: { startTime: { gte: new Date() } },
     select: {
       id: true,
       startTime: true,
