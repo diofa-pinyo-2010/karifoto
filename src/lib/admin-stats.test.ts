@@ -84,8 +84,54 @@ describe('buildAdminStats', () => {
       shootings: {
         total: 0,
         cancelled: 0,
-        byPackage: { MINI: 0, CLASSIC: 0, FAMILY: 0, PARTY: 0 },
+        rows: [
+          {
+            key: 'MINI_WITHOUT_LIGHT_PLAY',
+            label: 'Mini',
+            count: 0,
+          },
+          { key: 'MINI_WITH_LIGHT_PLAY', label: 'Mini + fényjáték', count: 0 },
+          {
+            key: 'CLASSIC_WITHOUT_LIGHT_PLAY',
+            label: 'Classic',
+            count: 0,
+          },
+          {
+            key: 'CLASSIC_WITH_LIGHT_PLAY',
+            label: 'Classic + fényjáték',
+            count: 0,
+          },
+          { key: 'FAMILY', label: 'Family', count: 0 },
+          { key: 'PARTY', label: 'Party', count: 0 },
+        ],
       },
+    });
+  });
+
+  it('splits Mini and Classic by light play, but not packages that include it', () => {
+    const stats = buildAdminStats({
+      shootings: [
+        makeShooting({ package: 'MINI' }),
+        makeShooting({ package: 'MINI', isLightPlaySelected: true }),
+        makeShooting({ package: 'MINI', isLightPlaySelected: true }),
+        makeShooting({ package: 'CLASSIC', isLightPlaySelected: true }),
+        makeShooting({ package: 'FAMILY' }),
+        makeShooting({ package: 'FAMILY', isLightPlaySelected: true }),
+      ],
+      ledgerSums: [],
+    });
+
+    expect(
+      Object.fromEntries(
+        stats.shootings.rows.map((row) => [row.key, row.count]),
+      ),
+    ).toEqual({
+      MINI_WITHOUT_LIGHT_PLAY: 1,
+      MINI_WITH_LIGHT_PLAY: 2,
+      CLASSIC_WITHOUT_LIGHT_PLAY: 0,
+      CLASSIC_WITH_LIGHT_PLAY: 1,
+      FAMILY: 2,
+      PARTY: 0,
     });
   });
 
@@ -115,7 +161,6 @@ describe('buildAdminStats', () => {
     });
 
     expect(stats.expectedIncome).toBe(2 * BASE - 5_000_00);
-    expect(stats.shootings.byPackage).toMatchObject({ CLASSIC: 1, MINI: 1 });
     expect(stats.shootings.total).toBe(2);
   });
 
@@ -129,11 +174,8 @@ describe('buildAdminStats', () => {
 
     expect(stats.expectedIncome).toBe(BASE);
     expect(stats.income).toBe(20_000_00);
-    expect(stats.shootings).toEqual({
-      total: 1,
-      cancelled: 1,
-      byPackage: { MINI: 0, CLASSIC: 1, FAMILY: 0, PARTY: 0 },
-    });
+    expect(stats.shootings.total).toBe(1);
+    expect(stats.shootings.cancelled).toBe(1);
   });
 
   it('skips and counts shootings without a price snapshot', () => {

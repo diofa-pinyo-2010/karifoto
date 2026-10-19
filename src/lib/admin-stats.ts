@@ -1,5 +1,9 @@
 import { Package, PhotoShootingStatus } from '@/generated/prisma/enums';
-import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
+import {
+  isLightPlayChargeable,
+  LEDGER_ENTRY_CATEGORY_SIGN,
+  PACKAGE_LABEL,
+} from '@/lib/constants';
 import { calculatePricing } from '@/server/pricing';
 
 import type {
@@ -33,7 +37,11 @@ type AdminStats = {
   shootings: {
     total: number;
     cancelled: number;
-    byPackage: Record<Package, number>;
+    /**
+     * One row per package, except where light play is an extra (Mini, Classic):
+     * those split into with and without light play.
+     */
+    rows: { key: string; label: string; count: number }[];
   };
 };
 
@@ -51,9 +59,7 @@ export function buildAdminStats({
   shootings: StatsShooting[];
   ledgerSums: LedgerSum[];
 }): AdminStats {
-  const byPackage = Object.fromEntries(
-    Object.values(Package).map((pkg) => [pkg, 0]),
-  ) as Record<Package, number>;
+  const counts = new Map<string, number>();
 
   let expectedIncome = 0;
   let missingPricingCount = 0;
@@ -65,7 +71,8 @@ export function buildAdminStats({
       continue;
     }
 
-    byPackage[shooting.package]++;
+    const key = rowKey(shooting.package, shooting.isLightPlaySelected);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
 
     if (!shooting.pricing) {
       missingPricingCount++;
@@ -101,7 +108,32 @@ export function buildAdminStats({
     shootings: {
       total: shootings.length - cancelled,
       cancelled,
-      byPackage,
+      rows: Object.values(Package).flatMap((pkg) =>
+        (isLightPlayChargeable(pkg) ? [false, true] : [false]).map(
+          (withLightPlay) => {
+            const key = rowKey(pkg, withLightPlay);
+            return {
+              key,
+              label: rowLabel(pkg, withLightPlay),
+              count: counts.get(key) ?? 0,
+            };
+          },
+        ),
+      ),
     },
   };
+}
+
+// Where light play is part of the package, `isLightPlaySelected` says nothing
+// about the price, so those packages get a single row.
+function rowKey(pkg: Package, isLightPlaySelected: boolean) {
+  if (!isLightPlayChargeable(pkg)) return pkg;
+  return `${pkg}_${isLightPlaySelected ? 'WITH' : 'WITHOUT'}_LIGHT_PLAY`;
+}
+
+function rowLabel(pkg: Package, withLightPlay: boolean) {
+  if (!isLightPlayChargeable(pkg)) return PACKAGE_LABEL[pkg];
+  return withLightPlay
+    ? `${PACKAGE_LABEL[pkg]} + fényjáték`
+    : PACKAGE_LABEL[pkg];
 }
