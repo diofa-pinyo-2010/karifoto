@@ -4,8 +4,8 @@ import {
   SettingsIcon,
   PhoneIcon,
   MailIcon,
-  ListIcon,
   CircleQuestionMarkIcon,
+  SearchIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -41,9 +41,9 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         allowedRoles: ALL_STAFF,
       },
       {
-        title: 'Összes foglalás',
+        title: 'Kereső',
         href: APP_URLS.allShootings,
-        icon: ListIcon,
+        icon: SearchIcon,
         allowedRoles: ALL_STAFF,
       },
     ],

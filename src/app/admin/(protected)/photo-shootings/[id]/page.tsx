@@ -74,9 +74,11 @@ export default async function PhotoShootingDetailPage({
   params,
 }: PageProps<'/admin/photo-shootings/[id]'>) {
   const { id } = await params;
-  const shooting = await getCachedPhotoShooting(id);
-  const photographers = await fetchPhotographers();
-  const editors = await fetchEditors();
+  const [shooting, photographers, editors] = await Promise.all([
+    getCachedPhotoShooting(id),
+    fetchPhotographers(),
+    fetchEditors(),
+  ]);
   const photographerItems = photographers.map((p) => ({
     value: p.id,
     label: p.owner.name,
