@@ -31,7 +31,7 @@ type DecorSetSectionData = (typeof decorSetSections)[number];
 const NAV_CARD_IMAGE_SIZES = '(min-width: 1024px) 378px, 50vw';
 
 /**
- * A díszlet- és fényjáték-szekciók fő képe: `lg` alatt teljes szélesség,
+ * A díszlet- és fényjáték-szekciók fő képe (main image): `lg` alatt teljes szélesség,
  * fölötte a kétoszlopos rács egyik oszlopa, amit a `brand-shell` 1240px-es
  * maximuma ~540px-nél megfog.
  */
