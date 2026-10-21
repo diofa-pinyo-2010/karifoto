@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
-import { BookingCsvRow, buildBookingsCsv } from '@/lib/bookings-csv';
+import {
+  BookingCsvRow,
+  buildBookingsCsv,
+  normalizePhoneNumber,
+} from '@/lib/bookings-csv';
 
 const ROW: BookingCsvRow = {
   createdAt: new Date('2026-10-21T08:05:00Z'),
@@ -23,13 +27,13 @@ describe('buildBookingsCsv', () => {
 
     expect(csv.startsWith('﻿')).toBe(true);
     expect(lines(csv)).toEqual([
-      'foglalas_idopontja,fotozas_idopontja,email,tel,osszeg,penznem,foglalas_azonositoja,statusz',
+      'foglalas_idopontja,fotozas_idopontja,email,tel,tel_e164,osszeg,penznem,foglalas_azonositoja,statusz',
     ]);
   });
 
   it('writes Budapest-local dates and whole forints', () => {
     expect(lines(buildBookingsCsv([ROW]))[1]).toBe(
-      '2026-10-21 10:05:00+02:00,2026-12-05 14:00,anna@example.com,+36301234567,59000,HUF,3b9f6c1e-2d4a-4f7b-8e15-6a0c9d2b7e31,Várunk a fotózásra',
+      '2026-10-21 10:05:00+02:00,2026-12-05 14:00,anna@example.com,+36301234567,+36301234567,59000,HUF,3b9f6c1e-2d4a-4f7b-8e15-6a0c9d2b7e31,Várunk a fotózásra',
     );
   });
 
@@ -50,7 +54,18 @@ describe('buildBookingsCsv', () => {
   it('leaves the amount empty without a price snapshot', () => {
     const [, row] = lines(buildBookingsCsv([{ ...ROW, amountInCents: null }]));
 
-    expect(row.split(',')[4]).toBe('');
+    expect(row.split(',')[5]).toBe('');
+  });
+
+  it('writes the raw phone number next to the normalized one', () => {
+    const [, row] = lines(
+      buildBookingsCsv([{ ...ROW, phoneNumber: '06 20 123 4567' }]),
+    );
+
+    expect(row.split(',').slice(3, 5)).toEqual([
+      '06 20 123 4567',
+      '+36201234567',
+    ]);
   });
 
   it('quotes fields containing commas or quotes', () => {
@@ -59,5 +74,25 @@ describe('buildBookingsCsv', () => {
     );
 
     expect(row).toContain(',"a,""b""@example.com",');
+  });
+});
+
+describe('normalizePhoneNumber', () => {
+  it.each([
+    '+36201234567',
+    '+36 20 123 4567',
+    '0036201234567',
+    '06 20 123 4567',
+    '201234567',
+  ])('normalizes %s to E.164 with the Hungarian default', (value) => {
+    expect(normalizePhoneNumber(value)).toBe('+36201234567');
+  });
+
+  it('keeps foreign numbers in their own country', () => {
+    expect(normalizePhoneNumber('+49 151 23456789')).toBe('+4915123456789');
+  });
+
+  it('returns an empty string for an invalid number', () => {
+    expect(normalizePhoneNumber('123')).toBe('');
   });
 });
