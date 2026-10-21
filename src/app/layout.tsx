@@ -41,12 +41,13 @@ const CONSENT_DEFAULT_SCRIPT = `window.dataLayer=window.dataLayer||[];function g
 // faceként nem lehetett volna álló + dőlt párost képezni. Ezért a Cormorant a
 // `@fontsource-variable/cormorant-garamond` csomagból jön (lásd a fenti
 // importokat), és nem itt van deklarálva.
-const script = localFont({
-  src: '../fonts/Parisienne-Regular.woff2',
-  weight: '400',
-  variable: '--font-parisienne',
-  fallback: ['cursive'],
-});
+//
+// A root layout preloadja minden oldalon lefut, ezért a csak az adminban
+// használt Geist Mono `preload: false`-t kap: így csak akkor töltődik le, ha
+// szöveg ténylegesen használja, és a főoldalon nem veszi el a sávszélt a
+// hero-képtől. A Jost és a Caveat Brush preloadja szándékos: a főoldal
+// használja őket, preload nélkül pedig csak a CSS után indulnának, ami
+// mérhetően (Lighthouse) késleltette az első festést.
 const sans = localFont({
   src: '../fonts/Jost-Variable.woff2',
   weight: '300 600',
@@ -59,6 +60,7 @@ const mono = localFont({
   weight: '300 600',
   variable: '--font-geist-mono',
   fallback: ['monospace'],
+  preload: false,
 });
 
 const caveatBrush = localFont({
@@ -95,7 +97,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={cn(
         'h-full',
         'antialiased',
-        script.variable,
         sans.variable,
         mono.variable,
         caveatBrush.variable,

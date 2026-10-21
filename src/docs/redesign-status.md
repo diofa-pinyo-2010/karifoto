@@ -110,8 +110,6 @@ search results; it does not keep them from customers.
 - **`PhotoGallery` still imports `ui/carousel` and `ui/dialog`** — the last
   public components depending on shadcn wrappers. See the Base UI convention
   below.
-- **`Wordmark.tsx`** defaults to `text-gold` and is no longer used
-  anywhere (its only user, `/coming-soon`, was deleted).
 - **`Booking.tsx` lines 55+** are a large commented-out form (46 old-palette
   hits). Dead code; delete or revive deliberately.
 - **`Experience.tsx`** exists in the skeleton but is intentionally unused — the
