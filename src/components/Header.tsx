@@ -60,8 +60,11 @@ export function Header() {
           <Image
             src="/images/karifoto-logo-krem.png"
             alt="Karifoto"
-            width={353}
-            height={146}
+            // A megjelenítési méret (max. `h-10` = 40px), nem a fájl natív
+            // 353×146-a: a `next/image` ebből számolja az 1x/2x `srcset`-et,
+            // különben egy 138px-es logóhoz 750px-es változatot töltene le.
+            width={97}
+            height={40}
             priority
             className="h-7 w-auto lg:h-10"
           />
