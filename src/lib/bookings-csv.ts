@@ -1,3 +1,5 @@
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import { PHOTO_SHOOTING_STATUS_LABEL } from '@/lib/constants';
 import { csvDateTimeFormatter, formatOffsetDateTime } from '@/lib/formatters';
@@ -19,6 +21,7 @@ const HEADER = [
   'fotozas_idopontja',
   'email',
   'tel',
+  'tel_e164',
   'osszeg',
   'penznem',
   'foglalas_azonositoja',
@@ -27,6 +30,20 @@ const HEADER = [
 
 // Excel only reads the file as UTF-8 (ő, ű) when it starts with a BOM.
 const BOM = '﻿';
+
+/**
+ * E.164 form of a phone number as the client typed it ("06 20 …", "0036…",
+ * "+36 20 …", or national digits only), defaulting to Hungary; empty when
+ * it is not a valid number. Export-only — the stored value is never touched.
+ */
+export function normalizePhoneNumber(value: string): string {
+  const phone = parsePhoneNumberFromString(
+    value.trim().replace(/^00/, '+'),
+    'HU',
+  );
+
+  return phone?.isValid() ? phone.format('E.164') : '';
+}
 
 function escapeCsvField(value: string) {
   return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
@@ -44,6 +61,7 @@ export function buildBookingsCsv(rows: BookingCsvRow[]): string {
     csvDateTimeFormatter.format(row.startTime),
     row.email,
     row.phoneNumber,
+    normalizePhoneNumber(row.phoneNumber),
     row.amountInCents == null ? '' : String(centsToHuf(row.amountInCents)),
     'HUF',
     row.photoShootingId,
