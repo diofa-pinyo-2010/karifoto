@@ -48,6 +48,7 @@ export function Hero() {
           // telefonszélességű (pl. 390px) változatot szolgálna ki, amit utána
           // 960px-re nagyítana: attól lett homályos.
           sizes="(max-width: 1023px) 960px, 100vw"
+          quality={65}
           placeholder="blur"
           className="object-cover object-[77%_50%] lg:object-[65%_center]"
         />
