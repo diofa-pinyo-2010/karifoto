@@ -1,6 +1,11 @@
 import Link from 'next/link';
 
-import { CalendarOffIcon, CalendarPlusIcon, CameraIcon } from 'lucide-react';
+import {
+  CalendarOffIcon,
+  CalendarPlusIcon,
+  CameraIcon,
+  DownloadIcon,
+} from 'lucide-react';
 
 import { CreateTimeSlotDialog } from '@/components/CreateTimeSlotDialog';
 import { DeleteTimeSlotButton } from '@/components/DeleteTimeSlotButton';
@@ -11,6 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { buttonVariants } from '@/components/ui/button';
 import {
   Item,
   ItemActions,
@@ -20,11 +26,14 @@ import {
   ItemTitle,
 } from '@/components/ui/item';
 import { APP_URLS } from '@/lib/constants';
+import { requireNavAccess } from '@/lib/dal';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchTimeSlotsAdmin } from '@/lib/queries';
 import { cn, groupByDay } from '@/lib/utils';
 
 export default async function AdminTimeSlotsPage() {
+  await requireNavAccess('/admin/time-slots');
+
   const timeSlots = await fetchTimeSlotsAdmin();
   const groupedDays = groupByDay(timeSlots, (slot) => slot.startTime);
   const days = Array.from(groupedDays.entries());
@@ -35,7 +44,17 @@ export default async function AdminTimeSlotsPage() {
         <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
           Idősávok
         </h1>
-        <CreateTimeSlotDialog />
+        <div className="flex items-center gap-2">
+          <a
+            href={APP_URLS.exportBookings}
+            download
+            className={buttonVariants({ variant: 'outline' })}
+          >
+            <DownloadIcon />
+            Foglalások exportálása
+          </a>
+          <CreateTimeSlotDialog />
+        </div>
       </div>
       {days.length === 0 ? (
         <p>Nincsenek timeslot-ok.</p>

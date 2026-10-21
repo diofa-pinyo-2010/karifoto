@@ -83,3 +83,44 @@ export const dateTimeWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
   hour: 'numeric',
   minute: 'numeric',
 });
+
+// 2026-12-10 14:30 — sortable, for CSV exports. The `sv-SE` locale is the
+// standard trick for an ISO-shaped date in a given time zone.
+export const csvDateTimeFormatter = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: STUDIO_TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+const offsetDateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: STUDIO_TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+  timeZoneName: 'longOffset',
+});
+
+// 2026-10-21 14:32:00+02:00 — the Google Ads offline conversion format. The
+// offset comes from the tz rules for that instant (+01:00 winter, +02:00 summer).
+export const formatOffsetDateTime = (date: Date) => {
+  const parts = Object.fromEntries(
+    offsetDateTimeFormatter
+      .formatToParts(date)
+      .map(({ type, value }) => [type, value]),
+  );
+  // `longOffset` is "GMT+02:00" (or a bare "GMT" at UTC+0).
+  const offset = parts.timeZoneName.replace('GMT', '') || '+00:00';
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}${offset}`;
+};
+
+// 2026-12-10_14-30 — for file names; `:` is not allowed in Windows file names.
+export const formatFileNameDateTime = (date: Date) =>
+  csvDateTimeFormatter.format(date).replace(' ', '_').replace(':', '-');
