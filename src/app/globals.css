@@ -127,7 +127,6 @@
 
   --font-display: var(--ui-font-display);
   --font-sans: var(--ui-font-sans);
-  --font-script: var(--ui-font-script);
   --font-handwritten: var(--ui-font-handwritten);
 
   /*
@@ -195,7 +194,7 @@
 
 /*
  * A fontkészletek közbeiktatott változóréteget kapnak: a fenti `@theme inline`
- * utilityk (`font-sans`, `font-display`, `font-script`, `font-heading`) ezekre a
+ * utilityk (`font-sans`, `font-display`, `font-heading`) ezekre a
  * `--ui-font-*` változókra mutatnak, így egyetlen scope-ból átírhatók.
  * Alapértelmezés a márkatipográfia — a publikus oldal így JS nélkül is helyes —,
  * az admin a lenti `html.admin` blokkban vált rendszerfontokra.
@@ -210,7 +209,6 @@
   --ui-font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
   /* A @fontsource-variable/cormorant-garamond deklarálja, álló és dőlt vágattal. */
   --ui-font-display: 'Cormorant Garamond Variable', Georgia, serif;
-  --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
   /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
   --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
   --ui-font-handwritten: var(--font-caveat-brush), 'Caveat Brush', cursive;
@@ -286,7 +284,6 @@
 html.admin {
   --ui-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ui-font-display: var(--ui-font-sans);
-  --ui-font-script: var(--ui-font-sans);
 }
 
 @layer components {
