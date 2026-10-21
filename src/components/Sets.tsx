@@ -22,6 +22,22 @@ import { cn } from '@/lib/utils';
 
 type DecorSetSectionData = (typeof decorSetSections)[number];
 
+/**
+ * `sizes` nélkül a `next/image` a statikus import natív szélességéből
+ * (több ezer px) ad 1x/2x `srcset`-et, így telefonon is a 3840px-es
+ * változat jön le. A kártyák `lg` alatt a két oszlopos rácsban a viewport
+ * felét, fölötte a `max-w-3xl` sáv felét kapják.
+ */
+const NAV_CARD_IMAGE_SIZES = '(min-width: 1024px) 378px, 50vw';
+
+/**
+ * A díszlet- és fényjáték-szekciók fő képe: `lg` alatt teljes szélesség,
+ * fölötte a kétoszlopos rács egyik oszlopa, amit a `brand-shell` 1240px-es
+ * maximuma ~540px-nél megfog.
+ */
+const SECTION_IMAGE_SIZES =
+  '(min-width: 1240px) 540px, (min-width: 1024px) 50vw, 100vw';
+
 export function Sets() {
   const { light, toggleLight } = useBookingSelection();
 
@@ -50,6 +66,7 @@ export function Sets() {
                   <Image
                     src={mainImage}
                     alt={mainImage.alt}
+                    sizes={NAV_CARD_IMAGE_SIZES}
                     className="aspect-4/3 w-full object-cover"
                   />
                   <CardFooter className="p-3 lg:p-(--card-spacing)">
@@ -93,6 +110,7 @@ export function Sets() {
             <Image
               src={lightPlaySection.mainImage}
               alt={lightPlaySection.mainImage.alt}
+              sizes={SECTION_IMAGE_SIZES}
               className="rounded-lg ring-1 ring-black/10 lg:col-start-2 lg:row-span-2 lg:row-start-1"
             />
             <p className="text-brand-muted">
@@ -193,6 +211,7 @@ function SetSection({ set }: { set: DecorSetSectionData }) {
         <Image
           src={mainImage}
           alt={mainImage.alt}
+          sizes={SECTION_IMAGE_SIZES}
           className="rounded-lg ring-1 ring-black/10 lg:col-start-2 lg:row-span-2 lg:row-start-1"
         />
 

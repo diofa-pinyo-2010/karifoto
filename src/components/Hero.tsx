@@ -23,7 +23,7 @@ const familyAvatars = [avatar1, avatar2, avatar3, avatar4];
  * A kép egyetlen forrásból megy: a látványterv külön mobil fájlja ugyanaz a
  * kivágás volt kisebb méretben, a tényleges kivágáskülönbséget az
  * `object-position` adja breakpointonként. Így a `next/image` tud méretezni
- * (`srcset`), a `priority` pedig az LCP-kép miatt kell.
+ * (`srcset`), a `fetchPriority` pedig az LCP-kép miatt kell.
  */
 export function Hero() {
   return (
@@ -37,7 +37,11 @@ export function Hero() {
           src={heroPhoto}
           alt="Egy meghitt családi pillanat a mesés karácsonyi kastélyban"
           fill
-          priority
+          // Next 16-ban a `priority` elavult, és csak `<link rel=preload>`-ot
+          // tesz a fejbe, `fetchpriority`-t nem. A kép a kezdeti HTML-ben
+          // amúgy is felfedezhető, a böngészőnek a prioritás hiányzott.
+          loading="eager"
+          fetchPriority="high"
           // `lg` alatt a keret magassága fix 540px, a kép pedig `object-cover`
           // 16:9 — a ténylegesen megjelenített képszélesség így a viewporttól
           // függetlenül ~960px, nem 100vw. Egyszerű `100vw`-vel a Next egy
