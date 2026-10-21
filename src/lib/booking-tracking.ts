@@ -27,10 +27,26 @@ import { centsToHuf } from '@/lib/utils';
 export type BookingCompletedEvent = {
   event: typeof GTM_EVENTS.bookingCompleted;
   event_id: string;
+} & PurchaseValue;
+
+/**
+ * The `value` / `currency` pair of a booking's Purchase. Both the browser event
+ * above and the server-side Meta Conversions API event
+ * ([meta-capi-payload.ts](./meta-capi-payload.ts)) build it here, from the same
+ * `bookingPurchaseTotalInCents()`, so Meta sees the same amount from either
+ * side and the two can never drift.
+ */
+export type PurchaseValue = {
   /** Whole forints, as the ad platforms expect — not fillér. */
   value: number;
   currency: 'HUF';
 };
+
+export function toPurchaseValue(
+  totalToBeInvoicedInCents: number,
+): PurchaseValue {
+  return { value: centsToHuf(totalToBeInvoicedInCents), currency: 'HUF' };
+}
 
 export function buildBookingCompletedEvent({
   photoShootingId,
@@ -42,8 +58,7 @@ export function buildBookingCompletedEvent({
   return {
     event: GTM_EVENTS.bookingCompleted,
     event_id: photoShootingId,
-    value: centsToHuf(totalToBeInvoicedInCents),
-    currency: 'HUF',
+    ...toPurchaseValue(totalToBeInvoicedInCents),
   };
 }
 

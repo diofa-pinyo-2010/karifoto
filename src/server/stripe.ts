@@ -1,5 +1,6 @@
 'use server';
 
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import * as z from 'zod';
@@ -8,6 +9,10 @@ import { env } from '@/env';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { PACKAGES } from '@/lib/catalog';
 import { DEPOSIT_AMOUNT, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
+import {
+  buildMarketingAttribution,
+  COOKIE_CONSENT_COOKIE_NAME,
+} from '@/lib/marketing-attribution';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import hofeherDiszlet from '@/photos/2026/decor-sets/hofeher-diszlet.png';
@@ -78,9 +83,29 @@ export async function createCheckoutSession(
     };
   }
 
+  // This form is submitted by the client's own browser — also for a phone
+  // booking, which reaches it from the deposit-request email — so the consent
+  // and Meta attribution read here are theirs, never a staff member's. It is
+  // re-read on every attempt: the latest choice wins, and without marketing
+  // consent any previously stored attribution is cleared.
+  const cookieStore = await cookies();
+  const headerStore = await headers();
+  const marketingAttribution = buildMarketingAttribution({
+    consentCookie: cookieStore.get(COOKIE_CONSENT_COOKIE_NAME)?.value,
+    fbp: cookieStore.get('_fbp')?.value,
+    fbc: cookieStore.get('_fbc')?.value,
+    forwardedFor: headerStore.get('x-forwarded-for'),
+    userAgent: headerStore.get('user-agent'),
+  });
+
   await prisma.bookingIntent.update({
     where: { id: bookingIntentId },
-    data: { numberOfGuests, numberOfPets, clientNote },
+    data: {
+      numberOfGuests,
+      numberOfPets,
+      clientNote,
+      ...marketingAttribution,
+    },
   });
 
   let sessionUrl: string | null;
