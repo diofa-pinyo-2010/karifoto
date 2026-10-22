@@ -24,6 +24,17 @@ export const formatMoney = (cents: number) => {
 export const capitalize = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);
 
+/** Two-letter avatar label: "Kovács Anna" → "KA", single word "Bence" → "BE". */
+export const getInitials = (name: string) => {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const letters =
+    words.length >= 2
+      ? [Array.from(words[0])[0], Array.from(words[1])[0]]
+      : Array.from(words[0] ?? '').slice(0, 2);
+
+  return letters.join('').toLocaleUpperCase('hu-HU') || '?';
+};
+
 const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: STUDIO_TZ,
   year: 'numeric',
