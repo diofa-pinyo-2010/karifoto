@@ -40,20 +40,20 @@ export default async function AdminTimeSlotsPage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
           Idősávok
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
+          <CreateTimeSlotDialog />
           <a
             href={APP_URLS.exportBookings}
             download
-            className={buttonVariants({ variant: 'outline' })}
+            className={buttonVariants({ variant: 'secondary' })}
           >
             <DownloadIcon />
-            Foglalások exportálása
+            Foglalások exportálása .csv
           </a>
-          <CreateTimeSlotDialog />
         </div>
       </div>
       {days.length === 0 ? (

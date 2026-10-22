@@ -31,8 +31,6 @@ export async function GET() {
       startTime: shooting.timeSlot.startTime,
       email: shooting.client.owner.email,
       phoneNumber: shooting.client.owner.phoneNumber,
-      // Ugyanaz az érték, mint a `booking_completed` eventben; a
-      // totalToBeInvoiced nem függ a befizetésektől, ezért nincs ledger.
       amountInCents: shooting.pricing
         ? calculatePricing({
             pricing: shooting.pricing,
