@@ -13,6 +13,7 @@ import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog'
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
+import { CommentsCard } from '@/components/CommentsCard';
 // import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
@@ -54,6 +55,7 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShootingField,
 } from '@/server/admin';
+import { addPhotoShootingComment } from '@/server/comments';
 import { calculatePricing } from '@/server/pricing';
 
 // Dedupes the query between generateMetadata and the page within one request
@@ -129,6 +131,7 @@ export default async function PhotoShootingDetailPage({
     isLightPlaySelected,
     decorSet,
     sentEmails,
+    comments,
     status,
     totalEditedImages,
     totalRetouchedImages,
@@ -157,484 +160,512 @@ export default async function PhotoShootingDetailPage({
     status === PhotoShootingStatus.CANCELLED;
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-10 lg:w-3xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
       {backButton}
-      <div className="flex flex-col gap-1">
-        <div className="mb-2 flex items-center gap-2">
-          <Badge
-            variant="secondary"
-            className={cn(
-              PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[shooting.status],
-              'rounded-lg p-3 lg:p-4',
-            )}
-          >
-            {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
-          </Badge>
-          <RefreshStatusButton
-            action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
-          />
-        </div>
-        <h1 className="text-3xl font-semibold lg:text-4xl">
-          {client.owner.name}
-        </h1>
-        <div className="item-center flex flex-col gap-2 lg:flex-row">
-          <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">
-            {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
-            {timeFormatter.format(timeSlot.startTime)}
-          </h2>
-          <ChangeStartTimeButton
-            currentStartTime={timeSlot.startTime}
-            shootingId={shooting.id}
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        {/* <h3 className="text-lg font-medium">Ügyfél</h3> */}
-        <Button
-          variant="secondary"
-          className="self-start uppercase"
-          size="lg"
-          render={
-            <Link
-              href={APP_URLS.clientPortalShootingDetails(
-                client.id,
-                shooting.id,
+      {/*
+        Mobilon a sorrend: fejléc → megjegyzések → részletek, hogy a csapat
+        üzenetei a részletek előtt látszódjanak. lg-től a megjegyzések a jobb
+        oszlopba kerülnek, és mindkét sort átfogva sticky-k maradnak.
+      */}
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+        <div className="flex flex-col gap-1 lg:col-start-1 lg:row-start-1">
+          <div className="mb-2 flex items-center gap-2">
+            <Badge
+              variant="secondary"
+              className={cn(
+                PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[shooting.status],
+                'rounded-lg p-3 lg:p-4',
               )}
+            >
+              {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
+            </Badge>
+            <RefreshStatusButton
+              action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
             />
-          }
-          nativeButton={false}
-        >
-          <UserIcon />
-          Ügyfélportál
-          <ArrowRightIcon />
-        </Button>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow
-            label="Telefon"
-            value={
-              <a
-                href={`tel:${client.owner.phoneNumber}`}
-                className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
-              >
-                {client.owner.phoneNumber}
-              </a>
-            }
-          />
-          <DetailRow label="E-mail cím" value={client.owner.email} />
-          <DetailRow label="Megjegyzés" value={shooting.clientNote ?? '–'} />
+          </div>
+          <h1 className="text-3xl font-semibold lg:text-4xl">
+            {client.owner.name}
+          </h1>
+          <div className="item-center flex flex-col gap-2 lg:flex-row">
+            <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">
+              {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
+              {timeFormatter.format(timeSlot.startTime)}
+            </h2>
+            <ChangeStartTimeButton
+              currentStartTime={timeSlot.startTime}
+              shootingId={shooting.id}
+            />
+          </div>
         </div>
-      </div>
 
-      <Separator />
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">A csapat</h3>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow
-            label="Fotós"
-            value={
-              <EditableComboboxField
+        <CommentsCard
+          comments={comments}
+          action={addPhotoShootingComment.bind(null, shooting.id)}
+          className="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1"
+        />
+
+        <div className="flex min-w-0 flex-col gap-10 lg:col-start-1 lg:row-start-2">
+          <div className="flex flex-col gap-3">
+            {/* <h3 className="text-lg font-medium">Ügyfél</h3> */}
+            <Button
+              variant="secondary"
+              className="self-start uppercase"
+              size="lg"
+              render={
+                <Link
+                  href={APP_URLS.clientPortalShootingDetails(
+                    client.id,
+                    shooting.id,
+                  )}
+                />
+              }
+              nativeButton={false}
+            >
+              <UserIcon />
+              Ügyfélportál
+              <ArrowRightIcon />
+            </Button>
+            <div className="rounded-lg border bg-card px-4">
+              <DetailRow
+                label="Telefon"
                 value={
-                  photographer
-                    ? { value: photographer.id, label: photographer.owner.name }
-                    : null
+                  <a
+                    href={`tel:${client.owner.phoneNumber}`}
+                    className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                  >
+                    {client.owner.phoneNumber}
+                  </a>
                 }
-                displayValue={
-                  photographer && (
-                    <p>
-                      {photographer.nickname} ({' '}
-                      <a
-                        href={`tel:${photographer.owner.phoneNumber}`}
-                        className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
-                      >
-                        {photographer.owner.phoneNumber}
-                      </a>{' '}
+              />
+              <DetailRow label="E-mail cím" value={client.owner.email} />
+              <DetailRow
+                label="Megjegyzés"
+                value={shooting.clientNote ?? '–'}
+              />
+            </div>
+          </div>
+
+          <Separator />
+          <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-medium">A csapat</h3>
+            <div className="rounded-lg border bg-card px-4">
+              <DetailRow
+                label="Fotós"
+                value={
+                  <EditableComboboxField
+                    value={
+                      photographer
+                        ? {
+                            value: photographer.id,
+                            label: photographer.owner.name,
+                          }
+                        : null
+                    }
+                    displayValue={
+                      photographer && (
+                        <p>
+                          {photographer.nickname} ({' '}
+                          <a
+                            href={`tel:${photographer.owner.phoneNumber}`}
+                            className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                          >
+                            {photographer.owner.phoneNumber}
+                          </a>{' '}
+                          )
+                        </p>
                       )
-                    </p>
-                  )
+                    }
+                    items={photographerItems}
+                    placeholder="Válassz fotóst!"
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'photographerId',
+                    )}
+                  />
                 }
-                items={photographerItems}
-                placeholder="Válassz fotóst!"
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'photographerId',
-                )}
               />
-            }
-          />
-          <DetailRow
-            label="Szerkesztő"
-            value={
-              <EditableComboboxField
+              <DetailRow
+                label="Szerkesztő"
                 value={
-                  editor ? { value: editor.id, label: editor.owner.name } : null
-                }
-                displayValue={
-                  editor && (
-                    <p>
-                      {editor.nickname} ({' '}
-                      <a
-                        href={`tel:${editor.owner.phoneNumber}`}
-                        className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
-                      >
-                        {editor.owner.phoneNumber}
-                      </a>{' '}
+                  <EditableComboboxField
+                    value={
+                      editor
+                        ? { value: editor.id, label: editor.owner.name }
+                        : null
+                    }
+                    displayValue={
+                      editor && (
+                        <p>
+                          {editor.nickname} ({' '}
+                          <a
+                            href={`tel:${editor.owner.phoneNumber}`}
+                            className="text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                          >
+                            {editor.owner.phoneNumber}
+                          </a>{' '}
+                          )
+                        </p>
                       )
-                    </p>
-                  )
+                    }
+                    items={editorItems}
+                    placeholder="Válassz editort!"
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'editorId',
+                    )}
+                  />
                 }
-                items={editorItems}
-                placeholder="Válassz editort!"
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'editorId',
-                )}
               />
-            }
-          />
-        </div>
-      </div>
-      <Separator />
+            </div>
+          </div>
+          <Separator />
 
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">A fotózás részletei</h3>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow
-            label="Csomag"
-            value={
-              <EditableComboboxField
-                value={{
-                  value: shooting.package,
-                  label: PACKAGE_LABEL[shooting.package],
-                }}
-                items={PACKAGE_COMBOBOX_ITEMS}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'package',
-                )}
-                disabled={readOnlyDetails || hasFinalInvoice}
-                isClearable={false}
-              />
-            }
-          />
-          <DetailRow
-            label="Díszlet"
-            value={
-              <EditableComboboxField
+          <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-medium">A fotózás részletei</h3>
+            <div className="rounded-lg border bg-card px-4">
+              <DetailRow
+                label="Csomag"
                 value={
-                  decorSet
-                    ? { value: decorSet, label: DECOR_SET_LABEL[decorSet] }
-                    : null
-                }
-                items={DECOR_SET_COMBOBOX_ITEMS}
-                placeholder="Válassz díszletet!"
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'decorSet',
-                )}
-                emptyLabel="–"
-                disabled={shooting.package !== 'MINI' || readOnlyDetails}
-              />
-            }
-          />
-          <DetailRow
-            label="Fényjáték extraként választva"
-            value={
-              <EditableComboboxField
-                value={{
-                  label: booleanToYesNo(isLightPlaySelected),
-                  value: booleanToYesNo(isLightPlaySelected),
-                }}
-                items={YES_NO_COMBOBOX_ITEMS}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'isLightPlaySelected',
-                )}
-                disabled={
-                  !isLightPlayChargeable(shooting.package) || readOnlyDetails
+                  <EditableComboboxField
+                    value={{
+                      value: shooting.package,
+                      label: PACKAGE_LABEL[shooting.package],
+                    }}
+                    items={PACKAGE_COMBOBOX_ITEMS}
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'package',
+                    )}
+                    disabled={readOnlyDetails || hasFinalInvoice}
+                    isClearable={false}
+                  />
                 }
               />
-            }
-          />
-          <DetailRow
-            label="Vendégek száma"
-            value={
-              <EditableTextField
-                type="number"
-                inputMode="numeric"
-                value={String(shooting.numberOfGuests)}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'numberOfGuests',
-                )}
-                disabled={readOnlyDetails}
+              <DetailRow
+                label="Díszlet"
+                value={
+                  <EditableComboboxField
+                    value={
+                      decorSet
+                        ? { value: decorSet, label: DECOR_SET_LABEL[decorSet] }
+                        : null
+                    }
+                    items={DECOR_SET_COMBOBOX_ITEMS}
+                    placeholder="Válassz díszletet!"
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'decorSet',
+                    )}
+                    emptyLabel="–"
+                    disabled={shooting.package !== 'MINI' || readOnlyDetails}
+                  />
+                }
               />
-            }
-          />
-          <DetailRow
-            label="Kisállatok száma"
-            value={
-              <EditableTextField
-                type="number"
-                inputMode="numeric"
-                value={String(shooting.numberOfPets)}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'numberOfPets',
-                )}
-                disabled={readOnlyDetails}
+              <DetailRow
+                label="Fényjáték extraként választva"
+                value={
+                  <EditableComboboxField
+                    value={{
+                      label: booleanToYesNo(isLightPlaySelected),
+                      value: booleanToYesNo(isLightPlaySelected),
+                    }}
+                    items={YES_NO_COMBOBOX_ITEMS}
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'isLightPlaySelected',
+                    )}
+                    disabled={
+                      !isLightPlayChargeable(shooting.package) ||
+                      readOnlyDetails
+                    }
+                  />
+                }
               />
-            }
-          />
-        </div>
-      </div>
+              <DetailRow
+                label="Vendégek száma"
+                value={
+                  <EditableTextField
+                    type="number"
+                    inputMode="numeric"
+                    value={String(shooting.numberOfGuests)}
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'numberOfGuests',
+                    )}
+                    disabled={readOnlyDetails}
+                  />
+                }
+              />
+              <DetailRow
+                label="Kisállatok száma"
+                value={
+                  <EditableTextField
+                    type="number"
+                    inputMode="numeric"
+                    value={String(shooting.numberOfPets)}
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'numberOfPets',
+                    )}
+                    disabled={readOnlyDetails}
+                  />
+                }
+              />
+            </div>
+          </div>
 
-      <Separator />
+          <Separator />
 
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">A fotózás napja & fizettetés</h3>
-        <div className="rounded-lg border bg-card px-4">
-          {/*
+          <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-medium">
+              A fotózás napja & fizettetés
+            </h3>
+            <div className="rounded-lg border bg-card px-4">
+              {/*
             Every row comes from calculatePricing, so what is listed here always
             sums to what it charges. Deriving these rows separately is what let
             the light-play row show a fee the total did not include, and left
             extra edited/retouched images off the list entirely.
           */}
-          {priceBreakdown.lines.map((line) => {
-            const adjustment = line.adjustmentId
-              ? adjustments.find((adj) => adj.id === line.adjustmentId)
-              : undefined;
+              {priceBreakdown.lines.map((line) => {
+                const adjustment = line.adjustmentId
+                  ? adjustments.find((adj) => adj.id === line.adjustmentId)
+                  : undefined;
 
-            return (
-              <DetailRow
-                key={line.adjustmentId ?? line.label}
-                label={
-                  adjustment ? (
-                    <span className="flex items-center gap-1">
-                      {line.label}
-                      <AdjustmentNoteTooltip
-                        note={adjustment.internalNote}
-                        nickname={adjustment.createdBy?.nickname ?? 'Rendszer'}
-                      />
-                    </span>
-                  ) : (
-                    line.label
-                  )
-                }
-                value={
-                  adjustment ? (
-                    <span className="flex items-center justify-end gap-3">
-                      {formatMoney(line.amountInCents)}
-                      {/* <DeletePriceAdjustmentButton
+                return (
+                  <DetailRow
+                    key={line.adjustmentId ?? line.label}
+                    label={
+                      adjustment ? (
+                        <span className="flex items-center gap-1">
+                          {line.label}
+                          <AdjustmentNoteTooltip
+                            note={adjustment.internalNote}
+                            nickname={
+                              adjustment.createdBy?.nickname ?? 'Rendszer'
+                            }
+                          />
+                        </span>
+                      ) : (
+                        line.label
+                      )
+                    }
+                    value={
+                      adjustment ? (
+                        <span className="flex items-center justify-end gap-3">
+                          {formatMoney(line.amountInCents)}
+                          {/* <DeletePriceAdjustmentButton
                         priceAdjustmentId={adjustment.id}
                         target={{ photoShootingId: shooting.id }}
                         disabled={readOnlyDetails}
                       /> */}
-                    </span>
-                  ) : (
-                    formatMoney(line.amountInCents)
-                  )
-                }
-              />
-            );
-          })}
-        </div>
-        <div className="rounded-lg border bg-accent px-4 text-accent-foreground">
-          <DetailRow
-            label="ÖSSZESEN"
-            value={formatMoney(priceBreakdown.totalToBeInvoiced)}
-          />
-        </div>
-        <AddPriceAdjustmentDialog
-          title="Fizetés eltérés hozzáadása"
-          triggerLabel="Fizetés eltérés"
-          defaultType="DEDUCTION"
-          target={{ photoShootingId: shooting.id }}
-          disabled={readOnlyDetails}
-        />
-        <div className="mt-4 rounded-lg border bg-card px-4">
-          {ledgerEntries.map((ledgerEntry) => {
-            return (
+                        </span>
+                      ) : (
+                        formatMoney(line.amountInCents)
+                      )
+                    }
+                  />
+                );
+              })}
+            </div>
+            <div className="rounded-lg border bg-accent px-4 text-accent-foreground">
               <DetailRow
-                key={ledgerEntry.id}
-                label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
-                value={formatMoney(
-                  ledgerEntry.category.startsWith('INCOME')
-                    ? ledgerEntry.amountInCents * -1
-                    : ledgerEntry.amountInCents,
-                )}
+                label="ÖSSZESEN"
+                value={formatMoney(priceBreakdown.totalToBeInvoiced)}
               />
-            );
-          })}
-        </div>
-        <BalancePayment
-          remainingAmount={priceBreakdown.totalToBePaid}
-          currentShootingStatus={shooting.status}
-          shootingId={shooting.id}
-        />
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-medium">Utómunka</h3>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow
-            label="Nyers képek (PicDrop URL)"
-            fullWidth
-            value={
-              <EditableTextField
-                value={rawImagesUrl}
-                placeholder="https://www.picdrop.com..."
-                inputMode="url"
-                displayValue={
-                  rawImagesUrl && (
-                    <a
-                      href={rawImagesUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
-                    >
-                      PicDrop
-                      <ExternalLinkIcon className="size-4" />
-                    </a>
-                  )
-                }
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'rawImagesUrl',
-                )}
-              />
-            }
-          />
-          <SendRawImages
-            id={shooting.id}
-            selectionRequestedAt={shooting.selectionRequestedAt}
-            rawImagesUrl={shooting.rawImagesUrl}
-            status={shooting.status}
-          />
-        </div>
-        <div className="rounded-lg border bg-card px-4">
-          <DetailRow
-            label="Megszerkesztett képek"
-            value={
-              <EditableTextField
-                type="number"
-                inputMode="numeric"
-                value={String(totalEditedImages)}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'totalEditedImages',
-                )}
-              />
-            }
-          />
-          <DetailRow
-            label="Beauty retus"
-            value={
-              <EditableTextField
-                type="number"
-                inputMode="numeric"
-                value={String(totalRetouchedImages)}
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'totalRetouchedImages',
-                )}
-              />
-            }
-          />
-          <DetailRow
-            label="Végleges képek (PicDrop URL)"
-            fullWidth
-            value={
-              <EditableTextField
-                value={finalImagesUrl}
-                placeholder="https://www.picdrop.com..."
-                inputMode="url"
-                displayValue={
-                  finalImagesUrl && (
-                    <a
-                      href={finalImagesUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
-                    >
-                      PicDrop
-                      <ExternalLinkIcon className="size-4" />
-                    </a>
-                  )
-                }
-                onSave={updatePhotoShootingField.bind(
-                  null,
-                  shooting.id,
-                  'finalImagesUrl',
-                )}
-              />
-            }
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      <ItemsCollapsible
-        title="Pénzmozgások"
-        content={
-          <>
-            {ledgerEntries.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nincsenek pénzügyi tételek.
-              </p>
-            ) : (
-              <ItemGroup>
-                {ledgerEntries.map((entry) => (
-                  <ExternalLinkItem
-                    key={entry.id}
-                    title={`${formatMoney(entry.amountInCents)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
-                    description={PAYMENT_METHOD_LABEL[entry.method]}
-                    href={entry.invoice?.publicUrl}
-                    linkLabel="Számla"
+            </div>
+            <AddPriceAdjustmentDialog
+              title="Fizetés eltérés hozzáadása"
+              triggerLabel="Fizetés eltérés"
+              defaultType="DEDUCTION"
+              target={{ photoShootingId: shooting.id }}
+              disabled={readOnlyDetails}
+            />
+            <div className="mt-4 rounded-lg border bg-card px-4">
+              {ledgerEntries.map((ledgerEntry) => {
+                return (
+                  <DetailRow
+                    key={ledgerEntry.id}
+                    label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
+                    value={formatMoney(
+                      ledgerEntry.category.startsWith('INCOME')
+                        ? ledgerEntry.amountInCents * -1
+                        : ledgerEntry.amountInCents,
+                    )}
                   />
-                ))}
-              </ItemGroup>
-            )}
-          </>
-        }
-      />
-      <ItemsCollapsible
-        title="Elküldött email-ek"
-        content={
-          <>
-            {sentEmails.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nincsenek még elküldött email-ek.
-              </p>
-            ) : (
-              <ItemGroup>
-                {sentEmails.map((email) => (
-                  <ExternalLinkItem
-                    key={email.id}
-                    title={shortFullDateFormatter.format(email.sentAt)}
-                    description={email.subject}
-                    href={resendEmailUrl(email.resendId)}
-                    linkLabel="Resend"
+                );
+              })}
+            </div>
+            <BalancePayment
+              remainingAmount={priceBreakdown.totalToBePaid}
+              currentShootingStatus={shooting.status}
+              shootingId={shooting.id}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-medium">Utómunka</h3>
+            <div className="rounded-lg border bg-card px-4">
+              <DetailRow
+                label="Nyers képek (PicDrop URL)"
+                fullWidth
+                value={
+                  <EditableTextField
+                    value={rawImagesUrl}
+                    placeholder="https://www.picdrop.com..."
+                    inputMode="url"
+                    displayValue={
+                      rawImagesUrl && (
+                        <a
+                          href={rawImagesUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                        >
+                          PicDrop
+                          <ExternalLinkIcon className="size-4" />
+                        </a>
+                      )
+                    }
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'rawImagesUrl',
+                    )}
                   />
-                ))}
-              </ItemGroup>
-            )}
-          </>
-        }
-      />
+                }
+              />
+              <SendRawImages
+                id={shooting.id}
+                selectionRequestedAt={shooting.selectionRequestedAt}
+                rawImagesUrl={shooting.rawImagesUrl}
+                status={shooting.status}
+              />
+            </div>
+            <div className="rounded-lg border bg-card px-4">
+              <DetailRow
+                label="Megszerkesztett képek"
+                value={
+                  <EditableTextField
+                    type="number"
+                    inputMode="numeric"
+                    value={String(totalEditedImages)}
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'totalEditedImages',
+                    )}
+                  />
+                }
+              />
+              <DetailRow
+                label="Beauty retus"
+                value={
+                  <EditableTextField
+                    type="number"
+                    inputMode="numeric"
+                    value={String(totalRetouchedImages)}
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'totalRetouchedImages',
+                    )}
+                  />
+                }
+              />
+              <DetailRow
+                label="Végleges képek (PicDrop URL)"
+                fullWidth
+                value={
+                  <EditableTextField
+                    value={finalImagesUrl}
+                    placeholder="https://www.picdrop.com..."
+                    inputMode="url"
+                    displayValue={
+                      finalImagesUrl && (
+                        <a
+                          href={finalImagesUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
+                        >
+                          PicDrop
+                          <ExternalLinkIcon className="size-4" />
+                        </a>
+                      )
+                    }
+                    onSave={updatePhotoShootingField.bind(
+                      null,
+                      shooting.id,
+                      'finalImagesUrl',
+                    )}
+                  />
+                }
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          <ItemsCollapsible
+            title="Pénzmozgások"
+            content={
+              <>
+                {ledgerEntries.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Nincsenek pénzügyi tételek.
+                  </p>
+                ) : (
+                  <ItemGroup>
+                    {ledgerEntries.map((entry) => (
+                      <ExternalLinkItem
+                        key={entry.id}
+                        title={`${formatMoney(entry.amountInCents)} · ${LEDGER_ENTRY_CATEGORY_LABEL[entry.category]}`}
+                        description={PAYMENT_METHOD_LABEL[entry.method]}
+                        href={entry.invoice?.publicUrl}
+                        linkLabel="Számla"
+                      />
+                    ))}
+                  </ItemGroup>
+                )}
+              </>
+            }
+          />
+          <ItemsCollapsible
+            title="Elküldött email-ek"
+            content={
+              <>
+                {sentEmails.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Nincsenek még elküldött email-ek.
+                  </p>
+                ) : (
+                  <ItemGroup>
+                    {sentEmails.map((email) => (
+                      <ExternalLinkItem
+                        key={email.id}
+                        title={shortFullDateFormatter.format(email.sentAt)}
+                        description={email.subject}
+                        href={resendEmailUrl(email.resendId)}
+                        linkLabel="Resend"
+                      />
+                    ))}
+                  </ItemGroup>
+                )}
+              </>
+            }
+          />
+        </div>
+      </div>
     </div>
   );
 }

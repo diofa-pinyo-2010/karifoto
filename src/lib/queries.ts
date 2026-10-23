@@ -176,6 +176,15 @@ const photoShootingDetailInclude = {
       },
       orderBy: { sentAt: 'desc' },
     },
+    comments: {
+      select: {
+        id: true,
+        body: true,
+        createdAt: true,
+        author: { select: { nickname: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 

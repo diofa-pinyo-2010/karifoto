@@ -40,6 +40,7 @@ model StaffProfile {
   photoShootings   PhotoShooting[]   @relation("Photographer")
   editings         PhotoShooting[]   @relation("Editor")
   priceAdjustments PriceAdjustment[]
+  comments         Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -168,6 +169,7 @@ model PhotoShooting {
   pricing       PhotoShootingPricing?
   adjustments   PriceAdjustment[]
   sentEmails    SentEmail[]
+  comments      Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -222,6 +224,28 @@ model PriceAdjustment {
   @@index([photoShootingId])
   @@index([bookingIntentId])
   @@index([createdById])
+}
+
+// Internal, staff-only note. Generic on purpose: each possible owner gets its own
+// nullable FK, and the hand-added `comment_one_owner` CHECK in the migration SQL
+// enforces that exactly one is set. Adding an owner means extending that CHECK.
+model Comment {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  body String
+
+  // Null once the staff member is deleted; the UI then shows "Törölt munkatárs"
+  author   StaffProfile? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId String?       @db.Uuid
+
+  // Cascade, not SetNull: an ownerless row would violate the CHECK
+  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id], onDelete: Cascade)
+  photoShootingId String?        @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz()
+
+  @@index([photoShootingId, createdAt])
+  @@index([authorId])
 }
 
 model BookingCalendarEvent {
