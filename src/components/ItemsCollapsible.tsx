@@ -23,8 +23,8 @@ export function ItemsCollapsible({ title, content }: ItemsCollapsibleProps) {
     <Collapsible open={open} onOpenChange={setOpen}>
       <div
         className={cn(
-          'flex flex-col gap-3 rounded-lg border-2 border-dashed bg-card p-4',
-          open && 'bg-transparent',
+          'flex flex-col gap-3 rounded-lg border-2 bg-card p-4',
+          open && 'border-dashed bg-transparent',
         )}
       >
         <div className="flex items-center justify-between">
