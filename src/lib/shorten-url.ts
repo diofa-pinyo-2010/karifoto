@@ -33,7 +33,10 @@ export function shortenUrl(url: string, maxLength = 40) {
   const chars = Array.from(stripUrl(url));
   if (chars.length <= maxLength) return chars.join('');
 
-  const keep = maxLength - ELLIPSIS.length;
+  const keep = maxLength - Array.from(ELLIPSIS).length;
+  // No room for the marker and a character: a plain cut beats a lone `[`
+  if (keep <= 0) return chars.slice(0, maxLength).join('');
+
   const tailLength = Math.floor(keep / 2);
   const head = chars.slice(0, keep - tailLength).join('');
   const tail = tailLength > 0 ? chars.slice(-tailLength).join('') : '';

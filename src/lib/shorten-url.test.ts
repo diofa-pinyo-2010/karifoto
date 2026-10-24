@@ -14,13 +14,18 @@ describe('shortenUrl', () => {
   });
 
   it('cuts the middle of a long URL and keeps both ends', () => {
-    expect(shortenUrl(LONG)).toBe('example.com/galeria/…en=abcdef0123456789');
+    expect(shortenUrl(LONG)).toBe('example.com/galeria[…]n=abcdef0123456789');
   });
 
   it('never exceeds maxLength', () => {
-    for (const maxLength of [1, 2, 3, 10, 40]) {
+    for (const maxLength of [1, 2, 3, 4, 10, 40]) {
       expect(Array.from(shortenUrl(LONG, maxLength)).length).toBe(maxLength);
     }
+  });
+
+  it('cuts plainly when the marker leaves no room for the URL', () => {
+    expect(shortenUrl(LONG, 3)).toBe('exa');
+    expect(shortenUrl(LONG, 4)).toBe('e[…]');
   });
 
   it('keeps a URL of exactly maxLength unchanged', () => {
@@ -41,7 +46,7 @@ describe('shortenUrl', () => {
 
   it('does not split a character made of two code units', () => {
     expect(shortenUrl(`https://example.com/${'🎄'.repeat(40)}`, 10)).toBe(
-      'examp…🎄🎄🎄🎄',
+      'exam[…]🎄🎄🎄',
     );
   });
 });

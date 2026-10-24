@@ -4,6 +4,7 @@ import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { isAllowedUri, Link } from '@tiptap/extension-link';
+import { Strike } from '@tiptap/extension-strike';
 import { Placeholder } from '@tiptap/extensions';
 import { Markdown } from '@tiptap/markdown';
 import {
@@ -11,6 +12,7 @@ import {
   Extension,
   getMarkRange,
   InputRule,
+  markInputRule,
   useEditor,
   useEditorState,
 } from '@tiptap/react';
@@ -23,6 +25,7 @@ import {
   ListIcon,
   ListOrderedIcon,
   SendIcon,
+  StrikethroughIcon,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -85,6 +88,20 @@ const MarkdownLink = Link.extend({
   },
 });
 
+/** `~text~` as well as the built-in `~~text~~`; both are GFM strikethrough. */
+const SingleTildeStrike = Strike.extend({
+  addInputRules() {
+    return [
+      ...(this.parent?.() ?? []),
+      markInputRule({
+        // The leading `(?:^|\s)` keeps `~~text~` from firing before the second `~`
+        find: /(?:^|\s)(~(?!~)([^~]+)~)$/,
+        type: this.type,
+      }),
+    ];
+  },
+});
+
 const TOOLBAR: {
   label: string;
   icon: LucideIcon;
@@ -102,6 +119,12 @@ const TOOLBAR: {
     icon: ItalicIcon,
     name: 'italic',
     toggle: (editor) => editor.chain().focus().toggleItalic().run(),
+  },
+  {
+    label: 'Áthúzott',
+    icon: StrikethroughIcon,
+    name: 'strike',
+    toggle: (editor) => editor.chain().focus().toggleStrike().run(),
   },
   {
     label: 'Kód',
@@ -304,7 +327,9 @@ export function CommentForm({
         horizontalRule: false,
         underline: false,
         link: false,
+        strike: false,
       }),
+      SingleTildeStrike,
       MarkdownLink.configure({ openOnClick: false }),
       Markdown,
       Placeholder.configure({
