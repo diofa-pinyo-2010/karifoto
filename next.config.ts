@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: 'security',
+  },
   images: {
     // Next 16-tól csak az itt felsorolt `quality` értékek engedettek.
     // 65: a hero, ahol a webp-tömörítés látható veszteség nélkül bírja.
