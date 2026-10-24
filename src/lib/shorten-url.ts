@@ -1,12 +1,12 @@
 const ELLIPSIS = '[…]';
 
-// Display only: the scheme, `www.` and a trailing slash carry no information,
-// and decoding turns `%C3%A1` back into the `á` someone actually typed
+// Display only: the scheme and a trailing slash carry no information, and
+// decoding turns `%C3%A1` back into the `á` someone actually typed. `www.` stays:
+// on some sites it is a different host, and readers expect to see it
 function stripUrl(url: string) {
   let stripped = url
     .trim()
     .replace(/^https?:\/\//i, '')
-    .replace(/^www\./i, '')
     .replace(/\/$/, '');
   try {
     stripped = decodeURI(stripped);

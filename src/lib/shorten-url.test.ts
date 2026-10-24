@@ -6,15 +6,15 @@ const LONG =
   'https://www.example.com/galeria/2026/karacsonyi-fotozas/nemeth-csalad/valogatas?token=abcdef0123456789';
 
 describe('shortenUrl', () => {
-  it('leaves a short URL whole, minus the scheme, www. and trailing slash', () => {
-    expect(shortenUrl('https://www.karifoto.hu/')).toBe('karifoto.hu');
+  it('leaves a short URL whole, minus the scheme and trailing slash', () => {
+    expect(shortenUrl('https://www.karifoto.hu/')).toBe('www.karifoto.hu');
     expect(shortenUrl('http://karifoto.hu/foglalas')).toBe(
       'karifoto.hu/foglalas',
     );
   });
 
   it('cuts the middle of a long URL and keeps both ends', () => {
-    expect(shortenUrl(LONG)).toBe('example.com/galeria[…]n=abcdef0123456789');
+    expect(shortenUrl(LONG)).toBe('www.example.com/gal[…]n=abcdef0123456789');
   });
 
   it('never exceeds maxLength', () => {
@@ -24,8 +24,8 @@ describe('shortenUrl', () => {
   });
 
   it('cuts plainly when the marker leaves no room for the URL', () => {
-    expect(shortenUrl(LONG, 3)).toBe('exa');
-    expect(shortenUrl(LONG, 4)).toBe('e[…]');
+    expect(shortenUrl(LONG, 3)).toBe('www');
+    expect(shortenUrl(LONG, 4)).toBe('w[…]');
   });
 
   it('keeps a URL of exactly maxLength unchanged', () => {
