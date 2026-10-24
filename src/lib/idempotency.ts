@@ -20,6 +20,15 @@ const rescheduleEmailKey = (shootingId: string, oldTime: Date, newTime: Date) =>
 //   `google_cal_evt:${shootingId}`;
 
 /**
+ * Not a Redis key: Resend's `Idempotency-Key`, which sends one email per key
+ * within 24 hours. `CommentMention.notifiedAt` is the durable "already sent"
+ * marker; this key covers what a check-then-send cannot — two parallel QStash
+ * deliveries, and a send whose `notifiedAt` write failed.
+ */
+export const commentMentionEmailKey = (commentMentionId: string) =>
+  `comment-mention/${commentMentionId}`;
+
+/**
  * Atomically marks an event as processed.
  * Returns true if this is the first time we're seeing this event (should process).
  * Returns false if the event was already processed (should skip).

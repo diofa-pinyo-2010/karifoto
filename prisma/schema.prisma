@@ -41,6 +41,7 @@ model StaffProfile {
   editings         PhotoShooting[]   @relation("Editor")
   priceAdjustments PriceAdjustment[]
   comments         Comment[]
+  commentMentions  CommentMention[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -238,14 +239,30 @@ model Comment {
   authorId String?       @db.Uuid
 
   // Cascade, not SetNull: an ownerless row would violate the CHECK
-  photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id], onDelete: Cascade)
-  photoShootingId String?        @db.Uuid
+  photoShooting   PhotoShooting?   @relation(fields: [photoShootingId], references: [id], onDelete: Cascade)
+  photoShootingId String?          @db.Uuid
+  mentions        CommentMention[]
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz()
 
   @@index([photoShootingId, createdAt])
   @@index([authorId])
+}
+
+model CommentMention {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String  @db.Uuid
+
+  staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  staffProfileId String       @db.Uuid
+  notifiedAt     DateTime?    @db.Timestamptz()
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  @@unique([commentId, staffProfileId])
+  @@index([staffProfileId])
 }
 
 model BookingCalendarEvent {

@@ -4,9 +4,12 @@ import { revalidatePath } from 'next/cache';
 
 import * as z from 'zod';
 
+import { env } from '@/env';
 import { APP_URLS, COMMENT_MAX_LENGTH, UUID_RE } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
+import { splitMentions } from '@/lib/mentions';
 import { prisma } from '@/lib/prisma';
+import { qStashClient } from '@/lib/upstash';
 
 export type CommentFormState = { error: string } | { ok: true } | undefined;
 
@@ -48,14 +51,32 @@ export async function addPhotoShootingComment(
     return { error: 'Ez a fotózás nem található.' };
   }
 
+  const ids = new Set(
+    splitMentions(parsed.data).flatMap((s) =>
+      typeof s === 'string' ? [] : [s.id],
+    ),
+  );
+  ids.delete(staffProfile.id);
+
+  let mentionIds: string[];
   try {
-    await prisma.comment.create({
+    // A forged or deleted id is dropped here
+    const recipientsToNotify = await prisma.staffProfile.findMany({
+      where: { id: { in: [...ids] } },
+      select: { id: true },
+    });
+    const comment = await prisma.comment.create({
       data: {
         body: parsed.data,
         authorId: staffProfile.id,
         photoShootingId,
+        mentions: {
+          create: recipientsToNotify.map(({ id }) => ({ staffProfileId: id })),
+        },
       },
+      select: { mentions: { select: { id: true } } },
     });
+    mentionIds = comment.mentions.map(({ id }) => id);
   } catch (error) {
     console.error('[comments] failed to create photo shooting comment', {
       photoShootingId,
@@ -63,6 +84,25 @@ export async function addPhotoShootingComment(
     });
     return { error: 'Nem sikerült menteni, próbáld újra.' };
   }
+
+  // The comment is already saved, so a publish failure is logged, not returned
+  const results = await Promise.allSettled(
+    mentionIds.map((commentMentionId) =>
+      qStashClient.publishJSON({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/comment-mention`,
+        body: { commentMentionId },
+        retries: 3,
+      }),
+    ),
+  );
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      console.error('[comments] failed to publish comment-mention job', {
+        commentMentionId: mentionIds[i],
+        error: result.reason,
+      });
+    }
+  });
 
   revalidatePath(APP_URLS.photoShootingAdminPage(photoShootingId));
   return { ok: true };

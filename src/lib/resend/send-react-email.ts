@@ -17,6 +17,8 @@ type SendReactEmailParams = {
   react: ReactElement;
   from?: string;
   tags?: { name: string; value: string }[];
+  /** Resend sends one email per key within 24 hours, so a retried job cannot send twice. */
+  idempotencyKey?: string;
 };
 
 export function sendReactEmail({
@@ -26,12 +28,16 @@ export function sendReactEmail({
   react,
   from = EMAIL_FROM,
   tags,
+  idempotencyKey,
 }: SendReactEmailParams) {
-  return resend.emails.send({
-    to,
-    from,
-    subject,
-    react,
-    tags: [{ name: 'type', value: type }, ...(tags ?? [])],
-  });
+  return resend.emails.send(
+    {
+      to,
+      from,
+      subject,
+      react,
+      tags: [{ name: 'type', value: type }, ...(tags ?? [])],
+    },
+    { idempotencyKey },
+  );
 }
