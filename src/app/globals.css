@@ -342,4 +342,54 @@ html.admin {
     @apply tracking-[.1em] whitespace-nowrap;
     color: #ae793b;
   }
+
+  /*
+   * Megjegyzések markdownja: ugyanez az osztály van a TipTap szerkesztőn és a
+   * kirenderelt megjegyzésen, hogy írás közben is úgy nézzen ki, ahogy mentve.
+   */
+  .comment-markdown {
+    @apply text-sm wrap-break-word;
+  }
+
+  .comment-markdown > * + * {
+    @apply mt-2;
+  }
+
+  .comment-markdown ul {
+    @apply list-disc pl-5;
+  }
+
+  .comment-markdown ol {
+    @apply list-decimal pl-5;
+  }
+
+  .comment-markdown li > * + * {
+    @apply mt-1;
+  }
+
+  .comment-markdown a {
+    @apply underline underline-offset-2;
+  }
+
+  .comment-markdown blockquote {
+    @apply border-l-2 pl-3 text-muted-foreground;
+  }
+
+  .comment-markdown code {
+    @apply rounded bg-muted px-1 font-mono text-[0.85em];
+  }
+
+  .comment-markdown pre {
+    @apply overflow-x-auto rounded-md bg-muted p-2;
+  }
+
+  .comment-markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  /* A TipTap Placeholder csak egy osztályt és data-attribútumot tesz az üres bekezdésre. */
+  .comment-markdown p.is-editor-empty:first-child::before {
+    @apply pointer-events-none float-left h-0 text-muted-foreground;
+    content: attr(data-placeholder);
+  }
 }

@@ -1,3 +1,4 @@
+import { CommentBody } from '@/components/CommentBody';
 import { CommentForm } from '@/components/CommentForm';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -79,9 +80,7 @@ export function CommentsCard({
                     {shortFullDateFormatter.format(comment.createdAt)}
                   </time>
                 </div>
-                <p className="text-sm break-words whitespace-pre-line">
-                  {comment.body}
-                </p>
+                <CommentBody body={comment.body} />
               </div>
             </li>
           ))}
