@@ -20,6 +20,8 @@ import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
 
+import type { MentionCandidate } from '@/lib/mentions';
+
 const photoShootingWithClientInclude = {
   include: {
     client: { include: { owner: true } },
@@ -203,6 +205,22 @@ export async function getPhotoShooting(
     where: { id },
     ...photoShootingDetailInclude,
   });
+}
+
+// Everyone, including the viewer: their own name must resolve when others mention them
+export async function fetchMentionableStaff(): Promise<MentionCandidate[]> {
+  await verifySession();
+
+  const staff = await prisma.staffProfile.findMany({
+    select: { id: true, nickname: true, owner: { select: { name: true } } },
+    orderBy: { owner: { name: 'asc' } },
+  });
+
+  return staff.map(({ id, nickname, owner }) => ({
+    id,
+    nickname,
+    name: owner.name,
+  }));
 }
 
 const photoShootingForClientPortalSelect = {
