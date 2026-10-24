@@ -8,15 +8,7 @@ import { APP_URLS, COMMENT_MAX_LENGTH, UUID_RE } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 
-/**
- * `body` echoes the submitted text on error: React resets the form after every
- * action, and the textarea's defaultValue is what it resets to — so a failed
- * save does not throw away what the staff member typed.
- */
-export type CommentFormState =
-  | { error: string; body: string }
-  | { ok: true }
-  | undefined;
+export type CommentFormState = { error: string } | { ok: true } | undefined;
 
 const CommentBodySchema = z
   .string()
@@ -38,14 +30,13 @@ export async function addPhotoShootingComment(
   const body = typeof raw === 'string' ? raw : '';
 
   if (!UUID_RE.test(photoShootingId)) {
-    return { error: 'Érvénytelen PhotoShooting ID.', body };
+    return { error: 'Érvénytelen PhotoShooting ID.' };
   }
 
   const parsed = CommentBodySchema.safeParse(body);
   if (!parsed.success) {
     return {
       error: parsed.error.issues[0]?.message ?? 'Érvénytelen megjegyzés.',
-      body,
     };
   }
 
@@ -54,7 +45,7 @@ export async function addPhotoShootingComment(
     select: { id: true },
   });
   if (shooting == null) {
-    return { error: 'Ez a fotózás nem található.', body };
+    return { error: 'Ez a fotózás nem található.' };
   }
 
   try {
@@ -70,7 +61,7 @@ export async function addPhotoShootingComment(
       photoShootingId,
       error,
     });
-    return { error: 'Nem sikerült menteni, próbáld újra.', body };
+    return { error: 'Nem sikerült menteni, próbáld újra.' };
   }
 
   revalidatePath(APP_URLS.photoShootingAdminPage(photoShootingId));
