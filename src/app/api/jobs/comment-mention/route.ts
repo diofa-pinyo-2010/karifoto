@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { env } from '@/env';
 import { APP_URLS } from '@/lib/constants';
 import { formatLongDate } from '@/lib/formatters';
-import { mentionsToText, splitMentions } from '@/lib/mentions';
+import { splitMentions } from '@/lib/mentions';
 import { prisma } from '@/lib/prisma';
 import { sendCommentMentionEmail } from '@/lib/resend/comment-mention';
 
@@ -36,6 +36,7 @@ export const POST = verifySignatureAppRouter(
             photoShooting: {
               select: {
                 id: true,
+                package: true,
                 client: { select: { owner: { select: { name: true } } } },
                 timeSlot: { select: { startTime: true } },
               },
@@ -45,7 +46,6 @@ export const POST = verifySignatureAppRouter(
       },
     });
 
-    // Gone with its comment or staff member (cascade), or not a shooting comment
     const shooting = mention?.comment.photoShooting;
     if (mention == null || shooting == null) {
       console.error('[job:comment-mention] unknown mention', {
@@ -69,7 +69,7 @@ export const POST = verifySignatureAppRouter(
     );
     const mentioned = await prisma.staffProfile.findMany({
       where: { id: { in: mentionedIds } },
-      select: { id: true, nickname: true },
+      select: { id: true, nickname: true, owner: { select: { name: true } } },
     });
 
     try {
@@ -78,10 +78,13 @@ export const POST = verifySignatureAppRouter(
         to: staffProfile.owner.email,
         name: staffProfile.nickname,
         authorName: comment.author?.nickname ?? 'Törölt munkatárs',
-        shootingLabel: `${shooting.client.owner.name} · ${formatLongDate(shooting.timeSlot.startTime)}`,
-        commentText: mentionsToText(
-          comment.body,
-          new Map(mentioned.map(({ id, nickname }) => [id, nickname])),
+        shootingLabel: `${shooting.client.owner.name} · ${formatLongDate(shooting.timeSlot.startTime)} · ${shooting.package}`,
+        commentBody: comment.body,
+        staffById: new Map(
+          mentioned.map(({ id, nickname, owner }) => [
+            id,
+            { id, nickname, name: owner.name },
+          ]),
         ),
         commentUrl: `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shooting.id)}`,
       });

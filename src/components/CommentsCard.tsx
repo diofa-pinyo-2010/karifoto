@@ -73,7 +73,7 @@ export function CommentsCard({
                   {comment.author ? getInitials(comment.author.nickname) : '?'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                   <span
                     className={cn(

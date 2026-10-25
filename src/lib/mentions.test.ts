@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  filterMentionCandidates,
-  mentionsToText,
-  splitMentions,
-} from '@/lib/mentions';
+import { filterMentionCandidates, splitMentions } from '@/lib/mentions';
 
 const ID = '3f2b8c1e-7a4d-4e9b-9c2a-1d5e6f7a8b9c';
 
@@ -39,18 +35,6 @@ describe('splitMentions', () => {
       { id: ID, label: null },
       { id: ID, label: null },
     ]);
-  });
-});
-
-describe('mentionsToText', () => {
-  it('shows the current nickname, else the stored label', () => {
-    const OTHER = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
-    expect(
-      mentionsToText(
-        `[@ id="${ID}" label="Kati"] és [@ id="${OTHER}" label="Ági"]`,
-        new Map([[ID, 'Katka']]),
-      ),
-    ).toBe('@Katka és @Ági');
   });
 });
 

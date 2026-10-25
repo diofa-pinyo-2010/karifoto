@@ -41,20 +41,6 @@ export function splitMentions(text: string): MentionSegment[] {
   return segments;
 }
 
-/** The comment as plain text, each mention shown as `@nickname`. */
-export function mentionsToText(
-  text: string,
-  nicknameById: Map<string, string>,
-): string {
-  return splitMentions(text)
-    .map((segment) =>
-      typeof segment === 'string'
-        ? segment
-        : `@${nicknameById.get(segment.id) ?? segment.label ?? 'Törölt munkatárs'}`,
-    )
-    .join('');
-}
-
 // Typing `agi` should find `Ági`
 function fold(value: string) {
   return value

@@ -106,7 +106,6 @@ export function MentionSuggestionList({
         if (!open) close();
       }}
     >
-      {/* Focus stays in the editor: it drives the list with the arrow keys */}
       <PopoverContent
         anchor={anchor}
         align="start"
