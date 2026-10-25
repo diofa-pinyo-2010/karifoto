@@ -41,12 +41,13 @@ import {
   PHOTO_SHOOTING_STATUS_LABEL,
   YES_NO_COMBOBOX_ITEMS,
 } from '@/lib/constants';
+import { verifySession } from '@/lib/dal';
 import {
   dateFormatter,
   shortFullDateFormatter,
   timeFormatter,
 } from '@/lib/formatters';
-import { getPhotoShooting } from '@/lib/queries';
+import { fetchMentionableStaff, getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
 import { capitalize, cn, formatMoney } from '@/lib/utils';
 import {
@@ -76,10 +77,12 @@ export default async function PhotoShootingDetailPage({
   params,
 }: PageProps<'/admin/photo-shootings/[id]'>) {
   const { id } = await params;
-  const [shooting, photographers, editors] = await Promise.all([
+  const [shooting, photographers, editors, staff, session] = await Promise.all([
     getCachedPhotoShooting(id),
     fetchPhotographers(),
     fetchEditors(),
+    fetchMentionableStaff(),
+    verifySession(),
   ]);
   const photographerItems = photographers.map((p) => ({
     value: p.id,
@@ -200,6 +203,8 @@ export default async function PhotoShootingDetailPage({
 
         <CommentsCard
           comments={comments}
+          staff={staff}
+          currentStaffProfileId={session.staffProfile.id}
           action={addPhotoShootingComment.bind(null, shooting.id)}
           className="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1"
         />

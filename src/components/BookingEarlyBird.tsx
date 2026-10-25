@@ -24,7 +24,7 @@ export async function BookingEarlyBird() {
             <em>csak pár kattintással!</em>
           </h2>
           {/* <p className="brand-intro">
-            TODO: Nálunk nem kell emailt írogatni, kurva egyszerű foglalni,
+            TODO: Nálunk nem kell emailt írogatni, egyszerű foglalni,
             stb...
           </p> */}
           <ol className="mt-7 space-y-3 lg:block">

@@ -387,6 +387,11 @@ html.admin {
     @apply bg-transparent p-0;
   }
 
+  /* Az editorban és a mentett megjegyzésben is ugyanúgy néz ki. */
+  .comment-markdown .mention {
+    @apply rounded bg-violet-200 px-0.5 font-medium text-violet-800 dark:bg-violet-800 dark:text-violet-200;
+  }
+
   /* A TipTap Placeholder csak egy osztályt és data-attribútumot tesz az üres bekezdésre. */
   .comment-markdown p.is-editor-empty:first-child::before {
     @apply pointer-events-none float-left h-0 text-muted-foreground;

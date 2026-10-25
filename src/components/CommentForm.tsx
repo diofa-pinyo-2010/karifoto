@@ -4,6 +4,7 @@ import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { isAllowedUri, Link } from '@tiptap/extension-link';
+import { Mention } from '@tiptap/extension-mention';
 import { Strike } from '@tiptap/extension-strike';
 import { Placeholder } from '@tiptap/extensions';
 import { Markdown } from '@tiptap/markdown';
@@ -13,6 +14,7 @@ import {
   getMarkRange,
   InputRule,
   markInputRule,
+  mergeAttributes,
   useEditor,
   useEditorState,
 } from '@tiptap/react';
@@ -28,6 +30,10 @@ import {
   StrikethroughIcon,
 } from 'lucide-react';
 
+import {
+  MentionSuggestionList,
+  useMentionSuggestion,
+} from '@/components/MentionSuggestion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,8 +43,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Spinner } from '@/components/ui/spinner';
+import { filterMentionCandidates } from '@/lib/mentions';
 import { cn } from '@/lib/utils';
 
+import type { MentionCandidate } from '@/lib/mentions';
 import type { CommentFormState } from '@/server/comments';
 import type { Editor } from '@tiptap/react';
 import type { LucideIcon } from 'lucide-react';
@@ -308,15 +316,19 @@ function LinkButton({
 
 export function CommentForm({
   action,
+  mentionables,
 }: {
   action: (
     state: CommentFormState,
     formData: FormData,
   ) => Promise<CommentFormState>;
+  /** Staff who can be `@`-mentioned: everyone except the author. */
+  mentionables: MentionCandidate[];
 }) {
   const id = useId();
   const labelId = `${id}-label`;
   const errorId = `${id}-error`;
+  const mention = useMentionSuggestion();
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -331,6 +343,32 @@ export function CommentForm({
       }),
       SingleTildeStrike,
       MarkdownLink.configure({ openOnClick: false }),
+      // Saved as `[@ id="…" label="nickname"]`; CommentBody renders it back
+      Mention.configure({
+        HTMLAttributes: { class: 'mention' },
+        renderHTML: ({ options, node }) => [
+          'span',
+          mergeAttributes(options.HTMLAttributes, {
+            title: mentionables.find((member) => member.id === node.attrs.id)
+              ?.name,
+          }),
+          `@${node.attrs.label ?? node.attrs.id}`,
+        ],
+        suggestion: {
+          // Someone already mentioned in this comment is not offered again
+          items: ({ query, editor: current }) => {
+            const mentioned = new Set<string>();
+            current.state.doc.descendants((node) => {
+              if (node.type.name === 'mention') mentioned.add(node.attrs.id);
+            });
+            return filterMentionCandidates(
+              mentionables.filter((member) => !mentioned.has(member.id)),
+              query,
+            );
+          },
+          render: mention.render,
+        },
+      }),
       Markdown,
       Placeholder.configure({
         placeholder: 'Pl. a kisállat érkezése, különleges kérés, átadás…',
@@ -419,6 +457,7 @@ export function CommentForm({
         ) : (
           <EditorContent editor={editor} />
         )}
+        <MentionSuggestionList {...mention.list} />
       </div>
       {failed && (
         <p id={errorId} role="alert" className="text-sm text-destructive">

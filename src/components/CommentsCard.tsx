@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { cn, getInitials } from '@/lib/utils';
 
+import type { MentionCandidate } from '@/lib/mentions';
 import type { CommentFormState } from '@/server/comments';
 
 export interface CommentItem {
@@ -21,16 +22,22 @@ export interface CommentItem {
  */
 export function CommentsCard({
   comments,
+  staff,
+  currentStaffProfileId,
   action,
   className,
 }: {
   comments: CommentItem[];
+  staff: MentionCandidate[];
+  currentStaffProfileId: string;
   action: (
     state: CommentFormState,
     formData: FormData,
   ) => Promise<CommentFormState>;
   className?: string;
 }) {
+  const staffById = new Map(staff.map((member) => [member.id, member]));
+
   return (
     <section
       aria-labelledby="comments-title"
@@ -45,7 +52,10 @@ export function CommentsCard({
         </Badge>
       </div>
 
-      <CommentForm action={action} />
+      <CommentForm
+        action={action}
+        mentionables={staff.filter(({ id }) => id !== currentStaffProfileId)}
+      />
 
       {comments.length === 0 ? (
         <p className="px-4 py-6 text-sm text-muted-foreground">
@@ -63,7 +73,7 @@ export function CommentsCard({
                   {comment.author ? getInitials(comment.author.nickname) : '?'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                   <span
                     className={cn(
@@ -80,7 +90,7 @@ export function CommentsCard({
                     {shortFullDateFormatter.format(comment.createdAt)}
                   </time>
                 </div>
-                <CommentBody body={comment.body} />
+                <CommentBody body={comment.body} staffById={staffById} />
               </div>
             </li>
           ))}

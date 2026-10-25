@@ -4,6 +4,9 @@ import AdminLoginEmail, { ADMIN_LOGIN_SUBJECT } from '@/emails/AdminLogin';
 import BookingConfirmationEmail, {
   CLIENT_BOOKING_CONFIRMATION_SUBJECT,
 } from '@/emails/BookingConfirmation';
+import CommentMentionEmail, {
+  COMMENT_MENTION_SUBJECT,
+} from '@/emails/CommentMention';
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
@@ -37,6 +40,17 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <AdminLoginEmail
         {...AdminLoginEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'comment-mention',
+    label: 'Megemlítés megjegyzésben',
+    subject: COMMENT_MENTION_SUBJECT,
+    element: () => (
+      <CommentMentionEmail
+        {...CommentMentionEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),
