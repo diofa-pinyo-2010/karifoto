@@ -60,7 +60,6 @@ export async function addPhotoShootingComment(
 
   let mentionIds: string[];
   try {
-    // A forged or deleted id is dropped here
     const recipientsToNotify = await prisma.staffProfile.findMany({
       where: { id: { in: [...ids] } },
       select: { id: true },
