@@ -380,7 +380,9 @@ export function CommentForm({
         role: 'textbox',
         'aria-multiline': 'true',
         'aria-labelledby': labelId,
-        class: 'comment-markdown min-h-24 px-2.5 py-2 outline-none',
+        // Under 16px iOS Safari zooms in on focus; same pattern as shadcn's Input
+        class:
+          'comment-markdown min-h-24 px-2.5 py-2 text-base outline-none lg:text-sm',
       },
     },
   });
