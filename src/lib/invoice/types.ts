@@ -58,9 +58,9 @@ export interface InvoiceClient {
   /**
    * A final invoice (végszámla) settling an earlier advance.
    *
-   * `items` must list the **full** price of the shooting *and* the settled
-   * advance as a negative line, so the document totals to what is still
-   * payable. `advanceInvoiceNumber` only links the two documents —
+   * `items` must list the **full** price of the shooting (one "Fotózás" item)
+   * *and* the settled advance as a negative line, so the document totals to
+   * what is still payable. `advanceInvoiceNumber` only links the two documents —
    * szamlazz deducts nothing on its own. See
    * [`buildFinalInvoiceItems()`](./final-invoice-items.ts), which is the only
    * thing that should build this list.

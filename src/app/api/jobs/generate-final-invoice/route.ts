@@ -162,7 +162,10 @@ export const POST = verifySignatureAppRouter(
       shooting: photoShooting,
     });
 
-    const items = buildFinalInvoiceItems(breakdown.lines, advanceInvoice);
+    const items = buildFinalInvoiceItems(
+      breakdown.totalToBeInvoiced,
+      advanceInvoice,
+    );
 
     /**
      * A végszámla végösszege a még fizetendő, tehát meg kell egyeznie azzal,
@@ -209,7 +212,7 @@ export const POST = verifySignatureAppRouter(
             zip: billingAddress.zip,
           },
           /**
-           * A teljes ár tételesen, **plusz** a beszámított előleg negatív
+           * A teljes ár egy "Fotózás" tételként, **plusz** a beszámított előleg negatív
            * tételként — a `buildFinalInvoiceItems()` teszi hozzá. A szamlazz az
            * `elolegSzamlaszam`-ból nem von le semmit, csak összekapcsolja a két
            * dokumentumot, tehát az előleg sora nélkül a végszámla a teljes árat
