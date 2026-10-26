@@ -21,7 +21,7 @@ export type PriceLine = {
   /**
    * Set when the line came from a `PriceAdjustment`. The admin page uses it to
    * find the adjustment behind a row, so it can show the internal note and a
-   * delete button on that row only. An invoice ignores it.
+   * delete button on that row only.
    */
   adjustmentId?: string;
 };
@@ -34,7 +34,8 @@ export type PriceBreakdown = {
   totalAdjustments: number;
   totalPaid: number;
   /**
-   * The full price of the shooting. A végszámla lists this, and then deducts
+   * The full price of the shooting. A végszámla lists this as its single
+   * "Fotózás" item, and then deducts
    * the advance it settles as a separate negative line — szamlazz does that
    * arithmetic for nobody, so the document's own total is what must come out
    * right. See [`buildFinalInvoiceItems()`](../lib/invoice/final-invoice-items.ts).
@@ -54,13 +55,13 @@ type PricingArgs = {
 /**
  * The one place that turns a shooting plus its price snapshot into a bill.
  *
- * It returns the individual lines rather than a single total because three
- * callers need the same breakdown — the admin pricing rows, a végszámla's line
- * items, and the SumUp payment amount. Deriving those separately is what let
+ * It returns the individual lines rather than a single total so the admin
+ * pricing rows and the totals (the végszámla's amount, the SumUp payment
+ * amount) come from the same breakdown. Deriving those separately is what let
  * the admin page show a light-play charge the total did not include.
  *
- * A line is only present when it costs something, so nothing renders or
- * invoices a 0 Ft row — except the package and studio fee, which always apply.
+ * A line is only present when it costs something, so nothing renders a
+ * 0 Ft row — except the package and studio fee, which always apply.
  */
 export function calculatePricing({
   pricing,
