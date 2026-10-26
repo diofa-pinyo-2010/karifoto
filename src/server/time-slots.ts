@@ -6,6 +6,7 @@ import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { TIME_SLOT_DURATION_MINUTES } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 
 export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
   await verifySession();
@@ -17,6 +18,7 @@ export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
   }
 
   revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
 }
 
 export async function createTimeSlot(
@@ -38,6 +40,7 @@ export async function createTimeSlot(
       data: { startTime, endTime, revealed },
     });
     revalidatePath('/admin/time-slots');
+    invalidatePublicTimeSlots();
     return { id: slot.id };
   } catch (error) {
     console.error(error);
@@ -83,4 +86,5 @@ export async function deleteTimeSlot(
   }
 
   revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
 }
