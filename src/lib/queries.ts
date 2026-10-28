@@ -18,6 +18,10 @@ import {
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import {
+  PUBLIC_TIME_SLOTS_TAG,
+  splitPublicTimeSlots,
+} from '@/lib/public-time-slots';
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
 
 import type { MentionCandidate } from '@/lib/mentions';
@@ -102,6 +106,7 @@ const timeSlotsPublicSelect = {
     startTime: true,
     revealed: true,
     photoShooting: { select: { id: true } },
+    allowedPackages: true,
   },
 } satisfies Prisma.TimeSlotDefaultArgs;
 
@@ -118,22 +123,52 @@ export async function getTimeSlot(id: string) {
   });
 }
 
-export async function fetchTimeSlotsPublic() {
-  return prisma.timeSlot.findMany({
-    where: { startTime: { gte: new Date(EARLY_BIRD_DATE_DEADLINE) } },
-    ...timeSlotsPublicSelect,
-    orderBy: { startTime: 'asc' },
-  });
+// Szándékosan hosszú: a Neon 5 perc tétlenség után alszik el, egy ≤5 perces
+// TTL folyamatos forgalom mellett ébren tartaná. A frissességet az
+// `invalidatePublicTimeSlots()` hívások adják minden íráskor; a TTL csak a
+// kimaradt utakat (seed, kézi DB-módosítás) korlátozza.
+const PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS = 60 * 60;
+// Növeld, ha a `timeSlotsPublicSelect` alakja változik! A Vercel Data Cache
+// túléli a deployt, és a kulcs csak a callback forrásából + ebből áll.
+const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v2';
+
+/**
+ * A főoldal mindkét foglalási szekciójának idősávjai egyetlen, cache-elt
+ * lekérdezésben, hogy a látogatók (és a crawlerek) ne ébresszék fel az
+ * adatbázist. Az alsó határ a feltöltés pillanatához kötött; a pontos,
+ * kérésenkénti szűrést a `splitPublicTimeSlots()` végzi a cache-en kívül.
+ */
+const getPublicTimeSlotsCached = unstable_cache(
+  async () => {
+    const now = new Date();
+    const deadline = new Date(EARLY_BIRD_DATE_DEADLINE);
+
+    return prisma.timeSlot.findMany({
+      where: { startTime: { gte: now < deadline ? now : deadline } },
+      ...timeSlotsPublicSelect,
+      orderBy: { startTime: 'asc' },
+    });
+  },
+  [PUBLIC_TIME_SLOTS_TAG, PUBLIC_TIME_SLOTS_CACHE_VERSION],
+  {
+    tags: [PUBLIC_TIME_SLOTS_TAG],
+    revalidate: PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS,
+  },
+);
+
+// Egy renderen belül a két szekció ugyanazt a felosztást kapja.
+const getPublicTimeSlots = cache(async () =>
+  splitPublicTimeSlots(await getPublicTimeSlotsCached(), new Date()),
+);
+
+export async function fetchTimeSlotsPublic(): Promise<TimeSlotPublic[]> {
+  return (await getPublicTimeSlots()).normal;
 }
 
-export async function fetchEarlyBirdTimeSlotsPublic() {
-  return prisma.timeSlot.findMany({
-    where: {
-      startTime: { gte: new Date(), lt: new Date(EARLY_BIRD_DATE_DEADLINE) },
-    },
-    ...timeSlotsPublicSelect,
-    orderBy: { startTime: 'asc' },
-  });
+export async function fetchEarlyBirdTimeSlotsPublic(): Promise<
+  TimeSlotPublic[]
+> {
+  return (await getPublicTimeSlots()).earlyBird;
 }
 
 export async function fetchTimeSlotsAdmin() {
@@ -144,6 +179,7 @@ export async function fetchTimeSlotsAdmin() {
       id: true,
       startTime: true,
       revealed: true,
+      allowedPackages: true,
       photoShooting: {
         select: {
           id: true,

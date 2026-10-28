@@ -41,6 +41,7 @@ export function CreateTimeSlotDialog() {
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState(DEFAULT_TIME);
   const [revealed, setRevealed] = useState(false);
+  const [miniOnly, setMiniOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -48,6 +49,7 @@ export function CreateTimeSlotDialog() {
     setDate(undefined);
     setTime(DEFAULT_TIME);
     setRevealed(false);
+    setMiniOnly(false);
     setError(null);
   }
 
@@ -62,7 +64,7 @@ export function CreateTimeSlotDialog() {
     startTime.setHours(hours, minutes, 0, 0);
 
     startTransition(async () => {
-      const result = await createTimeSlot(startTime, revealed);
+      const result = await createTimeSlot(startTime, revealed, miniOnly);
       if ('error' in result) {
         setError(result.error);
         return;
@@ -127,6 +129,22 @@ export function CreateTimeSlotDialog() {
               id="time-slot-revealed"
               checked={revealed}
               onCheckedChange={(checked) => setRevealed(checked)}
+            />
+          </Field>
+        </FieldLabel>
+        <FieldLabel htmlFor="mini-only">
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldTitle>Csak MINI?</FieldTitle>
+              <FieldDescription>
+                Ha bekapcsolod, erre az idősávra csak MINI csomagot lehet
+                foglalni.
+              </FieldDescription>
+            </FieldContent>
+            <Switch
+              id="mini-only"
+              checked={miniOnly}
+              onCheckedChange={(checked) => setMiniOnly(checked)}
             />
           </Field>
         </FieldLabel>

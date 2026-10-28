@@ -10,6 +10,7 @@ import { APP_URLS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 import { sendImageSelectionEmail } from '@/lib/resend/image-selection';
 import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
@@ -115,6 +116,8 @@ export async function changeTimeOfPhotoShooting({
     console.error(error);
     return { error: 'Nem sikerült módosítani az időpontot. Próbáld újra.' };
   }
+  // A régi idősáv felszabadult, az új foglalt lett.
+  invalidatePublicTimeSlots();
 
   // 4. Move the Google Calendar event and email the client. The new time is
   // already saved, so a publish failure is logged, not returned to the admin.

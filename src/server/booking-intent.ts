@@ -7,6 +7,7 @@ import {
   attachWeekdayDiscount,
 } from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
+import { isPackageAllowed } from '@/lib/time-slot-packages';
 import { isWeekday } from '@/lib/utils';
 
 import type { DecorSet, Package } from '@/generated/prisma/client';
@@ -77,6 +78,7 @@ export async function createBookingIntent(
     select: {
       startTime: true,
       revealed: true,
+      allowedPackages: true,
       photoShooting: { select: { id: true } },
     },
   });
@@ -87,6 +89,12 @@ export async function createBookingIntent(
     timeSlot.startTime.getTime() <= Date.now()
   ) {
     return { error: 'Ez az időpont már nem elérhető. Válassz másikat.' };
+  }
+
+  if (!isPackageAllowed(timeSlot.allowedPackages, input.packageKey)) {
+    return {
+      error: 'Erre az időpontra ez a csomag nem foglalható. Válassz másikat.',
+    };
   }
 
   try {

@@ -6,6 +6,7 @@ import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { TIME_SLOT_DURATION_MINUTES } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 
 export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
   await verifySession();
@@ -17,11 +18,13 @@ export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
   }
 
   revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
 }
 
 export async function createTimeSlot(
   startTime: Date,
   revealed: boolean = false,
+  miniOnly: boolean = false,
 ): Promise<{ id: string } | { error: string }> {
   await verifySession();
 
@@ -35,9 +38,15 @@ export async function createTimeSlot(
 
   try {
     const slot = await prisma.timeSlot.create({
-      data: { startTime, endTime, revealed },
+      data: {
+        startTime,
+        endTime,
+        revealed,
+        allowedPackages: miniOnly ? ['MINI'] : [],
+      },
     });
     revalidatePath('/admin/time-slots');
+    invalidatePublicTimeSlots();
     return { id: slot.id };
   } catch (error) {
     console.error(error);
@@ -83,4 +92,5 @@ export async function deleteTimeSlot(
   }
 
   revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
 }

@@ -6,12 +6,12 @@ import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 import { FaceSlightlyFrowningIcon } from 'lucide-react';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
-import { WEEKDAY_DISCOUNT_AMOUNT } from '@/lib/constants';
+import { PACKAGE_LABEL, WEEKDAY_DISCOUNT_AMOUNT } from '@/lib/constants';
 import {
   monthDayFormatter,
   shortDateFormatter,
   timeFormatter,
-  weekDayFormatter,
+  weekDayFormatterShort,
 } from '@/lib/formatters';
 import {
   capitalize,
@@ -25,7 +25,7 @@ import type { TimeSlotPublic } from '@/lib/queries';
 
 // SZEPTEMBER 13., VASÁRNAP
 const formatDayTitle = (date: Date) =>
-  `${monthDayFormatter.format(date)}, ${weekDayFormatter.format(date)}`.toUpperCase();
+  `${monthDayFormatter.format(date)}, ${weekDayFormatterShort.format(date)}`.toUpperCase();
 
 // Szept. 13. 12:00
 const formatSlotLabel = (date: Date) =>
@@ -97,7 +97,13 @@ export function TimeSlotAccordion({
                   széles két idősávhoz. */}
                 <ul className="grid gap-2 pb-5 sm:grid-cols-2">
                   {daySlots.map(
-                    ({ id, startTime, revealed, photoShooting }) => {
+                    ({
+                      id,
+                      startTime,
+                      revealed,
+                      photoShooting,
+                      allowedPackages,
+                    }) => {
                       const taken = !revealed || photoShooting != null;
 
                       const row = (
@@ -105,6 +111,14 @@ export function TimeSlotAccordion({
                           <span className={cn(taken && 'line-through')}>
                             {formatSlotLabel(startTime)}
                           </span>
+                          {allowedPackages.length > 0 && !taken && (
+                            <span className="font-medium">
+                              Csak{' '}
+                              {allowedPackages
+                                .map((p) => PACKAGE_LABEL[p])
+                                .join(', ')}
+                            </span>
+                          )}
                           <span
                             className={cn(
                               'text-[10px] font-semibold uppercase',

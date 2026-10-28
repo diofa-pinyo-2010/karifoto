@@ -63,12 +63,13 @@ model ClientProfile {
 }
 
 model TimeSlot {
-  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  startTime      DateTime        @db.Timestamptz
-  endTime        DateTime        @db.Timestamptz
-  revealed       Boolean         @default(false)
-  photoShooting  PhotoShooting?
-  bookingIntents BookingIntent[]
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  startTime       DateTime        @db.Timestamptz
+  endTime         DateTime        @db.Timestamptz
+  revealed        Boolean         @default(false)
+  allowedPackages Package[]       @default([]) // empty = all allowed
+  photoShooting   PhotoShooting?
+  bookingIntents  BookingIntent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
