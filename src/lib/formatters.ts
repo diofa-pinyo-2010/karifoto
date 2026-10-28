@@ -6,6 +6,12 @@ export const weekDayFormatter = new Intl.DateTimeFormat('hu-Hu', {
   weekday: 'long',
 });
 
+// SZE
+export const weekDayFormatterShort = new Intl.DateTimeFormat('hu-Hu', {
+  timeZone: STUDIO_TZ,
+  weekday: 'short',
+});
+
 // dec. 1.
 export const shortDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
   timeZone: STUDIO_TZ,
