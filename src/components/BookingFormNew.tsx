@@ -11,7 +11,7 @@ import {
 } from 'react-hook-form';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MinusIcon, PlusIcon } from 'lucide-react';
+import { BadgeQuestionMarkIcon, MinusIcon, PlusIcon } from 'lucide-react';
 import * as z from 'zod';
 
 import { PackageInfoDialog } from '@/components/PackageInfoDialog';
@@ -46,8 +46,17 @@ import {
   PRICING_TABLE_PACKAGES,
   requiresDecorChoice,
 } from '@/lib/catalog';
-import { EXTRA_FEE_PER_PET, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
-import { formatMoney } from '@/lib/utils';
+import {
+  EXTRA_FEE_PER_PET,
+  MAX_PERSONS,
+  MAX_PETS,
+  PACKAGE_LABEL,
+} from '@/lib/constants';
+import {
+  initialPackageForSlot,
+  isPackageAllowed,
+} from '@/lib/time-slot-packages';
+import { cn, formatMoney } from '@/lib/utils';
 import { createBookingIntent } from '@/server/booking-intent';
 
 import type { BookingSelection } from '@/lib/booking-selection';
@@ -151,10 +160,18 @@ const FIELD_ORDER = [
 export function BookingFormNew({
   timeSlotId,
   selection,
+  allowedPackages,
 }: {
   timeSlotId: string;
   selection: BookingSelection;
+  allowedPackages: Package[];
 }) {
+  const isRestricted = allowedPackages.length > 0;
+  // Hibánál ide fókuszálunk — letiltott rádiógomb nem kaphat fókuszt.
+  const firstAllowedPackage = PRICING_TABLE_PACKAGES.find((pkg) =>
+    isPackageAllowed(allowedPackages, pkg.key),
+  )?.key;
+
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     mode: 'onSubmit',
@@ -164,7 +181,7 @@ export function BookingFormNew({
     shouldFocusError: false,
     defaultValues: {
       // A főoldalról hozott választások csak előkitöltenek — itt is módosíthatók.
-      packageKey: selection.packageKey,
+      packageKey: initialPackageForSlot(allowedPackages, selection.packageKey),
       decorKey: selection.decorKey,
       isLightPlaySelected: selection.light,
       numberOfPeople: 0,
@@ -257,6 +274,21 @@ export function BookingFormNew({
       noValidate
       className="mx-auto max-w-130 px-4.5 pt-8 pb-10 sm:px-10"
     >
+      {isRestricted && (
+        <div
+          role="note"
+          className="mb-9 flex gap-2.25 rounded-2xl border border-[#ad7135]/35 bg-brand-champagne/60 px-3.5 py-2.75 text-[13.5px] leading-[1.45] text-[#7a4a1c]"
+        >
+          <BadgeQuestionMarkIcon className="shrink-0 opacity-75" />
+          <span>
+            {allowedPackages.length === 1
+              ? `Erre az időpontra csak ezzel a csomaggal lehet foglalni: ${PACKAGE_LABEL[allowedPackages[0]]}.`
+              : `Erre az időpontra csak ezekkel a csomagokkal lehet foglalni: ${allowedPackages.map((p) => PACKAGE_LABEL[p]).join(', ')}.`}{' '}
+            Ha másik csomagot szeretnél, kérjük keress egy másik időpontot.
+          </span>
+        </div>
+      )}
+
       <FieldGroup className="gap-9">
         <Controller
           name="packageKey"
@@ -279,50 +311,57 @@ export function BookingFormNew({
                 aria-invalid={fieldState.invalid}
                 className="gap-3"
               >
-                {PRICING_TABLE_PACKAGES.map((pkg, index) => (
-                  <FieldLabel
-                    key={pkg.key}
-                    htmlFor={`package-${pkg.key}`}
-                    className={CHOICE_CARD_CLASS}
-                  >
-                    <Field orientation="horizontal">
-                      <FieldContent className="gap-1">
-                        <FieldTitle className="text-lg text-ink">
-                          {pkg.label} •{' '}
-                          <span className="text-sm font-normal text-cream-dim">
-                            {pkg.durationMinutes} perc
-                          </span>
-                          <PackageInfoDialog packageKey={pkg.key} />
-                          {/* {pkg.highlighted && (
+                {PRICING_TABLE_PACKAGES.map((pkg) => {
+                  const allowed = isPackageAllowed(allowedPackages, pkg.key);
+                  return (
+                    <FieldLabel
+                      key={pkg.key}
+                      htmlFor={`package-${pkg.key}`}
+                      className={cn(
+                        CHOICE_CARD_CLASS,
+                        !allowed && 'cursor-not-allowed opacity-50',
+                      )}
+                    >
+                      <Field orientation="horizontal">
+                        <FieldContent className="gap-1">
+                          <FieldTitle className="text-lg text-ink">
+                            {pkg.label} •{' '}
+                            <span className="text-sm font-normal text-cream-dim">
+                              {pkg.durationMinutes} perc
+                            </span>
+                            <PackageInfoDialog packageKey={pkg.key} />
+                            {/* {pkg.highlighted && (
                             <span className="rounded-full bg-gold/25 px-2 py-0.5 text-[11px] tracking-chip text-ink uppercase">
                               {PACKAGE_HIGHLIGHT_BADGE}
                             </span>
                           )} */}
-                        </FieldTitle>
-                        {/* <FieldDescription className="text-base text-cream-muted">
+                          </FieldTitle>
+                          {/* <FieldDescription className="text-base text-cream-muted">
                           {pkg.sub}
                         </FieldDescription> */}
-                        {/* <FieldDescription className="mt-1 text-base text-ink">
+                          {/* <FieldDescription className="mt-1 text-base text-ink">
                           <span className="font-medium">{pkg.price}</span>{' '}
                           <span className="text-cream-dim">
                             {pkg.studioFee}
                           </span>
                         </FieldDescription> */}
-                      </FieldContent>
-                      <RadioGroupItem
-                        ref={
-                          index === 0
-                            ? controlRef('packageKey', field.ref)
-                            : undefined
-                        }
-                        value={pkg.key}
-                        id={`package-${pkg.key}`}
-                        aria-invalid={fieldState.invalid}
-                        className={CHOICE_CONTROL_CLASS}
-                      />
-                    </Field>
-                  </FieldLabel>
-                ))}
+                        </FieldContent>
+                        <RadioGroupItem
+                          ref={
+                            pkg.key === firstAllowedPackage
+                              ? controlRef('packageKey', field.ref)
+                              : undefined
+                          }
+                          value={pkg.key}
+                          id={`package-${pkg.key}`}
+                          disabled={!allowed}
+                          aria-invalid={fieldState.invalid}
+                          className={CHOICE_CONTROL_CLASS}
+                        />
+                      </Field>
+                    </FieldLabel>
+                  );
+                })}
               </RadioGroup>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </FieldSet>

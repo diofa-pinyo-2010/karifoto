@@ -106,6 +106,7 @@ const timeSlotsPublicSelect = {
     startTime: true,
     revealed: true,
     photoShooting: { select: { id: true } },
+    allowedPackages: true,
   },
 } satisfies Prisma.TimeSlotDefaultArgs;
 
@@ -129,7 +130,7 @@ export async function getTimeSlot(id: string) {
 const PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `timeSlotsPublicSelect` alakja változik! A Vercel Data Cache
 // túléli a deployt, és a kulcs csak a callback forrásából + ebből áll.
-const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v1';
+const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v2';
 
 /**
  * A főoldal mindkét foglalási szekciójának idősávjai egyetlen, cache-elt
@@ -178,6 +179,7 @@ export async function fetchTimeSlotsAdmin() {
       id: true,
       startTime: true,
       revealed: true,
+      allowedPackages: true,
       photoShooting: {
         select: {
           id: true,

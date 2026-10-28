@@ -47,7 +47,11 @@ export default async function BookingFormPage(
         </div>
       </section>
 
-      <BookingFormNew timeSlotId={timeSlotId} selection={selection} />
+      <BookingFormNew
+        timeSlotId={timeSlotId}
+        selection={selection}
+        allowedPackages={timeSlot.allowedPackages}
+      />
     </>
   );
 }
