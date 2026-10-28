@@ -50,6 +50,7 @@ import {
   PhotoShootingStatus,
   SumupCheckoutAttemptStatus,
 } from '@/generated/prisma/enums';
+import { AMOUNT_MISMATCH_REASON, isAttemptOpen } from '@/lib/sumup/reconcile';
 import { formatMoney } from '@/lib/utils';
 import { recordCashBalancePayment } from '@/server/balance-payment';
 import {
@@ -64,13 +65,11 @@ export function BalancePayment({
   remainingAmount,
   currentShootingStatus,
   shootingId,
-  clientName,
   openAttemptId,
 }: {
   remainingAmount: number;
   currentShootingStatus: PhotoShootingStatus;
   shootingId: string;
-  clientName: string;
   /** Nyitott (INITIATED/PENDING) SumUp kísérlet, ha van: a dialog folytatja. */
   openAttemptId: string | null;
 }) {
@@ -131,7 +130,6 @@ export function BalancePayment({
             />
             <SumUpPaymentButton
               shootingId={shootingId}
-              clientName={clientName}
               openAttemptId={openAttemptId}
             />
           </>
@@ -238,20 +236,16 @@ function CashPaymentButton({
   );
 }
 
-const ACTIVE: SumupCheckoutAttemptStatus[] = [
-  SumupCheckoutAttemptStatus.INITIATED,
-  SumupCheckoutAttemptStatus.PENDING,
-];
+/** Ennyi egymás utáni sikertelen poll után mutatunk hibát (1,5 mp-enként). */
+const MAX_POLL_FAILURES = 5;
 
 type PolledAttempt = SumupCheckoutAttempt & { canForceClose: boolean };
 
 function SumUpPaymentButton({
   shootingId,
-  clientName,
   openAttemptId,
 }: {
   shootingId: string;
-  clientName: string;
   openAttemptId: string | null;
 }) {
   const router = useRouter();
@@ -264,6 +258,7 @@ function SumUpPaymentButton({
   const [startError, setStartError] = useState<string | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [polled, setPolled] = useState<PolledAttempt | null>(null);
+  const [pollError, setPollError] = useState<string | null>(null);
 
   // Frissítés vagy visszanavigálás után a nyitott kísérletet folytatjuk, hogy
   // ne lehessen mellette egy másodikat indítani. Kísérletenként egyszer: a
@@ -279,15 +274,15 @@ function SumUpPaymentButton({
 
   // ignore a stale result from a previous attempt
   const attempt = polled?.id === attemptId ? polled : null;
-  const isActive = !!attemptId && (!attempt || ACTIVE.includes(attempt.status));
-  const shouldPoll = isActive && !startError && !isStarting;
+  const isActive = !!attemptId && (!attempt || isAttemptOpen(attempt));
+  const shouldPoll = isActive && !startError && !pollError && !isStarting;
   const open = isStarting || !!attemptId || !!startError;
-  const locked = isStarting || (isActive && !startError);
+  const locked = isStarting || (isActive && !startError && !pollError);
 
   function onPay() {
     setStartError(null);
     startTransition(async () => {
-      const res = await createPaymentAttempt({ shootingId, clientName });
+      const res = await createPaymentAttempt(shootingId);
       if (res.error != null) return setStartError(res.error);
       router.replace(`${pathname}?attempt=${res.attemptId}`, { scroll: false });
     });
@@ -298,6 +293,13 @@ function SumUpPaymentButton({
       return;
     }
     const controller = new AbortController();
+    // Egy-egy kiesés (hálózat, deploy) belefér, de tartós hibánál a dialógus
+    // ne pörögjön zárhatatlanul: hibát mutatunk, és bezárhatóvá válik.
+    let failures = 0;
+    const fail = (message: string) => {
+      failures += 1;
+      if (failures >= MAX_POLL_FAILURES) setPollError(message);
+    };
     const tick = async () => {
       try {
         const res = await fetch(`/api/payment-attempts/${attemptId}`, {
@@ -305,11 +307,20 @@ function SumUpPaymentButton({
           cache: 'no-store',
         });
         if (res.ok) {
+          failures = 0;
           setPolled(await res.json());
         } else if (res.status === 404) {
           setStartError('A fizetési kísérlet nem található.');
+        } else if (res.status === 401) {
+          setPollError('Lejárt a bejelentkezés, jelentkezz be újra.');
+        } else {
+          fail('A szerver hibát ad, a fizetés állapota nem kérdezhető le.');
         }
-      } catch {}
+      } catch {
+        if (!controller.signal.aborted) {
+          fail('Nincs kapcsolat, a fizetés állapota nem kérdezhető le.');
+        }
+      }
     };
     tick();
     const t = setInterval(tick, 1500);
@@ -345,6 +356,7 @@ function SumUpPaymentButton({
   function close() {
     if (locked) return;
     setStartError(null);
+    setPollError(null);
     router.replace(pathname, { scroll: false });
     // A fizetés után a hátralék 0, a BalancePayment ilyenkor már nem rendereli
     // ezt a gombot, vagyis a dialógust is magával vinné. Ezért csak bezáráskor
@@ -378,6 +390,27 @@ function SumUpPaymentButton({
               Bezárás
             </Button>
             <Button onClick={onPay}>Újra</Button>
+          </DialogFooter>
+        </>
+      );
+    }
+
+    if (pollError) {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle>Nem látjuk a fizetés állapotát</DialogTitle>
+            <DialogDescription>
+              {pollError} A fizetés ettől még átmehet a terminálon: ha átment, a
+              frissítés után látszik.
+            </DialogDescription>
+          </DialogHeader>
+          <XCircleIcon className="mx-auto my-6 size-10 text-destructive" />
+          <DialogFooter>
+            <Button variant="outline" onClick={close}>
+              Bezárás
+            </Button>
+            <Button onClick={() => setPollError(null)}>Újrapróbálás</Button>
           </DialogFooter>
         </>
       );
@@ -463,6 +496,27 @@ function SumUpPaymentButton({
         );
 
       case SumupCheckoutAttemptStatus.FAILED:
+        // A pénz megmozdult, csak nem a várt összeggel: újrapróbálás helyett
+        // emberi ellenőrzés kell (Discordon már riasztottunk).
+        if (attempt.failureReason === AMOUNT_MISMATCH_REASON) {
+          return (
+            <>
+              <DialogHeader>
+                <DialogTitle>Ellenőrizni kell a fizetést</DialogTitle>
+                <DialogDescription>
+                  A terminál más összeget terhelt, mint amit vártunk. Ne indíts
+                  új fizetést, amíg valaki meg nem nézte a SumUp felületén.
+                </DialogDescription>
+              </DialogHeader>
+              <TriangleAlertIcon className="mx-auto my-6 size-10 text-amber-500" />
+              <DialogFooter>
+                <Button variant="outline" onClick={close}>
+                  Bezárás
+                </Button>
+              </DialogFooter>
+            </>
+          );
+        }
         return (
           <>
             <DialogHeader>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AMOUNT_MISMATCH_REASON,
   ATTEMPT_FORCE_CLOSE_AFTER_MS,
   ATTEMPT_RECONCILE_AFTER_MS,
   ATTEMPT_RECONCILE_INTERVAL_MS,
@@ -81,16 +82,35 @@ describe('resolveAttemptReconcile', () => {
         currency: 'HUF',
         amount: 39000,
       }),
-    ).toEqual({ kind: 'late-success-after-manual-close' });
+    ).toEqual({ kind: 'success-on-closed-attempt' });
+  });
+
+  it('alerts on a success after a failed checkout creation', () => {
+    expect(
+      resolveAttemptReconcile({
+        attempt: { ...open, status: 'FAILED', failureReason: '504: timeout' },
+        status: 'SUCCESSFUL',
+        currency: 'HUF',
+        amount: 39000,
+      }),
+    ).toEqual({ kind: 'success-on-closed-attempt' });
+    expect(
+      resolveAttemptReconcile({
+        attempt: { ...open, status: 'CANCELLED' },
+        status: 'SUCCESSFUL',
+        currency: 'HUF',
+        amount: 39000,
+      }),
+    ).toEqual({ kind: 'success-on-closed-attempt' });
   });
 
   it('ignores anything else on a closed attempt', () => {
     expect(
       resolveAttemptReconcile({
         attempt: { ...open, status: 'FAILED', failureReason: 'declined' },
-        status: 'SUCCESSFUL',
-        currency: 'HUF',
-        amount: 39000,
+        status: 'FAILED',
+        currency: undefined,
+        amount: undefined,
       }),
     ).toEqual({ kind: 'already-closed' });
     expect(
@@ -99,6 +119,19 @@ describe('resolveAttemptReconcile', () => {
         status: 'SUCCESSFUL',
         currency: 'HUF',
         amount: 39000,
+      }),
+    ).toEqual({ kind: 'already-closed' });
+    // az eltérő összegre már riasztottunk
+    expect(
+      resolveAttemptReconcile({
+        attempt: {
+          ...open,
+          status: 'FAILED',
+          failureReason: AMOUNT_MISMATCH_REASON,
+        },
+        status: 'SUCCESSFUL',
+        currency: 'HUF',
+        amount: 3900,
       }),
     ).toEqual({ kind: 'already-closed' });
   });

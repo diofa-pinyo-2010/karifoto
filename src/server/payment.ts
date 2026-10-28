@@ -14,77 +14,71 @@ import {
 import { toSumUpMoney } from '@/lib/sumup/money';
 import {
   MANUAL_CLOSE_REASON,
+  OPEN_STATUSES,
   canForceCloseAttempt,
   isAttemptOpen,
 } from '@/lib/sumup/reconcile';
-import { resolveBalancePayment } from '@/server/balance-payment-guard';
+import { loadBalancePayment } from '@/server/load-balance-payment';
 import { reconcileSumUpAttempt } from '@/server/reconcile-sumup-attempt';
 
-const OPEN = { in: ['INITIATED' as const, 'PENDING' as const] };
+import type { SumupCheckoutAttempt } from '@/generated/prisma/client';
 
-export async function createPaymentAttempt({
-  shootingId,
-  clientName,
-}: {
-  shootingId: string;
-  clientName: string;
-}) {
+const OPEN = { in: OPEN_STATUSES };
+const NOT_FOUND = { error: 'A fizetési kísérlet nem található.' };
+
+export async function createPaymentAttempt(shootingId: string) {
   await verifySession();
 
   if (!UUID_RE.test(shootingId)) {
     return { error: 'Érvénytelen PhotoShooting ID.' };
   }
 
-  // Egyszerre egy nyitott kísérlet: ha van, azt folytatjuk, nem indítunk újat
-  // (egy második checkout a terminálon dupla terheléshez vezethetne).
-  const openAttempt = await prisma.sumupCheckoutAttempt.findFirst({
-    where: { photoShootingId: shootingId, status: OPEN },
-    orderBy: { createdAt: 'desc' },
-    select: { id: true },
-  });
-  if (openAttempt) {
-    return { attemptId: openAttempt.id };
-  }
-
-  const shooting = await prisma.photoShooting.findUnique({
-    where: { id: shootingId },
-    include: { adjustments: true, ledgerEntries: true, pricing: true },
-  });
-  if (shooting == null) {
-    return { error: 'Nem találjuk ezt a fotózást.' };
-  }
-
-  // Az összeget mindig a szerver számolja, a kliens által látott szám csak
-  // tájékoztat — ugyanaz a döntés, mint a készpénzes ágban.
-  const decision = resolveBalancePayment({
-    adjustments: shooting.adjustments,
-    ledgerEntries: shooting.ledgerEntries,
-    pricing: shooting.pricing,
-    shooting,
-    status: shooting.status,
-  });
-  if (!decision.ok) {
-    return { error: decision.error };
-  }
-  const { amountInCents } = decision;
-
-  // Előbb validálunk, hogy érvénytelen összegnél ne maradjon árva rekord.
+  let attempt: SumupCheckoutAttempt;
+  let clientName: string;
   try {
-    toSumUpMoney(amountInCents);
-  } catch (error) {
-    console.error(error);
-    return { error: 'Érvénytelen összeg, a fizetés nem indítható.' };
-  }
+    // Egyszerre egy nyitott kísérlet: ha van, azt folytatjuk, nem indítunk újat
+    // (egy második checkout a terminálon dupla terheléshez vezethetne).
+    const openAttempt = await prisma.sumupCheckoutAttempt.findFirst({
+      where: { photoShootingId: shootingId, status: OPEN },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    });
+    if (openAttempt) {
+      return { attemptId: openAttempt.id };
+    }
 
-  const attempt = await prisma.sumupCheckoutAttempt.create({
-    data: { amountInCents, photoShooting: { connect: { id: shootingId } } },
-  });
+    // Az összeget mindig a szerver számolja, a kliens által látott szám csak
+    // tájékoztat — ugyanaz a döntés, mint a készpénzes ágban.
+    const decision = await loadBalancePayment(shootingId);
+    if (!decision.ok) {
+      return { error: decision.error };
+    }
+    clientName = decision.clientName;
+
+    // Előbb validálunk, hogy érvénytelen összegnél ne maradjon árva rekord.
+    try {
+      toSumUpMoney(decision.amountInCents);
+    } catch (error) {
+      console.error(error);
+      return { error: 'Érvénytelen összeg, a fizetés nem indítható.' };
+    }
+
+    attempt = await prisma.sumupCheckoutAttempt.create({
+      data: {
+        amountInCents: decision.amountInCents,
+        photoShooting: { connect: { id: shootingId } },
+      },
+    });
+  } catch (error) {
+    console.error('[payment] failed to create attempt', { error, shootingId });
+    return { error: 'Nem sikerült elindítani a fizetést. Próbáld újra.' };
+  }
 
   let checkout;
   try {
     checkout = await createSumUpCheckout({
       paymentAttemptId: attempt.id,
-      amountInCents,
+      amountInCents: attempt.amountInCents,
       clientName,
     });
   } catch (error) {
@@ -97,10 +91,19 @@ export async function createPaymentAttempt({
           ? error.message
           : 'unknown error';
 
-    await prisma.sumupCheckoutAttempt.update({
-      where: { id: attempt.id },
-      data: { status: 'FAILED', failureReason },
-    });
+    // Ha a SumUp mégis elfogadta (pl. timeout), és később sikeres fizetés jön
+    // rá, a reconcile ezt a lezárt kísérletet látja, és Discordon riaszt.
+    try {
+      await prisma.sumupCheckoutAttempt.update({
+        where: { id: attempt.id },
+        data: { status: 'FAILED', failureReason },
+      });
+    } catch (updateError) {
+      console.error('[payment] failed to mark attempt FAILED', {
+        attemptId: attempt.id,
+        updateError,
+      });
+    }
 
     return { error: 'SumUp nem tudta megcsinálni a checkoutot' };
   }
@@ -108,28 +111,52 @@ export async function createPaymentAttempt({
   // A checkout már elfogadva: ha ez az update elbukik, a kísérletet NEM
   // jelöljük FAILED-nek, mert a terminálon a fizetés elindulhat. A webhook a
   // foreign_transaction_id alapján úgyis megtalálja és lezárja.
-  await prisma.sumupCheckoutAttempt.update({
-    where: { id: attempt.id },
-    data: {
-      clientTransactionId: checkout.data.client_transaction_id,
-      checkoutId: checkout.data.checkout_id,
-    },
-  });
+  try {
+    await prisma.sumupCheckoutAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        clientTransactionId: checkout.data.client_transaction_id,
+        checkoutId: checkout.data.checkout_id,
+      },
+    });
+  } catch (error) {
+    console.error('[payment] failed to store checkout ids', {
+      attemptId: attempt.id,
+      error,
+    });
+  }
 
   return { attemptId: attempt.id };
 }
 
-export async function cancelPaymentAttempt(attemptId: string) {
+export async function cancelPaymentAttempt(
+  attemptId: string,
+): Promise<{ error?: string }> {
   await verifySession();
 
-  const attempt = await prisma.sumupCheckoutAttempt.findUnique({
-    where: { id: attemptId },
-  });
-  if (!attempt) {
-    return { error: 'A fizetési kísérlet nem található.' };
+  if (!UUID_RE.test(attemptId)) {
+    return NOT_FOUND;
   }
-  if (attempt.status !== 'INITIATED' && attempt.status !== 'PENDING') {
-    return { error: 'A fizetés már lezárult.' };
+
+  try {
+    const attempt = await prisma.sumupCheckoutAttempt.findUnique({
+      where: { id: attemptId },
+    });
+    if (!attempt) {
+      return NOT_FOUND;
+    }
+    if (!isAttemptOpen(attempt)) {
+      return { error: 'A fizetés már lezárult.' };
+    }
+    if (await isReaderBusyElsewhere(attempt.id)) {
+      return {
+        error:
+          'A terminálon egy másik fotózás fizetése is nyitott, ezért nem állítjuk le.',
+      };
+    }
+  } catch (error) {
+    console.error('[payment] failed to load attempt for cancel', error);
+    return { error: 'A fizetést most nem lehet megszakítani.' };
   }
 
   // A SumUp a leállítást nem erősíti meg, és csak akkor fogadja el, ha a
@@ -151,59 +178,81 @@ export async function cancelPaymentAttempt(attemptId: string) {
  *
  * Előtte még egyszer megkérdezzük a SumUp-ot: ha közben lezárult, az nyer. Ha a
  * lezárás után mégis sikeres fizetés jön, a reconcile nem könyvel, hanem
- * Discordon riaszt (`MANUAL_CLOSE_REASON`).
+ * Discordon riaszt.
  */
-export async function forceClosePaymentAttempt(attemptId: string) {
+export async function forceClosePaymentAttempt(
+  attemptId: string,
+): Promise<{ error?: string }> {
   await verifySession();
 
   if (!UUID_RE.test(attemptId)) {
-    return { error: 'A fizetési kísérlet nem található.' };
-  }
-
-  const attempt = await prisma.sumupCheckoutAttempt.findUnique({
-    where: { id: attemptId },
-  });
-  if (!attempt) {
-    return { error: 'A fizetési kísérlet nem található.' };
-  }
-  if (!isAttemptOpen(attempt)) {
-    return { error: 'A fizetés már lezárult.' };
-  }
-  if (!canForceCloseAttempt(attempt, new Date())) {
-    return { error: 'Még várj egy kicsit, a terminál válaszolhat.' };
+    return NOT_FOUND;
   }
 
   try {
-    const transaction = await getTransactionForAttempt(attempt.id);
-    if (transaction != null) {
-      await reconcileSumUpAttempt(attempt.id, transaction);
+    const attempt = await prisma.sumupCheckoutAttempt.findUnique({
+      where: { id: attemptId },
+    });
+    if (!attempt) {
+      return NOT_FOUND;
+    }
+    if (!isAttemptOpen(attempt)) {
+      return { error: 'A fizetés már lezárult.' };
+    }
+    if (!canForceCloseAttempt(attempt, new Date())) {
+      return { error: 'Még várj egy kicsit, a terminál válaszolhat.' };
+    }
+
+    try {
+      const transaction = await getTransactionForAttempt(attempt.id);
+      if (transaction != null) {
+        await reconcileSumUpAttempt(attempt.id, transaction);
+      }
+    } catch (error) {
+      console.error('[payment] reconcile before force close failed', error);
+    }
+
+    // Ha a terminál még erre vár, leállítjuk; ha nem, ez hibát ad, amit
+    // elnyelünk. Másik fotózás nyitott fizetését viszont nem lőjük le.
+    if (!(await isReaderBusyElsewhere(attempt.id))) {
+      try {
+        await terminateSumUpCheckout();
+      } catch (error) {
+        console.error('[payment] terminate before force close failed', error);
+      }
+    }
+
+    const { count } = await prisma.sumupCheckoutAttempt.updateMany({
+      where: { id: attempt.id, status: OPEN },
+      data: { status: 'FAILED', failureReason: MANUAL_CLOSE_REASON },
+    });
+    if (count > 0) {
+      await sendDiscordNotification({
+        type: 'warning',
+        content: [
+          '**SumUp kísérlet kézzel lezárva** (a terminál nem jelzett vissza)\n',
+          `SumupCheckoutAttempt ID: ${attempt.id}`,
+          `Shooting ID: ${attempt.photoShootingId}`,
+          'Érdemes a SumUp felületén ellenőrizni, hogy nem ment-e át mégis a fizetés.',
+        ].join('\n'),
+      });
     }
   } catch (error) {
-    console.error('[payment] reconcile before force close failed', error);
-  }
-
-  // Ha a terminál még vár, leállítjuk; ha nem, ez hibát ad, amit elnyelünk.
-  try {
-    await terminateSumUpCheckout();
-  } catch (error) {
-    console.error('[payment] terminate before force close failed', error);
-  }
-
-  const { count } = await prisma.sumupCheckoutAttempt.updateMany({
-    where: { id: attempt.id, status: OPEN },
-    data: { status: 'FAILED', failureReason: MANUAL_CLOSE_REASON },
-  });
-  if (count > 0) {
-    await sendDiscordNotification({
-      type: 'warning',
-      content: [
-        '**SumUp kísérlet kézzel lezárva** (a terminál nem jelzett vissza)\n',
-        `SumupCheckoutAttempt ID: ${attempt.id}`,
-        `Shooting ID: ${attempt.photoShootingId}`,
-        'Érdemes a SumUp felületén ellenőrizni, hogy nem ment-e át mégis a fizetés.',
-      ].join('\n'),
-    });
+    console.error('[payment] force close failed', { attemptId, error });
+    return { error: 'Nem sikerült lezárni a fizetést. Próbáld újra.' };
   }
 
   return {};
+}
+
+/**
+ * Egy terminálunk van, és a SumUp leállítása (`terminateCheckout`) azt állítja
+ * le, ami éppen rajta fut — nem egy adott checkoutot. Ha más fotózásnak is van
+ * nyitott kísérlete, lehet, hogy éppen az fut.
+ */
+async function isReaderBusyElsewhere(attemptId: string) {
+  const other = await prisma.sumupCheckoutAttempt.count({
+    where: { id: { not: attemptId }, status: OPEN },
+  });
+  return other > 0;
 }

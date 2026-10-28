@@ -9,16 +9,16 @@ export const ATTEMPT_RECONCILE_INTERVAL_MS = 10_000;
 /** Ennyi idő után zárható le kézzel egy beragadt kísérlet. */
 export const ATTEMPT_FORCE_CLOSE_AFTER_MS = 5 * 60_000;
 
-/**
- * Ezzel a `failureReason`-nel jelöljük a kézzel lezárt kísérletet: egy később
- * befutó sikeres fizetés ebből tudja, hogy riasztani kell.
- */
 export const MANUAL_CLOSE_REASON =
   'Kézzel lezárva: a terminál nem jelzett vissza.';
+/**
+ * Ezzel jelöljük, ha a terminál más összeget terhelt: a pénz megmozdult, ezért
+ * a dialog nem kínál újrapróbálást, és erre már riasztottunk.
+ */
 export const AMOUNT_MISMATCH_REASON =
   'Eltérő összeg a terminálon: a fizetést ellenőrizni kell.';
 
-const OPEN_STATUSES: SumupCheckoutAttemptStatus[] = [
+export const OPEN_STATUSES: SumupCheckoutAttemptStatus[] = [
   SumupCheckoutAttemptStatus.INITIATED,
   SumupCheckoutAttemptStatus.PENDING,
 ];
@@ -50,7 +50,7 @@ export function canForceCloseAttempt(attempt: AttemptTimes, now: Date) {
 export type AttemptReconcileDecision =
   | { kind: 'update'; status: SumupCheckoutAttemptStatus }
   | { kind: 'amount-mismatch' }
-  | { kind: 'late-success-after-manual-close' }
+  | { kind: 'success-on-closed-attempt' }
   | { kind: 'already-closed' };
 
 /**
@@ -75,13 +75,15 @@ export function resolveAttemptReconcile({
   amount: number | undefined;
 }): AttemptReconcileDecision {
   if (!isAttemptOpen(attempt)) {
-    // Kézzel zártuk le, de a pénz mégis megmozdult: ember kell, nem könyvelünk.
+    // Lezártuk (kézzel, vagy mert a checkout létrehozása hibát adott, holott a
+    // SumUp elfogadta), de a pénz mégis megmozdult: ember kell, nem könyvelünk.
+    // Az eltérő összegre már riasztottunk, azt nem ismételjük.
     if (
       status === SumupCheckoutAttemptStatus.SUCCESSFUL &&
-      attempt.status === SumupCheckoutAttemptStatus.FAILED &&
-      attempt.failureReason === MANUAL_CLOSE_REASON
+      attempt.status !== SumupCheckoutAttemptStatus.SUCCESSFUL &&
+      attempt.failureReason !== AMOUNT_MISMATCH_REASON
     ) {
-      return { kind: 'late-success-after-manual-close' };
+      return { kind: 'success-on-closed-attempt' };
     }
     return { kind: 'already-closed' };
   }

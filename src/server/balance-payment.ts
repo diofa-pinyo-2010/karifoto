@@ -2,20 +2,20 @@
 
 import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
-import { LEDGER_ENTRY_CATEGORY_SIGN, UUID_RE } from '@/lib/constants';
+import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { sendDiscordNotification } from '@/lib/discord';
 import { prisma } from '@/lib/prisma';
 import { qStashClient } from '@/lib/upstash';
 import { recalculatePhotoShootingStatus } from '@/server/admin';
-import { resolveBalancePayment } from '@/server/balance-payment-guard';
+import { loadBalancePayment } from '@/server/load-balance-payment';
 
 const BALANCE = 'INCOME_CLIENT_PAYMENT_BALANCE' as const;
 
 /**
  * A stúdióban készpénzben átvett hátralék rögzítése.
  *
- * A döntést (átvehető-e, mennyi) a `resolveBalancePayment()` hozza meg — ez
+ * A döntést (átvehető-e, mennyi) a `loadBalancePayment()` hozza meg — ez
  * a függvény csak a köré épülő I/O: betölt, ír, sorba tesz, újraszámol.
  *
  * A pénz már a kasszában van, mire ide érünk, ezért a sorrend nem tetszőleges:
@@ -26,26 +26,7 @@ export async function recordCashBalancePayment(
 ): Promise<{ error: string } | { success: true }> {
   await verifySession();
 
-  if (!UUID_RE.test(shootingId)) {
-    return { error: 'Érvénytelen PhotoShooting ID.' };
-  }
-
-  const shooting = await prisma.photoShooting.findUnique({
-    where: { id: shootingId },
-    include: { adjustments: true, ledgerEntries: true, pricing: true },
-  });
-
-  if (shooting == null) {
-    return { error: 'Nem találjuk ezt a fotózást.' };
-  }
-
-  const decision = resolveBalancePayment({
-    adjustments: shooting.adjustments,
-    ledgerEntries: shooting.ledgerEntries,
-    pricing: shooting.pricing,
-    shooting,
-    status: shooting.status,
-  });
+  const decision = await loadBalancePayment(shootingId);
 
   if (!decision.ok) {
     return { error: decision.error };

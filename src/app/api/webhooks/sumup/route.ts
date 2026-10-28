@@ -4,7 +4,8 @@ import { getTransaction } from '@/lib/sumup/client';
 import { reconcileSumUpAttempt } from '@/server/reconcile-sumup-attempt';
 
 // Aláírás nélküli: a payloadból csak a tranzakció azonosítóját használjuk, az
-// állapotot és az összeget mindig a SumUp API-tól kérjük le.
+// állapotot és az összeget mindig a SumUp API-tól kérjük le. A payload
+// `failure_reason`-jét sem mentjük, mert bárki küldhetné.
 const sumupWebhookSchema = z.object({
   id: z.string(),
   event_type: z.string(),
@@ -12,13 +13,14 @@ const sumupWebhookSchema = z.object({
     client_transaction_id: z.string(),
     merchant_code: z.string(),
     status: z.string(),
-    failure_reason: z.string().optional(),
   }),
   timestamp: z.string(),
 });
 
 export async function POST(req: Request) {
-  const parsed = sumupWebhookSchema.safeParse(await req.json());
+  const parsed = sumupWebhookSchema.safeParse(
+    await req.json().catch(() => null),
+  );
 
   if (!parsed.success) {
     console.error(parsed.error.issues);
@@ -49,7 +51,6 @@ export async function POST(req: Request) {
   const result = await reconcileSumUpAttempt(
     foreignTransactionId.data,
     transactionFull,
-    parsed.data.payload.failure_reason,
   );
 
   return new Response(result, { status: 200 });

@@ -11,6 +11,7 @@ import { sendDiscordNotification } from '@/lib/discord';
 import { prisma } from '@/lib/prisma';
 import {
   AMOUNT_MISMATCH_REASON,
+  OPEN_STATUSES,
   resolveAttemptReconcile,
 } from '@/lib/sumup/reconcile';
 import { toAttemptStatus } from '@/lib/sumup/status';
@@ -19,12 +20,7 @@ import { syncPhotoShootingStatus } from '@/server/sync-photo-shooting-status';
 
 import type { TransactionFull } from '@sumup/sdk';
 
-const OPEN = {
-  in: [
-    SumupCheckoutAttemptStatus.INITIATED,
-    SumupCheckoutAttemptStatus.PENDING,
-  ],
-};
+const OPEN = { in: OPEN_STATUSES };
 
 /**
  * Egy kísérlet lezárása a SumUp-tól **lekért** tranzakció alapján.
@@ -39,7 +35,6 @@ const OPEN = {
 export async function reconcileSumUpAttempt(
   attemptId: string,
   transaction: TransactionFull,
-  failureReason?: string,
 ): Promise<string> {
   const status = transaction.status && toAttemptStatus(transaction.status);
   if (status == null) {
@@ -73,18 +68,19 @@ export async function reconcileSumUpAttempt(
     case 'already-closed':
       return 'already closed';
 
-    case 'late-success-after-manual-close':
-      console.error('SumUp success after manual close', { attemptId });
+    case 'success-on-closed-attempt':
+      console.error('SumUp success on a closed attempt', { attemptId });
       await sendDiscordNotification({
         type: 'error',
         content: [
-          '**Sikeres SumUp fizetés egy kézzel lezárt kísérleten!**\n',
+          '**Sikeres SumUp fizetés egy már lezárt kísérleten!**\n',
           `SumupCheckoutAttempt ID: ${attempt.id}`,
           `Shooting ID: ${attempt.photoShootingId}`,
+          `Lezárva: ${attempt.status} (${attempt.failureReason ?? '–'})`,
           'LedgerEntry nem jött létre: visszatérítés vagy kézi könyvelés kell.',
         ].join('\n'),
       });
-      return 'late success after manual close';
+      return 'success on closed attempt';
 
     case 'amount-mismatch': {
       // pénz mozgott, de nem a várt összeg → ember kell. A kísérletet lezárjuk,
@@ -122,7 +118,6 @@ export async function reconcileSumUpAttempt(
         where: { id: attempt.id, status: OPEN },
         data: {
           status: decision.status,
-          failureReason,
           clientTransactionId: transaction.client_transaction_id,
         },
       });

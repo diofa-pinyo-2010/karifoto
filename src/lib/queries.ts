@@ -23,6 +23,7 @@ import {
   splitPublicTimeSlots,
 } from '@/lib/public-time-slots';
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
+import { OPEN_STATUSES } from '@/lib/sumup/reconcile';
 
 import type { MentionCandidate } from '@/lib/mentions';
 
@@ -225,7 +226,7 @@ const photoShootingDetailInclude = {
     },
     // A nyitott kártyás fizetés: frissítés után a dialog ezt folytatja.
     sumupCheckoutAttempts: {
-      where: { status: { in: ['INITIATED', 'PENDING'] } },
+      where: { status: { in: OPEN_STATUSES } },
       select: { id: true },
       orderBy: { createdAt: 'desc' },
       take: 1,
