@@ -32,7 +32,9 @@ const NO_READER = {
     'Nincs kiválasztott fizetési terminál – párosíts egyet a SumUp oldalán.',
 };
 
-export async function createPaymentAttempt(shootingId: string) {
+export async function createPaymentAttempt(
+  shootingId: string,
+): Promise<{ attemptId: string } | { error: string }> {
   await verifySession();
 
   if (!UUID_RE.test(shootingId)) {

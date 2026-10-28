@@ -283,7 +283,7 @@ function SumUpPaymentButton({
     setStartError(null);
     startTransition(async () => {
       const res = await createPaymentAttempt(shootingId);
-      if (res.error != null) return setStartError(res.error);
+      if ('error' in res) return setStartError(res.error);
       router.replace(`${pathname}?attempt=${res.attemptId}`, { scroll: false });
     });
   }
