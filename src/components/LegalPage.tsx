@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { Footer } from '@/components/Footer';
+import { STUDIO_ADDRESS } from '@/lib/constants';
 
 export const legalTitles = {
   impresszum: 'Impresszum',
@@ -53,14 +54,14 @@ export function LegalPage({ slug }: { slug: LegalSlug }) {
           {legalTitles[slug]}
         </h1>
 
-        <aside className="rounded-2xl border border-[#c6a77c] bg-[#ece3d3] p-5 [&_p]:mb-0">
+        {/* <aside className="rounded-2xl border border-[#c6a77c] bg-[#ece3d3] p-5 [&_p]:mb-0">
           <strong>Egyeztetési tervezet · 2026. szeptember 28.</strong>
           <p>
             Ez a dokumentum még nem hatályos. A jelölt adatok és feltételek
             véglegesítésre várnak; jelen formájában nem használható foglalási
             vagy adatkezelési feltételként.
           </p>
-        </aside>
+        </aside> */}
 
         <nav
           aria-label="Jogi dokumentumok"
@@ -104,11 +105,11 @@ function Operator() {
         <br />
         Egyéni vállalkozói nyilvántartási szám: 59641795
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Az Oktogon impresszumából átvett vállalkozási adatok. A Karifoto
         üzemeltetőjére való alkalmazhatóságuk megerősítendő. A székhely nem
         jelenti automatikusan a fotóstúdió címét.
-      </p>
+      </p> */}
       <p>
         Karifoto kapcsolat:{' '}
         <a href="mailto:info@karifoto.hu">info@karifoto.hu</a> ·{' '}
@@ -130,12 +131,15 @@ function Impresszum() {
         a díszletekben igénybe vehető extra szolgáltatás.
       </p>
       <h2>Stúdió és tárhely</h2>
-      <p className={pending}>
+      <p>A stúdió címe: {STUDIO_ADDRESS}</p>
+      <p>Domain szolgáltató: Rackhost</p>
+      <p>Tárhelyszolgáltató: GitHub és Vercel Inc.</p>
+      {/* <p className={pending}>
         Véglegesítendő: a stúdió pontos címe; a Karifoto tárhelyszolgáltatójának
         neve, címe és kapcsolattartási adatai; a vállalkozót nyilvántartó
         hatóság megnevezése. Az Oktogon Rackhost-adatait nem tekintjük
         automatikusan a Karifoto adataival azonosnak.
-      </p>
+      </p> */}
       <h2>Kapcsolat és dokumentumok</h2>
       <p>
         Kérdéseddel a fenti elérhetőségeken fordulhatsz hozzánk. A fotózás
@@ -161,11 +165,11 @@ function Adatkezeles() {
         jogalapja a GDPR 6. cikk (1) b) pontja. A foglalás önmagában nem
         hírlevél-feliratkozás.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         A tényleges foglalási mezők, kötelező adatok, megőrzési határidők,
         számlázási adatkezelés és az általános megkeresések jogalapja a végleges
         működés alapján kiegészítendő.
-      </p>
+      </p> */}
       <h2>3. Fotók és gyermekek képmása</h2>
       <p>
         A fotózás során a résztvevőkről képfelvételek készülnek. A képek
@@ -178,23 +182,23 @@ function Adatkezeles() {
         fotózásnak. Gyermekeknél a törvényes képviselő jogosultságát és
         nyilatkozatát is rendezni kell.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Véglegesítendő: a résztvevők adatkezelési jogalapjai, szülői
         nyilatkozat, az eredeti és retusált képek tárolási ideje, a galériák
         hozzáférése és lejárata, a törlés és biztonsági mentések rendje.
-      </p>
+      </p> */}
       <h2>4. Szolgáltatók és adattovábbítás</h2>
       <p>
         Csak a feladatukhoz szükséges adatokhoz férhetnek hozzá a fotózás,
         retusálás és ügyintézés közreműködői, megfelelő jogosultságokkal és
         titoktartás mellett.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Az éles tárhely, levelezés, fizetés, számlázás és képgaléria
         szolgáltatóinak neve, szerepe, adatkezelési helye és esetleges EGT-n
         kívüli adattovábbítási garanciái még megadandók. Az Oktogon Gmail- és
         Rackhost-használata ezt nem igazolja a Karifotónál.
-      </p>
+      </p> */}
       <h2>5. A jelenlegi oldal technikai működése</h2>
       <p>
         A jelenlegi bemutatóoldal helyben kiszolgált betűtípusokat használ. A
@@ -216,11 +220,11 @@ function Adatkezeles() {
         </a>
         .
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Az éles rendszer sütijeit, naplózását, megőrzési időit és a külső
         beágyazásokhoz szükséges hozzájáruláskezelést az indulás előtt fel kell
         mérni és összehangolni e tájékoztatóval.
-      </p>
+      </p> */}
       <h2>6. A jogaid</h2>
       <p>
         A jogszabályi feltételek szerint kérhetsz hozzáférést, helyesbítést,
@@ -268,35 +272,35 @@ function Aszf() {
         adatok megadása; a teljes rendelés és ár ellenőrzése; a hibák javítása;
         a feltételek megismerése; megrendelés és visszaigazolás.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Meghatározandó: mikor válik véglegessé az időpont, mely visszaigazolás
         hozza létre a szerződést, mi történik sikertelen fizetéskor, és hogyan
         őrzi meg a szolgáltató a szerződést. A bemutatóoldal önmagában nem
         igazolja az éles foglalórendszer működését.
-      </p>
+      </p> */}
       <h2>4. Díjak és fizetés</h2>
       <p>
         A végleges megrendelésnek forintban, egyértelműen kell mutatnia a
         fizetendő teljes összeget, beleértve a stúdiódíjat és a választott
         extrákat. Utólagos szolgáltatás csak külön megállapodással rendelhető.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Megadandó: bruttó árak és adózási státusz, fizetési módok és határidők,
         előleg vagy foglaló összege és jogcíme, számlázás és visszatérítés
         menete. A foglaló és az előleg eltérő jogkövetkezményeit a választott
         működéshez kell igazítani.
-      </p>
+      </p> */}
       <h2>5. Módosítás, betegség, lemondás</h2>
       <p>
         Kérjük, ha változtatnátok az időponton, jelezzétek a fenti
         elérhetőségeken. Az átfoglalás a szabad időpontoktól is függ.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Megerősítendő: az ingyenes átfoglalás határideje, betegség esetén
         alkalmazott szabályok, lemondási díj, késés, meg nem jelenés, valamint a
         szolgáltató általi lemondás és visszafizetés feltételei. A jelenlegi
         GYIK ígéreteit ezekkel egységesíteni kell.
-      </p>
+      </p> */}
       <h2>6. Fogyasztói elállás és felmondás</h2>
       <p>
         A szerződéses lemondási szabályok nem korlátozhatják a fogyasztó
@@ -304,19 +308,19 @@ function Aszf() {
         felmondási szabályokat, az esetleges kivételt és annak feltételeit a
         végleges foglalás előtt egyértelműen ismertetni kell.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Jogi minősítés alapján véglegesítendő a 14 napos jog, a határidőn belüli
         teljesítés kérése, az esetleges arányos díj és a nyilatkozatminta. A
         konkrét időpontra foglalt fotózást ebben a tervezetben nem tekintjük
         automatikusan elállási jog alóli kivételnek.
-      </p>
+      </p> */}
       <h2>7. Képátadás és felhasználás</h2>
-      <p className={pending}>
+      {/* <p className={pending}>
         Megadandó: átadási határidő és mód, válogatás és retusálás menete,
         fájlformátum, letöltési határidő, pótlás és archiválás. Külön rögzítendő
         a megrendelő személyes felhasználási joga, a további felhasználások
         rendje és a szerzői jogosult személye.
-      </p>
+      </p> */}
       <p>
         Javasolt szabály: a fotók reklám- vagy portfóliócélú közzététele nem
         feltétele a fotózásnak; ehhez az érintettek külön hozzájárulása
@@ -328,11 +332,11 @@ function Aszf() {
         telefonon lehet jelezni. A kötelező fogyasztói és hibás teljesítésből
         eredő jogokat a végleges feltételek sem zárhatják ki.
       </p>
-      <p className={pending}>
+      {/* <p className={pending}>
         Kiegészítendő a panaszkezelés jogszabályi rendje, határidői, a hibás
         teljesítési igények szabályai, az illetékes békéltető testület aktuális
         neve és elérhetősége, valamint az eljárási tájékoztatás.
-      </p>
+      </p> */}
       <h2>9. Adatkezelés</h2>
       <p>
         A személyes adatok és a képfelvételek kezelésének részleteit az{' '}
