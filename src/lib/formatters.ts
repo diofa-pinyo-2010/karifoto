@@ -33,6 +33,15 @@ export const timeFormatter = new Intl.DateTimeFormat('hu-Hu', {
   minute: '2-digit',
 });
 
+// 14:32:05
+export const timeWithSecondsFormatter = new Intl.DateTimeFormat('hu-HU', {
+  timeZone: STUDIO_TZ,
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+});
+
 // 09:00 — zero-padded, for <input type="time"> values
 export const timeInputFormatter = new Intl.DateTimeFormat('hu-HU', {
   timeZone: STUDIO_TZ,

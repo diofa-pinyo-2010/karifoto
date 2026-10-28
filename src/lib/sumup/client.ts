@@ -3,6 +3,8 @@ import { APIError, SumUp } from '@sumup/sdk';
 import { env } from '@/env';
 import { toSumUpMoney } from '@/lib/sumup/money';
 
+import type { ReaderDeviceStatus } from '@/lib/sumup/readers';
+
 const sumup = new SumUp({ apiKey: env.SUMUP_API_KEY });
 
 export async function createSumUpCheckout({
@@ -51,6 +53,38 @@ export async function getTransactionForAttempt(attemptId: string) {
     }
     throw error;
   }
+}
+
+/**
+ * A merchant összes readere a legutóbbi ismert állapotával. Egy reader
+ * állapotlekérésének hibája csak azt a readert érinti (`deviceStatus: null`),
+ * a lista lekérésének hibája viszont kidobódik.
+ */
+export async function listReadersWithStatus() {
+  const { items } = await sumup.readers.list(env.SUMUP_MERCHANT_CODE);
+
+  return Promise.all(
+    items.map(async (reader) => {
+      let deviceStatus: ReaderDeviceStatus | null = null;
+      if (reader.status === 'paired') {
+        try {
+          const { data } = await sumup.readers.getStatus(
+            env.SUMUP_MERCHANT_CODE,
+            reader.id,
+          );
+          deviceStatus = data;
+        } catch (error) {
+          console.error(`SumUp reader status failed for ${reader.id}`, error);
+        }
+      }
+
+      return {
+        reader,
+        deviceStatus,
+        isPaymentReader: reader.id === env.SUMUP_READER_ID,
+      };
+    }),
+  );
 }
 
 export async function terminateSumUpCheckout() {
