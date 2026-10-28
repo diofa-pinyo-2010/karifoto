@@ -24,6 +24,7 @@ export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
 export async function createTimeSlot(
   startTime: Date,
   revealed: boolean = false,
+  miniOnly: boolean = false,
 ): Promise<{ id: string } | { error: string }> {
   await verifySession();
 
@@ -37,7 +38,12 @@ export async function createTimeSlot(
 
   try {
     const slot = await prisma.timeSlot.create({
-      data: { startTime, endTime, revealed },
+      data: {
+        startTime,
+        endTime,
+        revealed,
+        allowedPackages: miniOnly ? ['MINI'] : [],
+      },
     });
     revalidatePath('/admin/time-slots');
     invalidatePublicTimeSlots();

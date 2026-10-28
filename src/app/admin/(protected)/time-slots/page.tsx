@@ -25,7 +25,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
-import { APP_URLS } from '@/lib/constants';
+import { APP_URLS, PACKAGE_LABEL } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchTimeSlotsAdmin } from '@/lib/queries';
@@ -97,68 +97,88 @@ export default async function AdminTimeSlotsPage() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <ul className="flex flex-col gap-3">
-                    {slots.map(({ id, revealed, startTime, photoShooting }) => {
-                      return (
-                        <li key={id} className="flex items-center gap-2">
-                          <Item
-                            variant="outline"
-                            className={cn(
-                              photoShooting != null && 'bg-primary/5',
-                            )}
-                          >
-                            <ItemMedia>
-                              {photoShooting != null ? (
-                                <div className="rounded-full bg-primary p-1">
-                                  <CameraIcon className="text-primary-foreground" />
-                                </div>
-                              ) : revealed ? (
-                                <div className="rounded-full bg-muted p-1">
-                                  <CalendarPlusIcon className="text-accent-foreground" />
-                                </div>
-                              ) : (
-                                <div className="rounded-full bg-muted p-1">
-                                  <CalendarOffIcon className="text-muted-foreground/50" />
-                                </div>
+                    {slots.map(
+                      ({
+                        id,
+                        revealed,
+                        startTime,
+                        photoShooting,
+                        allowedPackages,
+                      }) => {
+                        return (
+                          <li key={id} className="flex items-center gap-2">
+                            <Item
+                              variant="outline"
+                              className={cn(
+                                photoShooting != null && 'bg-primary/5',
                               )}
-                            </ItemMedia>
-                            <ItemContent>
-                              <ItemTitle
-                                className={cn(
-                                  !revealed && 'text-muted-foreground',
-                                )}
-                              >
-                                {timeFormatter.format(startTime)}
-                              </ItemTitle>
-                              <ItemDescription>
+                            >
+                              <ItemMedia>
                                 {photoShooting != null ? (
-                                  <Link
-                                    href={APP_URLS.photoShootingAdminPage(
-                                      photoShooting.id,
-                                    )}
-                                  >
-                                    {photoShooting.package} •{' '}
-                                    {photoShooting.client.owner.name}
-                                  </Link>
+                                  <div className="rounded-full bg-primary p-1">
+                                    <CameraIcon className="text-primary-foreground" />
+                                  </div>
+                                ) : revealed ? (
+                                  <div className="rounded-full bg-muted p-1">
+                                    <CalendarPlusIcon className="text-accent-foreground" />
+                                  </div>
                                 ) : (
-                                  'szabad'
+                                  <div className="rounded-full bg-muted p-1">
+                                    <CalendarOffIcon className="text-muted-foreground/50" />
+                                  </div>
                                 )}
-                              </ItemDescription>
-                            </ItemContent>
-                            <ItemActions>
-                              <RevealedSwitch
-                                disabled={photoShooting != null}
-                                timeSlotId={id}
-                                revealed={revealed}
-                              />
-                            </ItemActions>
-                          </Item>
-                          <DeleteTimeSlotButton
-                            timeSlotId={id}
-                            disabled={photoShooting != null}
-                          />
-                        </li>
-                      );
-                    })}
+                              </ItemMedia>
+                              <ItemContent>
+                                <ItemTitle
+                                  className={cn(
+                                    !revealed && 'text-muted-foreground',
+                                  )}
+                                >
+                                  {timeFormatter.format(startTime)}
+                                </ItemTitle>
+                                <ItemDescription>
+                                  {photoShooting != null ? (
+                                    <Link
+                                      href={APP_URLS.photoShootingAdminPage(
+                                        photoShooting.id,
+                                      )}
+                                    >
+                                      {photoShooting.package} •{' '}
+                                      {photoShooting.client.owner.name}
+                                    </Link>
+                                  ) : (
+                                    <>
+                                      {allowedPackages.length > 0 ? (
+                                        <span className="font-bold text-destructive">
+                                          Csak{' '}
+                                          {allowedPackages
+                                            .map((pkg) => PACKAGE_LABEL[pkg])
+                                            .join(', ')}
+                                          !
+                                        </span>
+                                      ) : (
+                                        'Bármilyen csomag'
+                                      )}
+                                    </>
+                                  )}
+                                </ItemDescription>
+                              </ItemContent>
+                              <ItemActions>
+                                <RevealedSwitch
+                                  disabled={photoShooting != null}
+                                  timeSlotId={id}
+                                  revealed={revealed}
+                                />
+                              </ItemActions>
+                            </Item>
+                            <DeleteTimeSlotButton
+                              timeSlotId={id}
+                              disabled={photoShooting != null}
+                            />
+                          </li>
+                        );
+                      },
+                    )}
                   </ul>
                 </AccordionContent>
               </AccordionItem>
