@@ -283,7 +283,7 @@ function SumUpPaymentButton({
     setStartError(null);
     startTransition(async () => {
       const res = await createPaymentAttempt(shootingId);
-      if (res.error != null) return setStartError(res.error);
+      if ('error' in res) return setStartError(res.error);
       router.replace(`${pathname}?attempt=${res.attemptId}`, { scroll: false });
     });
   }
@@ -381,7 +381,7 @@ function SumUpPaymentButton({
       return (
         <>
           <DialogHeader>
-            <DialogTitle>Nem sikerült a fizetés</DialogTitle>
+            <DialogTitle>Nem lehetséges a kártyás fizetés</DialogTitle>
             <DialogDescription>{startError}</DialogDescription>
           </DialogHeader>
           <XCircleIcon className="mx-auto my-6 size-10 text-destructive" />

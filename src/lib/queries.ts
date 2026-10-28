@@ -344,6 +344,7 @@ export const getSiteSettings = cache(async () => {
   return {
     automaticEarlyBirdEnabled:
       row?.automaticEarlyBirdEnabled ?? AUTOMATIC_EARLY_BIRD_ENABLED,
+    sumupReaderId: row?.sumupReaderId ?? null,
   };
 });
 

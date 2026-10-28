@@ -334,6 +334,9 @@ model SumupCheckoutAttempt {
   checkoutId          String?
   failureReason       String?
   amountInCents       Int
+  // A reader, amelyre a checkout indult; a leállítás is ide megy. A korábbi
+  // kísérleteknél null.
+  readerId            String?
 
   photoShooting   PhotoShooting @relation(fields: [photoShootingId], references: [id])
   photoShootingId String        @db.Uuid
@@ -370,6 +373,8 @@ model SentEmail {
 model SiteSettings {
   id                        String  @id @default("singleton")
   automaticEarlyBirdEnabled Boolean @default(false)
+  // A Terminálok oldalon kiválasztott SumUp reader, erre indul a fizetés.
+  sumupReaderId             String?
 
   updatedAt DateTime @default(now()) @updatedAt
 }

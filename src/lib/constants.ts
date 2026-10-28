@@ -394,6 +394,7 @@ export const APP_URLS = {
     `/admin/photo-shootings/${shootingId}`,
   upcomingShootings: '/admin/bookings',
   allShootings: '/admin/photo-shootings',
+  terminals: '/admin/terminals',
   exportBookings: '/admin/time-slots/export',
 
   // Client portal. The first two are public and meant to be shared; only
