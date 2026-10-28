@@ -60,8 +60,8 @@ export default function BookingLayout({
           <Image
             src="/images/karifoto-logo-krem.png"
             alt="Karifoto"
-            width={353}
-            height={146}
+            width={97}
+            height={40}
             priority
             className="h-7 w-auto lg:h-10"
           />

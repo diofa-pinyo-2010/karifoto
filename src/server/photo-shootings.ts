@@ -3,13 +3,14 @@
 import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
-import { Prisma } from '@/generated/prisma/client';
 import { createClientPortalToken } from '@/lib/auth';
+import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { clientPortalLoginUrl } from '@/lib/client-portal';
 import { APP_URLS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 import { sendImageSelectionEmail } from '@/lib/resend/image-selection';
 import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
@@ -17,6 +18,8 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShooting,
 } from '@/server/admin';
+
+import type { Prisma } from '@/generated/prisma/client';
 
 const photoShootingsForDaySelect = {
   select: {
@@ -32,14 +35,27 @@ export type PhotoShootingsForDay = Prisma.PhotoShootingGetPayload<
   typeof photoShootingsForDaySelect
 >;
 
-export async function getPhotoShootingsForDay(
+const pendingBookingIntentsSelect = {
+  select: {
+    id: true,
+    createdAt: true,
+    name: true,
+    timeSlot: { select: { startTime: true } },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+export type PendingBookingIntent = Prisma.BookingIntentGetPayload<
+  typeof pendingBookingIntentsSelect
+>;
+
+export async function getPhotoShootingsAndIntentsForDay(
   date: Date,
   excludeShootingId?: string,
 ) {
   await verifySession();
 
   const { start, end } = dayBounds(date);
-  return prisma.photoShooting.findMany({
+  const shootings = await prisma.photoShooting.findMany({
     where: {
       timeSlot: { startTime: { gte: start, lt: end } },
       id: { not: excludeShootingId },
@@ -47,6 +63,18 @@ export async function getPhotoShootingsForDay(
     ...photoShootingsForDaySelect,
     orderBy: { timeSlot: { startTime: 'asc' } },
   });
+
+  const pendingBookingIntents = await prisma.bookingIntent.findMany({
+    where: {
+      timeSlot: {
+        startTime: { gte: start, lt: end },
+      },
+      ...livePendingIntentWhere(),
+    },
+    ...pendingBookingIntentsSelect,
+  });
+
+  return { shootings, pendingBookingIntents };
 }
 
 export async function changeTimeOfPhotoShooting({
@@ -88,6 +116,8 @@ export async function changeTimeOfPhotoShooting({
     console.error(error);
     return { error: 'Nem sikerült módosítani az időpontot. Próbáld újra.' };
   }
+  // A régi idősáv felszabadult, az új foglalt lett.
+  invalidatePublicTimeSlots();
 
   // 4. Move the Google Calendar event and email the client. The new time is
   // already saved, so a publish failure is logged, not returned to the admin.

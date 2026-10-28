@@ -1,12 +1,14 @@
 import { clsx, type ClassValue } from 'clsx';
-import { addDays, format, parseISO } from 'date-fns';
-import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
+import { addDays, format, isWeekend, parseISO } from 'date-fns';
+import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
+import { PACKAGES } from '@/lib/catalog';
 import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
 
 import type { LedgerEntry } from '@/generated/prisma/client';
+import type { Package } from '@/generated/prisma/enums';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,6 +23,17 @@ export const formatMoney = (cents: number) => {
 
 export const capitalize = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);
+
+/** Two-letter avatar label: "Kovács Anna" → "KA", single word "Bence" → "BE". */
+export const getInitials = (name: string) => {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const letters =
+    words.length >= 2
+      ? [Array.from(words[0])[0], Array.from(words[1])[0]]
+      : Array.from(words[0] ?? '').slice(0, 2);
+
+  return letters.join('').toLocaleUpperCase('hu-HU') || '?';
+};
 
 const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: STUDIO_TZ,
@@ -84,6 +97,11 @@ export function generateAddToGoogleCalendarLink({
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
+// The time slot is always 60 min; the shooting itself lasts as long as its package.
+export function getShootingEndTime(startTime: Date, pkg: Package) {
+  return new Date(startTime.getTime() + PACKAGES[pkg].durationMinutes * 60_000);
+}
+
 // The "add to my calendar" link sent to clients in booking/reschedule emails.
 export function generateClientShootingCalendarLink(
   startTime: Date,
@@ -126,4 +144,12 @@ export function isBalanceCollected(ledgerEntries: LedgerEntry[]) {
     (entry) =>
       entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_BALANCE,
   );
+}
+
+export function isWeekday(date: Date) {
+  return !isWeekend(toZonedTime(date, STUDIO_TZ));
+}
+
+export function isWeekdayKey(dayKey: string) {
+  return !isWeekend(parseISO(dayKey));
 }

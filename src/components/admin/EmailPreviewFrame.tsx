@@ -38,12 +38,10 @@ export function EmailPreviewFrame({ html }: { html: string }) {
           })}
         </ButtonGroup>
       </div>
-      {/* sandbox without allow-scripts: the email can't run code, but
-          allow-same-origin lets us read its height to avoid a scrollbar. */}
       <iframe
         title="E-mail előnézet"
         srcDoc={html}
-        sandbox="allow-same-origin"
+        sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{ height }}
         className={cn(
           'mx-auto max-w-full rounded-lg border bg-white transition-[width]',

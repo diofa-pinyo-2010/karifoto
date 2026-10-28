@@ -116,11 +116,18 @@
   --color-brand-taken-edge: #e2cfc9;
   --color-brand-accent: #7b2d3b;
 
+  /*
+   * Kiválasztott kártya / rádiógomb / checkbox az űrlapokon. A `forest` túl
+   * sötét volt, a vendégek nem látták egyértelműen, mi van bejelölve. A krém
+   * pipa ezen 3:1 fölött van (nem szöveg, tehát ez a mérce).
+   */
+  --color-brand-selected: #2e8f55;
+
   /* ───────────────────────────────────────────── Karifoto typography ───────────────────────────────────────────── */
 
   --font-display: var(--ui-font-display);
   --font-sans: var(--ui-font-sans);
-  --font-script: var(--ui-font-script);
+  --font-handwritten: var(--ui-font-handwritten);
 
   /*
    * A 2026-os arculat kenyérbetűje, külön tokenen. Az átstílusozás alatt a
@@ -187,7 +194,7 @@
 
 /*
  * A fontkészletek közbeiktatott változóréteget kapnak: a fenti `@theme inline`
- * utilityk (`font-sans`, `font-display`, `font-script`, `font-heading`) ezekre a
+ * utilityk (`font-sans`, `font-display`, `font-heading`) ezekre a
  * `--ui-font-*` változókra mutatnak, így egyetlen scope-ból átírhatók.
  * Alapértelmezés a márkatipográfia — a publikus oldal így JS nélkül is helyes —,
  * az admin a lenti `html.admin` blokkban vált rendszerfontokra.
@@ -202,9 +209,9 @@
   --ui-font-sans: var(--font-jost), 'Jost', system-ui, sans-serif;
   /* A @fontsource-variable/cormorant-garamond deklarálja, álló és dőlt vágattal. */
   --ui-font-display: 'Cormorant Garamond Variable', Georgia, serif;
-  --ui-font-script: var(--font-parisienne), 'Parisienne', cursive;
   /* A @fontsource-variable/manrope deklarálja; a gyökér layout importálja. */
   --ui-font-brand-sans: 'Manrope Variable', system-ui, sans-serif;
+  --ui-font-handwritten: var(--font-caveat-brush), 'Caveat Brush', cursive;
 }
 
 .dark {
@@ -277,7 +284,6 @@
 html.admin {
   --ui-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ui-font-display: var(--ui-font-sans);
-  --ui-font-script: var(--ui-font-sans);
 }
 
 @layer components {
@@ -335,5 +341,60 @@ html.admin {
   .brand-stars {
     @apply tracking-[.1em] whitespace-nowrap;
     color: #ae793b;
+  }
+
+  /*
+   * Megjegyzések markdownja: ugyanez az osztály van a TipTap szerkesztőn és a
+   * kirenderelt megjegyzésen, hogy írás közben is úgy nézzen ki, ahogy mentve.
+   */
+  .comment-markdown {
+    @apply text-sm wrap-break-word;
+  }
+
+  .comment-markdown > * + * {
+    @apply mt-2;
+  }
+
+  .comment-markdown ul {
+    @apply list-disc pl-5;
+  }
+
+  .comment-markdown ol {
+    @apply list-decimal pl-5;
+  }
+
+  .comment-markdown li > * + * {
+    @apply mt-1;
+  }
+
+  .comment-markdown a {
+    @apply underline underline-offset-2;
+  }
+
+  .comment-markdown blockquote {
+    @apply border-l-2 pl-3 text-muted-foreground;
+  }
+
+  .comment-markdown code {
+    @apply rounded bg-muted px-1 font-mono text-[0.85em];
+  }
+
+  .comment-markdown pre {
+    @apply overflow-x-auto rounded-md bg-muted p-2;
+  }
+
+  .comment-markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  /* Az editorban és a mentett megjegyzésben is ugyanúgy néz ki. */
+  .comment-markdown .mention {
+    @apply rounded bg-violet-200 px-0.5 font-medium text-violet-800 dark:bg-violet-800 dark:text-violet-200;
+  }
+
+  /* A TipTap Placeholder csak egy osztályt és data-attribútumot tesz az üres bekezdésre. */
+  .comment-markdown p.is-editor-empty:first-child::before {
+    @apply pointer-events-none float-left h-0 text-muted-foreground;
+    content: attr(data-placeholder);
   }
 }

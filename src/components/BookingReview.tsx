@@ -68,12 +68,12 @@ export function BookingReview({
             </div>
             <PriceRow
               label={`${pkg.label} csomag`}
-              value={formatMoney(pkg.basePriceInCents)}
+              value={formatMoney(pkg.basePriceInCents + pkg.studioPriceInCents)}
             />
-            <PriceRow
+            {/* <PriceRow
               label="Stúdió bérlet"
               value={formatMoney(pkg.studioPriceInCents)}
-            />
+            /> */}
             {shouldShowLight && (
               <PriceRow
                 label="Fényjáték extra"
@@ -85,14 +85,14 @@ export function BookingReview({
               <PriceRow
                 label={`Extra emberek · ${extraHeads} fő`}
                 value={formatMoney(headFee)}
-                state="accent"
+                // state="accent"
               />
             )}
             {bookingIntent.numberOfPets > 0 && (
               <PriceRow
-                label={`Kisállat · ${bookingIntent.numberOfPets} db`}
+                label={`Kisállat · ${bookingIntent.numberOfPets} kedvenc`}
                 value={formatMoney(petFee)}
-                state="accent"
+                // state="accent"
               />
             )}
             {bookingIntent.adjustments.map(
@@ -187,7 +187,7 @@ export function BookingReview({
                 : 'bg-brand-champagne shadow-[0_14px_32px_rgba(184,80,58,.3)] hover:bg-brand-champagne-hover'
             }`}
           >
-            {isPending ? 'Átirányítás…' : 'Tovább →'}
+            {isPending ? 'Átirányítás…' : 'Tovább a fizetéshez →'}
           </button>
         </div>
         {state?.error && (

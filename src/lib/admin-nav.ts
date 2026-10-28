@@ -4,7 +4,9 @@ import {
   SettingsIcon,
   PhoneIcon,
   MailIcon,
-  ListIcon,
+  CircleQuestionMarkIcon,
+  SearchIcon,
+  TrendingUpIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -40,9 +42,9 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         allowedRoles: ALL_STAFF,
       },
       {
-        title: 'Összes foglalás',
+        title: 'Kereső',
         href: APP_URLS.allShootings,
-        icon: ListIcon,
+        icon: SearchIcon,
         allowedRoles: ALL_STAFF,
       },
     ],
@@ -50,6 +52,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
   {
     label: 'Csak admin',
     items: [
+      {
+        title: 'Statisztikák',
+        href: '/admin/stats',
+        icon: TrendingUpIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
       {
         title: 'Idősávok',
         href: '/admin/time-slots',
@@ -60,6 +68,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         title: 'Telefonos foglalás',
         href: '/admin/remote-booking',
         icon: PhoneIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
+      {
+        title: 'Leads',
+        href: '/admin/leads',
+        icon: CircleQuestionMarkIcon,
         allowedRoles: [StaffProfileRole.SUPERADMIN],
       },
       {

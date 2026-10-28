@@ -2,10 +2,14 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BookingCompletedTracker } from '@/components/BookingCompletedTracker';
+import { PendingBookingPoller } from '@/components/PendingBookingPoller';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { buildBookingCompletedEvent } from '@/lib/booking-tracking';
 import { PACKAGES } from '@/lib/catalog';
 import { formatLongDate } from '@/lib/formatters';
-import { getBookingIntentPublic } from '@/lib/queries';
+import { getBookingIntentPublic, getCreatedShooting } from '@/lib/queries';
+import { calculatePricing } from '@/server/pricing';
 
 export const metadata: Metadata = {
   title: 'Sikeres foglalás · Karifoto',
@@ -23,16 +27,39 @@ export default async function SuccessPage(
     bookingIntent?.status === BookingIntentStatus.PAYMENT_ORPHANED;
   const isProcessing = bookingIntent?.status === BookingIntentStatus.PENDING;
 
+  // A látogató szemszögéből itt teljes a foglalás: a webhook létrehozta a
+  // fotózást. PENDING alatt még nincs (az oldal frissítésre vár), árva
+  // fizetésnél pedig nem is lesz — egyikre sem megy event.
+  const completedShooting =
+    bookingIntent?.status === BookingIntentStatus.CONVERTED
+      ? await getCreatedShooting(bookingIntentId)
+      : null;
+  const bookingCompletedEvent =
+    completedShooting?.pricing != null
+      ? buildBookingCompletedEvent({
+          photoShootingId: completedShooting.id,
+          totalToBeInvoicedInCents: calculatePricing({
+            pricing: completedShooting.pricing,
+            shooting: completedShooting,
+            adjustments: completedShooting.adjustments,
+            ledgerEntries: completedShooting.ledgerEntries,
+          }).totalToBeInvoiced,
+        })
+      : null;
+
   return (
     <div className="min-h-screen bg-brand-cream font-brand-sans text-brand-ink">
+      {bookingCompletedEvent != null && (
+        <BookingCompletedTracker event={bookingCompletedEvent} />
+      )}
       <header className="bg-[#102a31] py-4.5 text-brand-cream">
         <div className="brand-shell flex items-center justify-between gap-5">
           <Link href="/" aria-label="Karifoto – kezdőlap">
             <Image
               src="/images/karifoto-logo-krem.png"
               alt="Karifoto"
-              width={353}
-              height={146}
+              width={97}
+              height={40}
               priority
               className="h-7 w-auto lg:h-9"
             />
@@ -63,9 +90,10 @@ export default async function SuccessPage(
             </h1>
             <p className="mx-auto mt-5 max-w-125 text-[15px] leading-[1.85] text-pretty text-brand-muted">
               {isProcessing
-                ? 'A fizetés megtörtént, a visszaigazolás pár másodpercen belül megérkezik. Frissítsd az oldalt.'
+                ? 'A fizetés megtörtént, a visszaigazolás pár másodpercen belül megjelenik ezen az oldalon.'
                 : `Kedves ${bookingIntent.name}! Köszönjük a foglalást! A visszaigazolást elküldtük e-mailben is.`}
             </p>
+            {isProcessing && <PendingBookingPoller />}
 
             <dl className="mx-auto mt-7 max-w-125 rounded-2xl border border-[#d9d3c7] bg-brand-paper px-5 py-1.5 text-left">
               <SuccessRow
@@ -89,8 +117,8 @@ export default async function SuccessPage(
 
             {isConverted && (
               <p className="mx-auto mt-4 max-w-125 text-[13px] leading-[1.6] text-pretty text-brand-muted">
-                A végleges összeget a fotózás napján, a stúdióban fizetitek — a
-                foglaló ebből levonásra kerül.
+                A végleges összeget a fotózás napján, a stúdióban fizetitek — az
+                előleg ebből levonásra kerül.
               </p>
             )}
           </>

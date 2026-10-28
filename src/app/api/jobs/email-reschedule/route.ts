@@ -9,7 +9,10 @@ import {
 } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { sendRescheduleNotificationEmail } from '@/lib/resend/reschedule-notification';
-import { generateClientShootingCalendarLink } from '@/lib/utils';
+import {
+  generateClientShootingCalendarLink,
+  getShootingEndTime,
+} from '@/lib/utils';
 
 export const POST = verifySignatureAppRouter(
   async (req: Request) => {
@@ -31,7 +34,7 @@ export const POST = verifySignatureAppRouter(
     const photoShooting = await prisma.photoShooting.findUnique({
       where: { id: shootingId },
       include: {
-        timeSlot: { select: { startTime: true, endTime: true } },
+        timeSlot: { select: { startTime: true } },
         client: { select: { owner: { select: { email: true, name: true } } } },
       },
     });
@@ -46,7 +49,8 @@ export const POST = verifySignatureAppRouter(
     }
 
     // Read the new time from the DB, so the client is told the latest one.
-    const { startTime, endTime } = photoShooting.timeSlot;
+    const { startTime } = photoShooting.timeSlot;
+    const endTime = getShootingEndTime(startTime, photoShooting.package);
 
     // Moved back to the old time before this job ran — nothing changed.
     if (startTime.getTime() === oldStartTime.getTime()) {

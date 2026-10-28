@@ -110,7 +110,10 @@ export function BalancePayment({
         {shouldCollectBalancePayment && (
           <TriangleAlertIcon className="text-amber-500" />
         )}
-        <span>Még fizetendő: {formatMoney(remainingAmount)}</span>
+        <span>
+          {remainingAmount > 0 ? 'Még fizetendő' : 'Túlfizetés'}:{' '}
+          {formatMoney(remainingAmount)}
+        </span>
       </p>
       <div className="flex w-full flex-1 flex-col items-stretch justify-end gap-3 lg:w-auto lg:flex-row lg:items-center">
         {shouldCollectBalancePayment ? (

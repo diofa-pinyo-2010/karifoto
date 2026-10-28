@@ -9,10 +9,9 @@ subset to latin + latin-ext.
 
 ## Copyright notices
 
-- **Cormorant Garamond**: Copyright 2015 the Cormorant Project Authors (github.com/CatharsisFonts/Cormorant)
+- **Caveat Brush**: Copyright 2015 Google Inc. All Rights Reserved.
 - **Geist Mono**: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)
 - **Jost**: Copyright 2020 The Jost Project Authors (https://github.com/indestructible-type)
-- **Parisienne**: Copyright (c) 2012 by Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com), with Reserved Font Names "Parisienne"
 
 ## SIL Open Font License, Version 1.1
 

@@ -8,7 +8,10 @@ import { formatLongDate } from '@/lib/formatters';
 import { markEmailSent, wasEmailSent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { sendBookingConfirmationEmail } from '@/lib/resend/booking-confirmation';
-import { generateClientShootingCalendarLink } from '@/lib/utils';
+import {
+  generateClientShootingCalendarLink,
+  getShootingEndTime,
+} from '@/lib/utils';
 
 export const POST = verifySignatureAppRouter(
   async (req: Request) => {
@@ -26,7 +29,7 @@ export const POST = verifySignatureAppRouter(
     const photoShooting = await prisma.photoShooting.findUnique({
       where: { id: parsed.data.shootingId },
       include: {
-        timeSlot: { select: { startTime: true, endTime: true } },
+        timeSlot: { select: { startTime: true } },
         client: {
           select: {
             // `id` is needed to mint the client portal token — Session and
@@ -56,7 +59,10 @@ export const POST = verifySignatureAppRouter(
     const bookedTimeString = formatLongDate(photoShooting.timeSlot.startTime);
     const addToGoogleCalendarLink = generateClientShootingCalendarLink(
       photoShooting.timeSlot.startTime,
-      photoShooting.timeSlot.endTime,
+      getShootingEndTime(
+        photoShooting.timeSlot.startTime,
+        photoShooting.package,
+      ),
     );
 
     // Minted here rather than in the Stripe webhook: this job is already

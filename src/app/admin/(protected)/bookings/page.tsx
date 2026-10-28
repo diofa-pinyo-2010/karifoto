@@ -15,10 +15,8 @@ import { requiresDecorChoice } from '@/lib/catalog';
 import {
   APP_URLS,
   DECOR_SET_LABEL,
-  PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
-  UPCOMING_SHOOTINGS_TO_SHOW,
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchUpcomingPhotoShootings } from '@/lib/queries';
@@ -48,7 +46,7 @@ export default async function BookingsPage() {
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        A következő (max) {UPCOMING_SHOOTINGS_TO_SHOW} fotózás
+        A következő fotózások
       </h1>
       {days.map(([dayKey, dayPhotoShootings]) => {
         return (
@@ -76,14 +74,19 @@ export default async function BookingsPage() {
                           {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
                         </Badge>
                         <ItemTitle>
+                          <span className="text-muted-foreground">
+                            #{shooting.sequenceNumber}
+                          </span>{' '}
                           {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
-                          {shooting.client.owner.name}
+                          <span className="text-primary dark:text-primary-foreground">
+                            {shooting.package}
+                          </span>{' '}
+                          • {shooting.client.owner.name}
                         </ItemTitle>
                         <ItemDescription>
                           {` 
-                            ${PACKAGE_LABEL[shooting.package]}  
-                            ${requiresDecorChoice(shooting.package) && shooting.decorSet ? `// Dekor: ${DECOR_SET_LABEL[shooting.decorSet]}` : ''}
-                            // Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
+                            ${requiresDecorChoice(shooting.package) && shooting.decorSet ? `Dekor: ${DECOR_SET_LABEL[shooting.decorSet]} //` : ''}
+                            Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
                           `}
                         </ItemDescription>
                       </ItemContent>

@@ -1,5 +1,4 @@
-import { BookingIntentStatus } from '@/generated/prisma/enums';
-import { PENDING_INTENT_HOLD_HOURS } from '@/lib/constants';
+import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { prisma } from '@/lib/prisma';
 import { createTimeSlot, updateTimeSlotRevealed } from '@/server/time-slots';
 
@@ -9,10 +8,6 @@ import { createTimeSlot, updateTimeSlotRevealed } from '@/server/time-slots';
 export async function getOrCreateTimeSlot(
   startTime: Date,
 ): Promise<{ id: string; created: boolean } | { error: string }> {
-  const holdCutoff = new Date(
-    Date.now() - PENDING_INTENT_HOLD_HOURS * 60 * 60 * 1000,
-  );
-
   const freeTimeSlots = await prisma.timeSlot.findMany({
     where: { startTime, photoShooting: null },
     select: {
@@ -20,10 +15,7 @@ export async function getOrCreateTimeSlot(
       _count: {
         select: {
           bookingIntents: {
-            where: {
-              status: BookingIntentStatus.PENDING,
-              updatedAt: { gt: holdCutoff },
-            },
+            where: livePendingIntentWhere(),
           },
         },
       },

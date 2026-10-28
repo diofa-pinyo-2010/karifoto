@@ -2,13 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { BookingIntentStatus } from '@/generated/prisma/enums';
-import {
-  PENDING_INTENT_HOLD_HOURS,
-  TIME_SLOT_DURATION_MINUTES,
-} from '@/lib/constants';
+import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
+import { TIME_SLOT_DURATION_MINUTES } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 
 export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
   await verifySession();
@@ -20,11 +18,13 @@ export async function updateTimeSlotRevealed(id: string, revealed: boolean) {
   }
 
   revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
 }
 
 export async function createTimeSlot(
   startTime: Date,
   revealed: boolean = false,
+  miniOnly: boolean = false,
 ): Promise<{ id: string } | { error: string }> {
   await verifySession();
 
@@ -38,9 +38,15 @@ export async function createTimeSlot(
 
   try {
     const slot = await prisma.timeSlot.create({
-      data: { startTime, endTime, revealed },
+      data: {
+        startTime,
+        endTime,
+        revealed,
+        allowedPackages: miniOnly ? ['MINI'] : [],
+      },
     });
     revalidatePath('/admin/time-slots');
+    invalidatePublicTimeSlots();
     return { id: slot.id };
   } catch (error) {
     console.error(error);
@@ -53,13 +59,6 @@ export async function deleteTimeSlot(
 ): Promise<{ error: string } | void> {
   await verifySession();
 
-  // Only a live hold blocks deletion — same predicate `getOrCreateTimeSlot`
-  // uses to decide a slot is free. Converted and cancelled intents keep their
-  // own `requestedStartTime`, and their FK is `SetNull`, so the row can go.
-  const holdCutoff = new Date(
-    Date.now() - PENDING_INTENT_HOLD_HOURS * 60 * 60 * 1000,
-  );
-
   const slot = await prisma.timeSlot.findUnique({
     where: { id },
     select: {
@@ -67,10 +66,7 @@ export async function deleteTimeSlot(
       _count: {
         select: {
           bookingIntents: {
-            where: {
-              status: BookingIntentStatus.PENDING,
-              updatedAt: { gt: holdCutoff },
-            },
+            where: livePendingIntentWhere(),
           },
         },
       },
@@ -96,4 +92,5 @@ export async function deleteTimeSlot(
   }
 
   revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
 }

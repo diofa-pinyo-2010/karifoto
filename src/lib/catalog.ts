@@ -55,7 +55,7 @@ export const PACKAGES = {
     visibility: 'pricingTable',
     highlighted: false,
     maxGuests: 8,
-    personsIncluded: 5,
+    personsIncluded: 8,
   },
   CLASSIC: {
     slug: 'classic',
@@ -71,7 +71,7 @@ export const PACKAGES = {
     visibility: 'pricingTable',
     highlighted: true,
     maxGuests: 8,
-    personsIncluded: 5,
+    personsIncluded: 8,
   },
   FAMILY: {
     slug: 'family',
@@ -87,7 +87,23 @@ export const PACKAGES = {
     visibility: 'pricingTable',
     highlighted: false,
     maxGuests: 8,
-    personsIncluded: 5,
+    personsIncluded: 8,
+  },
+  PARTY: {
+    slug: 'party',
+    label: 'Party',
+    basePriceInCents: 98000_00,
+    studioPriceInCents: 18000_00,
+    editedImagesAllowance: 50,
+    downloadableImages: 500,
+    durationMinutes: 90,
+    decorSetsIncluded: 2,
+    outfitChange: true,
+    includedAddOns: ['LIGHT_PLAY'],
+    visibility: 'hidden',
+    highlighted: false,
+    maxGuests: 12,
+    personsIncluded: 12,
   },
 } as const satisfies Record<Package, PackageDefinition>;
 

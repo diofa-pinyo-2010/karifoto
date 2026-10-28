@@ -217,9 +217,9 @@ arithmetic disagrees with `calculatePricing`. A shooting that somehow needs a
 second partial payment before the final invoice is now a deliberate schema
 change, not an accident.
 
-The line items keep negative amounts for discounts — that is how szamlazz
-represents a deduction — and leading emoji are stripped from labels, since
-`✨ Fényjáték` reads fine on the admin page but not on a tax document.
+The végszámla is deliberately **not itemised** (#157): it carries the advance
+as a negative `Fotózás előleg` line and a single `Fotózás` line for
+`totalToBeInvoiced`. The breakdown stays on the admin page.
 
 Flow: `recordCashBalancePayment` ([balance-payment.ts](../server/balance-payment.ts))
 writes the `LedgerEntry`, publishes `generate-final-invoice`, then
@@ -335,7 +335,7 @@ everything read the breakdown directly. If you find the name in a doc or an old
 comment, it means `calculatePricing(...).totalToBePaid`.
 
 Four consumers now share one source of truth: the admin pricing rows,
-`resolveStatus`, a végszámla's line items, and the cash balance amount.
+`resolveStatus`, a végszámla's total, and the cash balance amount.
 
 **Everything is signed.** Charges are positive, adjustments negative, and
 `lines` always sums to `totalToBeInvoiced` — that identity is the first test in

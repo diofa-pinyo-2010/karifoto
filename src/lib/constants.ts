@@ -5,6 +5,7 @@ import {
   PhotoShootingStatus,
   PriceAdjustmentType,
 } from '@/generated/prisma/enums';
+import { Package } from '@/generated/prisma/enums';
 import {
   packageIncludesAddOn,
   ALL_DECOR_SETS,
@@ -12,7 +13,7 @@ import {
 } from '@/lib/catalog';
 
 import type { ComboboxFieldItem } from '@/components/EditableComboboxField';
-import type { DecorSet, Package } from '@/generated/prisma/enums';
+import type { DecorSet } from '@/generated/prisma/enums';
 
 export const BASE_URL_PROD = 'https://karifoto.hu';
 
@@ -21,6 +22,8 @@ export const STUDIO_TZ = 'Europe/Budapest';
 export const SITE_NAME = 'Karifoto';
 
 export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
+
+const EXTENDED_STUDIO_ADDRESS = `Karifoto Fotóstúdió Karácsonyi Fotózás ${STUDIO_ADDRESS}`;
 
 export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
 
@@ -44,10 +47,10 @@ export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
 export const STUDIO_MAP_ZOOM = 17;
 
 export const STUDIO_MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
-  STUDIO_ADDRESS,
+  EXTENDED_STUDIO_ADDRESS,
 )}&z=${STUDIO_MAP_ZOOM}&output=embed`;
 
-export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/6DymPCNXbgY6iN8c7';
+export const STUDIO_MAP_LINK = 'https://maps.app.goo.gl/jZdJxyHiKPq9baa36';
 
 // const VIDEO_URL = 'https://youtube.com/shorts/4xeHvJ1_7yE';
 
@@ -84,14 +87,23 @@ export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) => {
 
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
-export const MAX_PETS = 8;
+export const MAX_PETS = 3;
+export const COMMENT_MAX_LENGTH = 2000;
 export const DEPOSIT_AMOUNT = 10000_00;
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_AFTERWORK_FEE = 10000_00;
+export const WEEKDAY_DISCOUNT_AMOUNT = 5000_00;
 // TODO: Somehow get these numbers from catalog.ts after adding Party
-export const MAX_PERSONS = 8;
-export const MAX_PERSONS_IN_PARTY_PACKAGE = 12;
+// Upper bound across all packages; the per-package limit is `maxGuests`.
+export const MAX_PERSONS = Math.max(
+  ...ALL_PACKAGES.map((pkg) => pkg.maxGuests),
+);
+export const MAX_PERSONS_EXCLUDED_PARTY = Math.max(
+  ...ALL_PACKAGES.filter((p) => p.key !== Package.PARTY).map(
+    (pkg) => pkg.maxGuests,
+  ),
+);
 
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;
@@ -382,6 +394,7 @@ export const APP_URLS = {
     `/admin/photo-shootings/${shootingId}`,
   upcomingShootings: '/admin/bookings',
   allShootings: '/admin/photo-shootings',
+  exportBookings: '/admin/time-slots/export',
 
   // Client portal. The first two are public and meant to be shared; only
   // `clientPortalShootingDetails` is gated. Built here so the confirmation
@@ -400,3 +413,11 @@ export const APP_URLS = {
   terms: '/aszf',
   privacy: '/adatkezeles',
 };
+
+// dataLayer event names. GTM triggers match these strings exactly, so renaming
+// one here means renaming its trigger in the GTM container too.
+export const GTM_EVENTS = {
+  analyticsConsentGranted: 'analytics_consent_granted',
+  marketingConsentGranted: 'marketing_consent_granted',
+  bookingCompleted: 'booking_completed',
+} as const;

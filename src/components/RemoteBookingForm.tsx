@@ -1,19 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 
+import { StartTimeDrawer } from '@/components/StartTimeDrawer';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import {
   Field,
   FieldError,
@@ -27,22 +18,21 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/toast';
 import {
   useRemoteBookingForm,
   type RemoteBookingFormValues,
 } from '@/hooks/use-remote-booking-form';
-import { ALL_DECOR_SETS, ALL_PACKAGES } from '@/lib/catalog';
+import { ALL_DECOR_SETS, ALL_PACKAGES, PACKAGES } from '@/lib/catalog';
 import { MAX_PERSONS, MAX_PETS } from '@/lib/constants';
 import { shortFullDateFormatter } from '@/lib/formatters';
 import { createRemoteBookingIntent } from '@/server/remote-booking';
 
 const NOTE_MAX_LENGTH = 500;
-const DEFAULT_TIME = '09:00';
 
 export function RemoteBookingForm() {
-  const { form, isSingleDecorPackage, lightLocked } = useRemoteBookingForm();
-  const [time, setTime] = useState(DEFAULT_TIME);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const { form, packageKey, isSingleDecorPackage, lightLocked } =
+    useRemoteBookingForm();
 
   async function onSubmit(values: RemoteBookingFormValues) {
     const result = await createRemoteBookingIntent({
@@ -58,6 +48,10 @@ export function RemoteBookingForm() {
       optOutFromMarketingEmails: values.optOutFromMarketingEmails,
     });
 
+    if (result.error) {
+      toast.add({ type: 'error', title: result.error });
+    }
+
     form.setError('root', { message: result.error });
   }
 
@@ -69,60 +63,18 @@ export function RemoteBookingForm() {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-                <DialogTrigger
-                  render={<Button type="button" size="lg" variant="outline" />}
-                >
-                  {field.value
-                    ? shortFullDateFormatter.format(field.value)
-                    : 'Válassz időpontot!'}
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Időpont</DialogTitle>
-                  </DialogHeader>
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    defaultMonth={field.value}
-                    onSelect={(date) => {
-                      if (!date) {
-                        field.onChange(undefined);
-                        return;
-                      }
-                      const [hours, minutes] = time.split(':').map(Number);
-                      const merged = new Date(date);
-                      merged.setHours(hours, minutes, 0, 0);
-                      field.onChange(merged);
-                    }}
-                    classNames={{ root: 'w-full' }}
-                  />
-                  <Input
-                    id="remote-booking-time"
-                    type="time"
-                    value={time}
-                    onChange={(event) => {
-                      const nextTime = event.target.value;
-                      setTime(nextTime);
-                      if (!field.value) return;
-                      const [hours, minutes] = nextTime.split(':').map(Number);
-                      const merged = new Date(field.value);
-                      merged.setHours(hours, minutes, 0, 0);
-                      field.onChange(merged);
-                    }}
-                  />
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => setPickerOpen(false)}
-                    >
-                      Kész
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <StartTimeDrawer
+                value={field.value}
+                confirmLabel="Kész"
+                onConfirm={field.onChange}
+                trigger={
+                  <Button type="button" size="lg" variant="outline">
+                    {field.value
+                      ? shortFullDateFormatter.format(field.value)
+                      : 'Válassz időpontot!'}
+                  </Button>
+                }
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
@@ -271,7 +223,11 @@ export function RemoteBookingForm() {
                 type="number"
                 inputMode="numeric"
                 min={1}
-                max={MAX_PERSONS}
+                max={
+                  packageKey != null
+                    ? PACKAGES[packageKey].maxGuests
+                    : MAX_PERSONS
+                }
                 value={field.value}
                 onChange={(event) => field.onChange(event.target.valueAsNumber)}
                 onBlur={field.onBlur}

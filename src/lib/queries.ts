@@ -1,7 +1,14 @@
 import 'server-only';
+import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 
-import { PhotoShootingStatus, Prisma } from '@/generated/prisma/client';
+import {
+  BookingIntentStatus,
+  PhotoShootingStatus,
+  Prisma,
+  StaffProfileRole,
+} from '@/generated/prisma/client';
+import { ADMIN_STATS_TAG, buildAdminStats } from '@/lib/admin-stats';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
   EARLY_BIRD_DATE_DEADLINE,
@@ -11,7 +18,13 @@ import {
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import {
+  PUBLIC_TIME_SLOTS_TAG,
+  splitPublicTimeSlots,
+} from '@/lib/public-time-slots';
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
+
+import type { MentionCandidate } from '@/lib/mentions';
 
 const photoShootingWithClientInclude = {
   include: {
@@ -25,11 +38,11 @@ type PhotoShootingWithClient = Prisma.PhotoShootingGetPayload<
 >;
 
 export async function fetchUpcomingPhotoShootings(): Promise<
-  PhotoShootingWithClient[]
+  (PhotoShootingWithClient & { sequenceNumber: number })[]
 > {
   await verifySession();
 
-  return prisma.photoShooting.findMany({
+  const shootings = await prisma.photoShooting.findMany({
     where: {
       AND: {
         timeSlot: { endTime: { gte: new Date() } },
@@ -42,6 +55,22 @@ export async function fetchUpcomingPhotoShootings(): Promise<
     orderBy: { timeSlot: { startTime: 'asc' } },
     ...photoShootingWithClientInclude,
   });
+
+  if (shootings.length === 0) return [];
+
+  // The list itself is the boundary: everything before its first item has
+  // already happened, so the sequence continues from that count.
+  const precedingCount = await prisma.photoShooting.count({
+    where: {
+      timeSlot: { startTime: { lt: shootings[0].timeSlot.startTime } },
+      status: { not: PhotoShootingStatus.CANCELLED },
+    },
+  });
+
+  return shootings.map((shooting, index) => ({
+    ...shooting,
+    sequenceNumber: precedingCount + index + 1,
+  }));
 }
 
 export async function fetchAllPhotoShootings({
@@ -77,6 +106,7 @@ const timeSlotsPublicSelect = {
     startTime: true,
     revealed: true,
     photoShooting: { select: { id: true } },
+    allowedPackages: true,
   },
 } satisfies Prisma.TimeSlotDefaultArgs;
 
@@ -93,36 +123,67 @@ export async function getTimeSlot(id: string) {
   });
 }
 
-export async function fetchTimeSlotsPublic() {
-  return prisma.timeSlot.findMany({
-    where: { startTime: { gte: new Date(EARLY_BIRD_DATE_DEADLINE) } },
-    ...timeSlotsPublicSelect,
-    orderBy: { startTime: 'asc' },
-  });
+// Szándékosan hosszú: a Neon 5 perc tétlenség után alszik el, egy ≤5 perces
+// TTL folyamatos forgalom mellett ébren tartaná. A frissességet az
+// `invalidatePublicTimeSlots()` hívások adják minden íráskor; a TTL csak a
+// kimaradt utakat (seed, kézi DB-módosítás) korlátozza.
+const PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS = 60 * 60;
+// Növeld, ha a `timeSlotsPublicSelect` alakja változik! A Vercel Data Cache
+// túléli a deployt, és a kulcs csak a callback forrásából + ebből áll.
+const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v2';
+
+/**
+ * A főoldal mindkét foglalási szekciójának idősávjai egyetlen, cache-elt
+ * lekérdezésben, hogy a látogatók (és a crawlerek) ne ébresszék fel az
+ * adatbázist. Az alsó határ a feltöltés pillanatához kötött; a pontos,
+ * kérésenkénti szűrést a `splitPublicTimeSlots()` végzi a cache-en kívül.
+ */
+const getPublicTimeSlotsCached = unstable_cache(
+  async () => {
+    const now = new Date();
+    const deadline = new Date(EARLY_BIRD_DATE_DEADLINE);
+
+    return prisma.timeSlot.findMany({
+      where: { startTime: { gte: now < deadline ? now : deadline } },
+      ...timeSlotsPublicSelect,
+      orderBy: { startTime: 'asc' },
+    });
+  },
+  [PUBLIC_TIME_SLOTS_TAG, PUBLIC_TIME_SLOTS_CACHE_VERSION],
+  {
+    tags: [PUBLIC_TIME_SLOTS_TAG],
+    revalidate: PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS,
+  },
+);
+
+// Egy renderen belül a két szekció ugyanazt a felosztást kapja.
+const getPublicTimeSlots = cache(async () =>
+  splitPublicTimeSlots(await getPublicTimeSlotsCached(), new Date()),
+);
+
+export async function fetchTimeSlotsPublic(): Promise<TimeSlotPublic[]> {
+  return (await getPublicTimeSlots()).normal;
 }
 
-export async function fetchEarlyBirdTimeSlotsPublic() {
-  return prisma.timeSlot.findMany({
-    where: {
-      startTime: { gte: new Date(), lt: new Date(EARLY_BIRD_DATE_DEADLINE) },
-    },
-    ...timeSlotsPublicSelect,
-    orderBy: { startTime: 'asc' },
-  });
+export async function fetchEarlyBirdTimeSlotsPublic(): Promise<
+  TimeSlotPublic[]
+> {
+  return (await getPublicTimeSlots()).earlyBird;
 }
 
 export async function fetchTimeSlotsAdmin() {
   await verifySession();
 
   return prisma.timeSlot.findMany({
-    where: { startTime: { gte: new Date() } },
     select: {
       id: true,
       startTime: true,
       revealed: true,
+      allowedPackages: true,
       photoShooting: {
         select: {
           id: true,
+          package: true,
           client: { select: { owner: { select: { name: true } } } },
         },
       },
@@ -153,6 +214,15 @@ const photoShootingDetailInclude = {
       },
       orderBy: { sentAt: 'desc' },
     },
+    comments: {
+      select: {
+        id: true,
+        body: true,
+        createdAt: true,
+        author: { select: { nickname: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 
@@ -171,6 +241,22 @@ export async function getPhotoShooting(
     where: { id },
     ...photoShootingDetailInclude,
   });
+}
+
+// Everyone, including the viewer: their own name must resolve when others mention them
+export async function fetchMentionableStaff(): Promise<MentionCandidate[]> {
+  await verifySession();
+
+  const staff = await prisma.staffProfile.findMany({
+    select: { id: true, nickname: true, owner: { select: { name: true } } },
+    orderBy: { owner: { name: 'asc' } },
+  });
+
+  return staff.map(({ id, nickname, owner }) => ({
+    id,
+    nickname,
+    name: owner.name,
+  }));
 }
 
 const photoShootingForClientPortalSelect = {
@@ -324,3 +410,105 @@ export async function getBookingIntentPublic(id: string) {
     ...bookingIntentpublicSelect,
   });
 }
+
+/**
+ * A sikeres foglalás `booking_completed` eventjéhez: a foglalásból a webhook
+ * által létrehozott fotózás, a `calculatePricing()` bemeneteivel. `null`, amíg
+ * a webhook nem futott le (vagy ha a fizetés árva maradt).
+ */
+export async function getCreatedShooting(bookingIntentId: string) {
+  return prisma.photoShooting.findUnique({
+    where: { bookingIntentId },
+    include: { pricing: true, adjustments: true, ledgerEntries: true },
+  });
+}
+
+const converted = await prisma.bookingIntent.findMany({
+  where: { status: BookingIntentStatus.CONVERTED },
+  select: { email: true },
+  distinct: ['email'],
+});
+
+const adminLeadSelect = {
+  select: {
+    id: true,
+    createdAt: true,
+    name: true,
+    optOutFromMarketingEmails: true,
+    timeSlot: {
+      select: {
+        startTime: true,
+        revealed: true,
+        photoShooting: { select: { id: true } },
+      },
+    },
+  },
+} satisfies Prisma.BookingIntentDefaultArgs;
+
+type AdminLead = Prisma.BookingIntentGetPayload<typeof adminLeadSelect>;
+
+export async function getAdminLeads(): Promise<
+  { success: true; leads: AdminLead[] } | { error: string }
+> {
+  const { staffProfile } = await verifySession();
+  if (staffProfile.role !== StaffProfileRole.SUPERADMIN) {
+    return { error: 'Nincs jogosultságod ehhez a művelethez.' };
+  }
+
+  const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+  const leads = await prisma.bookingIntent.findMany({
+    where: {
+      status: BookingIntentStatus.PENDING,
+      createdAt: { lt: new Date(Date.now() - THREE_HOURS_MS) },
+      email: {
+        notIn: converted.map((intent) => intent.email),
+        mode: 'insensitive',
+      },
+    },
+    distinct: ['email'],
+    ...adminLeadSelect,
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return { success: true, leads };
+}
+
+const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
+// Növeld, ha a `buildAdminStats()` visszatérési alakja változik! A Vercel Data
+// Cache túléli a deployt, és a kulcs csak a callback forrásából + ebből áll,
+// ezért enélkül az új kód a régi alakú cache-elt adatot kapná vissza.
+const ADMIN_STATS_CACHE_VERSION = 'v2';
+
+/**
+ * Az összes fotózás és könyvelési tétel alapján számolt statisztika, egy óráig
+ * cache-elve. Az oldal "Refresh" gombja a `refreshAdminStats()` actionnel
+ * azonnal érvényteleníti. Nincs benne jogosultság-ellenőrzés, mert
+ * `unstable_cache`-en belül nem olvasható cookie — a hívó oldal
+ * (`requireNavAccess`) felel érte. A `syncedAt` string, mert a cache
+ * JSON-ként tárolja az eredményt.
+ */
+export const getAdminStats = unstable_cache(
+  async () => {
+    const [shootings, ledgerGroups] = await Promise.all([
+      prisma.photoShooting.findMany({
+        include: { pricing: true, adjustments: true },
+      }),
+      prisma.ledgerEntry.groupBy({
+        by: ['category'],
+        _sum: { amountInCents: true },
+      }),
+    ]);
+
+    const stats = buildAdminStats({
+      shootings,
+      ledgerSums: ledgerGroups.map((group) => ({
+        category: group.category,
+        amountInCents: group._sum.amountInCents ?? 0,
+      })),
+    });
+
+    return { ...stats, syncedAt: new Date().toISOString() };
+  },
+  [ADMIN_STATS_TAG, ADMIN_STATS_CACHE_VERSION],
+  { tags: [ADMIN_STATS_TAG], revalidate: ADMIN_STATS_REVALIDATE_SECONDS },
+);

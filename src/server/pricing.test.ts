@@ -109,6 +109,7 @@ function makeLedgerEntry(overrides: Partial<LedgerEntry> = {}): LedgerEntry {
     method: 'CARD',
     paymentIntent: null,
     invoiceId: null,
+    description: null,
     photoShootingId: 'shooting-1',
     createdAt: NOW,
     updatedAt: NOW,

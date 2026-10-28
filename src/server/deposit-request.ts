@@ -15,6 +15,7 @@ export async function sendDepositRequest(
       body: { bookingIntentId },
       retries: 3,
     });
+
     return { success: true };
   } catch (error) {
     console.error('[deposit-request] failed to queue job', error);

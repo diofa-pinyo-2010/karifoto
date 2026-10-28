@@ -22,6 +22,8 @@ import retroMinta3 from '@/photos/2026/decor-sets/retro-minta_3.jpg';
 import retroMinta4 from '@/photos/2026/decor-sets/retro-minta_4.jpg';
 import retroMinta5 from '@/photos/2026/decor-sets/retro-minta_5.jpg';
 import retroMinta6 from '@/photos/2026/decor-sets/retro-minta_6.jpg';
+import rawQ7_2 from '@/photos/2026/faq-images/raw-image-example-2.jpg';
+import rawQ7_1 from '@/photos/2026/faq-images/raw-image-example.jpg';
 import fenyjatekPelda from '@/photos/2026/fenyjatek/fenyjatek-pelda-1.jpg';
 import fenyjatekPelda2 from '@/photos/2026/fenyjatek/fenyjatek-pelda-2.jpg';
 import fenyjatekPelda3 from '@/photos/2026/fenyjatek/fenyjatek-pelda-3.jpg';
@@ -56,3 +58,10 @@ export const lightPlayGallery: Photo[] = [
   { ...fenyjatekPelda5, alt: 'fenyjatek 5' },
   { ...fenyjatekPelda6, alt: 'fenyjatek 6' },
 ];
+
+export const faqImages = {
+  question_7: [
+    { ...rawQ7_1, alt: 'nyers kép 1' },
+    { ...rawQ7_2, alt: 'nyers kép 2' },
+  ] satisfies Photo[],
+};

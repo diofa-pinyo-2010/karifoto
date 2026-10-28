@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
+import { GoogleTagManager } from '@next/third-parties/google';
 // A 2026-os arculat kenyérbetűje. Az `index.css` minden subsetet deklarál, de a
 // böngésző csak az `unicode-range`-nek megfelelőt tölti le — magyar szöveghez a
 // latin + latin-ext párost. Szándékosan nem `next/font/local`: a variable
@@ -15,6 +16,7 @@ import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 
 import '@/app/globals.css';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
+// import { CookiePreferencesButton } from '@/components/CookiePreferencesButton';
 import { InlineScript } from '@/components/InlineScript';
 import { Providers } from '@/components/Providers';
 import { ThemeScope } from '@/components/ThemeScope';
@@ -28,6 +30,7 @@ import { cn } from '@/lib/utils';
 // Az `admin` osztály (rendszerfontok) és a sötét mód csak az adminban él —
 // a sötét mód ne fusson le publikus oldalon.
 const THEME_SCRIPT = `(function(){try{var a=location.pathname.startsWith('/admin');document.documentElement.classList.toggle('admin',a);if(!a)return;var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
+const CONSENT_DEFAULT_SCRIPT = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});`;
 
 // Self-hosted (src/fonts) so dev/build never depends on reaching Google Fonts.
 // Files are the official google/fonts variable TTFs, weight-limited and
@@ -38,12 +41,13 @@ const THEME_SCRIPT = `(function(){try{var a=location.pathname.startsWith('/admin
 // faceként nem lehetett volna álló + dőlt párost képezni. Ezért a Cormorant a
 // `@fontsource-variable/cormorant-garamond` csomagból jön (lásd a fenti
 // importokat), és nem itt van deklarálva.
-const script = localFont({
-  src: '../fonts/Parisienne-Regular.woff2',
-  weight: '400',
-  variable: '--font-parisienne',
-  fallback: ['cursive'],
-});
+//
+// A root layout preloadja minden oldalon lefut, ezért a csak az adminban
+// használt Geist Mono `preload: false`-t kap: így csak akkor töltődik le, ha
+// szöveg ténylegesen használja, és a főoldalon nem veszi el a sávszélt a
+// hero-képtől. A Jost és a Caveat Brush preloadja szándékos: a főoldal
+// használja őket, preload nélkül pedig csak a CSS után indulnának, ami
+// mérhetően (Lighthouse) késleltette az első festést.
 const sans = localFont({
   src: '../fonts/Jost-Variable.woff2',
   weight: '300 600',
@@ -56,6 +60,14 @@ const mono = localFont({
   weight: '300 600',
   variable: '--font-geist-mono',
   fallback: ['monospace'],
+  preload: false,
+});
+
+const caveatBrush = localFont({
+  src: '../fonts/caveat-brush-regular.woff2',
+  weight: '400',
+  variable: '--font-caveat-brush',
+  fallback: ['cursive'],
 });
 
 export const metadata: Metadata = {
@@ -64,7 +76,10 @@ export const metadata: Metadata = {
     default: `${SITE_NAME} 🎄 • karácsonyi családi fotózás Budapesten 2026-ban`,
   },
   description: `Felejthetetlen élmény a díszbe borított stúdióban, retusált képek akár ${PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül.`,
-  // metadataBase: new URL('https://karifoto.hu/'),
+  // Enélkül a `canonical: '/'` relatív marad, amit a keresők érvénytelennek
+  // vesznek. Szándékosan nem a `NEXT_PUBLIC_SITE_URL`: a preview-deployok is
+  // az éles domainre mutassanak, ne indexelődjenek duplikátumként.
+  metadataBase: new URL('https://www.karifoto.hu/'),
   alternates: { canonical: '/' },
   openGraph: {
     siteName: SITE_NAME,
@@ -82,21 +97,23 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={cn(
         'h-full',
         'antialiased',
-        script.variable,
         sans.variable,
         mono.variable,
+        caveatBrush.variable,
         'font-sans',
       )}
       suppressHydrationWarning
     >
       <head>
         <InlineScript html={THEME_SCRIPT} />
+        <InlineScript html={CONSENT_DEFAULT_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <ThemeScope />
         <Providers>{children}</Providers>
         <CookieConsentBanner />
         {/* <CookiePreferencesButton /> */}
+        <GoogleTagManager gtmId="GTM-MDZ7PG3Q" />
       </body>
     </html>
   );

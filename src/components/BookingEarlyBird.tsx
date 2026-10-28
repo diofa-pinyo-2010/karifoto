@@ -24,16 +24,22 @@ export async function BookingEarlyBird() {
             <em>csak pár kattintással!</em>
           </h2>
           {/* <p className="brand-intro">
-            TODO: Nálunk nem kell emailt írogatni, kurva egyszerű foglalni,
+            TODO: Nálunk nem kell emailt írogatni, egyszerű foglalni,
             stb...
           </p> */}
           <ol className="mt-7 space-y-3 lg:block">
             {[
-              'Válaszd ki az időpontod',
+              <div key="1">
+                Kattints valamelyik napra, hogy lásd a{' '}
+                <strong className="text-base font-black text-brand-selected">
+                  SZABAD
+                </strong>{' '}
+                időpontokat.
+              </div>,
               'Töltsd ki rövid űrlapunkat',
               `Egyszerűen, bankkártyával fizetheted ki az előleget (${formatMoney(DEPOSIT_AMOUNT)})*`,
             ].map((step, i) => (
-              <li key={step} className="flex items-center gap-3 text-xs">
+              <li key={i} className="flex items-center gap-3 text-xs">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-brand-ink/20 text-[10px]">
                   {i + 1}
                 </span>

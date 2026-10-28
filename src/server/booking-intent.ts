@@ -1,14 +1,14 @@
 'use server';
 
 import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
+import { EARLY_BIRD_DATE_DEADLINE, MAX_PETS, UUID_RE } from '@/lib/constants';
 import {
-  EARLY_BIRD_DATE_DEADLINE,
-  MAX_PERSONS,
-  MAX_PETS,
-  UUID_RE,
-} from '@/lib/constants';
-import { attachEarlyBirdDiscount } from '@/lib/price-adjustments';
+  attachEarlyBirdDiscount,
+  attachWeekdayDiscount,
+} from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
+import { isPackageAllowed } from '@/lib/time-slot-packages';
+import { isWeekday } from '@/lib/utils';
 
 import type { DecorSet, Package } from '@/generated/prisma/client';
 
@@ -60,7 +60,7 @@ export async function createBookingIntent(
   if (
     !Number.isInteger(input.numberOfGuests) ||
     input.numberOfGuests < 1 ||
-    input.numberOfGuests > MAX_PERSONS
+    input.numberOfGuests > PACKAGES[input.packageKey].maxGuests
   ) {
     return { error: 'Add meg, hányan jöttök (legalább 1 fő).' };
   }
@@ -78,6 +78,7 @@ export async function createBookingIntent(
     select: {
       startTime: true,
       revealed: true,
+      allowedPackages: true,
       photoShooting: { select: { id: true } },
     },
   });
@@ -88,6 +89,12 @@ export async function createBookingIntent(
     timeSlot.startTime.getTime() <= Date.now()
   ) {
     return { error: 'Ez az időpont már nem elérhető. Válassz másikat.' };
+  }
+
+  if (!isPackageAllowed(timeSlot.allowedPackages, input.packageKey)) {
+    return {
+      error: 'Erre az időpontra ez a csomag nem foglalható. Válassz másikat.',
+    };
   }
 
   try {
@@ -122,8 +129,15 @@ export async function createBookingIntent(
           console.error(res.error);
         }
       }
+
+      if (isWeekday(intent.timeSlot.startTime)) {
+        const res = await attachWeekdayDiscount(intent.id);
+        if ('error' in res) {
+          console.error(res.error);
+        }
+      }
     } catch (err) {
-      console.error('Early bird discount failed: ', err);
+      console.error('Early bird and/or Weekday discount failed: ', err);
     }
 
     return { id: intent.id };

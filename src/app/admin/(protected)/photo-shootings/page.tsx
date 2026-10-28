@@ -38,9 +38,9 @@ export default async function AllPhotoShootingsPage({
   });
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-4">
+    <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        Összes foglalás
+        Kereső ({shootings.length} fotózás)
       </h1>
       <ShootingListControls search={search ?? ''} order={order} />
 
@@ -63,7 +63,8 @@ export default async function AllPhotoShootingsPage({
                     href={APP_URLS.photoShootingAdminPage(shooting.id)}
                     className="font-semibold underline underline-offset-4 hover:no-underline"
                   >
-                    {formatSlotDateTime(shooting.timeSlot.startTime)}
+                    {formatSlotDateTime(shooting.timeSlot.startTime)} •{' '}
+                    {shooting.package}
                   </Link>
                   <Badge
                     variant="secondary"

@@ -40,6 +40,8 @@ model StaffProfile {
   photoShootings   PhotoShooting[]   @relation("Photographer")
   editings         PhotoShooting[]   @relation("Editor")
   priceAdjustments PriceAdjustment[]
+  comments         Comment[]
+  commentMentions  CommentMention[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -61,12 +63,13 @@ model ClientProfile {
 }
 
 model TimeSlot {
-  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  startTime      DateTime        @db.Timestamptz
-  endTime        DateTime        @db.Timestamptz
-  revealed       Boolean         @default(false)
-  photoShooting  PhotoShooting?
-  bookingIntents BookingIntent[]
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  startTime       DateTime        @db.Timestamptz
+  endTime         DateTime        @db.Timestamptz
+  revealed        Boolean         @default(false)
+  allowedPackages Package[]       @default([]) // empty = all allowed
+  photoShooting   PhotoShooting?
+  bookingIntents  BookingIntent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -168,6 +171,7 @@ model PhotoShooting {
   pricing               PhotoShootingPricing?
   adjustments           PriceAdjustment[]
   sentEmails            SentEmail[]
+  comments              Comment[]
   sumupCheckoutAttempts SumupCheckoutAttempt[]
 
   createdAt DateTime @default(now())
@@ -225,6 +229,44 @@ model PriceAdjustment {
   @@index([createdById])
 }
 
+// Internal, staff-only note. Generic on purpose: each possible owner gets its own
+// nullable FK, and the hand-added `comment_one_owner` CHECK in the migration SQL
+// enforces that exactly one is set. Adding an owner means extending that CHECK.
+model Comment {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  body String
+
+  // Null once the staff member is deleted; the UI then shows "Törölt munkatárs"
+  author   StaffProfile? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId String?       @db.Uuid
+
+  // Cascade, not SetNull: an ownerless row would violate the CHECK
+  photoShooting   PhotoShooting?   @relation(fields: [photoShootingId], references: [id], onDelete: Cascade)
+  photoShootingId String?          @db.Uuid
+  mentions        CommentMention[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz()
+
+  @@index([photoShootingId, createdAt])
+  @@index([authorId])
+}
+
+model CommentMention {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String  @db.Uuid
+
+  staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  staffProfileId String       @db.Uuid
+  notifiedAt     DateTime?    @db.Timestamptz()
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  @@unique([commentId, staffProfileId])
+  @@index([staffProfileId])
+}
+
 model BookingCalendarEvent {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
@@ -248,6 +290,7 @@ model LedgerEntry {
   currency      Currency            @default(HUF)
   method        PaymentMethod
   paymentIntent String?             @unique
+  description   String?
 
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
   invoiceId String?  @unique @db.Uuid
@@ -456,6 +499,7 @@ enum Package {
   MINI
   CLASSIC
   FAMILY
+  PARTY
 }
 
 enum DecorSet {

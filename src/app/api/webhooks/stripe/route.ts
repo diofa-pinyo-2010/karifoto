@@ -19,6 +19,7 @@ import { formatSlotDateTime } from '@/lib/formatters';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 import { getBookingIntent } from '@/lib/queries';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
@@ -412,6 +413,8 @@ async function handleBookingDeposit(
       });
       return newPhotoShooting;
     }));
+  // Az idősáv foglalt lett — a főoldal ne mutassa tovább szabadnak.
+  invalidatePublicTimeSlots();
 
   // PhotoShooting was created, convert the BookingIntent
   try {

@@ -5,45 +5,74 @@ import { useEffect, useRef } from 'react';
 
 import 'vanilla-cookieconsent/dist/cookieconsent.css';
 import Clarity from '@microsoft/clarity';
+import { sendGTMEvent } from '@next/third-parties/google';
 import * as CookieConsent from 'vanilla-cookieconsent';
 
 import { env } from '@/env';
+import { buildGoogleConsentUpdate } from '@/lib/consent';
+import { GTM_EVENTS } from '@/lib/constants';
+
+declare global {
+  interface Window {
+    // A layout `CONSENT_DEFAULT_SCRIPT`-je definiálja, még a GTM előtt.
+    gtag?: (...args: unknown[]) => void;
+  }
+}
 
 let clarityStarted = false;
+let analyticsConsentEventPushed = false;
+let marketingConsentEventPushed = false;
+
+type GoogleConsent = { analytics: boolean; marketing: boolean };
+
+// Google Consent Mode v2 — hogy melyik kategória mit enged, azt a
+// `buildGoogleConsentUpdate()` írja le. Röviden: `analytics` → GA4,
+// `marketing` → `ad_storage` + `ad_user_data` (Meta Pixel, Google Ads); az
+// `ad_personalization` mindig `denied`.
+function setGoogleConsent(consent: GoogleConsent) {
+  const { analytics, marketing } = consent;
+  window.gtag?.('consent', 'update', buildGoogleConsentUpdate(consent));
+
+  // A GTM a consentet csak a trigger pillanatában nézi, a blokkolt taget később
+  // nem futtatja újra — ezért a GA4 és a hirdetési tagek nem page loadra, hanem
+  // ezekre az eventekre futnak. Oldalbetöltésenként egyszer: a kliensoldali
+  // navigáció nem új page load, a page_view-kat onnan a GA4 enhanced
+  // measurementje (history change) méri.
+  if (analytics && !analyticsConsentEventPushed) {
+    sendGTMEvent({ event: GTM_EVENTS.analyticsConsentGranted });
+    analyticsConsentEventPushed = true;
+  }
+  if (marketing && !marketingConsentEventPushed) {
+    sendGTMEvent({ event: GTM_EVENTS.marketingConsentGranted });
+    marketingConsentEventPushed = true;
+  }
+}
 
 export function CookieConsentBanner() {
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
   pathnameRef.current = pathname;
 
-  const syncClarity = useRef(() => {
+  const syncTracking = useRef(() => {
     const isAdmin = pathnameRef.current?.startsWith('/admin');
+    const analytics = !isAdmin && CookieConsent.acceptedCategory('analytics');
+    const marketing = !isAdmin && CookieConsent.acceptedCategory('marketing');
 
-    const start = () => {
-      if (env.NEXT_PUBLIC_VERCEL_ENV !== 'production') return;
-      if (!env.NEXT_PUBLIC_CLARITY_ID) return;
-      if (clarityStarted) {
-        Clarity.consent(true);
-        return;
-      }
-      Clarity.init(env.NEXT_PUBLIC_CLARITY_ID);
-      Clarity.consent(true);
-      clarityStarted = true;
-    };
-    const stop = () => {
+    setGoogleConsent({ analytics, marketing });
+
+    if (!analytics) {
       if (clarityStarted) Clarity.consent(false);
-    };
-
-    if (isAdmin) {
-      stop();
       return;
     }
-
-    if (CookieConsent.acceptedCategory('analytics')) {
-      start();
-    } else {
-      stop();
+    if (env.NEXT_PUBLIC_VERCEL_ENV !== 'production') return;
+    if (!env.NEXT_PUBLIC_CLARITY_ID) return;
+    if (clarityStarted) {
+      Clarity.consent(true);
+      return;
     }
+    Clarity.init(env.NEXT_PUBLIC_CLARITY_ID);
+    Clarity.consent(true);
+    clarityStarted = true;
   }).current;
 
   useEffect(() => {
@@ -51,7 +80,18 @@ export function CookieConsentBanner() {
       mode: 'opt-in',
       categories: {
         necessary: { enabled: true, readOnly: true },
-        analytics: {},
+        analytics: {
+          // Visszavont hozzájárulásnál a GA4 sütijeit is töröljük.
+          autoClear: {
+            cookies: [{ name: /^_ga/ }, { name: '_gid' }],
+          },
+        },
+        marketing: {
+          // A Meta Pixel sütijei. Alapból ki van kapcsolva (opt-in mód).
+          autoClear: {
+            cookies: [{ name: '_fbp' }, { name: '_fbc' }],
+          },
+        },
       },
       language: {
         default: 'hu',
@@ -82,22 +122,28 @@ export function CookieConsentBanner() {
                 {
                   title: 'Statisztikai sütik',
                   description:
-                    'Anonim, statisztikai elemzéseket végzünk, hogy növeljük a felhasználói élményt. Segít javítanunk az oldalt, hogy érthetőbb, és könnyebben használható legyen.',
+                    'A Google Analytics és a Microsoft Clarity segítségével anonim, statisztikai elemzéseket végzünk, hogy növeljük a felhasználói élményt. Segít javítanunk az oldalt, hogy érthetőbb, és könnyebben használható legyen.',
                   linkedCategory: 'analytics',
+                },
+                {
+                  title: 'Marketing sütik',
+                  description:
+                    'A Meta (Facebook, Instagram) és a Google Ads sütijei segítenek, hogy a hirdetéseinket azoknak mutassuk meg, akiket tényleg érdekelhet egy karácsonyi fotózás, és ne zavarjunk vele feleslegesen másokat. Ezekkel mérjük azt is, melyik hirdetésünk működik.',
+                  linkedCategory: 'marketing',
                 },
               ],
             },
           },
         },
       },
-      onConsent: syncClarity,
-      onChange: syncClarity,
+      onConsent: syncTracking,
+      onChange: syncTracking,
     });
-  }, [syncClarity]);
+  }, [syncTracking]);
 
   useEffect(() => {
-    syncClarity();
-  }, [pathname, syncClarity]);
+    syncTracking();
+  }, [pathname, syncTracking]);
 
   return null;
 }
