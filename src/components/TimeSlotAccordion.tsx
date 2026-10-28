@@ -11,6 +11,7 @@ import {
   monthDayFormatter,
   shortDateFormatter,
   timeFormatter,
+  weekDayFormatter,
   weekDayFormatterShort,
 } from '@/lib/formatters';
 import {
@@ -23,9 +24,9 @@ import {
 
 import type { TimeSlotPublic } from '@/lib/queries';
 
-// SZEPTEMBER 13., VASÁRNAP
-const formatDayTitle = (date: Date) =>
-  `${monthDayFormatter.format(date)}, ${weekDayFormatterShort.format(date)}`.toUpperCase();
+// SZEPTEMBER 13., VASÁRNAP/V
+const formatDayTitle = (date: Date, opts: { short: boolean }) =>
+  `${monthDayFormatter.format(date)}, ${opts.short ? weekDayFormatterShort.format(date) : weekDayFormatter.format(date)}`.toUpperCase();
 
 // Szept. 13. 12:00
 const formatSlotLabel = (date: Date) =>
@@ -72,7 +73,7 @@ export function TimeSlotAccordion({
           >
             <AccordionPrimitive.Header className="flex">
               <AccordionPrimitive.Trigger className="group flex min-h-16 flex-1 items-center justify-between gap-2 py-4 text-left text-[11px] font-semibold tracking-wide focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
-                {formatDayTitle(daySlots[0].startTime)}
+                {formatDayTitle(daySlots[0].startTime, { short: isWeekday })}
                 {isWeekday && (
                   <span className="relative isolate inline-block px-1.5 font-handwritten text-base font-normal text-brand-accent lg:text-xl">
                     <span
