@@ -375,10 +375,14 @@ function SumUpPaymentButton({
             <DialogHeader>
               <DialogTitle>Várakozás a kártyára</DialogTitle>
               <DialogDescription>
-                Nézd a SumUp terminált: {formatMoney(attempt.amountInCents)}{' '}
-                összeget kell mutatnia, és készen áll a fizetésre.
+                A SumUp terminálnak most mutatnia kell a helyes összeget:
               </DialogDescription>
             </DialogHeader>
+            <div>
+              <p className="text-4xl font-bold text-center">
+                {formatMoney(attempt.amountInCents)}
+              </p>
+            </div>
             <Loader2Icon className="mx-auto my-6 size-10 animate-spin text-muted-foreground" />
             {cancelError && (
               <p className="text-center text-sm text-destructive">
