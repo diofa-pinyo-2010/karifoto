@@ -9,7 +9,7 @@ import type {
   PriceAdjustment,
 } from '@/generated/prisma/client';
 
-export type ResolveCashBalancePaymentArgs = {
+export type ResolveBalancePaymentArgs = {
   status: PhotoShootingStatus;
   /** Nullable a sémában, ezért itt is az. */
   pricing: PhotoShootingPricing | null;
@@ -18,12 +18,12 @@ export type ResolveCashBalancePaymentArgs = {
   ledgerEntries: LedgerEntry[];
 };
 
-export type CashBalancePaymentDecision =
+export type BalancePaymentDecision =
   | { ok: true; amountInCents: number }
   | { ok: false; error: string };
 
 /**
- * Átvehetünk-e készpénzt erre a fotózásra, és mennyit.
+ * Átvehető-e a hátralék erre a fotózásra (készpénzben vagy kártyával), és mennyi.
  *
  * Saját, `prisma`-mentes fájlban lakik, nem a `'use server'` action mellett:
  * egyrészt egy `'use server'` modul csak async függvényeket exportálhat,
@@ -33,16 +33,16 @@ export type CashBalancePaymentDecision =
  * Az összeget mindig **itt** számoljuk, a pillanatképből: a kliens által
  * küldött összegben nem bízunk.
  */
-export function resolveCashBalancePayment({
+export function resolveBalancePayment({
   status,
   pricing,
   shooting,
   adjustments,
   ledgerEntries,
-}: ResolveCashBalancePaymentArgs): CashBalancePaymentDecision {
+}: ResolveBalancePaymentArgs): BalancePaymentDecision {
   if (status !== PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT) {
     return {
-      error: 'Ennél a fotózásnál most nem vehető át a hátralék készpénzben.',
+      error: 'Ennél a fotózásnál most nem vehető át a hátralék.',
       ok: false,
     };
   }

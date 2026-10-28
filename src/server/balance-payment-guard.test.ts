@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
-import { resolveCashBalancePayment } from '@/server/balance-payment-guard';
+import { resolveBalancePayment } from '@/server/balance-payment-guard';
 
 import type {
   LedgerEntry,
@@ -9,7 +9,7 @@ import type {
   PhotoShootingPricing,
   PriceAdjustment,
 } from '@/generated/prisma/client';
-import type { ResolveCashBalancePaymentArgs } from '@/server/balance-payment-guard';
+import type { ResolveBalancePaymentArgs } from '@/server/balance-payment-guard';
 
 // Ugyanaz a megfontolás, mint a pricing.test.ts-ben: kerek, kitalált számok, nem
 // a valódi konstansok, mert a PhotoShootingPricing pont azért pillanatkép, hogy
@@ -110,8 +110,8 @@ function makeAdjustment(
 
 /** A tipikus eset: előleg befizetve, a hátralék készpénzben jön a stúdióban. */
 function args(
-  overrides: Partial<ResolveCashBalancePaymentArgs> = {},
-): ResolveCashBalancePaymentArgs {
+  overrides: Partial<ResolveBalancePaymentArgs> = {},
+): ResolveBalancePaymentArgs {
   return {
     status: PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT,
     pricing: makePricing(),
@@ -122,9 +122,9 @@ function args(
   };
 }
 
-describe('resolveCashBalancePayment', () => {
+describe('resolveBalancePayment', () => {
   it('collects the remainder after the deposit', () => {
-    const result = resolveCashBalancePayment(args());
+    const result = resolveBalancePayment(args());
 
     expect(result).toEqual({ ok: true, amountInCents: BASE - DEPOSIT });
   });
@@ -135,7 +135,7 @@ describe('resolveCashBalancePayment', () => {
    * segít — ez a feltétel az, ami a második kattintást megfogja.
    */
   it('refuses when a balance payment already exists', () => {
-    const result = resolveCashBalancePayment(
+    const result = resolveBalancePayment(
       args({
         ledgerEntries: [
           makeLedgerEntry(),
@@ -156,7 +156,7 @@ describe('resolveCashBalancePayment', () => {
   // Akkor is, ha a státusz ezt egyébként engedné: a ledger a pénz forrása,
   // nem a státusz.
   it('refuses a duplicate even when the status still says it is collectable', () => {
-    const result = resolveCashBalancePayment(
+    const result = resolveBalancePayment(
       args({
         status: PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT,
         ledgerEntries: [
@@ -181,19 +181,19 @@ describe('resolveCashBalancePayment', () => {
       (status) => status !== PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT,
     ),
   )('refuses in status %s', (status) => {
-    const result = resolveCashBalancePayment(args({ status }));
+    const result = resolveBalancePayment(args({ status }));
 
     expect(result.ok).toBe(false);
   });
 
   it('refuses without a pricing snapshot', () => {
-    const result = resolveCashBalancePayment(args({ pricing: null }));
+    const result = resolveBalancePayment(args({ pricing: null }));
 
     expect(result.ok).toBe(false);
   });
 
   it('refuses when there is nothing left to collect', () => {
-    const result = resolveCashBalancePayment(
+    const result = resolveBalancePayment(
       args({
         ledgerEntries: [makeLedgerEntry({ amountInCents: BASE })],
       }),
@@ -204,7 +204,7 @@ describe('resolveCashBalancePayment', () => {
 
   // Túlfizetés: negatív összeget semmiképp nem írunk a ledgerbe.
   it('refuses when the client has overpaid', () => {
-    const result = resolveCashBalancePayment(
+    const result = resolveBalancePayment(
       args({
         ledgerEntries: [makeLedgerEntry({ amountInCents: BASE + 1_000_00 })],
       }),
@@ -218,7 +218,7 @@ describe('resolveCashBalancePayment', () => {
    * pillanatkép + korrekciók helyett.
    */
   it('takes discounts off the collected amount', () => {
-    const result = resolveCashBalancePayment(
+    const result = resolveBalancePayment(
       args({ adjustments: [makeAdjustment({ amountInCents: 5_000_00 })] }),
     );
 
@@ -229,7 +229,7 @@ describe('resolveCashBalancePayment', () => {
   });
 
   it('returns a Hungarian error message', () => {
-    const result = resolveCashBalancePayment(args({ pricing: null }));
+    const result = resolveBalancePayment(args({ pricing: null }));
 
     if (result.ok) throw new Error('expected a refusal');
     expect(result.error).toMatch(/[áéíóöőúüű]/i);

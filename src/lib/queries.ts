@@ -223,6 +223,13 @@ const photoShootingDetailInclude = {
       },
       orderBy: { createdAt: 'desc' },
     },
+    // A nyitott kártyás fizetés: frissítés után a dialog ezt folytatja.
+    sumupCheckoutAttempts: {
+      where: { status: { in: ['INITIATED', 'PENDING'] } },
+      select: { id: true },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 

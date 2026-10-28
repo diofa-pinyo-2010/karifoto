@@ -93,7 +93,7 @@ Then the client orders extra images. `totalToBePaid > 0` and still no balance
 row, so `resolveStatus` returns `WAITING_FOR_BALANCE_PAYMENT` instead of
 `WAITING_FOR_EXTRA_PAYMENT`. The admin page offers **Készpénz / Bankkártya** for
 money that must go through Stripe — and
-[`resolveCashBalancePayment()`](../server/balance-payment-guard.ts) _accepts_ it,
+[`resolveBalancePayment()`](../server/balance-payment-guard.ts) _accepts_ it,
 because its guard asks the same proxy question.
 
 So the clause is right and the predicate is a proxy. The discount route is
@@ -246,7 +246,7 @@ waiting for exactly that.
 
 Note the cash path deliberately has **no** `PaymentAttempt`: there is no
 terminal round-trip to correlate, so
-[`resolveCashBalancePayment()`](../server/balance-payment-guard.ts) recomputes
+[`resolveBalancePayment()`](../server/balance-payment-guard.ts) recomputes
 the amount server-side and refuses if an `INCOME_CLIENT_PAYMENT_BALANCE` row
 already exists. That refusal, plus the partial unique index behind it, is the
 double-submit guard — a cash row has no `paymentIntent`, so the unique column

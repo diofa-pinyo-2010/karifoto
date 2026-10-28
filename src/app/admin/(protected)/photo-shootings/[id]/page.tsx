@@ -513,6 +513,7 @@ export default async function PhotoShootingDetailPage({
               currentShootingStatus={shooting.status}
               shootingId={shooting.id}
               clientName={client.owner.name}
+              openAttemptId={shooting.sumupCheckoutAttempts[0]?.id ?? null}
             />
           </div>
 

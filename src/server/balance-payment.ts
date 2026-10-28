@@ -8,14 +8,14 @@ import { sendDiscordNotification } from '@/lib/discord';
 import { prisma } from '@/lib/prisma';
 import { qStashClient } from '@/lib/upstash';
 import { recalculatePhotoShootingStatus } from '@/server/admin';
-import { resolveCashBalancePayment } from '@/server/balance-payment-guard';
+import { resolveBalancePayment } from '@/server/balance-payment-guard';
 
 const BALANCE = 'INCOME_CLIENT_PAYMENT_BALANCE' as const;
 
 /**
  * A stúdióban készpénzben átvett hátralék rögzítése.
  *
- * A döntést (átvehető-e, mennyi) a `resolveCashBalancePayment()` hozza meg — ez
+ * A döntést (átvehető-e, mennyi) a `resolveBalancePayment()` hozza meg — ez
  * a függvény csak a köré épülő I/O: betölt, ír, sorba tesz, újraszámol.
  *
  * A pénz már a kasszában van, mire ide érünk, ezért a sorrend nem tetszőleges:
@@ -39,7 +39,7 @@ export async function recordCashBalancePayment(
     return { error: 'Nem találjuk ezt a fotózást.' };
   }
 
-  const decision = resolveCashBalancePayment({
+  const decision = resolveBalancePayment({
     adjustments: shooting.adjustments,
     ledgerEntries: shooting.ledgerEntries,
     pricing: shooting.pricing,

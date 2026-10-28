@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 import {
   BadgeAlertIcon,
@@ -52,7 +52,11 @@ import {
 } from '@/generated/prisma/enums';
 import { formatMoney } from '@/lib/utils';
 import { recordCashBalancePayment } from '@/server/balance-payment';
-import { cancelPaymentAttempt, createPaymentAttempt } from '@/server/payment';
+import {
+  cancelPaymentAttempt,
+  createPaymentAttempt,
+  forceClosePaymentAttempt,
+} from '@/server/payment';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
@@ -61,11 +65,14 @@ export function BalancePayment({
   currentShootingStatus,
   shootingId,
   clientName,
+  openAttemptId,
 }: {
   remainingAmount: number;
   currentShootingStatus: PhotoShootingStatus;
   shootingId: string;
   clientName: string;
+  /** Nyitott (INITIATED/PENDING) SumUp kísérlet, ha van: a dialog folytatja. */
+  openAttemptId: string | null;
 }) {
   const shouldCollectBalancePayment =
     currentShootingStatus === 'WAITING_FOR_BALANCE_PAYMENT';
@@ -124,8 +131,8 @@ export function BalancePayment({
             />
             <SumUpPaymentButton
               shootingId={shootingId}
-              remainingAmount={remainingAmount}
               clientName={clientName}
+              openAttemptId={openAttemptId}
             />
           </>
         ) : (
@@ -236,14 +243,16 @@ const ACTIVE: SumupCheckoutAttemptStatus[] = [
   SumupCheckoutAttemptStatus.PENDING,
 ];
 
+type PolledAttempt = SumupCheckoutAttempt & { canForceClose: boolean };
+
 function SumUpPaymentButton({
-  remainingAmount,
   shootingId,
   clientName,
+  openAttemptId,
 }: {
-  remainingAmount: number;
   shootingId: string;
   clientName: string;
+  openAttemptId: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -251,9 +260,22 @@ function SumUpPaymentButton({
 
   const [isStarting, startTransition] = useTransition();
   const [isCancelling, cancelTransition] = useTransition();
+  const [isForceClosing, forceCloseTransition] = useTransition();
   const [startError, setStartError] = useState<string | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
-  const [polled, setPolled] = useState<SumupCheckoutAttempt | null>(null);
+  const [polled, setPolled] = useState<PolledAttempt | null>(null);
+
+  // Frissítés vagy visszanavigálás után a nyitott kísérletet folytatjuk, hogy
+  // ne lehessen mellette egy másodikat indítani. Kísérletenként egyszer: a
+  // bezárás után már ne nyíljon újra a régi (a prop a refreshig elavult).
+  const resumedAttemptId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!openAttemptId || resumedAttemptId.current === openAttemptId) return;
+    resumedAttemptId.current = openAttemptId;
+    if (attemptId == null) {
+      router.replace(`${pathname}?attempt=${openAttemptId}`, { scroll: false });
+    }
+  }, [openAttemptId, attemptId, pathname, router]);
 
   // ignore a stale result from a previous attempt
   const attempt = polled?.id === attemptId ? polled : null;
@@ -265,11 +287,7 @@ function SumUpPaymentButton({
   function onPay() {
     setStartError(null);
     startTransition(async () => {
-      const res = await createPaymentAttempt({
-        shootingId,
-        amountInCents: remainingAmount,
-        clientName,
-      });
+      const res = await createPaymentAttempt({ shootingId, clientName });
       if (res.error != null) return setStartError(res.error);
       router.replace(`${pathname}?attempt=${res.attemptId}`, { scroll: false });
     });
@@ -308,6 +326,16 @@ function SumUpPaymentButton({
     cancelTransition(async () => {
       const res = await cancelPaymentAttempt(attemptId);
       // on success the webhook closes the attempt and the next poll shows it
+      if (res.error != null) setCancelError(res.error);
+    });
+  }
+
+  function onForceClose() {
+    if (!attemptId) return;
+    setCancelError(null);
+    forceCloseTransition(async () => {
+      const res = await forceClosePaymentAttempt(attemptId);
+      // a lezárt állapotot a következő poll hozza
       if (res.error != null) setCancelError(res.error);
     });
   }
@@ -379,7 +407,7 @@ function SumUpPaymentButton({
               </DialogDescription>
             </DialogHeader>
             <div>
-              <p className="text-4xl font-bold text-center">
+              <p className="text-center text-4xl font-bold">
                 {formatMoney(attempt.amountInCents)}
               </p>
             </div>
@@ -389,7 +417,23 @@ function SumUpPaymentButton({
                 {cancelError}
               </p>
             )}
+            {attempt.canForceClose && (
+              <p className="text-center text-sm text-muted-foreground">
+                A terminál percek óta nem jelzett vissza. Ha biztosan nem ment
+                át a fizetés, lezárhatod sikertelenként, és indíthatsz újat.
+              </p>
+            )}
             <DialogFooter>
+              {attempt.canForceClose && (
+                <Button
+                  variant="outline"
+                  onClick={onForceClose}
+                  disabled={isForceClosing}
+                >
+                  {isForceClosing && <Loader2Icon className="animate-spin" />}
+                  Lezárás sikertelenként
+                </Button>
+              )}
               <Button
                 variant="destructive"
                 onClick={onCancel}
@@ -407,13 +451,13 @@ function SumUpPaymentButton({
           <>
             <DialogHeader>
               <DialogTitle>Sikeres fizetés</DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-3xl">
                 {formatMoney(attempt.amountInCents)} kifizetve.
               </DialogDescription>
             </DialogHeader>
             <CheckCircle2Icon className="mx-auto my-6 size-10 text-green-600" />
             <DialogFooter>
-              <Button onClick={close}>Kész</Button>
+              <Button onClick={close}>Bezárás</Button>
             </DialogFooter>
           </>
         );
