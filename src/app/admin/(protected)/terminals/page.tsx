@@ -2,6 +2,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { hu } from 'date-fns/locale';
 
 import { RefreshTerminalsButton } from '@/components/RefreshTerminalsButton';
+import { SetPaymentReaderButton } from '@/components/SetPaymentReaderButton';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -14,8 +15,10 @@ import {
 import { APP_URLS } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { timeWithSecondsFormatter } from '@/lib/formatters';
+import { getSiteSettings } from '@/lib/queries';
 import { listReadersWithStatus } from '@/lib/sumup/client';
 import {
+  choosePaymentReaderId,
   getReaderBadge,
   readerConnectionLabel,
   readerStateLabel,
@@ -40,6 +43,15 @@ export default async function TerminalsAdminPage() {
     console.error('SumUp readers list failed', error);
   }
   const fetchedAt = new Date();
+
+  // Ugyanaz a döntés, amit a következő fizetés hozna.
+  const { sumupReaderId } = await getSiteSettings();
+  const paymentReaderId = readers
+    ? choosePaymentReaderId(
+        sumupReaderId,
+        readers.map(({ reader }) => reader),
+      )
+    : null;
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
@@ -66,9 +78,19 @@ export default async function TerminalsAdminPage() {
         <p className="text-muted-foreground">Nincs csatlakoztatott terminál.</p>
       )}
 
+      {readers && readers.length > 0 && paymentReaderId === null && (
+        <p className="text-destructive">
+          Nincs kiválasztott fizetési terminál, így kártyás fizetés nem
+          indítható. Válaszd ki az egyik párosított terminált.
+        </p>
+      )}
+
       {readers && readers.length > 0 && (
         <div className="flex flex-col gap-4">
-          {readers.map(({ reader, deviceStatus, isPaymentReader }) => {
+          {readers.map(({ reader, deviceStatus }) => {
+            const isPaymentReader = reader.id === paymentReaderId;
+            // A fallback választotta, de még nincs elmentve.
+            const isSaved = reader.id === sumupReaderId;
             const badge = getReaderBadge(reader.status, deviceStatus);
             const details = [
               deviceStatus?.battery_level != null &&
@@ -88,7 +110,10 @@ export default async function TerminalsAdminPage() {
                   <CardTitle>{reader.name}</CardTitle>
                   <CardDescription>
                     {[
-                      isPaymentReader && 'Fizetésre használt',
+                      isPaymentReader &&
+                        (isSaved
+                          ? 'Fizetésre használt'
+                          : 'Fizetésre használt (automatikus, nincs elmentve)'),
                       deviceStatus?.status === 'ONLINE' &&
                         deviceStatus.state &&
                         readerStateLabel(deviceStatus.state),
@@ -124,6 +149,9 @@ export default async function TerminalsAdminPage() {
                       {reader.id}
                     </span>
                   </p>
+                  {!isSaved && reader.status === 'paired' && (
+                    <SetPaymentReaderButton readerId={reader.id} />
+                  )}
                 </CardContent>
               </Card>
             );

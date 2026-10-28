@@ -1,6 +1,9 @@
+import Link from 'next/link';
+
 import { AutomaticEarlyBirdSwitch } from '@/components/AutomaticEarlyBirdSwitch';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
+import { APP_URLS } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { getSiteSettings } from '@/lib/queries';
 import { fetchEditors, setDefaultEditor } from '@/server/admin';
@@ -8,7 +11,7 @@ import { fetchEditors, setDefaultEditor } from '@/server/admin';
 export default async function SettingsPage() {
   await requireNavAccess('/admin/settings');
 
-  const { automaticEarlyBirdEnabled } = await getSiteSettings();
+  const { automaticEarlyBirdEnabled, sumupReaderId } = await getSiteSettings();
   const editors = await fetchEditors();
   const defaultEditor = editors.find((editor) => editor.isDefaultEditor);
 
@@ -46,6 +49,26 @@ export default async function SettingsPage() {
             />
           }
           htmlForId="automaticEarlyBirdEnabled"
+        />
+        <DetailRow
+          label={
+            <>
+              Fizetési terminál (
+              <Link href={APP_URLS.terminals} className="underline">
+                módosítás
+              </Link>
+              )
+            </>
+          }
+          value={
+            sumupReaderId ? (
+              <span className="font-mono text-xs select-all">
+                {sumupReaderId}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">Nincs kiválasztva.</span>
+            )
+          }
         />
       </div>
     </div>

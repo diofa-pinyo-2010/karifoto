@@ -6,6 +6,7 @@ import { UUID_RE } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { sendDiscordNotification } from '@/lib/discord';
 import { prisma } from '@/lib/prisma';
+import { getSiteSettings } from '@/lib/queries';
 import {
   createSumUpCheckout,
   getTransactionForAttempt,
@@ -19,12 +20,17 @@ import {
   isAttemptOpen,
 } from '@/lib/sumup/reconcile';
 import { loadBalancePayment } from '@/server/load-balance-payment';
+import { resolvePaymentReaderId } from '@/server/payment-reader';
 import { reconcileSumUpAttempt } from '@/server/reconcile-sumup-attempt';
 
 import type { SumupCheckoutAttempt } from '@/generated/prisma/client';
 
 const OPEN = { in: OPEN_STATUSES };
 const NOT_FOUND = { error: 'A fizetési kísérlet nem található.' };
+const NO_READER = {
+  error:
+    'Nincs kiválasztott fizetési terminál – párosíts egyet a SumUp oldalán.',
+};
 
 export async function createPaymentAttempt(shootingId: string) {
   await verifySession();
@@ -35,6 +41,7 @@ export async function createPaymentAttempt(shootingId: string) {
 
   let attempt: SumupCheckoutAttempt;
   let clientName: string;
+  let readerId: string;
   try {
     // Egyszerre egy nyitott kísérlet: ha van, azt folytatjuk, nem indítunk újat
     // (egy második checkout a terminálon dupla terheléshez vezethetne).
@@ -63,9 +70,16 @@ export async function createPaymentAttempt(shootingId: string) {
       return { error: 'Érvénytelen összeg, a fizetés nem indítható.' };
     }
 
+    const resolvedReaderId = await resolvePaymentReaderId();
+    if (!resolvedReaderId) {
+      return NO_READER;
+    }
+    readerId = resolvedReaderId;
+
     attempt = await prisma.sumupCheckoutAttempt.create({
       data: {
         amountInCents: decision.amountInCents,
+        readerId,
         photoShooting: { connect: { id: shootingId } },
       },
     });
@@ -77,6 +91,7 @@ export async function createPaymentAttempt(shootingId: string) {
   let checkout;
   try {
     checkout = await createSumUpCheckout({
+      readerId,
       paymentAttemptId: attempt.id,
       amountInCents: attempt.amountInCents,
       clientName,
@@ -138,6 +153,7 @@ export async function cancelPaymentAttempt(
     return NOT_FOUND;
   }
 
+  let readerId: string | null;
   try {
     const attempt = await prisma.sumupCheckoutAttempt.findUnique({
       where: { id: attemptId },
@@ -148,7 +164,11 @@ export async function cancelPaymentAttempt(
     if (!isAttemptOpen(attempt)) {
       return { error: 'A fizetés már lezárult.' };
     }
-    if (await isReaderBusyElsewhere(attempt.id)) {
+    readerId = await attemptReaderId(attempt);
+    if (!readerId) {
+      return NO_READER;
+    }
+    if (await isReaderBusyElsewhere(attempt)) {
       return {
         error:
           'A terminálon egy másik fotózás fizetése is nyitott, ezért nem állítjuk le.',
@@ -163,7 +183,7 @@ export async function cancelPaymentAttempt(
   // terminál kártyára/PIN-re vár. A kísérlet státuszát ezért itt nem írjuk:
   // sikeres leállításnál a webhook `failed`-et küld, azt a webhook zárja le.
   try {
-    await terminateSumUpCheckout();
+    await terminateSumUpCheckout(readerId);
   } catch (error) {
     console.error('SumUp nem tudta leállítani a checkoutot', error);
     return { error: 'A fizetést most nem lehet megszakítani.' };
@@ -214,9 +234,10 @@ export async function forceClosePaymentAttempt(
 
     // Ha a terminál még erre vár, leállítjuk; ha nem, ez hibát ad, amit
     // elnyelünk. Másik fotózás nyitott fizetését viszont nem lőjük le.
-    if (!(await isReaderBusyElsewhere(attempt.id))) {
+    const readerId = await attemptReaderId(attempt);
+    if (readerId && !(await isReaderBusyElsewhere(attempt))) {
       try {
-        await terminateSumUpCheckout();
+        await terminateSumUpCheckout(readerId);
       } catch (error) {
         console.error('[payment] terminate before force close failed', error);
       }
@@ -246,13 +267,32 @@ export async function forceClosePaymentAttempt(
 }
 
 /**
- * Egy terminálunk van, és a SumUp leállítása (`terminateCheckout`) azt állítja
- * le, ami éppen rajta fut — nem egy adott checkoutot. Ha más fotózásnak is van
- * nyitott kísérlete, lehet, hogy éppen az fut.
+ * A reader, amelyre a kísérlet indult. A reader ID mentése előtti kísérleteknél
+ * a jelenleg kiválasztott terminálra esünk vissza.
  */
-async function isReaderBusyElsewhere(attemptId: string) {
+async function attemptReaderId(
+  attempt: Pick<SumupCheckoutAttempt, 'readerId'>,
+) {
+  return attempt.readerId ?? (await getSiteSettings()).sumupReaderId;
+}
+
+/**
+ * A SumUp leállítása (`terminateCheckout`) azt állítja le, ami éppen a
+ * terminálon fut — nem egy adott checkoutot. Ha más fotózásnak is van nyitott
+ * kísérlete ugyanezen a readeren (vagy reader ID nélküli, régi kísérlete),
+ * lehet, hogy éppen az fut.
+ */
+async function isReaderBusyElsewhere(
+  attempt: Pick<SumupCheckoutAttempt, 'id' | 'readerId'>,
+) {
   const other = await prisma.sumupCheckoutAttempt.count({
-    where: { id: { not: attemptId }, status: OPEN },
+    where: {
+      id: { not: attempt.id },
+      status: OPEN,
+      ...(attempt.readerId && {
+        OR: [{ readerId: attempt.readerId }, { readerId: null }],
+      }),
+    },
   });
   return other > 0;
 }

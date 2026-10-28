@@ -1,4 +1,4 @@
-import type { ReaderStatus, StatusResponse } from '@sumup/sdk';
+import type { Reader, ReaderStatus, StatusResponse } from '@sumup/sdk';
 
 export type ReaderDeviceStatus = StatusResponse['data'];
 
@@ -61,4 +61,20 @@ export function getReaderBadge(
   return deviceStatus.status === 'ONLINE'
     ? { tone: 'online', label: 'Online' }
     : { tone: 'offline', label: 'Offline' };
+}
+
+/**
+ * A fizetési reader: a kiválasztott, ha még párosítva van a merchantnél. Ha
+ * nincs (vagy azóta újrapárosították), és pontosan egy párosított reader van,
+ * az; több vagy nulla esetén `null`, mert nem tudjuk, melyikre menjen a pénz.
+ */
+export function choosePaymentReaderId(
+  selectedId: string | null,
+  readers: readonly Pick<Reader, 'id' | 'status'>[],
+) {
+  const paired = readers.filter((reader) => reader.status === 'paired');
+  if (selectedId && paired.some((reader) => reader.id === selectedId)) {
+    return selectedId;
+  }
+  return paired.length === 1 ? paired[0].id : null;
 }

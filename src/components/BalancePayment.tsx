@@ -381,7 +381,7 @@ function SumUpPaymentButton({
       return (
         <>
           <DialogHeader>
-            <DialogTitle>Nem sikerült a fizetés</DialogTitle>
+            <DialogTitle>Nem lehetséges a kártyás fizetés</DialogTitle>
             <DialogDescription>{startError}</DialogDescription>
           </DialogHeader>
           <XCircleIcon className="mx-auto my-6 size-10 text-destructive" />
