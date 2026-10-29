@@ -2,6 +2,8 @@ import {
   STUDIO_ADDRESS,
   STUDIO_MAP_EMBED_URL,
   STUDIO_MAP_LINK,
+  SUPPORT_EMAIL,
+  SUPPORT_TEL,
 } from '@/lib/constants';
 
 /**
@@ -33,22 +35,22 @@ export function Location() {
             <strong className="text-sm">Karifoto Fotóstúdió</strong>
             <span className="mb-3 text-brand-muted">{STUDIO_ADDRESS}</span>
             <a
-              href="tel:+36301086063"
+              href={`tel:${SUPPORT_TEL}`}
               className="flex min-h-8 w-fit items-center"
             >
-              +36 30 108 6063
+              {SUPPORT_TEL}
             </a>
             <a
-              href="mailto:info@karifoto.hu"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="flex min-h-8 w-fit items-center"
             >
-              info@karifoto.hu
+              {SUPPORT_EMAIL}
             </a>
           </address>
         </div>
 
         <div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-brand-ink/15 bg-[#e2e6dc]">
+          <div className="relative aspect-4/3 overflow-hidden rounded-xl border border-brand-ink/15 bg-[#e2e6dc]">
             <div
               aria-hidden="true"
               className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[radial-gradient(ellipse,#d3ddd1,#e8ebe2)] text-xs text-brand-muted"

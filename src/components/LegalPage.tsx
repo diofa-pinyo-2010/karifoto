@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { Footer } from '@/components/Footer';
-import { STUDIO_ADDRESS } from '@/lib/constants';
+import { STUDIO_ADDRESS, SUPPORT_EMAIL, SUPPORT_TEL } from '@/lib/constants';
 
 export const legalTitles = {
   impresszum: 'Impresszum',
@@ -90,7 +90,7 @@ export function LegalPage({ slug }: { slug: LegalSlug }) {
   );
 }
 
-const pending = 'border-l-2 border-[#bb9362] pl-4 text-[#596963]';
+// const pending = 'border-l-2 border-[#bb9362] pl-4 text-[#596963]';
 
 /** Az üzemeltető adatai — mindhárom dokumentumban ugyanaz a blokk. */
 function Operator() {
@@ -112,8 +112,8 @@ function Operator() {
       </p> */}
       <p>
         Karifoto kapcsolat:{' '}
-        <a href="mailto:info@karifoto.hu">info@karifoto.hu</a> ·{' '}
-        <a href="tel:+36301086063">+36 30 108 6063</a>
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> ·{' '}
+        <a href={`tel:${SUPPORT_TEL}`}>{SUPPORT_TEL}</a>
       </p>
     </>
   );
@@ -328,9 +328,10 @@ function Aszf() {
       </p>
       <h2>8. Panasz és jogérvényesítés</h2>
       <p>
-        A szolgáltatással kapcsolatos panaszt az info@karifoto.hu címen vagy
-        telefonon lehet jelezni. A kötelező fogyasztói és hibás teljesítésből
-        eredő jogokat a végleges feltételek sem zárhatják ki.
+        A szolgáltatással kapcsolatos panaszt az{' '}
+        <span className="font-mono text-xs select-all">{SUPPORT_EMAIL}</span>{' '}
+        címen vagy telefonon lehet jelezni. A kötelező fogyasztói és hibás
+        teljesítésből eredő jogokat a végleges feltételek sem zárhatják ki.
       </p>
       {/* <p className={pending}>
         Kiegészítendő a panaszkezelés jogszabályi rendje, határidői, a hibás

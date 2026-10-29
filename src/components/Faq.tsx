@@ -33,12 +33,6 @@ export function Faq() {
             Sok kérdés felmerült az elmúlt években, amiket igyekeztünk mind
             megválaszolni:
           </p>
-          {/* <a
-            href="mailto:info@karifoto.hu"
-            className="mt-5 inline-flex min-h-11 items-center border-b border-[#9eaba3] text-xs"
-          >
-            Más kérdésed van? Írj nekünk ↗
-          </a> */}
         </div>
 
         <FaqAccordionRoot slugs={faqs.map((f) => f.slug)}>

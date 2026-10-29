@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { OpenCookiePreferenciesButton } from '@/components/OpenCookiePreferenciesButton';
+import { SUPPORT_EMAIL, SUPPORT_TEL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 export const linkClass =
@@ -71,17 +72,20 @@ export function Footer({
               Kérdésed van?
             </h2>
             <div className="grid gap-0.5">
-              <a href="tel:+36301086063" className={`${linkClass} ${rowClass}`}>
-                +36 30 108 6063{' '}
+              <a
+                href={`tel:${SUPPORT_TEL}`}
+                className={`${linkClass} ${rowClass}`}
+              >
+                {SUPPORT_TEL}{' '}
                 <span aria-hidden="true" className="text-[#c8b68d]">
                   ↗
                 </span>
               </a>
               <a
-                href="mailto:info@karifoto.hu"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className={`${linkClass} ${rowClass}`}
               >
-                info@karifoto.hu{' '}
+                {SUPPORT_EMAIL}{' '}
                 <span aria-hidden="true" className="text-[#c8b68d]">
                   ↗
                 </span>
