@@ -74,6 +74,38 @@ export async function fetchUpcomingPhotoShootings(): Promise<
   }));
 }
 
+// A fotós munkája a nyers képek feltöltésével és a válogatós e-mail
+// kiküldésével ér véget; az utómunkásé akkor kezdődik, amikor az ügyfél
+// visszaküldte a válogatását.
+export async function fetchOwnPhotoShootings() {
+  const { staffProfile } = await verifySession();
+
+  const [asPhotographer, asEditor] = await Promise.all([
+    prisma.photoShooting.findMany({
+      where: {
+        photographerId: staffProfile.id,
+        status: { not: PhotoShootingStatus.CANCELLED },
+        OR: [{ rawImagesUrl: null }, { selectionRequestedAt: null }],
+      },
+      orderBy: { timeSlot: { startTime: 'asc' } },
+      ...photoShootingWithClientInclude,
+    }),
+    prisma.photoShooting.findMany({
+      where: {
+        editorId: staffProfile.id,
+        selectionCompletedAt: { not: null },
+        status: {
+          notIn: [PhotoShootingStatus.COMPLETED, PhotoShootingStatus.CANCELLED],
+        },
+      },
+      orderBy: { timeSlot: { startTime: 'asc' } },
+      ...photoShootingWithClientInclude,
+    }),
+  ]);
+
+  return { asPhotographer, asEditor };
+}
+
 export async function fetchAllPhotoShootings({
   search,
   order,
