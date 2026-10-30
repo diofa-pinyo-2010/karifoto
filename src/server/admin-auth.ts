@@ -71,7 +71,7 @@ export async function requestMagicLink(
       await sendAdminVerificationEmail({
         to: email,
         name: user.name,
-        verifyUrl: verifyUrl.toString(),
+        code: verifyUrl.toString(),
       });
     }
   }

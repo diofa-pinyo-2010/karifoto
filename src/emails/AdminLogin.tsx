@@ -5,33 +5,23 @@ import {
   Container,
   Heading,
   Text,
-  Button,
   Tailwind,
   Img,
-  Section,
-  CodeInline,
 } from 'react-email';
 
-export const ADMIN_LOGIN_SUBJECT = '🔓 Bejelentkezési link';
+import { formatLoginCode } from '@/lib/token';
 
-// A levelezők (Gmail, Apple Mail, Outlook) a szövegben álló URL-t maguktól
-// linkké alakítják. Ha az elválasztó karakterek külön <span>-be kerülnek, a
-// felismerés megtörik, de másoláskor a szöveg ép URL marad.
-function unlinkifiedUrl(url: string) {
-  return url
-    .split(/([./:?=&])/)
-    .map((part, i) => (i % 2 === 1 ? <span key={i}>{part}</span> : part));
-}
+export const ADMIN_LOGIN_SUBJECT = '🔓 Belépési kód';
 
 type AdminLoginEmailProps = {
   name: string;
-  verifyUrl: string;
+  code: string;
   baseUrl: string;
 };
 
 export default function AdminLoginEmail({
   name,
-  verifyUrl,
+  code,
   baseUrl,
 }: AdminLoginEmailProps) {
   return (
@@ -49,30 +39,16 @@ export default function AdminLoginEmail({
               className="mx-auto mb-8"
             />
             <Heading className="text-xl">Kedves {name}!</Heading>
-            <Text>
-              Kattints az alábbi linkre a bejelentkezéshez. 15 percig érvényes a
-              link, a bejelentkezésed pedig 30 napig:
-            </Text>
-            <Section className="text-center">
-              <Button
-                href={verifyUrl}
-                className="font-base my-4 inline-block rounded-lg bg-gray-800 px-7 py-4 text-center font-sans leading-6 font-semibold tracking-wide text-white uppercase"
-              >
-                Bejelentkezés
-              </Button>
-            </Section>
-            <Text className="mb-1 text-sm text-gray-500">
-              Ha a gomb nem működik, másold be ezt a címet a böngésződbe:
-            </Text>
-            <Text className="mt-0 rounded-sm bg-gray-100 p-2 font-mono text-sm break-all text-gray-800 select-all">
-              {unlinkifiedUrl(verifyUrl)}
+            <Text>A belépési kódod:</Text>
+            <Text className="my-4 rounded-lg bg-gray-100 py-4 text-center font-mono text-3xl font-bold tracking-[0.3em] text-gray-900">
+              {formatLoginCode(code)}
             </Text>
             <Text>
-              Bármikor kérhetsz új linket a{' '}
-              <CodeInline className="rounded-sm bg-gray-100 px-1 py-0.5 font-mono">
-                /admin/login
-              </CodeInline>{' '}
-              oldalon.
+              Írd be a megnyitott belépési oldalon, bármelyik böngészőben. 10
+              percig érvényes, egyszer használható.
+            </Text>
+            <Text className="text-sm text-gray-500">
+              Ha nem te kérted, nyugodtan hagyd figyelmen kívül.
             </Text>
             <Text className="m-0 font-semibold">📸 Karifoto Team</Text>
           </Container>
@@ -84,6 +60,6 @@ export default function AdminLoginEmail({
 
 AdminLoginEmail.PreviewProps = {
   name: 'Maru',
-  verifyUrl: 'http://localhost:3000/admin/login/verify?token=abc123',
+  code: '48219037',
   baseUrl: 'http://localhost:3000',
 } satisfies AdminLoginEmailProps;
