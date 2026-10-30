@@ -41,7 +41,7 @@ export function VerifyForm({ redirectUrl }: { redirectUrl: string | null }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md">
         <Card>
           <CardContent>
             <form ref={formRef} action={action}>
@@ -63,7 +63,7 @@ export function VerifyForm({ redirectUrl }: { redirectUrl: string | null }) {
                     Új kódot legfeljebb percenként kérhetsz.
                   </p>
                 </div>
-                <Field className="items-center">
+                <Field>
                   <InputOTP
                     name="code"
                     maxLength={8}
@@ -73,15 +73,16 @@ export function VerifyForm({ redirectUrl }: { redirectUrl: string | null }) {
                     onChange={setCode}
                     onComplete={() => formRef.current?.requestSubmit()}
                     disabled={pending}
+                    containerClassName="justify-center"
                   >
-                    <InputOTPGroup>
+                    <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-9 *:data-[slot=input-otp-slot]:text-xl sm:*:data-[slot=input-otp-slot]:w-11">
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />
                       <InputOTPSlot index={2} />
                       <InputOTPSlot index={3} />
                     </InputOTPGroup>
                     <InputOTPSeparator />
-                    <InputOTPGroup>
+                    <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-9 *:data-[slot=input-otp-slot]:text-xl sm:*:data-[slot=input-otp-slot]:w-11">
                       <InputOTPSlot index={4} />
                       <InputOTPSlot index={5} />
                       <InputOTPSlot index={6} />
