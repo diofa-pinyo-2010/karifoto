@@ -129,7 +129,15 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
 export const PRICE_ADJUSTMENT_TYPE_SIGN: Record<PriceAdjustmentType, 1 | -1> = {
   DISCOUNT: -1,
   DEDUCTION: -1,
+  SURCHARGE: 1,
 };
+
+export const PRICE_ADJUSTMENT_TYPE_LABEL: Record<PriceAdjustmentType, string> =
+  {
+    DISCOUNT: 'Kedvezmény',
+    DEDUCTION: 'Levonás',
+    SURCHARGE: 'Felár',
+  };
 
 export const SITE_SETTINGS_TABLE_ID = 'singleton';
 
@@ -151,12 +159,6 @@ export const PACKAGE_LABEL = Object.fromEntries(
 export const DECOR_SET_LABEL = Object.fromEntries(
   ALL_DECOR_SETS.map((set) => [set.key, set.label]),
 ) as Record<DecorSet, string>;
-
-export const PRICE_ADJUSTMENT_TYPE_LABEL: Record<PriceAdjustmentType, string> =
-  {
-    DISCOUNT: 'Kedvezmény',
-    DEDUCTION: 'Fizetés eltérés',
-  };
 
 export const PACKAGE_COMBOBOX_ITEMS: ComboboxFieldItem[] = ALL_PACKAGES.map(
   (pkg) => ({ value: pkg.key, label: pkg.label }),

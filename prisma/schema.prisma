@@ -498,6 +498,7 @@ enum InvoiceStatus {
 enum PriceAdjustmentType {
   DISCOUNT
   DEDUCTION
+  SURCHARGE
 }
 
 enum Package {

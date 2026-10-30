@@ -102,7 +102,7 @@ export function AddPriceAdjustmentDialog({
         </Button>
       }
       title={title}
-      description="Az összeg forintban értendő, és levonásra kerül a végösszegből."
+      description="Az összeg forintban értendő, és módosítja a végösszeget."
     >
       <div className="flex flex-col gap-4">
         <FieldSet>
@@ -129,7 +129,9 @@ export function AddPriceAdjustmentDialog({
         </FieldSet>
 
         <Field>
-          <FieldLabel htmlFor="price-adjustment-amount">Összeg (Ft)</FieldLabel>
+          <FieldLabel htmlFor="price-adjustment-amount">
+            Összeg (Ft) (Mindig pozitív szám!)
+          </FieldLabel>
           <Input
             id="price-adjustment-amount"
             type="text"

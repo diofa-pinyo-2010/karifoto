@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 
+import { PriceAdjustmentType } from '@/generated/prisma/enums';
 import { ADD_ONS, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
@@ -104,7 +105,11 @@ export function BookingReview({
                     value={formatMoney(
                       amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[type],
                     )}
-                    state="discount"
+                    state={
+                      type === PriceAdjustmentType.SURCHARGE
+                        ? 'base'
+                        : 'discount'
+                    }
                   />
                 );
               },
@@ -216,7 +221,7 @@ function PriceRow({
           'text-[14.5px] text-cream-muted',
           state === 'accent' && 'text-[#A2612F]',
           state === 'idle' && 'text-[#9AA89D]',
-          state === 'discount' && 'text-green-600 font-bold',
+          state === 'discount' && 'font-bold text-green-600',
         )}
       >
         {label}
@@ -226,7 +231,7 @@ function PriceRow({
           'text-[14.5px] whitespace-nowrap text-ink',
           state === 'accent' && 'text-[#A2612F]',
           state === 'idle' && 'text-[#9AA89D]',
-          state === 'discount' && 'text-green-600 font-black',
+          state === 'discount' && 'font-black text-green-600',
         )}
       >
         {value}
