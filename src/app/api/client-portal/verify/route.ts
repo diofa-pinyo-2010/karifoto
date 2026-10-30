@@ -19,11 +19,11 @@ import { hashToken } from '@/lib/token';
 // — the gated /details page detects `?token=`, bounces here, and we send the
 // client back to a clean, token-free URL.
 //
-// This mirrors src/app/admin/login/verify/route.ts with ONE deliberate
-// difference: it never claims the token. No `usedAt`, no atomic updateMany.
-// The admin claim is what makes a magic link one-time; copying it here would
-// lock a client out for good the first time they cleared their cookies, and
-// there is no self-serve way for them back in.
+// Unlike the staff login code (verifyLoginCode in src/server/admin-auth.ts),
+// it deliberately never claims the token: no `usedAt`, no atomic updateMany.
+// Claiming is what makes a staff code one-time; doing it here would lock a
+// client out for good the first time they cleared their cookies, and there is
+// no self-serve way for them back in.
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get(CLIENT_PORTAL_TOKEN_PARAM);
   const invalidUrl = new URL(APP_URLS.clientPortalInvalidLink, request.url);
