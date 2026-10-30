@@ -216,7 +216,7 @@ function PriceRow({
           'text-[14.5px] text-cream-muted',
           state === 'accent' && 'text-[#A2612F]',
           state === 'idle' && 'text-[#9AA89D]',
-          state === 'discount' && 'text-green-600',
+          state === 'discount' && 'text-green-600 font-bold',
         )}
       >
         {label}
@@ -226,7 +226,7 @@ function PriceRow({
           'text-[14.5px] whitespace-nowrap text-ink',
           state === 'accent' && 'text-[#A2612F]',
           state === 'idle' && 'text-[#9AA89D]',
-          state === 'discount' && 'text-green-600',
+          state === 'discount' && 'text-green-600 font-black',
         )}
       >
         {value}
