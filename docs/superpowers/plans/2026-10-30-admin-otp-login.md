@@ -35,10 +35,12 @@
 ### Task 1: Pure login-code helpers
 
 **Files:**
+
 - Modify: `src/lib/token.ts`
 - Create: `src/lib/token.test.ts`, `src/lib/session.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `LOGIN_CODE_LENGTH = 8`
   - `generateLoginCode(): { code: string; hash: string }` — `hash === hashToken(code)`
@@ -65,9 +67,11 @@
 ### Task 2: Email shows the code
 
 **Files:**
+
 - Modify: `src/emails/AdminLogin.tsx`, `src/lib/resend/admin-verification.ts`
 
 **Interfaces:**
+
 - Consumes: `formatLoginCode` (Task 1).
 - Produces: `sendAdminVerificationEmail({ to: string; name: string; code: string })`; `AdminLoginEmail` props `{ name: string; code: string; baseUrl: string }`; `ADMIN_LOGIN_SUBJECT = '🔓 Belépési kód'`.
 
@@ -81,6 +85,7 @@
 ### Task 3: Server actions, login form, remove route
 
 **Files:**
+
 - Modify: `src/lib/session.ts` (rename `MAGIC_LINK_TTL_SECONDS` → `LOGIN_CODE_TTL_SECONDS = 10 * 60 // 10 minutes`)
 - Modify: `src/server/admin-auth.ts`
 - Modify: `src/app/admin/login/login-form.tsx`
@@ -88,6 +93,7 @@
 - Modify: `src/app/api/client-portal/verify/route.ts` (comment only)
 
 **Interfaces:**
+
 - Consumes: `generateLoginCode`, `normalizeLoginCode`, `hashToken` (Task 1); `sendAdminVerificationEmail({ to, name, code })` (Task 2); existing `createSession(userId)`, `sessionCookieOptions`, `sanitizeAdminRedirect`, `REDIRECT_URL_PARAM`, `SESSION_COOKIE_NAME`.
 - Produces (all in `'use server'` `src/server/admin-auth.ts`):
   - `type LoginFormState = { error?: string } | undefined`
@@ -122,10 +128,12 @@
 ### Task 4: Verify page with InputOTP
 
 **Files:**
+
 - Create: `src/components/ui/input-otp.tsx` (via shadcn), `package.json`, `pnpm-lock.yaml`
 - Create: `src/app/admin/login/verify/page.tsx`, `src/app/admin/login/verify/verify-form.tsx`
 
 **Interfaces:**
+
 - Consumes: `verifyLoginCode`, `VerifyCodeState` (Task 3); `getSession` (`@/lib/dal`); `APP_URLS.upcomingShootings`; `REDIRECT_URL_PARAM`, `sanitizeAdminRedirect`.
 - Produces: `VerifyForm({ redirectUrl }: { redirectUrl: string | null })`.
 
@@ -147,6 +155,7 @@
 ### Task 5: Docs
 
 **Files:**
+
 - Modify: `src/docs/admin-auth-guide.md` (sections 3, 7–10, 13, Authentication Flow, Security Features), `CLAUDE.md` (Auth section line "Staff log in with a `MagicLinkToken`…")
 
 - [ ] **Step 1:** Update the guide to describe the code flow: why (browser choice), `MagicLinkToken` now stores code hashes, 10-min TTL, the two failure limits and fail-open stance, no browser binding (deliberate). Replace code excerpts of the removed route with a short description pointing at `src/server/admin-auth.ts`.

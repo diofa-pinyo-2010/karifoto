@@ -158,6 +158,7 @@ redirected as today.
 
   Two groups of 4 with an `InputOTPSeparator`. Verify the generated component
   works with the `base-nova` style before building on it.
+
 - **Auto-submits** when the 8th digit is entered (`onComplete` → submit form);
   a `Belépés` submit button stays for paste/accessibility. Pending state
   disables input + button.
