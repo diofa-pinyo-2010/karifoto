@@ -193,7 +193,10 @@ every protected page must call into the DAL.
   other, and the portal helpers additionally compare the id in the URL, because a
   valid client session proves _a_ client is logged in, not _this_ one.
 
-Staff log in with a `MagicLinkToken` (single-use, 15 min). Clients bootstrap from a
+Staff log in with an 8-digit emailed code (hash stored in `MagicLinkToken`,
+single-use, 10 min), typed on `/admin/login/verify` in any browser — deliberately
+not bound to the browser that requested it, so guesses are capped per IP and
+globally in Redis (fail open). Clients bootstrap from a
 long-lived reusable `ClientPortalToken` in their confirmation email — deliberately
 _not_ single-use, so the link still works from a new device months later.
 

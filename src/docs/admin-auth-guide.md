@@ -1,4 +1,4 @@
-# Admin Authentication with Magic Links & Floating Admin Button
+# Admin Authentication with Login Codes & Floating Admin Button
 
 Passwordless admin auth for Karifoto's `/admin` area, built on what's already in
 this repo: the existing `User`/`StaffProfile`/`Session`/`MagicLinkToken` models,
@@ -23,10 +23,7 @@ machinery ships with placeholder pages behind it.
   - [4. Session Creation](#4-session-creation)
   - [5. Data Access Layer (DAL)](#5-data-access-layer-dal)
   - [6. proxy.ts — Merge Admin Guard Into the Coming-Soon Gate](#6-proxyts--merge-admin-guard-into-the-coming-soon-gate)
-  - [7. Login Page](#7-login-page)
-  - [8. Login Form (Client Component)](#8-login-form-client-component)
-  - [9. Magic Link + Logout Server Actions](#9-magic-link--logout-server-actions)
-  - [10. Magic Link Verification Route](#10-magic-link-verification-route)
+  - [7–10. Login: emailed code](#710-login-emailed-code-replaced-the-magic-link-2026-10)
   - [11. Protect the Existing Admin Layout](#11-protect-the-existing-admin-layout)
   - [12. Floating Admin Button](#12-floating-admin-button)
   - [13. Admin Verification Email](#13-admin-verification-email)
@@ -39,14 +36,14 @@ machinery ships with placeholder pages behind it.
 
 ## Overview
 
-- Passwordless: magic link to email, no passwords stored.
+- Passwordless: an 8-digit code sent by email, no passwords stored.
 - Staff-only: only `User`s with a `StaffProfile` row can log in — your own
   account (`nemethricsi@gmail.com`) is already seeded as `SUPERADMIN` in
   [prisma/seed.ts](../../prisma/seed.ts), so there's nothing to bootstrap.
 - Two roles, already migrated: `SUPERADMIN` (full access) and `MEMBER`
   (photographers/editors — limited, mostly read-only access), see
   [step 14](#14-role-based-authorization-superadmin-vs-member).
-- 30-day sessions, hashed tokens in DB, 15-minute magic links.
+- 60-day sessions, hashed tokens in DB, 10-minute single-use login codes.
 - Route protection: `src/proxy.ts` (fast, cookie-existence only) +
   `verifySession()` in the admin layout (real DB check) +
   per-page role checks for `SUPERADMIN`-only sections.
@@ -65,7 +62,7 @@ version of this guide gets all three wrong here:
    Don't replace it — extend the one exported `proxy()` function and matcher.
 2. **Server Actions live in `src/server/`**, not next to the page
    (`CLAUDE.md`: "Server-side mutations are Server Actions in `src/server/`").
-   `requestMagicLink` and `logout` go in `src/server/admin-auth.ts`, and errors
+   `requestLoginCode`, `verifyLoginCode` and `logout` go in `src/server/admin-auth.ts`, and errors
    are returned as `{ error: '<Hungarian string>' }`, matching
    [src/server/booking-intent.ts](../../src/server/booking-intent.ts) and
    [src/server/stripe.ts](../../src/server/stripe.ts).
@@ -92,7 +89,7 @@ src/
 │       └── admin-verification.ts  # new: sendAdminVerificationEmail()
 ├── proxy.ts                       # existing — EXTENDED, not replaced
 ├── server/
-│   └── admin-auth.ts              # new: requestMagicLink(), logout() ('use server')
+│   └── admin-auth.ts              # new: requestLoginCode(), verifyLoginCode(), logout() ('use server')
 ├── components/
 │   └── FloatingAdminButton.tsx    # new
 └── app/
@@ -106,7 +103,8 @@ src/
             ├── page.tsx           # new
             ├── login-form.tsx     # new (client)
             └── verify/
-                └── route.ts       # new (GET handler)
+                ├── page.tsx       # code entry
+                └── verify-form.tsx # client, InputOTP
 ```
 
 Phase 2 then added, alongside the above:
@@ -166,7 +164,7 @@ export function hashToken(raw: string) {
 }
 ```
 
-`raw` goes in the email link / cookie; `hash` is what's stored in
+`raw` goes in the cookie (and, for clients, the portal link); `hash` is what's stored in
 `MagicLinkToken.tokenHash` / `Session.tokenHash`. A DB leak never exposes a
 usable token.
 
@@ -179,8 +177,8 @@ central constants file:
 ```ts
 // src/lib/session.ts
 export const SESSION_COOKIE_NAME = 'admin_session';
-export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
-export const MAGIC_LINK_TTL_SECONDS = 15 * 60; // 15 minutes
+export const SESSION_TTL_SECONDS = 60 * 24 * 60 * 60; // 60 days
+export const LOGIN_CODE_TTL_SECONDS = 10 * 60; // 10 minutes
 
 export function sessionCookieOptions(expiresAt: Date) {
   return {
@@ -337,238 +335,58 @@ This is the fast, edge-compatible check (cookie _existence_ only). Real
 validation happens in `verifySession()` server-side (step 11) — the cookie
 could be stale or forged, and only the DB check catches that.
 
-### 7. Login Page
+### 7–10. Login: emailed code (replaced the magic link, 2026-10)
 
-```tsx
-// src/app/admin/login/page.tsx
-import { redirect } from 'next/navigation';
+Staff originally logged in with a magic link. That link opened in whatever
+browser the email client picked — often Gmail's in-app browser — so the session
+cookie landed in the wrong place. Login is now an **8-digit code** typed into
+whichever browser the staff member wants. Design notes:
+[docs/superpowers/specs/2026-10-30-admin-otp-login-design.md](../../docs/superpowers/specs/2026-10-30-admin-otp-login-design.md).
 
-import { getSession } from '@/lib/dal';
+**Pages** — `src/app/admin/login/`:
 
-import { LoginForm } from '@/app/admin/login/login-form';
+- `page.tsx` + `login-form.tsx`: the email form. Already-logged-in visitors are
+  redirected to `/admin/bookings`; `redirectUrl` rides along as a hidden input.
+- `verify/page.tsx` + `verify-form.tsx`: shadcn `InputOTP`
+  (`maxLength={8}`, `pattern={REGEXP_ONLY_DIGITS}`), auto-submits on the 8th
+  digit. "Új kód kérése" is just a link back to the email form — the verify
+  page does not know the email, by design.
 
-export default async function AdminLoginPage() {
-  const session = await getSession();
+**Server Actions** — [src/server/admin-auth.ts](../../src/server/admin-auth.ts):
 
-  if (session) {
-    redirect('/admin/bookings');
-  }
+- `requestLoginCode`: zod email check (the one inline error), staff lookup,
+  60 s per-user send limit (`SET NX EX`), stores `sha256(code)` in
+  `MagicLinkToken.tokenHash` (the model kept its name — no migration), emails
+  the code, then **always** redirects to `/admin/login/verify` — unknown email,
+  rate-limited and success look identical. A code collision with any stored
+  hash surfaces as `P2002` and is retried (insert-and-catch, never
+  check-then-insert). If creating or sending fails, it logs, frees the send
+  slot, and still redirects: an error here would only ever show for a
+  registered email.
+- `verifyLoginCode`: checks the failure counters, looks the code up by hash,
+  rejects used/expired, claims it atomically (`updateMany … usedAt: null`),
+  `createSession()`, sets `admin_session`, redirects to the sanitized
+  `redirectUrl` or `/admin`.
+- `logout`: unchanged.
 
-  return <LoginForm />;
-}
-```
+**The code is not bound to the browser that requested it.** No attempt cookie,
+no same-browser check: whoever types a valid code on any device is logged in.
+That is the point of the change. The consequence is that the code alone
+identifies the login, so every guess is tested against all active codes —
+hence the failure limits:
 
-### 8. Login Form (Client Component)
+- 5 failed guesses per IP (`x-forwarded-for`, set by Vercel) and 30 failed
+  guesses globally, per 15-minute window. The global cap is what stops a
+  botnet; its cost is that someone hammering the page can pause **new** staff
+  logins for one window. Logged-in staff are unaffected.
+- Every Redis call here fails open (log + allow): an Upstash outage must not
+  lock staff out, and 8 digits (10⁸) in a 10-minute window make guessing
+  hopeless even without the limiter.
 
-No relative imports (`no-restricted-imports` bans `./`/`../` in this repo) —
-`@/app/admin/login/actions` even for a same-directory file. Copy is Hungarian,
-matching every other user-facing string in this app.
-
-```tsx
-// src/app/admin/login/login-form.tsx
-'use client';
-
-import { useActionState } from 'react';
-
-import { requestMagicLink } from '@/server/admin-auth';
-
-export function LoginForm() {
-  const [state, action, pending] = useActionState(requestMagicLink, undefined);
-
-  return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 bg-forest px-4 font-sans text-cream">
-      <div>
-        <h1 className="font-display text-2xl">Admin belépés</h1>
-        <p className="mt-1 text-sm text-cream-muted">
-          Add meg az e-mail címed, és küldünk egy belépési linket.
-        </p>
-      </div>
-      <form action={action} className="flex flex-col gap-3">
-        <label htmlFor="email" className="text-sm font-medium">
-          E-mail cím
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          placeholder="admin@example.com"
-          className="rounded-md border border-sage/40 bg-cream px-3 py-2 text-forest"
-        />
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-terracotta px-3 py-2 font-medium text-[#FFF4E6] transition-colors hover:bg-terracotta-hover disabled:opacity-50"
-        >
-          {pending ? 'Küldés...' : 'Belépési link küldése'}
-        </button>
-      </form>
-      {state?.error && <p className="text-sm text-red-400">{state.error}</p>}
-      {state?.message && <p className="text-sm text-sage">{state.message}</p>}
-    </div>
-  );
-}
-```
-
-### 9. Magic Link + Logout Server Actions
-
-Both live in `src/server/`, `'use server'` at the top, errors as
-`{ error: '<Hungarian>' }` — same shape as `createBookingIntent` and
-`createCheckoutSession`. Rate limiting uses the existing Upstash Redis client
-(`@/lib/upstash`, already used by `src/lib/idempotency.ts`) with an atomic
-`nx`/`ex` `SET` — a DB `findFirst` + `create` pair (the generic version of
-this pattern) has a race: two submits within the same tick both pass the
-check before either row exists. `redis.set(..., { nx: true })` closes that.
-
-```ts
-// src/server/admin-auth.ts
-'use server';
-
-import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-
-import * as z from 'zod';
-
-import { prisma } from '@/lib/prisma';
-import { sendAdminVerificationEmail } from '@/lib/resend/admin-verification';
-import { SESSION_COOKIE_NAME } from '@/lib/session';
-import { createSession } from '@/lib/auth';
-import { MAGIC_LINK_TTL_SECONDS } from '@/lib/session';
-import { generateToken, hashToken } from '@/lib/token';
-import { redis } from '@/lib/upstash';
-
-const EmailSchema = z.object({ email: z.email() });
-
-export type LoginFormState = { error?: string; message?: string } | undefined;
-
-const GENERIC_MESSAGE =
-  'Ha ez az e-mail cím regisztrálva van, elküldtük rá a belépési linket.';
-const MAGIC_LINK_RATE_LIMIT_SECONDS = 60;
-
-const magicLinkRateLimitKey = (userId: string) => `magic_link_rl:${userId}`;
-
-export async function requestMagicLink(
-  _prevState: LoginFormState,
-  formData: FormData,
-): Promise<LoginFormState> {
-  const parsed = EmailSchema.safeParse({ email: formData.get('email') });
-
-  if (!parsed.success) {
-    return { error: 'Adj meg egy érvényes e-mail címet.' };
-  }
-
-  const email = parsed.data.email.toLowerCase().trim();
-
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: { staffProfile: true },
-  });
-
-  if (user?.staffProfile != null) {
-    const allowed = await redis.set(magicLinkRateLimitKey(user.id), '1', {
-      nx: true,
-      ex: MAGIC_LINK_RATE_LIMIT_SECONDS,
-    });
-
-    if (allowed !== null) {
-      const { raw, hash } = generateToken();
-      const expiresAt = new Date(Date.now() + MAGIC_LINK_TTL_SECONDS * 1000);
-
-      await prisma.magicLinkToken.create({
-        data: { userId: user.id, tokenHash: hash, expiresAt },
-      });
-
-      const headersList = await headers();
-      const host = headersList.get('host');
-      const proto = headersList.get('x-forwarded-proto') ?? 'https';
-      const verifyUrl = `${proto}://${host}/admin/login/verify?token=${raw}`;
-
-      await sendAdminVerificationEmail({
-        to: email,
-        name: user.name,
-        verifyUrl,
-      });
-    }
-  }
-
-  // Same message either way — no user enumeration.
-  return { message: GENERIC_MESSAGE };
-}
-
-export async function logout() {
-  const cookieStore = await cookies();
-  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-
-  if (rawToken) {
-    await prisma.session.deleteMany({
-      where: { tokenHash: hashToken(rawToken) },
-    });
-  }
-
-  cookieStore.delete(SESSION_COOKIE_NAME);
-  redirect('/admin/login');
-}
-```
-
-Note `user.name`, not `user.firstName` — the `User` model has no `firstName`
-field in this schema.
-
-### 10. Magic Link Verification Route
-
-```ts
-// src/app/admin/login/verify/route.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-
-import { createSession } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { SESSION_COOKIE_NAME, sessionCookieOptions } from '@/lib/session';
-import { hashToken } from '@/lib/token';
-
-export async function GET(request: NextRequest) {
-  const token = request.nextUrl.searchParams.get('token');
-  const invalidUrl = new URL('/admin/login?error=invalid', request.url);
-
-  if (!token) {
-    return NextResponse.redirect(invalidUrl);
-  }
-
-  const tokenHash = hashToken(token);
-
-  const magicLinkToken = await prisma.magicLinkToken.findUnique({
-    where: { tokenHash },
-  });
-
-  if (
-    !magicLinkToken ||
-    magicLinkToken.usedAt ||
-    magicLinkToken.expiresAt <= new Date()
-  ) {
-    return NextResponse.redirect(invalidUrl);
-  }
-
-  // Atomic claim — prevents a replayed link from creating two sessions.
-  const { count } = await prisma.magicLinkToken.updateMany({
-    where: { id: magicLinkToken.id, usedAt: null },
-    data: { usedAt: new Date() },
-  });
-
-  if (count !== 1) {
-    return NextResponse.redirect(invalidUrl);
-  }
-
-  const { raw, expiresAt } = await createSession(magicLinkToken.userId);
-
-  const response = NextResponse.redirect(new URL('/admin', request.url));
-  response.cookies.set(
-    SESSION_COOKIE_NAME,
-    raw,
-    sessionCookieOptions(expiresAt),
-  );
-
-  return response;
-}
-```
+Codes live 10 minutes (`LOGIN_CODE_TTL_SECONDS`) and are single use. Requesting
+a new code does not invalidate an older live one — emails can arrive out of
+order. Code helpers (`generateLoginCode`, `formatLoginCode`,
+`normalizeLoginCode`) are pure and tested in `src/lib/token.test.ts`.
 
 `/admin` already redirects to `/admin/bookings` ([src/app/admin/page.tsx](../../src/app/admin/page.tsx)) — no change needed there.
 
@@ -679,13 +497,13 @@ import { sendReactEmail } from '@/lib/resend/send-react-email';
 export function sendAdminVerificationEmail({
   to,
   name,
-  verifyUrl,
+  code,
 }: SendAdminVerificationEmailParams) {
   return sendReactEmail({
     type: 'ADMIN_LOGIN',
     to,
     subject: ADMIN_LOGIN_SUBJECT,
-    react: AdminLoginEmail({ name, verifyUrl, baseUrl: BASE_URL_PROD }),
+    react: AdminLoginEmail({ name, code, baseUrl: BASE_URL_PROD }),
   });
 }
 ```
@@ -875,19 +693,23 @@ proxy.ts: has admin_session cookie? --no--> redirect /admin/login
         |
        yes
         v
-/admin/login: submit email -> requestMagicLink() (src/server/admin-auth.ts)
+/admin/login: submit email -> requestLoginCode() (src/server/admin-auth.ts)
         |
         v
-Lookup User + staffProfile; Redis nx/ex rate limit (1 / 60s)
+Lookup User + staffProfile; Redis nx/ex send limit (1 / 60s)
         |
         v
-Store MagicLinkToken.tokenHash (15min TTL) -> email link via sendAdminVerificationEmail
+Store sha256(code) in MagicLinkToken.tokenHash (10min TTL) -> email the code
         |
         v
-GET /admin/login/verify?token=... -> hash, find, check unused & unexpired
+Always redirect /admin/login/verify (known or unknown email alike)
         |
         v
-Atomic updateMany usedAt (prevents replay) -> createSession() (30 day TTL)
+Type code (any browser) -> verifyLoginCode(): failure limits, hash, find,
+check unused & unexpired
+        |
+        v
+Atomic updateMany usedAt (prevents replay) -> createSession() (60 day TTL)
         |
         v
 Set httpOnly admin_session cookie -> redirect /admin -> /admin/bookings
@@ -900,13 +722,13 @@ admin/layout.tsx calls verifySession() -> real DB check, staffProfile confirmed
 
 | Feature                   | Implementation                                                                                                                                                                  |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No passwords              | Magic links only                                                                                                                                                                |
-| Hashed tokens             | SHA-256; raw token only ever in email link / cookie                                                                                                                             |
-| Rate limiting             | Redis `SET NX EX` — atomic, no TOCTOU window                                                                                                                                    |
-| Token expiration          | 15 min magic links, 30 day sessions                                                                                                                                             |
+| No passwords              | Emailed login codes only                                                                                                                                                        |
+| Hashed tokens             | SHA-256; raw code only in the email, raw session token only in the cookie                                                                                                       |
+| Rate limiting             | Send: Redis `SET NX EX` 1/60s per user. Guess: 5 fails/IP + 30 fails global per 15 min. Fail open                                                                               |
+| Token expiration          | 10 min login codes, 60 day sessions                                                                                                                                             |
 | One-time tokens           | Atomic `updateMany` claim prevents replay                                                                                                                                       |
 | httpOnly + secure cookies | XSS-resistant, `sameSite: lax`                                                                                                                                                  |
-| No user enumeration       | Identical response for known/unknown emails                                                                                                                                     |
+| No user enumeration       | Always redirects to verify, known or unknown email                                                                                                                              |
 | Staff-only access         | Requires `staffProfile` relation, checked in `getSession()`                                                                                                                     |
 | Dual protection           | `proxy.ts` (edge, cookie existence) + `verifySession()` (server, real DB check)                                                                                                 |
 | Request dedup             | `cache()` around `getSession()`/`verifySession()`                                                                                                                               |
@@ -994,7 +816,7 @@ content and nothing else.
 
 The `client_session` cookie is granted by a **separate**, privately-emailed
 link carrying its own token, sent automatically once right after booking
-confirmation — not requested via a login form the way admin's magic link is:
+confirmation — not requested via a login form the way an admin login code is:
 
 ```
 /client/{clientProfileId}/shooting/{photoShootingId}/details?token=<raw>
@@ -1008,7 +830,7 @@ Route Handler that sets the cookie and redirects back to the clean `/details`
 URL. One extra hop buys the pretty emailed link and strips the token from the
 address bar.
 
-That handler mirrors [step 10](#10-magic-link-verification-route) in shape —
+That handler mirrors [the old magic-link verify route](#710-login-emailed-code-replaced-the-magic-link-2026-10) in shape —
 hash the raw token, look it up, `createSession()`, set the cookie, redirect —
 with one deliberate exception: **it must not claim the token.** No `usedAt`, no
 atomic `updateMany`. The client's link is meant to survive being clicked again
@@ -1080,7 +902,7 @@ second user. That person can then hold an `admin_session` and a
   personal to you — don't forward it"), not with product logic.
 
   Two consequences worth stating outright, because the verification route
-  looks so much like [step 10](#10-magic-link-verification-route) that it
+  looks so much like [the old magic-link verify route](#710-login-emailed-code-replaced-the-magic-link-2026-10) that it
   invites a copy-paste: the handler **must not** claim the token the way step
   10 does, and reusability is what makes per-`User` session scoping coherent
   — re-clicking any of the client's links just re-establishes the same

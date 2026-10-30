@@ -6,17 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { REDIRECT_URL_PARAM } from '@/lib/session';
-import { requestMagicLink } from '@/server/admin-auth';
+import { requestLoginCode } from '@/server/admin-auth';
 
 export function LoginForm({ redirectUrl }: { redirectUrl: string | null }) {
-  const [state, action, pending] = useActionState(requestMagicLink, undefined);
+  const [state, action, pending] = useActionState(requestLoginCode, undefined);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -35,7 +34,7 @@ export function LoginForm({ redirectUrl }: { redirectUrl: string | null }) {
                 <div className="flex flex-col items-center gap-2 text-center">
                   <h1 className="text-2xl font-semibold">Admin belépés</h1>
                   <p className="text-balance text-muted-foreground">
-                    Add meg az e-mail címed, és küldünk egy belépési linket.
+                    Add meg az e-mail címed, és küldünk egy belépési kódot.
                   </p>
                 </div>
                 <Field>
@@ -51,16 +50,11 @@ export function LoginForm({ redirectUrl }: { redirectUrl: string | null }) {
                 </Field>
                 <Field>
                   <Button type="submit" disabled={pending}>
-                    {pending ? 'Küldés...' : 'Belépési link küldése'}
+                    {pending ? 'Küldés...' : 'Belépési kód küldése'}
                   </Button>
                 </Field>
                 {state?.error && (
                   <FieldError className="text-center">{state.error}</FieldError>
-                )}
-                {state?.message && (
-                  <FieldDescription className="text-center">
-                    {state.message}
-                  </FieldDescription>
                 )}
               </FieldGroup>
             </form>

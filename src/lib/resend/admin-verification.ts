@@ -5,13 +5,13 @@ import { sendReactEmail } from '@/lib/resend/send-react-email';
 type SendAdminVerificationEmailParams = {
   to: string;
   name: string;
-  verifyUrl: string;
+  code: string;
 };
 
 export function sendAdminVerificationEmail({
   to,
   name,
-  verifyUrl,
+  code,
 }: SendAdminVerificationEmailParams) {
   return sendReactEmail({
     type: 'ADMIN_LOGIN',
@@ -19,7 +19,7 @@ export function sendAdminVerificationEmail({
     subject: ADMIN_LOGIN_SUBJECT,
     react: AdminLoginEmail({
       name,
-      verifyUrl,
+      code,
       baseUrl: BASE_URL_PROD,
     }),
   });
