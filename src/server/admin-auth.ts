@@ -68,11 +68,14 @@ async function isRateLimited(ip: string | null) {
   }
 }
 
+// One MULTI, and EXPIRE NX on every increment: a key that lost its TTL would
+// otherwise count forever and, for the global key, lock out every new login.
 async function incrementFailures(key: string) {
-  const count = await redis.incr(key);
-  if (count === 1) {
-    await redis.expire(key, FAILURE_WINDOW_SECONDS);
-  }
+  await redis
+    .multi()
+    .incr(key)
+    .expire(key, FAILURE_WINDOW_SECONDS, 'NX')
+    .exec();
 }
 
 async function recordFailure(ip: string | null) {
