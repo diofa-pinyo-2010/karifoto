@@ -1,5 +1,7 @@
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 
+import { stripLoginCodeSeparators } from '@/lib/login-code';
+
 const LOGIN_CODE_LENGTH = 8;
 
 export function generateToken() {
@@ -31,6 +33,6 @@ export function normalizeLoginCode(input: unknown): string | null {
     return null;
   }
 
-  const digits = input.replace(/[\s-]/g, '');
+  const digits = stripLoginCodeSeparators(input);
   return new RegExp(`^\\d{${LOGIN_CODE_LENGTH}}$`).test(digits) ? digits : null;
 }

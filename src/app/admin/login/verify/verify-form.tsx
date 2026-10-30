@@ -14,6 +14,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { stripLoginCodeSeparators } from '@/lib/login-code';
 import { REDIRECT_URL_PARAM } from '@/lib/session';
 import { verifyLoginCode } from '@/server/admin-auth';
 
@@ -67,6 +68,7 @@ export function VerifyForm({ redirectUrl }: { redirectUrl: string | null }) {
                     name="code"
                     maxLength={8}
                     pattern={REGEXP_ONLY_DIGITS}
+                    pasteTransformer={stripLoginCodeSeparators}
                     value={code}
                     onChange={setCode}
                     onComplete={() => formRef.current?.requestSubmit()}
