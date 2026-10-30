@@ -14,6 +14,15 @@ import {
 
 export const ADMIN_LOGIN_SUBJECT = '🔓 Bejelentkezési link';
 
+// A levelezők (Gmail, Apple Mail, Outlook) a szövegben álló URL-t maguktól
+// linkké alakítják. Ha az elválasztó karakterek külön <span>-be kerülnek, a
+// felismerés megtörik, de másoláskor a szöveg ép URL marad.
+function unlinkifiedUrl(url: string) {
+  return url
+    .split(/([./:?=&])/)
+    .map((part, i) => (i % 2 === 1 ? <span key={i}>{part}</span> : part));
+}
+
 type AdminLoginEmailProps = {
   name: string;
   verifyUrl: string;
@@ -52,6 +61,12 @@ export default function AdminLoginEmail({
                 Bejelentkezés
               </Button>
             </Section>
+            <Text className="mb-1 text-sm text-gray-500">
+              Ha a gomb nem működik, másold be ezt a címet a böngésződbe:
+            </Text>
+            <Text className="mt-0 rounded-sm bg-gray-100 p-2 font-mono text-sm break-all text-gray-800 select-all">
+              {unlinkifiedUrl(verifyUrl)}
+            </Text>
             <Text>
               Bármikor kérhetsz új linket a{' '}
               <CodeInline className="rounded-sm bg-gray-100 px-1 py-0.5 font-mono">
@@ -69,6 +84,6 @@ export default function AdminLoginEmail({
 
 AdminLoginEmail.PreviewProps = {
   name: 'Maru',
-  verifyUrl: 'http://localhost:3000',
+  verifyUrl: 'http://localhost:3000/admin/login/verify?token=abc123',
   baseUrl: 'http://localhost:3000',
 } satisfies AdminLoginEmailProps;
