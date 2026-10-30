@@ -397,16 +397,18 @@ it goes red when the semantics move, and tells you the change landed.
 
 The dialog renders `Object.values(PriceAdjustmentType)`, so a new type appears
 on the pre-payment booking-intent page too. Damage happens at the shoot, not
-before checkout, so that dialog probably wants an `allowedTypes` prop.
+before checkout. **Decided:** that is fine for now — staff may add a surcharge
+both on the booking summary and on the shooting page, so no `allowedTypes` prop.
 
 Adding a surcharge to a `COMPLETED` shooting correctly reopens
 `WAITING_FOR_PAYMENT` with no extra work, since `resolveStatus` gates on
 `remaining > 0` and `recalculatePhotoShootingStatus` already runs on adjustment
 create/delete.
 
-Open: if a surcharge lands _after_ the deposit invoice, does it go on the
-végszámla or need its own document? That is a szamlazz question, not a schema
-one.
+**Decided:** a surcharge that lands _after_ the deposit invoice goes on the
+végszámla, with no separate document. This already happens: the final-invoice
+job builds its single "Fotózás" line from `calculatePricing`'s
+`totalToBeInvoiced`, which includes the surcharge.
 
 ## 6. The next checkout kind
 

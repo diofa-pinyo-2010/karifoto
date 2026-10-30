@@ -251,10 +251,8 @@ describe('totalToBePaid', () => {
   });
 
   describe('price adjustments', () => {
-    // Every adjustment type currently subtracts — DISCOUNT and DEDUCTION are
-    // two labels for one behaviour. Adding a SURCHARGE type means giving each
-    // type a sign; when that lands, these two expectations are what tells you
-    // which call sites still assume "adjustment means deduction".
+    // The sign comes from PRICE_ADJUSTMENT_TYPE_SIGN: DISCOUNT and DEDUCTION
+    // subtract, SURCHARGE adds. `amountInCents` is always a positive magnitude.
     it('subtracts a DISCOUNT', () => {
       expect(
         remaining({
@@ -273,6 +271,35 @@ describe('totalToBePaid', () => {
           ],
         }),
       ).toBe(BASE - 5_000_00);
+    });
+
+    it('adds a SURCHARGE', () => {
+      expect(
+        remaining({
+          adjustments: [
+            makeAdjustment({ type: 'SURCHARGE', amountInCents: 5_000_00 }),
+          ],
+        }),
+      ).toBe(BASE + 5_000_00);
+    });
+
+    it('nets a SURCHARGE against a DISCOUNT', () => {
+      expect(
+        remaining({
+          adjustments: [
+            makeAdjustment({
+              id: 'a',
+              type: 'SURCHARGE',
+              amountInCents: 3_000_00,
+            }),
+            makeAdjustment({
+              id: 'b',
+              type: 'DISCOUNT',
+              amountInCents: 1_000_00,
+            }),
+          ],
+        }),
+      ).toBe(BASE + 2_000_00);
     });
 
     it('sums several adjustments', () => {

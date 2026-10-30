@@ -130,10 +130,8 @@ export function calculatePricing({
 
   const totalCharges = lines.reduce((sum, line) => sum + line.amountInCents, 0);
 
-  // Every adjustment currently reduces the bill; `amountInCents` is stored as a
-  // positive magnitude, so the sign is applied here. Adding `SURCHARGE` means
-  // replacing this negation with a per-type sign map.
-  // Note: replaced with a per-type sign map.
+  // `amountInCents` is stored as a positive magnitude; the per-type sign is
+  // applied here, so discounts/deductions reduce the bill and surcharges raise it.
   const adjustmentLines: PriceLine[] = adjustments.map((adjustment) => ({
     label: adjustment.publicLabel,
     amountInCents:

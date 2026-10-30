@@ -2,13 +2,13 @@
 
 import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
 import { EARLY_BIRD_DATE_DEADLINE, MAX_PETS, UUID_RE } from '@/lib/constants';
-import {
-  attachEarlyBirdDiscount,
-  attachWeekdayDiscount,
-} from '@/lib/price-adjustments';
 import { prisma } from '@/lib/prisma';
 import { isPackageAllowed } from '@/lib/time-slot-packages';
 import { isWeekday } from '@/lib/utils';
+import {
+  attachEarlyBirdDiscount,
+  attachWeekdayDiscount,
+} from '@/server/price-adjustments';
 
 import type { DecorSet, Package } from '@/generated/prisma/client';
 
