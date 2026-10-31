@@ -50,15 +50,19 @@ export const POST = verifySignatureAppRouter(
     const startTime = photoShooting.timeSlot.startTime;
     const endTime = getShootingEndTime(startTime, photoShooting.package);
 
+    const isLightPlayExtra =
+      isLightPlayChargeable(photoShooting.package) &&
+      photoShooting.isLightPlaySelected;
+
     try {
       const event = await createCalendarEvent({
-        title: `📸 ${photoShooting.package}${photoShooting.isLightPlaySelected ? ' + ✨' : ''} | ${photoShooting.client.owner.name}`,
+        title: `📸 ${photoShooting.package}${isLightPlayExtra ? ' + ✨' : ''} | ${photoShooting.client.owner.name}`,
         description: `
         Fotózás oldala az adminon:
         ${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(photoShooting.id)}
 
         Kért külön fényjátékot? (Csak MINI és CLASSIC esetén számít)
-        ${isLightPlayChargeable(photoShooting.package) && photoShooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
+        ${isLightPlayExtra ? 'IGEN' : 'NEM'}
 
         Ügyfél:
         ${photoShooting.client.owner.name}
