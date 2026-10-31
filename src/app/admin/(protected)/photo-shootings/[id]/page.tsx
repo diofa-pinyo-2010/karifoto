@@ -662,7 +662,7 @@ export default async function PhotoShootingDetailPage({
                         title={shortFullDateFormatter.format(email.sentAt)}
                         description={email.subject}
                         href={resendEmailUrl(email.resendId)}
-                        linkLabel="Resend"
+                        linkLabel="Email"
                       />
                     ))}
                   </ItemGroup>

@@ -13,6 +13,7 @@ export const EMAIL_FROM =
 type SendReactEmailParams = {
   type: string; // → 'type' tag
   to: string | string[];
+  cc?: string | string[];
   subject: string;
   react: ReactElement;
   from?: string;
@@ -24,6 +25,7 @@ type SendReactEmailParams = {
 export function sendReactEmail({
   type,
   to,
+  cc,
   subject,
   react,
   from = EMAIL_FROM,
@@ -33,6 +35,7 @@ export function sendReactEmail({
   return resend.emails.send(
     {
       to,
+      cc,
       from,
       subject,
       react,

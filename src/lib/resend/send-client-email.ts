@@ -16,7 +16,8 @@ import ReminderOnTheDayEmail, {
 import RescheduleNotificationEmail, {
   CLIENT_RESCHEDULE_NOTIFICATION_SUBJECT,
 } from '@/emails/RescheduleNotification';
-import { BASE_URL_PROD } from '@/lib/constants';
+import { env } from '@/env';
+import { BASE_URL_PROD, SUPPORT_EMAIL } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { sendReactEmail } from '@/lib/resend/send-react-email';
 
@@ -112,7 +113,17 @@ export async function sendClientEmail<T extends EmailType>({
     { ...props, baseUrl: BASE_URL_PROD },
   );
 
-  const result = await sendReactEmail({ type, to, subject, react, tags });
+  const carbonCopy =
+    env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? SUPPORT_EMAIL : undefined;
+
+  const result = await sendReactEmail({
+    type,
+    to,
+    cc: carbonCopy,
+    subject,
+    react,
+    tags,
+  });
 
   if (result.data != null) {
     try {

@@ -2,7 +2,7 @@ import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import z from 'zod';
 
 import { env } from '@/env';
-import { APP_URLS } from '@/lib/constants';
+import { APP_URLS, isLightPlayChargeable } from '@/lib/constants';
 import { createCalendarEvent } from '@/lib/google-calendar';
 import { prisma } from '@/lib/prisma';
 import { getShootingEndTime } from '@/lib/utils';
@@ -26,6 +26,7 @@ export const POST = verifySignatureAppRouter(
         id: true,
         clientNote: true,
         package: true,
+        isLightPlaySelected: true,
         timeSlot: { select: { startTime: true } },
         client: {
           select: {
@@ -49,12 +50,19 @@ export const POST = verifySignatureAppRouter(
     const startTime = photoShooting.timeSlot.startTime;
     const endTime = getShootingEndTime(startTime, photoShooting.package);
 
+    const isLightPlayExtra =
+      isLightPlayChargeable(photoShooting.package) &&
+      photoShooting.isLightPlaySelected;
+
     try {
       const event = await createCalendarEvent({
-        title: `📸 ${photoShooting.package} – ${photoShooting.client.owner.name}`,
+        title: `📸 ${photoShooting.package}${isLightPlayExtra ? ' + ✨' : ''} | ${photoShooting.client.owner.name}`,
         description: `
         Fotózás oldala az adminon:
         ${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(photoShooting.id)}
+
+        Kért külön fényjátékot? (Csak MINI és CLASSIC esetén számít)
+        ${isLightPlayExtra ? 'IGEN' : 'NEM'}
 
         Ügyfél:
         ${photoShooting.client.owner.name}
