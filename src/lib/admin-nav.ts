@@ -9,6 +9,7 @@ import {
   TrendingUpIcon,
   CreditCardIcon,
   CameraIcon,
+  KanbanIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -66,6 +67,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
   {
     label: 'Csak admin',
     items: [
+      {
+        title: 'Pipeline',
+        href: APP_URLS.pipeline,
+        icon: KanbanIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
       {
         title: 'Statisztikák',
         href: '/admin/stats',

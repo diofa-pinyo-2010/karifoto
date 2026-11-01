@@ -17,6 +17,7 @@ import {
   UUID_RE,
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
+import { PIPELINE_STATUSES } from '@/lib/pipeline';
 import { prisma } from '@/lib/prisma';
 import {
   PUBLIC_TIME_SLOTS_TAG,
@@ -104,6 +105,16 @@ export async function fetchOwnPhotoShootings() {
   ]);
 
   return { asPhotographer, asEditor };
+}
+
+export async function fetchPipelinePhotoShootings() {
+  await verifySession();
+
+  return prisma.photoShooting.findMany({
+    where: { status: { in: PIPELINE_STATUSES } },
+    orderBy: { timeSlot: { startTime: 'asc' } },
+    ...photoShootingWithClientInclude,
+  });
 }
 
 export async function fetchAllPhotoShootings({

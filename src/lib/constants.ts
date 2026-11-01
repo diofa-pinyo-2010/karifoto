@@ -401,6 +401,7 @@ export const APP_URLS = {
   allShootings: '/admin/photo-shootings',
   terminals: '/admin/terminals',
   ownShootings: '/admin/my-shootings',
+  pipeline: '/admin/pipeline',
   exportBookings: '/admin/time-slots/export',
 
   // Client portal. The first two are public and meant to be shared; only
