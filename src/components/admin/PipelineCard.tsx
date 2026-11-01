@@ -1,5 +1,7 @@
 'use client';
 
+import { CameraIcon, WandSparklesIcon } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -32,6 +34,19 @@ export function PipelineCard({ shooting }: { shooting: PipelineShooting }) {
           ? PHOTO_SHOOTING_STATUS_LABEL[shooting.status].short
           : PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
       </Badge>
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1" title="Fotós">
+          <CameraIcon aria-label="Fotós" className="size-3.5 shrink-0" />
+          {shooting.photographer?.nickname ?? '???'}
+        </span>
+        <span className="flex items-center gap-1" title="Szerkesztő">
+          <WandSparklesIcon
+            aria-label="Szerkesztő"
+            className="size-3.5 shrink-0"
+          />
+          {shooting.editor?.nickname ?? '???'}
+        </span>
+      </div>
     </article>
   );
 }
