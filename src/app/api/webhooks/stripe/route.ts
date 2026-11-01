@@ -8,7 +8,10 @@ import {
   BookingIntentStatus,
   LedgerEntryCategory,
 } from '@/generated/prisma/enums';
-import { parseCheckoutMetadata } from '@/lib/checkout-metadata';
+import {
+  CHECKOUT_KIND_LEDGER_CATEGORY,
+  parseCheckoutMetadata,
+} from '@/lib/checkout-metadata';
 import {
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_SIGN,
@@ -23,6 +26,9 @@ import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 import { getBookingIntent } from '@/lib/queries';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
+import { completeImageSelection } from '@/server/complete-image-selection';
+
+import type { CheckoutMetadata } from '@/lib/checkout-metadata';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -124,18 +130,98 @@ async function routeCheckoutSession(session: Stripe.Checkout.Session) {
       await handleBookingDeposit(session, metadata.booking_intent_id);
       return;
     }
+    case 'image_selection_extra': {
+      await handleImageSelectionExtra(session, metadata);
+      return;
+    }
     default: {
-      // The exhaustiveness guard asserts on the *discriminant*, not on
-      // `metadata` itself: TypeScript only narrows a parent object to `never`
-      // when its type is a genuine union, and today `CheckoutMetadata` has a
-      // single member. Narrowing the literal works either way — add a kind
-      // without a case above and this assignment stops compiling.
-      const unhandledKind: never = metadata.kind;
+      // Add a kind without a case above and this assignment stops compiling.
+      const unhandled: never = metadata;
       throw new Error(
-        `Unhandled checkout session kind: ${String(unhandledKind)}`,
+        `Unhandled checkout session kind: ${JSON.stringify(unhandled)}`,
       );
     }
   }
+}
+
+/**
+ * The client paid for images over the allowance and/or retouches. Ledger
+ * first (money moved), then the same save the free "Beküldés" path runs, then
+ * the invoice job.
+ */
+async function handleImageSelectionExtra(
+  session: Stripe.Checkout.Session,
+  metadata: Extract<CheckoutMetadata, { kind: 'image_selection_extra' }>,
+) {
+  const shootingId = metadata.photo_shooting_id;
+  const paymentIntent = readPaymentIntentId(session);
+  const amountTotal = session.amount_total ?? 0;
+
+  // Card payments always have one; without it the @unique column would
+  // collide, so treat it as a payment we cannot record — a human must.
+  if (paymentIntent === '') {
+    console.error('[stripe-webhook] extra payment without payment intent', {
+      shootingId,
+      sessionId: session.id,
+    });
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        '**Extra díj fizetés payment intent nélkül — kézi rögzítés kell!**\n',
+        `Shooting ID: ${shootingId}`,
+        `Checkout Session ID: ${session.id}`,
+      ].join('\n'),
+    });
+    return;
+  }
+
+  try {
+    const category = CHECKOUT_KIND_LEDGER_CATEGORY[metadata.kind];
+    await prisma.ledgerEntry.create({
+      data: {
+        category,
+        amountInCents: amountTotal * LEDGER_ENTRY_CATEGORY_SIGN[category],
+        method: 'CARD',
+        paymentIntent,
+        photoShooting: { connect: { id: shootingId } },
+      },
+    });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === 'P2002'
+    ) {
+      console.warn(
+        '[stripe-webhook] ledger entry already recorded (retry), skipping',
+        { shootingId, paymentIntent },
+      );
+    } else {
+      throw err;
+    }
+  }
+
+  const completed = await completeImageSelection(
+    shootingId,
+    {
+      editedImages: metadata.edited_images,
+      retouchedImages: metadata.retouched_images,
+    },
+    amountTotal,
+  );
+  if (!completed) {
+    // Either a retry, or a second payment for an already closed selection
+    // (two tabs). The ledger has it either way; the latter needs a refund.
+    console.warn('[stripe-webhook] selection already completed', {
+      shootingId,
+      paymentIntent,
+    });
+  }
+
+  await qStashClient.publishJSON({
+    url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-extra-invoice`,
+    body: { shootingId, sessionId: session.id, paymentIntent, amountTotal },
+    retries: 5,
+  });
 }
 
 async function handleBookingDeposit(

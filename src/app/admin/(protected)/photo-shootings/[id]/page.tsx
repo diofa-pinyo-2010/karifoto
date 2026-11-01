@@ -5,6 +5,9 @@ import { cache } from 'react';
 import {
   ArrowLeft,
   ArrowRightIcon,
+  BadgeCheckIcon,
+  CheckCircle2Icon,
+  CheckIcon,
   ExternalLinkIcon,
   UserIcon,
 } from 'lucide-react';
@@ -22,10 +25,21 @@ import { ExternalLinkItem } from '@/components/ExternalLinkItem';
 import { ItemsCollapsible } from '@/components/ItemsCollapsible';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
 import { SendRawImages } from '@/components/SendRawImages';
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
@@ -570,6 +584,22 @@ export default async function PhotoShootingDetailPage({
               />
             </div>
             <div className="rounded-lg border bg-card px-4">
+              {shooting.selectionCompletedAt && (
+                <DetailRow
+                  label="Ügyfél a válogatást befejezte"
+                  value={
+                    <p className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <BadgeCheckIcon className="size-5 text-lime-600 dark:text-lime-400" />{' '}
+                        Elküldve:
+                      </span>{' '}
+                      {shortFullDateFormatter.format(
+                        shooting.selectionCompletedAt,
+                      )}
+                    </p>
+                  }
+                />
+              )}
               <DetailRow
                 label="Megszerkesztett képek"
                 value={
@@ -630,6 +660,35 @@ export default async function PhotoShootingDetailPage({
                 }
               />
             </div>
+            {shooting.status === 'READY_TO_COMPLETE' && (
+              <Alert className="bg-lime-50 text-lime-900 dark:bg-lime-950 dark:text-lime-50">
+                <CheckCircle2Icon />
+                <AlertTitle>Minden kész!</AlertTitle>
+                <AlertDescription className="text-lime-900/70 dark:text-lime-50/70">
+                  A projekt zárható.
+                </AlertDescription>
+                <AlertAction>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button size="lg" variant="outline">
+                          <CheckIcon />
+                          Lezárás
+                        </Button>
+                      }
+                    />
+                    <TooltipContent>
+                      <p>
+                        Ha ezt a gombot látod, akkor nincs több fizetnivaló, és
+                        a végleges képek URL-je is fel van töltve: a projekt
+                        zárható. Email-t küldünk az ügyfélnek a végleges képek
+                        linkjével.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </AlertAction>
+              </Alert>
+            )}
           </div>
 
           <Separator />

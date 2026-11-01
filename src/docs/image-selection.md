@@ -175,19 +175,24 @@ number the client typed.
 
 ## The payment step
 
-The extra is a second Stripe Checkout, and
-[the webhook](../../src/app/api/webhooks/stripe/route.ts) needs a real dispatch
-to support it. Today `handleCheckoutCompleted()` reads
-`session.metadata.booking_intent_id` and **returns early if it is missing** — so
-a second checkout flow would be silently dropped with a logged error. The
-metadata check has to become a branch before that early return, not after it.
+**Built.** The extra is a second Stripe Checkout with its own kind,
+`image_selection_extra` in
+[checkout-metadata.ts](../../src/lib/checkout-metadata.ts). The metadata
+carries `photo_shooting_id` plus the **counts the client saw** in the dialog —
+the PicDrop flags may change between paying and the webhook, and we save what
+was paid for. Success and cancel both return to `/details`.
 
-The new branch should:
+The webhook's `handleImageSelectionExtra()`:
 
-- carry the shooting id in metadata (e.g. `metadata.image_selection_shooting_id`)
-- write a `LedgerEntry` with `INCOME_CLIENT_PAYMENT_EXTRA` — the category and
-  its label ("Extra díj") already exist and are unused
-- set `selectionCompletedAt`
+- writes a `LedgerEntry` with `INCOME_CLIENT_PAYMENT_EXTRA` (P2002 = retry)
+- runs `completeImageSelection()` — the same save the zero-extra path uses,
+  which also sends the "Képválogatás beküldve" Discord ping
+- publishes `generate-extra-invoice`, a normal számla (`InvoiceType.NORMAL`)
+  whose Redis claim is keyed by payment intent, not shooting
+
+Accepted gaps: the client may land on `/details` a few seconds before the
+webhook closes the selection, and a second payment from another tab is
+recorded but closes nothing (needs a manual refund).
 
 The zero-extra path skips Stripe entirely and sets `selectionCompletedAt` in the
 server action.
@@ -275,12 +280,19 @@ is the only gate there is.
   Per the Phase 2 design this action is `client_session` **only**: staff can
   _view_ `/details` with an `admin_session`, but may not submit on the client's
   behalf.
-- The second Stripe Checkout and the webhook branch described above.
 - Editor-side editing of `total*`. `PhotoShootingUpdateSchema` in
   [admin.ts](../../src/server/admin.ts) covers only `PhotoShooting` columns that
   already existed; the two counts need adding to it.
 
 ## Open questions
+
+- **A végszámla issued after an extra payment would bill the extras twice.**
+  The final invoice job bills `totalToBeInvoiced − előleg`, and
+  `totalToBeInvoiced` includes the image extras, which by then already have
+  their own normal számla. Not a problem today because the balance is always
+  paid at the till on the shooting day, before selection, when the counts are
+  still 0. If that ever changes, the final job must also subtract `NORMAL`
+  invoices.
 
 - **What does the portal show once the editor has corrected the numbers?** The
   client sees a total they did not submit. Showing `declared*` next to `total*`

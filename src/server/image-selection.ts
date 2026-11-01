@@ -1,16 +1,17 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import * as z from 'zod';
 
+import { env } from '@/env';
 import { APP_URLS, UUID_RE } from '@/lib/constants';
 import { requireClientAccess } from '@/lib/dal';
 import { countPicdropSelection } from '@/lib/picdrop';
 import { prisma } from '@/lib/prisma';
+import { stripe } from '@/lib/stripe';
+import { completeImageSelection } from '@/server/complete-image-selection';
 import { quoteImageSelection } from '@/server/image-selection-quote';
-import { resolveStatus } from '@/server/photo-shooting-status';
 
+import type { CheckoutMetadata } from '@/lib/checkout-metadata';
 import type { PriceLine } from '@/server/pricing';
 
 export type ImageSelectionPreview = {
@@ -46,6 +47,7 @@ async function loadSelectableShooting(
       pricing: true,
       adjustments: true,
       ledgerEntries: true,
+      client: { select: { stripeCustomerId: true } },
     },
   });
 
@@ -96,7 +98,8 @@ const ShownCountsSchema = z.object({
 });
 
 /**
- * Lezárja a válogatást, ha nem jár extra díjjal.
+ * Lezárja a válogatást, ha nem jár extra díjjal; ha jár, Stripe Checkoutot
+ * nyit, és a lezárás a webhookra marad.
  *
  * A számokat **újra megszámoljuk** a galériából: a kliens csak azt küldi,
  * amit a dialógusban látott, és ha ez eltér, az ügyfélnek újra át kell néznie
@@ -106,7 +109,7 @@ export async function confirmImageSelection(
   clientProfileId: string,
   shootingId: string,
   shown: { editedImages: number; retouchedImages: number },
-): Promise<{ error: string } | { success: true }> {
+): Promise<{ error: string } | { success: true } | { checkoutUrl: string }> {
   const parsedShown = ShownCountsSchema.safeParse(shown);
   if (!parsedShown.success) {
     return { error: 'Érvénytelen adat.' };
@@ -129,41 +132,55 @@ export async function confirmImageSelection(
     };
   }
 
-  const { extraInCents } = quoteImageSelection({
+  const { lines, extraInCents } = quoteImageSelection({
     pricing: shooting.pricing,
     ...counts,
   });
+
+  // Extra díjnál a válogatást a webhook zárja le, a fizetés után. A számok a
+  // metadatába kerülnek: azt mentjük, amiért fizetett, nem azt, amit a galéria
+  // addigra mutat.
   if (extraInCents > 0) {
-    // TODO: Stripe Checkout (lásd "The payment step" az image-selection.md-ben).
-    return { error: 'A fizetés még nem érhető el. Keress minket.' };
+    const detailsUrl = `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.clientPortalShootingDetails(clientProfileId, shootingId)}`;
+    try {
+      const session = await stripe.checkout.sessions.create({
+        customer: shooting.client.stripeCustomerId,
+        mode: 'payment',
+        line_items: lines.map((line) => ({
+          price_data: {
+            currency: 'huf',
+            product_data: { name: line.name },
+            unit_amount: line.unitPriceInCents,
+          },
+          quantity: line.quantity,
+        })),
+        metadata: {
+          kind: 'image_selection_extra',
+          photo_shooting_id: shootingId,
+          edited_images: counts.editedImages,
+          retouched_images: counts.retouchedImages,
+        } satisfies CheckoutMetadata,
+        success_url: detailsUrl,
+        cancel_url: detailsUrl,
+      });
+      if (session.url == null) {
+        return { error: 'Nem tudtuk létrehozni a fizetést, próbáld újra.' };
+      }
+      return { checkoutUrl: session.url };
+    } catch (error) {
+      console.error('[image-selection] failed to create checkout', {
+        error,
+        shootingId,
+      });
+      return {
+        error:
+          'Nem sikerült kapcsolódni a fizetési szolgáltatóhoz, próbáld újra.',
+      };
+    }
   }
 
-  // A `declared*` azt rögzíti, amit a galéria a lezáráskor mutatott; a
-  // `total*` az, amit a szerkesztő később javíthat.
-  const updates = {
-    declaredEditedImages: counts.editedImages,
-    declaredRetouchedImages: counts.retouchedImages,
-    totalEditedImages: counts.editedImages,
-    totalRetouchedImages: counts.retouchedImages,
-    selectionCompletedAt: new Date(),
-  };
-
   try {
-    const status = resolveStatus({
-      current: shooting,
-      updates,
-      pricing: shooting.pricing,
-      adjustments: shooting.adjustments,
-      ledgerEntries: shooting.ledgerEntries,
-    });
-
-    // A `selectionCompletedAt: null` szűrő azt védi, hogy a dupla beküldés ne
-    // írjon felül egy már lezárt válogatást.
-    const { count } = await prisma.photoShooting.updateMany({
-      where: { id: shootingId, selectionCompletedAt: null },
-      data: { ...updates, status },
-    });
-    if (count === 0) {
+    if (!(await completeImageSelection(shootingId, counts, null))) {
       return { error: 'A válogatás már be van küldve.' };
     }
   } catch (error) {
@@ -174,8 +191,5 @@ export async function confirmImageSelection(
     return { error: 'Nem sikerült menteni a válogatást. Próbáld újra.' };
   }
 
-  revalidatePath(
-    APP_URLS.clientPortalShootingDetails(clientProfileId, shootingId),
-  );
   return { success: true };
 }

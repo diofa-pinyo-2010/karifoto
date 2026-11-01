@@ -2,6 +2,17 @@ import type { PhotoShootingPricing } from '@/generated/prisma/client';
 import type { PriceLine } from '@/server/pricing';
 
 /**
+ * Egy `PriceLine` mennyiséggel és egységárral, hogy a Stripe Checkout és a
+ * belőle készülő számla tételesen mutassa (pl. 3 db × 2 000 Ft). A `name` a
+ * darabszám nélküli megnevezés — a darabszámot a Stripe és a számla maga írja.
+ */
+type QuoteLine = PriceLine & {
+  name: string;
+  quantity: number;
+  unitPriceInCents: number;
+};
+
+/**
  * Mennyibe kerül az ügyfél által megadott két szám a csomag kerete fölött.
  *
  * Tiszta függvény, a `'use server'` fájlok miatt külön fájlban (lásd
@@ -25,26 +36,34 @@ export function quoteImageSelection({
   >;
   editedImages: number;
   retouchedImages: number;
-}): { lines: PriceLine[]; extraInCents: number } {
-  const lines: PriceLine[] = [];
+}): { lines: QuoteLine[]; extraInCents: number } {
+  const lines: QuoteLine[] = [];
 
-  const extraEdited = Math.max(
-    0,
-    editedImages - pricing.packageEditedImagesAllowance,
+  const addLine = (
+    name: string,
+    quantity: number,
+    unitPriceInCents: number,
+  ) => {
+    if (quantity <= 0) return;
+    lines.push({
+      label: `${name} (${quantity} db)`,
+      amountInCents: quantity * unitPriceInCents,
+      name,
+      quantity,
+      unitPriceInCents,
+    });
+  };
+
+  addLine(
+    'Extra szerkesztett képek',
+    Math.max(0, editedImages - pricing.packageEditedImagesAllowance),
+    pricing.extraEditedImageRateInCents,
   );
-  if (extraEdited > 0) {
-    lines.push({
-      label: `Extra szerkesztett képek (${extraEdited} db)`,
-      amountInCents: extraEdited * pricing.extraEditedImageRateInCents,
-    });
-  }
-
-  if (retouchedImages > 0) {
-    lines.push({
-      label: `Extra retusált képek (${retouchedImages} db)`,
-      amountInCents: retouchedImages * pricing.extraRetouchedImageRateInCents,
-    });
-  }
+  addLine(
+    'Extra retusált képek',
+    retouchedImages,
+    pricing.extraRetouchedImageRateInCents,
+  );
 
   return {
     lines,

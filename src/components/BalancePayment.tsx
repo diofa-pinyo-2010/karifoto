@@ -7,7 +7,6 @@ import {
   BadgeAlertIcon,
   BadgeInfoIcon,
   CheckCircle2Icon,
-  CheckIcon,
   CoinsIcon,
   CreditCardIcon,
   Loader2Icon,
@@ -16,12 +15,7 @@ import {
   XCircleIcon,
 } from 'lucide-react';
 
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,8 +53,6 @@ import {
   forceClosePaymentAttempt,
 } from '@/server/payment';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-
 export function BalancePayment({
   remainingAmount,
   currentShootingStatus,
@@ -85,27 +77,6 @@ export function BalancePayment({
           Jelenleg nincs több fizetnivaló. A képek feldolgozásakor még
           merülhetnek fel követelések.
         </AlertDescription>
-        {currentShootingStatus === 'READY_TO_COMPLETE' && (
-          <AlertAction>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button size="lg" variant="outline">
-                    <CheckIcon />
-                    Lezárás
-                  </Button>
-                }
-              />
-              <TooltipContent>
-                <p>
-                  Ha ezt a gombot látod, akkor nincs több fizetnivaló, és a
-                  végleges képek URL-je is fel van töltve: a projekt zárható.
-                  Email-t küldünk az ügyfélnek a végleges képek linkjével.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </AlertAction>
-        )}
       </Alert>
     );
   }

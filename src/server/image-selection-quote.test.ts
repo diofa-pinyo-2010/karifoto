@@ -25,6 +25,27 @@ describe('quoteImageSelection', () => {
     expect(extraInCents).toBe(2 * 2000_00);
   });
 
+  // Stripe and the invoice multiply these back together, so they must
+  // reproduce the line amount exactly.
+  it('carries quantity and unit price that multiply to the line amount', () => {
+    const { lines } = quoteImageSelection({
+      pricing,
+      editedImages: 13,
+      retouchedImages: 2,
+    });
+    expect(lines).toMatchObject([
+      {
+        name: 'Extra szerkesztett képek',
+        quantity: 3,
+        unitPriceInCents: 2000_00,
+      },
+      { name: 'Extra retusált képek', quantity: 2, unitPriceInCents: 3000_00 },
+    ]);
+    for (const line of lines) {
+      expect(line.quantity * line.unitPriceInCents).toBe(line.amountInCents);
+    }
+  });
+
   it('charges retouching even inside the allowance', () => {
     expect(
       quoteImageSelection({ pricing, editedImages: 5, retouchedImages: 2 })

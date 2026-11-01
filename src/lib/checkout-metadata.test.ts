@@ -26,6 +26,27 @@ describe('parseCheckoutMetadata', () => {
     });
   });
 
+  // Stripe stores metadata as `string → string`, so the counts written as
+  // numbers come back as strings and must parse back into the same numbers.
+  it('reads back image selection counts that Stripe returned as strings', () => {
+    expect(
+      parseCheckoutMetadata({
+        kind: 'image_selection_extra',
+        photo_shooting_id: BOOKING_INTENT_ID,
+        edited_images: '12',
+        retouched_images: '0',
+      }),
+    ).toEqual({
+      ok: true,
+      metadata: {
+        kind: 'image_selection_extra',
+        photo_shooting_id: BOOKING_INTENT_ID,
+        edited_images: 12,
+        retouched_images: 0,
+      },
+    });
+  });
+
   it('rejects null, which is what Stripe sends when metadata was never set', () => {
     const parsed = parseCheckoutMetadata(null);
 

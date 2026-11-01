@@ -80,6 +80,11 @@ export function ImageSelectionDialog({
           setError(result.error);
           return;
         }
+        // Extra díjnál a Stripe-ra megyünk; onnan a /details oldalra jön vissza.
+        if ('checkoutUrl' in result) {
+          window.location.assign(result.checkoutUrl);
+          return;
+        }
         // A szerver újravalidálta az oldalt, a szekció átvált a köszönőre.
         setOpen(false);
       } catch (caught) {
@@ -196,25 +201,17 @@ export function ImageSelectionDialog({
           >
             Mégse
           </Button>
-          {needsPayment ? (
-            // TODO: Stripe Checkout session indítása (lásd "The payment step"
-            // az image-selection.md-ben). Addig nincs bekötve.
-            <Button size="lg" className="w-full sm:w-auto" disabled>
-              Fizetés
-            </Button>
-          ) : (
-            <Button
-              size="lg"
-              className="w-full sm:w-auto"
-              disabled={
-                preview == null || preview.editedImages === 0 || isConfirming
-              }
-              onClick={confirm}
-            >
-              {isConfirming && <Spinner />}
-              Beküldés
-            </Button>
-          )}
+          <Button
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={
+              preview == null || preview.editedImages === 0 || isConfirming
+            }
+            onClick={confirm}
+          >
+            {isConfirming && <Spinner />}
+            {needsPayment ? 'Fizetés' : 'Beküldés'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
