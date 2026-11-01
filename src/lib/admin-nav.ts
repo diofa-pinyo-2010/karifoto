@@ -57,6 +57,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         allowedRoles: ALL_STAFF,
       },
       {
+        title: 'Pipeline',
+        href: APP_URLS.pipeline,
+        icon: KanbanIcon,
+        allowedRoles: ALL_STAFF,
+      },
+      {
         title: 'Terminálok',
         href: APP_URLS.terminals,
         icon: CreditCardIcon,
@@ -67,12 +73,6 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
   {
     label: 'Csak admin',
     items: [
-      {
-        title: 'Pipeline',
-        href: APP_URLS.pipeline,
-        icon: KanbanIcon,
-        allowedRoles: [StaffProfileRole.SUPERADMIN],
-      },
       {
         title: 'Statisztikák',
         href: '/admin/stats',

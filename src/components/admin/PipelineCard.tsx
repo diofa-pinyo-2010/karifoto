@@ -1,10 +1,14 @@
 'use client';
 
-import { CameraIcon, WandSparklesIcon } from 'lucide-react';
+import Link from 'next/link';
+
+import { ArrowRightIcon, CameraIcon, WandSparklesIcon } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
+  APP_URLS,
   PACKAGE_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
@@ -20,8 +24,18 @@ type PipelineShooting = Awaited<
 export function PipelineCard({ shooting }: { shooting: PipelineShooting }) {
   const isMobile = useIsMobile();
   return (
-    <article className="flex flex-col gap-1.5 rounded-lg border bg-card p-3">
+    <article className="relative flex flex-col gap-1.5 rounded-lg border bg-card p-3">
       <span className="truncate font-medium">{shooting.client.owner.name}</span>
+      <Button
+        size="icon-lg"
+        className="absolute top-3 right-3 rounded-xl"
+        variant="secondary"
+        nativeButton={false}
+        render={<Link href={APP_URLS.photoShootingAdminPage(shooting.id)} />}
+        aria-label="Fotózás megnyitása"
+      >
+        <ArrowRightIcon />
+      </Button>
       <span className="text-sm text-muted-foreground">
         {shortFullDateFormatter.format(shooting.timeSlot.startTime)} •{' '}
         {PACKAGE_LABEL[shooting.package]}
