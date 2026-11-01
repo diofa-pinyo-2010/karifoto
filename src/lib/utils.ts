@@ -4,8 +4,11 @@ import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
-import { PACKAGES } from '@/lib/catalog';
-import { STUDIO_ADDRESS, STUDIO_TZ } from '@/lib/constants';
+import {
+  isLightPlayChargeable,
+  STUDIO_ADDRESS,
+  STUDIO_TZ,
+} from '@/lib/constants';
 
 import type { LedgerEntry } from '@/generated/prisma/client';
 import type { Package } from '@/generated/prisma/enums';
@@ -97,9 +100,29 @@ export function generateAddToGoogleCalendarLink({
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-// The time slot is always 60 min; the shooting itself lasts as long as its package.
-export function getShootingEndTime(startTime: Date, pkg: Package) {
-  return new Date(startTime.getTime() + PACKAGES[pkg].durationMinutes * 60_000);
+// How long a shooting blocks the studio calendar (staff event and the client's
+// "add to calendar" link). Not the advertised `durationMinutes`: PARTY needs
+// extra room, and a paid light play adds 10 min to MINI/CLASSIC.
+const CALENDAR_DURATION_MINUTES: Record<Package, number> = {
+  MINI: 30,
+  CLASSIC: 40,
+  FAMILY: 50,
+  PARTY: 120,
+};
+const LIGHT_PLAY_EXTRA_MINUTES = 10;
+
+export function getShootingEndTime(
+  startTime: Date,
+  pkg: Package,
+  isLightPlaySelected: boolean,
+) {
+  const minutes =
+    CALENDAR_DURATION_MINUTES[pkg] +
+    (isLightPlayChargeable(pkg) && isLightPlaySelected
+      ? LIGHT_PLAY_EXTRA_MINUTES
+      : 0);
+
+  return new Date(startTime.getTime() + minutes * 60_000);
 }
 
 // The "add to my calendar" link sent to clients in booking/reschedule emails.

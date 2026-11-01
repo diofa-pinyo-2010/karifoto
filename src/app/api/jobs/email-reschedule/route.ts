@@ -50,7 +50,11 @@ export const POST = verifySignatureAppRouter(
 
     // Read the new time from the DB, so the client is told the latest one.
     const { startTime } = photoShooting.timeSlot;
-    const endTime = getShootingEndTime(startTime, photoShooting.package);
+    const endTime = getShootingEndTime(
+      startTime,
+      photoShooting.package,
+      photoShooting.isLightPlaySelected,
+    );
 
     // Moved back to the old time before this job ran — nothing changed.
     if (startTime.getTime() === oldStartTime.getTime()) {

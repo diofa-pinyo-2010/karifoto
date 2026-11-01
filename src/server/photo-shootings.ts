@@ -123,7 +123,7 @@ export async function changeTimeOfPhotoShooting({
   // already saved, so a publish failure is logged, not returned to the admin.
   const jobs = [
     {
-      name: 'calendar-event-reschedule',
+      name: 'calendar-event-sync',
       body: { shootingId },
     },
     {
