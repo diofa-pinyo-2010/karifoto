@@ -6,10 +6,10 @@
  */
 
 export const PICDROP_FILTERS = {
-  /** Fekete zászló: szerkesztésre kért képek. */
+  /** Piros zászló: szerkesztésre kért képek. */
+  red: ['filterflags', 'red'],
+  /** Fekete zászló: extra retusra kért képek. */
   final: ['filterflags', 'final'],
-  /** Piros szív: extra retusra kért képek. */
-  liked: ['filterliked', '1'],
 } as const;
 
 export type PicdropFilter = keyof typeof PICDROP_FILTERS;

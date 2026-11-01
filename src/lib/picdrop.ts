@@ -13,7 +13,7 @@ const TIMEOUT_SECONDS = 25;
 
 /**
  * A PicDrop galéria egy JS-alkalmazás: a sima HTML-ben nincsenek benne a
- * zászlók és a szívek, és a "2 out of 35" szöveg is csak renderelés után
+ * zászlók, és a "2 out of 35" szöveg is csak renderelés után
  * jelenik meg. Ezért a Jina Reader headless böngészőjével kérjük le.
  *
  * `null`, ha a lekérés nem sikerül (hálózat, timeout, nem 2xx válasz).
@@ -56,7 +56,7 @@ async function countPicdropFilter(
   }
 }
 
-/** Fekete zászlós és piros szíves képek száma, vagy `null`, ha nem sikerült. */
+/** Piros és fekete zászlós képek száma, vagy `null`, ha nem sikerült. */
 export async function countPicdropSelection(
   rawImagesUrl: string,
 ): Promise<{ editedImages: number; retouchedImages: number } | null> {
@@ -66,8 +66,8 @@ export async function countPicdropSelection(
   }
 
   const [editedImages, retouchedImages] = await Promise.all([
+    countPicdropFilter(rawImagesUrl, 'red'),
     countPicdropFilter(rawImagesUrl, 'final'),
-    countPicdropFilter(rawImagesUrl, 'liked'),
   ]);
 
   if (editedImages == null || retouchedImages == null) return null;

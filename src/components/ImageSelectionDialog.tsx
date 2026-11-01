@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 
-import { FlagIcon, HeartIcon, RotateCwIcon } from 'lucide-react';
+import { FlagIcon, RotateCwIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -127,7 +127,7 @@ export function ImageSelectionDialog({
             <ul className="flex flex-col gap-2">
               <li className="flex items-center justify-between gap-4">
                 <span className="flex items-center gap-2">
-                  <FlagIcon className="size-4 fill-black" />
+                  <FlagIcon className="size-4 fill-red-500 text-red-500" />
                   Szerkesztésre
                 </span>
                 <span className="font-medium">
@@ -139,7 +139,7 @@ export function ImageSelectionDialog({
               </li>
               <li className="flex items-center justify-between gap-4">
                 <span className="flex items-center gap-2">
-                  <HeartIcon className="size-4 fill-red-500 text-red-500" />
+                  <FlagIcon className="size-4 fill-black" />
                   Extra retusra
                 </span>
                 <span className="font-medium">
@@ -167,7 +167,7 @@ export function ImageSelectionDialog({
 
             {preview.editedImages === 0 && (
               <p className="text-amber-700">
-                Nem találtunk fekete zászlós képet. Biztosan megjelölted őket?
+                Nem találtunk piros zászlós képet. Biztosan megjelölted őket?
               </p>
             )}
           </div>

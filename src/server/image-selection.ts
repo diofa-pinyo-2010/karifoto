@@ -68,7 +68,7 @@ async function loadSelectableShooting(
 }
 
 /**
- * A galériából megszámolja a fekete zászlós és piros szíves képeket, és
+ * A galériából megszámolja a piros és fekete zászlós képeket, és
  * megmondja, mennyi extra díjjal jár. Nem ír semmit: a "Mégse" így valóban
  * csak mégse.
  */
