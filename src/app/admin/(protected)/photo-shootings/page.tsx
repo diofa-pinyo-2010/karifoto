@@ -72,7 +72,7 @@ export default async function AllPhotoShootingsPage({
                       PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[shooting.status]
                     }
                   >
-                    {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
+                    {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
                   </Badge>
                 </div>
                 <ItemDescription>

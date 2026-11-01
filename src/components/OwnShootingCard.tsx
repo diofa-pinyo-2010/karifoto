@@ -38,7 +38,7 @@ export function OwnShootingCard({ shooting }: { shooting: OwnShooting }) {
             variant="secondary"
             className={PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[shooting.status]}
           >
-            {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
+            {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
           </Badge>
         </div>
       </div>

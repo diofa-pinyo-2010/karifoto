@@ -180,7 +180,7 @@ export default async function PhotoShootingDetailPage({
                 'rounded-lg p-3 lg:p-4',
               )}
             >
-              {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
+              {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
             </Badge>
             <RefreshStatusButton
               action={recalculatePhotoShootingStatus.bind(null, shooting.id)}

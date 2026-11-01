@@ -168,20 +168,35 @@ export const DECOR_SET_COMBOBOX_ITEMS: ComboboxFieldItem[] = ALL_DECOR_SETS.map(
   (set) => ({ value: set.key, label: set.label }),
 );
 
-export const PHOTO_SHOOTING_STATUS_LABEL: Record<PhotoShootingStatus, string> =
-  {
-    PHOTOGRAPHER_SELECTION: 'Fotós kiválasztása',
-    WAITING_FOR_THE_DATE: 'Várunk a fotózásra',
-    WAITING_FOR_BALANCE_PAYMENT: 'Egyenlegfizetés',
-    RAW_PHOTOS_UPLOAD: 'Nyers képek feltöltése & küldése',
-    USER_SELECTION: 'Ügyfél válogatás',
-    EDITOR_SELECTION: 'Szerkesztő kiválasztása',
-    FINAL_PHOTOS_UPLOAD: 'Végleges képek feltöltése',
-    WAITING_FOR_EXTRA_PAYMENT: 'Hiányzó befizetés',
-    READY_TO_COMPLETE: 'Kész a teljesítésre',
-    COMPLETED: 'Teljesített',
-    CANCELLED: 'Lemondott',
-  };
+// `short` szűk helyekre (pl. pipeline kártya), `long` minden másra.
+export const PHOTO_SHOOTING_STATUS_LABEL: Record<
+  PhotoShootingStatus,
+  { short: string; long: string }
+> = {
+  PHOTOGRAPHER_SELECTION: {
+    short: 'Fotós?',
+    long: 'Fotós kiválasztása',
+  },
+  WAITING_FOR_THE_DATE: { short: 'Fotózásra vár', long: 'Várunk a fotózásra' },
+  WAITING_FOR_BALANCE_PAYMENT: { short: 'Egyenleg', long: 'Egyenlegfizetés' },
+  RAW_PHOTOS_UPLOAD: {
+    short: 'Nyers képek',
+    long: 'Nyers képek feltöltése & küldése',
+  },
+  USER_SELECTION: { short: 'Ügyfél válogat', long: 'Ügyfél válogatás' },
+  EDITOR_SELECTION: { short: 'Szerkesztő?', long: 'Szerkesztő kiválasztása' },
+  FINAL_PHOTOS_UPLOAD: {
+    short: 'Végleges képek',
+    long: 'Végleges képek feltöltése',
+  },
+  WAITING_FOR_EXTRA_PAYMENT: {
+    short: 'Hiányzó fizetés',
+    long: 'Hiányzó befizetés',
+  },
+  READY_TO_COMPLETE: { short: 'Teljesíthető', long: 'Kész a teljesítésre' },
+  COMPLETED: { short: 'Teljesített', long: 'Teljesített' },
+  CANCELLED: { short: 'Lemondott', long: 'Lemondott' },
+};
 
 /**
  * A munkafolyamat lineáris sorrendje. A `CANCELLED` szándékosan NINCS benne:
