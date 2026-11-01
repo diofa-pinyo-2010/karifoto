@@ -80,12 +80,12 @@ export function ImageSelectionDialog({
           setError(result.error);
           return;
         }
-        // Extra díjnál a Stripe-ra megyünk; onnan a /details oldalra jön vissza.
+
         if ('checkoutUrl' in result) {
           window.location.assign(result.checkoutUrl);
           return;
         }
-        // A szerver újravalidálta az oldalt, a szekció átvált a köszönőre.
+
         setOpen(false);
       } catch (caught) {
         console.error(caught);

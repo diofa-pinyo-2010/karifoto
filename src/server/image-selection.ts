@@ -137,9 +137,6 @@ export async function confirmImageSelection(
     ...counts,
   });
 
-  // Extra díjnál a válogatást a webhook zárja le, a fizetés után. A számok a
-  // metadatába kerülnek: azt mentjük, amiért fizetett, nem azt, amit a galéria
-  // addigra mutat.
   if (extraInCents > 0) {
     const detailsUrl = `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.clientPortalShootingDetails(clientProfileId, shootingId)}`;
     try {
