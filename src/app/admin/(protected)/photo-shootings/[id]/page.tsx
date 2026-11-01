@@ -93,23 +93,35 @@ export default async function PhotoShootingDetailPage({
     label: e.owner.name,
   }));
 
-  const backButton = (
-    <Button
-      variant="outline"
-      size="lg"
-      className="w-fit"
-      nativeButton={false}
-      render={<Link href={APP_URLS.upcomingShootings} />}
-    >
-      <ArrowLeft />
-      Vissza a fotózásokhoz
-    </Button>
+  const backButtons = (
+    <div className="flex flex-wrap gap-3">
+      <Button
+        variant="outline"
+        size="lg"
+        className="w-fit"
+        nativeButton={false}
+        render={<Link href={APP_URLS.upcomingShootings} />}
+      >
+        <ArrowLeft />
+        Következő fotózások
+      </Button>
+      <Button
+        variant="outline"
+        size="lg"
+        className="w-fit"
+        nativeButton={false}
+        render={<Link href={APP_URLS.pipeline} />}
+      >
+        <ArrowLeft />
+        Pipeline
+      </Button>
+    </div>
   );
 
   if (shooting == null || shooting.pricing == null) {
     return (
       <div className="mx-auto flex w-full flex-col gap-6 lg:w-3xl">
-        {backButton}
+        {backButtons}
         <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
           Fotózás részletei
         </h1>
@@ -164,7 +176,7 @@ export default async function PhotoShootingDetailPage({
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
-      {backButton}
+      {backButtons}
       {/*
         Mobilon a sorrend: fejléc → megjegyzések → részletek, hogy a csapat
         üzenetei a részletek előtt látszódjanak. lg-től a megjegyzések a jobb
@@ -180,7 +192,7 @@ export default async function PhotoShootingDetailPage({
                 'rounded-lg p-3 lg:p-4',
               )}
             >
-              {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
+              {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
             </Badge>
             <RefreshStatusButton
               action={recalculatePhotoShootingStatus.bind(null, shooting.id)}

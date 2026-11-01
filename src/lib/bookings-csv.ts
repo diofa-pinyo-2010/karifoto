@@ -65,7 +65,7 @@ export function buildBookingsCsv(rows: BookingCsvRow[]): string {
     row.amountInCents == null ? '' : String(centsToHuf(row.amountInCents)),
     'HUF',
     row.photoShootingId,
-    PHOTO_SHOOTING_STATUS_LABEL[row.status],
+    PHOTO_SHOOTING_STATUS_LABEL[row.status].long,
   ]);
 
   return (

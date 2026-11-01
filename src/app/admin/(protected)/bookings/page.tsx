@@ -71,7 +71,7 @@ export default async function BookingsPage() {
                             ]
                           }
                         >
-                          {PHOTO_SHOOTING_STATUS_LABEL[shooting.status]}
+                          {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
                         </Badge>
                         <ItemTitle>
                           <span className="text-muted-foreground">
