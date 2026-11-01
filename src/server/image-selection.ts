@@ -12,14 +12,17 @@ import { completeImageSelection } from '@/server/complete-image-selection';
 import { quoteImageSelection } from '@/server/image-selection-quote';
 
 import type { CheckoutMetadata } from '@/lib/checkout-metadata';
-import type { PriceLine } from '@/server/pricing';
+import type { QuotePricing } from '@/server/image-selection-quote';
 
+/**
+ * A számok és a díjak, nem a kész ár: a dialógus maga hívja a
+ * `quoteImageSelection()`-t, hogy az expressz pipa azonnal frissítse az
+ * összeget — ugyanazzal a függvénnyel, amelyik a beküldéskor számol.
+ */
 export type ImageSelectionPreview = {
   editedImages: number;
   retouchedImages: number;
-  allowance: number;
-  lines: PriceLine[];
-  extraInCents: number;
+  pricing: QuotePricing;
 };
 
 const COUNT_FAILED_ERROR =
@@ -85,16 +88,23 @@ export async function previewImageSelection(
   const counts = await countPicdropSelection(shooting.rawImagesUrl);
   if (counts == null) return { error: COUNT_FAILED_ERROR };
 
+  const { pricing } = shooting;
   return {
     ...counts,
-    allowance: shooting.pricing.packageEditedImagesAllowance,
-    ...quoteImageSelection({ pricing: shooting.pricing, ...counts }),
+    pricing: {
+      extraEditedImageRateInCents: pricing.extraEditedImageRateInCents,
+      extraRetouchedImageRateInCents: pricing.extraRetouchedImageRateInCents,
+      packageEditedImagesAllowance: pricing.packageEditedImagesAllowance,
+      expressPostProductionPriceInCents:
+        pricing.expressPostProductionPriceInCents,
+    },
   };
 }
 
 const ShownCountsSchema = z.object({
   editedImages: z.number().int().nonnegative(),
   retouchedImages: z.number().int().nonnegative(),
+  isExpressPostProduction: z.boolean(),
 });
 
 /**
@@ -108,7 +118,11 @@ const ShownCountsSchema = z.object({
 export async function confirmImageSelection(
   clientProfileId: string,
   shootingId: string,
-  shown: { editedImages: number; retouchedImages: number },
+  shown: {
+    editedImages: number;
+    retouchedImages: number;
+    isExpressPostProduction: boolean;
+  },
 ): Promise<{ error: string } | { success: true } | { checkoutUrl: string }> {
   const parsedShown = ShownCountsSchema.safeParse(shown);
   if (!parsedShown.success) {
@@ -132,9 +146,13 @@ export async function confirmImageSelection(
     };
   }
 
+  const selection = {
+    ...counts,
+    isExpressPostProduction: parsedShown.data.isExpressPostProduction,
+  };
   const { lines, extraInCents } = quoteImageSelection({
     pricing: shooting.pricing,
-    ...counts,
+    ...selection,
   });
 
   if (extraInCents > 0) {
@@ -156,6 +174,9 @@ export async function confirmImageSelection(
           photo_shooting_id: shootingId,
           edited_images: counts.editedImages,
           retouched_images: counts.retouchedImages,
+          express_post_production: selection.isExpressPostProduction
+            ? 'true'
+            : 'false',
         } satisfies CheckoutMetadata,
         success_url: detailsUrl,
         cancel_url: detailsUrl,
@@ -177,7 +198,7 @@ export async function confirmImageSelection(
   }
 
   try {
-    if (!(await completeImageSelection(shootingId, counts, null))) {
+    if (!(await completeImageSelection(shootingId, selection, null))) {
       return { error: 'A válogatás már be van küldve.' };
     }
   } catch (error) {

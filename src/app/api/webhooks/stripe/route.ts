@@ -205,6 +205,7 @@ async function handleImageSelectionExtra(
     {
       editedImages: metadata.edited_images,
       retouchedImages: metadata.retouched_images,
+      isExpressPostProduction: metadata.express_post_production === 'true',
     },
     amountTotal,
   );

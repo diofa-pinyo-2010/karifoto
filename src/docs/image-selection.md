@@ -190,6 +190,15 @@ The webhook's `handleImageSelectionExtra()`:
 - publishes `generate-extra-invoice`, a normal számla (`InvoiceType.NORMAL`)
   whose Redis claim is keyed by payment intent, not shooting
 
+**Expressz utómunka** is an upsell checkbox in the same dialog. The choice is
+`PhotoShooting.isExpressPostProduction`, the price is snapshotted as
+`PhotoShootingPricing.expressPostProductionPriceInCents`, and both
+`quoteImageSelection()` and `calculatePricing()` add the line. It travels in
+the checkout metadata as `express_post_production: 'true' | 'false'`. The
+deadline is not stored: it is `selectionCompletedAt` + 3 calendar days
+(`PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS`), shown on
+the pipeline card.
+
 Accepted gaps: the client may land on `/details` a few seconds before the
 webhook closes the selection, and a second payment from another tab is
 recorded but closes nothing (needs a manual refund).

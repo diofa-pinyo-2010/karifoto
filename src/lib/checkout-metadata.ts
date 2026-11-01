@@ -33,6 +33,8 @@ const imageSelectionExtraMetadata = z.object({
   photo_shooting_id: z.uuid(),
   edited_images: z.coerce.number().int().nonnegative(),
   retouched_images: z.coerce.number().int().nonnegative(),
+  // A string, not `z.coerce.boolean()`: that would read "false" as true.
+  express_post_production: z.enum(['true', 'false']),
 });
 
 // Adding a member here turns every switch over `kind` into a compile error

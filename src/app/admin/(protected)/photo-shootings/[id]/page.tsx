@@ -14,6 +14,7 @@ import {
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
+import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
@@ -631,7 +632,12 @@ export default async function PhotoShootingDetailPage({
                 }
               />
               <DetailRow
-                label="Végleges képek (PicDrop URL)"
+                label={
+                  <span className="flex flex-col gap-2">
+                    <ExpressDeadlineBadge {...shooting} />
+                    Végleges képek (PicDrop URL)
+                  </span>
+                }
                 fullWidth
                 value={
                   <EditableTextField

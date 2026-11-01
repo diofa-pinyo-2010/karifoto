@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { ArrowRightIcon, CameraIcon, WandSparklesIcon } from 'lucide-react';
 
+import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +43,7 @@ export function PipelineCard({ shooting }: { shooting: PipelineShooting }) {
       >
         {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].short}
       </Badge>
+      <ExpressDeadlineBadge {...shooting} />
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <span className="flex items-center gap-1" title="Fotós">
           <CameraIcon aria-label="Fotós" className="size-3.5 shrink-0" />

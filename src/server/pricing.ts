@@ -128,6 +128,13 @@ export function calculatePricing({
     });
   }
 
+  if (shooting.isExpressPostProduction) {
+    lines.push({
+      label: '⚡ Expressz utómunka',
+      amountInCents: pricing.expressPostProductionPriceInCents,
+    });
+  }
+
   const totalCharges = lines.reduce((sum, line) => sum + line.amountInCents, 0);
 
   // `amountInCents` is stored as a positive magnitude; the per-type sign is

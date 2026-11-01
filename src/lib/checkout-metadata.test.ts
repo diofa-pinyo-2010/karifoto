@@ -35,6 +35,7 @@ describe('parseCheckoutMetadata', () => {
         photo_shooting_id: BOOKING_INTENT_ID,
         edited_images: '12',
         retouched_images: '0',
+        express_post_production: 'false',
       }),
     ).toEqual({
       ok: true,
@@ -43,6 +44,7 @@ describe('parseCheckoutMetadata', () => {
         photo_shooting_id: BOOKING_INTENT_ID,
         edited_images: 12,
         retouched_images: 0,
+        express_post_production: 'false',
       },
     });
   });

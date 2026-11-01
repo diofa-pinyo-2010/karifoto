@@ -21,6 +21,7 @@ const PER_PERSON = 1_000_00;
 const PER_PET = 2_000_00;
 const PER_EDITED = 3_000_00;
 const PER_RETOUCHED = 4_000_00;
+const EXPRESS = 10_000_00;
 
 const PEOPLE_INCLUDED = 4;
 const EDITED_ALLOWANCE = 10;
@@ -45,6 +46,7 @@ function makePricing(
     extraPetRateInCents: PER_PET,
     extraEditedImageRateInCents: PER_EDITED,
     extraRetouchedImageRateInCents: PER_RETOUCHED,
+    expressPostProductionPriceInCents: EXPRESS,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
@@ -71,6 +73,7 @@ function makeShooting(overrides: Partial<PhotoShooting> = {}): PhotoShooting {
     declaredRetouchedImages: null,
     totalEditedImages: 0,
     totalRetouchedImages: 0,
+    isExpressPostProduction: false,
     rawImagesUrl: null,
     finalImagesUrl: null,
     clientNote: null,
@@ -150,6 +153,12 @@ const remaining = (args: Parameters<typeof breakdown>[0] = {}) =>
 describe('totalToBePaid', () => {
   it('charges the package and the studio fee with no extras', () => {
     expect(remaining()).toBe(BASE);
+  });
+
+  it('charges express post-production when selected', () => {
+    expect(remaining({ shooting: { isExpressPostProduction: true } })).toBe(
+      BASE + EXPRESS,
+    );
   });
 
   describe('light play', () => {

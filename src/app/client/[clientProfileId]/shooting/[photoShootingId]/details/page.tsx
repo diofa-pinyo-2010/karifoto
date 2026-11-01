@@ -17,6 +17,7 @@ import {
   SparklesIcon,
   TreePineIcon,
   UsersIcon,
+  ZapIcon,
 } from 'lucide-react';
 
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
@@ -49,14 +50,21 @@ import {
   STUDIO_MAP_LINK,
 } from '@/lib/constants';
 import { getPortalAccess } from '@/lib/dal';
-import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
+import {
+  dateWithYearFormatter,
+  // monthDayFormatter,
+  timeFormatter,
+} from '@/lib/formatters';
 // import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
-import { formatMoney } from '@/lib/utils';
+import {
+  formatMoney,
+  //   getExpressDeliveryDeadline
+} from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
 import type { PhotoShootingForClientPortal } from '@/lib/queries';
@@ -403,6 +411,7 @@ function ClientImageSelection({
   selectionCompletedAt,
   declaredEditedImages,
   declaredRetouchedImages,
+  isExpressPostProduction,
   canSubmit,
 }: PhotoShootingForClientPortal & { canSubmit: boolean }) {
   if (selectionCompletedAt != null) {
@@ -440,6 +449,20 @@ function ClientImageSelection({
               {declaredRetouchedImages ?? 0} db
             </dd>
           </div>
+          {isExpressPostProduction && (
+            <div className="col-span-2 flex flex-col gap-1 rounded-md bg-white/70 p-3">
+              <dt className="flex items-center gap-1.5 text-xs font-medium">
+                <ZapIcon className="size-3.5 fill-current" />
+                Expressz utómunka
+              </dt>
+              {/* <dd className="text-lg font-semibold">
+                A kész képeket legkésőbb ekkor küldjük:{' '}
+                {monthDayFormatter.format(
+                  getExpressDeliveryDeadline(selectionCompletedAt),
+                )}
+              </dd> */}
+            </div>
+          )}
         </dl>
       </div>
     );

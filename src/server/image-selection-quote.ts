@@ -12,6 +12,15 @@ type QuoteLine = PriceLine & {
   unitPriceInCents: number;
 };
 
+/** A pillanatkép azon díjai, amelyekből a válogatás ára kijön. */
+export type QuotePricing = Pick<
+  PhotoShootingPricing,
+  | 'extraEditedImageRateInCents'
+  | 'extraRetouchedImageRateInCents'
+  | 'packageEditedImagesAllowance'
+  | 'expressPostProductionPriceInCents'
+>;
+
 /**
  * Mennyibe kerül az ügyfél által megadott két szám a csomag kerete fölött.
  *
@@ -27,15 +36,12 @@ export function quoteImageSelection({
   pricing,
   editedImages,
   retouchedImages,
+  isExpressPostProduction,
 }: {
-  pricing: Pick<
-    PhotoShootingPricing,
-    | 'extraEditedImageRateInCents'
-    | 'extraRetouchedImageRateInCents'
-    | 'packageEditedImagesAllowance'
-  >;
+  pricing: QuotePricing;
   editedImages: number;
   retouchedImages: number;
+  isExpressPostProduction: boolean;
 }): { lines: QuoteLine[]; extraInCents: number } {
   const lines: QuoteLine[] = [];
 
@@ -43,10 +49,11 @@ export function quoteImageSelection({
     name: string,
     quantity: number,
     unitPriceInCents: number,
+    label = `${name} (${quantity} db)`,
   ) => {
     if (quantity <= 0) return;
     lines.push({
-      label: `${name} (${quantity} db)`,
+      label,
       amountInCents: quantity * unitPriceInCents,
       name,
       quantity,
@@ -63,6 +70,12 @@ export function quoteImageSelection({
     'Extra retusált képek',
     retouchedImages,
     pricing.extraRetouchedImageRateInCents,
+  );
+  addLine(
+    'Expressz utómunka',
+    isExpressPostProduction ? 1 : 0,
+    pricing.expressPostProductionPriceInCents,
+    '⚡ Expressz utómunka',
   );
 
   return {

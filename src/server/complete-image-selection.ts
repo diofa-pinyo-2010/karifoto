@@ -21,7 +21,11 @@ import { resolveStatus } from '@/server/photo-shooting-status';
  */
 export async function completeImageSelection(
   shootingId: string,
-  counts: { editedImages: number; retouchedImages: number },
+  selection: {
+    editedImages: number;
+    retouchedImages: number;
+    isExpressPostProduction: boolean;
+  },
   paidInCents: number | null,
 ): Promise<boolean> {
   const shooting = await prisma.photoShooting.findUniqueOrThrow({
@@ -41,10 +45,11 @@ export async function completeImageSelection(
   // A `declared*` azt rögzíti, amit a galéria a lezáráskor mutatott; a
   // `total*` az, amit a szerkesztő később javíthat.
   const updates = {
-    declaredEditedImages: counts.editedImages,
-    declaredRetouchedImages: counts.retouchedImages,
-    totalEditedImages: counts.editedImages,
-    totalRetouchedImages: counts.retouchedImages,
+    declaredEditedImages: selection.editedImages,
+    declaredRetouchedImages: selection.retouchedImages,
+    totalEditedImages: selection.editedImages,
+    totalRetouchedImages: selection.retouchedImages,
+    isExpressPostProduction: selection.isExpressPostProduction,
     selectionCompletedAt: new Date(),
   };
 
@@ -71,8 +76,9 @@ export async function completeImageSelection(
     content: [
       '🖼️ **Képválogatás beküldve!**\n',
       `Név: ${shooting.client.owner.name}`,
-      `Szerkesztésre: ${counts.editedImages} db (csomagban: ${shooting.pricing.packageEditedImagesAllowance} db)`,
-      `Extra retusra: ${counts.retouchedImages} db`,
+      `Szerkesztésre: ${selection.editedImages} db (csomagban: ${shooting.pricing.packageEditedImagesAllowance} db)`,
+      `Extra retusra: ${selection.retouchedImages} db`,
+      `Expressz utómunka: ${selection.isExpressPostProduction ? 'igen ⚡' : 'nem'}`,
       `Fizetett extra: ${paidInCents != null ? formatMoney(paidInCents) : '—'}`,
       `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shootingId)})`,
     ].join('\n'),
