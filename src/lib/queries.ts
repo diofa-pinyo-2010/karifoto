@@ -112,7 +112,10 @@ export async function fetchPipelinePhotoShootings() {
 
   return prisma.photoShooting.findMany({
     where: { status: { in: PIPELINE_STATUSES } },
-    orderBy: { timeSlot: { startTime: 'asc' } },
+    orderBy: [
+      { isExpressPostProduction: 'desc' },
+      { timeSlot: { startTime: 'asc' } },
+    ],
     include: {
       ...photoShootingWithClientInclude.include,
       photographer: { select: { nickname: true } },
