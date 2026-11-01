@@ -30,7 +30,7 @@ about this codebase that will break a naive implementation.
    the client. Status becomes `USER_SELECTION`.
 3. The client opens the **Képválogatás** section of
    [their portal details page](../../src/app/client/[clientProfileId]/shooting/[photoShootingId]/details/page.tsx)
-   and marks images in PicDrop: **black flag** = edit, **red heart** = extra
+   and marks images in PicDrop: **red flag** = edit, **black flag** = extra
    retouch. **"Kész vagyok"** counts both from the gallery (see
    [below](#counting-the-selection-from-picdrop)) and shows the price before
    committing — the client never types a number.
@@ -147,8 +147,8 @@ means "locked after submit" really means _locked once paid_.
 ## Counting the selection from PicDrop
 
 There is no form. [`countPicdropSelection()`](../../src/lib/picdrop.ts) reads
-two filtered views of `rawImagesUrl` — `?filterflags=final` (black flag) and
-`?filterliked=1` (red heart) — and parses PicDrop's "**N out of M** files are
+two filtered views of `rawImagesUrl` — `?filterflags=red` (red flag, edit) and
+`?filterflags=final` (black flag, retouch) — and parses PicDrop's "**N out of M** files are
 shown" text with
 [`parsePicdropFilterCount()`](../../src/lib/picdrop-filter.ts).
 
@@ -156,11 +156,11 @@ shown" text with
   (`numFiles`) but no flags and no "out of" text. `r.jina.ai` renders it in a
   headless browser. `JINA_API_KEY` is optional (higher rate limit with it).
   PicDrop's internal JSON API would be faster but is undocumented.
-- **Missing text reads as zero.** An empty filter (no retouch hearts) is the
+- **Missing text reads as zero.** An empty filter (no retouch black flags) is the
   common case, so the parser returns 0 when the "out of" text is absent. Only
   a failed request (non-2xx, timeout, network) is an error. The guard against
   a wrongly-read 0 is the dialog: the client sees both counts before
-  confirming, and Beküldés is disabled at 0 black flags.
+  confirming, and Beküldés is disabled at 0 red flags.
 - **English text.** The regex matches PicDrop's English UI, so the request
   sets `X-Locale: en-US`. A PicDrop copy change breaks counting loudly (error),
   not silently.
@@ -169,8 +169,6 @@ shown" text with
   differ from what the dialog showed.
 - **Host guard.** Only `https://*.picdrop.com` URLs are handed to the
   scraper, since `rawImagesUrl` is typed in by staff.
-- **Hearts are per-visitor likes** in PicDrop. This only works because nobody
-  but the client hearts images in the raw gallery.
 
 `declared*` therefore means "what the gallery showed at confirmation", not a
 number the client typed.

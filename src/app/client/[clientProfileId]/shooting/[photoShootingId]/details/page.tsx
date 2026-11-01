@@ -8,7 +8,6 @@ import {
   ClockIcon,
   ExternalLinkIcon,
   FlagIcon,
-  HeartIcon,
   ImagesIcon,
   LayoutDashboardIcon,
   MapPinIcon,
@@ -51,7 +50,7 @@ import {
 } from '@/lib/constants';
 import { getPortalAccess } from '@/lib/dal';
 import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
-import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
+// import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
@@ -425,7 +424,7 @@ function ClientImageSelection({
         <dl className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1 rounded-md bg-white/70 p-3">
             <dt className="flex items-center gap-1.5 text-xs font-medium">
-              <FlagIcon className="size-3.5 fill-current" />
+              <FlagIcon className="size-3.5 fill-red-500 text-red-500" />
               Szerkesztésre
             </dt>
             <dd className="text-2xl font-semibold">
@@ -434,7 +433,7 @@ function ClientImageSelection({
           </div>
           <div className="flex flex-col gap-1 rounded-md bg-white/70 p-3">
             <dt className="flex items-center gap-1.5 text-xs font-medium">
-              <HeartIcon className="size-3.5 fill-red-500 text-red-500" />
+              <FlagIcon className="size-3.5 fill-current" />
               Extra retusra
             </dt>
             <dd className="text-2xl font-semibold">
@@ -496,12 +495,12 @@ function ClientImageSelection({
             </span>
             <div className="flex flex-col gap-1">
               <p className="flex items-center gap-2 font-semibold">
-                <FlagIcon className="size-4 fill-black" />
-                Szerkesztésre: fekete zászló
+                <FlagIcon className="size-4 fill-red-500 text-red-500" />
+                Szerkesztésre: piros zászló
               </p>
               <p className="text-brand-muted">
-                Nyisd meg a képet, kattints a zászló ikonra, és válaszd a fekete
-                zászlót. Ezeket szerkesztjük meg. A csomagod{' '}
+                Nyisd meg a képet, kattints a zászló ikonra, és válaszd a piros
+                zászlót ("Kiválasztott"). Ezeket szerkesztjük meg. A csomagod{' '}
                 <strong>{allowance} db</strong> szerkesztett képet tartalmaz,
                 minden további kép {formatMoney(EXTRA_EDIT_PER_IMAGE)}/db.
               </p>
@@ -513,8 +512,8 @@ function ClientImageSelection({
             </span>
             <div className="flex flex-col gap-1">
               <p className="flex items-center gap-2 font-semibold">
-                <HeartIcon className="size-4 fill-red-500 text-red-500" />
-                Extra retusra: piros szív
+                <FlagIcon className="size-4 fill-black text-black" />
+                Extra retusra: fekete zászló
               </p>
               <p className="text-brand-muted">
                 Ha egy képre beauty retust kérsz (bőrsimítás, alakformálás,
@@ -526,12 +525,25 @@ function ClientImageSelection({
           </li>
         </ol>
 
-        {rawImagesUrl != null && (
+        {/* {rawImagesUrl != null && (
           <div className="flex flex-col gap-2 rounded-lg bg-brand-cream p-4">
             <p className="text-sm font-semibold">
               Ellenőrizd a megjelölt képeidet:
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
+              <a
+                href={buildPicdropFilterUrl(rawImagesUrl, 'red')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({
+                  variant: 'outline',
+                  size: 'default',
+                  className: 'fill-red-500',
+                })}
+              >
+                <FlagIcon className="fill-red-500 text-red-500" />
+                Piros zászlós képek
+              </a>
               <a
                 href={buildPicdropFilterUrl(rawImagesUrl, 'final')}
                 target="_blank"
@@ -545,26 +557,16 @@ function ClientImageSelection({
                 <FlagIcon className="fill-black" />
                 Fekete zászlós képek
               </a>
-              <a
-                href={buildPicdropFilterUrl(rawImagesUrl, 'liked')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonVariants({
-                  variant: 'outline',
-                  size: 'default',
-                  className: 'fill-red-500 text-red-500',
-                })}
-              >
-                <HeartIcon className="fill-red-500 text-red-500" />
-                Piros szíves képek
-              </a>
             </div>
           </div>
-        )}
+        )} */}
 
         <p className="text-sm text-brand-muted">
           A galériából az összes képet le is tudod tölteni a „Download … files”
           gombbal.
+        </p>
+        <p className="text-sm text-brand-muted">
+          Amikor végeztél a válogatással, gyere ide vissza.
         </p>
       </div>
 
@@ -575,8 +577,8 @@ function ClientImageSelection({
         <p className="text-brand-muted">
           Kattints a „Kész vagyok” gombra: megszámoljuk a galériában megjelölt
           képeket, és megmutatjuk, jár-e vele extra díj. Ha a megjelölt képek
-          száma belefér a csomagodba, azonnal kezdjük a szerkesztést. A kész
-          képeket a jelölés beérkezésétől számított{' '}
+          száma belefér a csomagodba, akkor küldheted, és azonnal kezdjük a
+          szerkesztést. A kész képeket a jelölés beérkezésétől számított{' '}
           {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül
           küldjük.
         </p>

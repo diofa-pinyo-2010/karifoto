@@ -41,8 +41,8 @@ describe('buildPicdropFilterUrl', () => {
     expect(buildPicdropFilterUrl('https://www.picdrop.com/a/b', 'final')).toBe(
       'https://www.picdrop.com/a/b?filterflags=final',
     );
-    expect(buildPicdropFilterUrl('https://www.picdrop.com/a/b', 'liked')).toBe(
-      'https://www.picdrop.com/a/b?filterliked=1',
+    expect(buildPicdropFilterUrl('https://www.picdrop.com/a/b', 'red')).toBe(
+      'https://www.picdrop.com/a/b?filterflags=red',
     );
   });
 
