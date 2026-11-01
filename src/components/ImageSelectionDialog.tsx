@@ -4,16 +4,8 @@ import { useState, useTransition } from 'react';
 
 import { FlagIcon, RotateCwIcon } from 'lucide-react';
 
+import { ResponsiveDialog } from '@/components/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { formatMoney } from '@/lib/utils';
 import {
@@ -97,29 +89,21 @@ export function ImageSelectionDialog({
   const needsPayment = preview != null && preview.extraInCents > 0;
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
         if (next) count();
       }}
+      trigger={
+        <Button size="lg" disabled={disabled} className="w-full sm:w-fit">
+          Kész vagyok
+        </Button>
+      }
+      title="A válogatásod"
+      description="Ezt látjuk most a galériában. Ha valami nem stimmel, zárd be, javítsd a jelöléseket, és kattints újra."
     >
-      <DialogTrigger
-        render={
-          <Button size="lg" disabled={disabled} className="w-full sm:w-fit" />
-        }
-      >
-        Kész vagyok
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>A válogatásod</DialogTitle>
-          <DialogDescription>
-            Ezt látjuk most a galériában. Ha valami nem stimmel, zárd be,
-            javítsd a jelöléseket, és kattints újra.
-          </DialogDescription>
-        </DialogHeader>
-
+      <div className="flex flex-col gap-4">
         {isCounting && (
           <p className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
             <Spinner />
@@ -192,7 +176,7 @@ export function ImageSelectionDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
             variant="outline"
             size="lg"
@@ -212,8 +196,8 @@ export function ImageSelectionDialog({
             {isConfirming && <Spinner />}
             {needsPayment ? 'Fizetés' : 'Beküldés'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </ResponsiveDialog>
   );
 }
