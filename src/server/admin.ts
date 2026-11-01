@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import * as z from 'zod';
 
+import { env } from '@/env';
 import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
 import {
   APP_URLS,
@@ -14,6 +15,7 @@ import {
 import { verifySession } from '@/lib/dal';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
+import { qStashClient } from '@/lib/upstash';
 import { resolveStatus } from '@/server/photo-shooting-status';
 import { syncPhotoShootingStatus } from '@/server/sync-photo-shooting-status';
 
@@ -119,6 +121,8 @@ export async function updatePhotoShooting(
     return { error: 'Érvénytelen URL vagy adat.' };
   }
 
+  let shouldSyncCalendar = false;
+
   try {
     const current = await prisma.photoShooting.findUniqueOrThrow({
       where: { id },
@@ -192,10 +196,35 @@ export async function updatePhotoShooting(
         where: { id },
         data: { ...dataToSave, status },
       });
+
+      // A naptáresemény címe, leírása és hossza a csomagtól és a fényjátéktól
+      // függ.
+      shouldSyncCalendar =
+        (dataToSave.package != null &&
+          dataToSave.package !== current.package) ||
+        (dataToSave.isLightPlaySelected != null &&
+          dataToSave.isLightPlaySelected !== current.isLightPlaySelected);
     });
   } catch (error) {
     console.error(error);
     return { error: 'Nem sikerült menteni a módosítást.' };
+  }
+
+  // A módosítás már mentve van, így a publikálási hibát csak naplózzuk.
+  // Emailt nem küldünk, a kliens naptárlinkje nem frissül.
+  if (shouldSyncCalendar) {
+    try {
+      await qStashClient.publishJSON({
+        url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event-sync`,
+        body: { shootingId: id },
+        retries: 3,
+      });
+    } catch (error) {
+      console.error('[updatePhotoShooting] failed to publish calendar sync', {
+        shootingId: id,
+        error,
+      });
+    }
   }
 
   revalidatePath(APP_URLS.photoShootingAdminPage(id));

@@ -62,6 +62,7 @@ export const POST = verifySignatureAppRouter(
       getShootingEndTime(
         photoShooting.timeSlot.startTime,
         photoShooting.package,
+        photoShooting.isLightPlaySelected,
       ),
     );
 
