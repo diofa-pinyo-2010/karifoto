@@ -112,7 +112,10 @@ export async function fetchPipelinePhotoShootings() {
 
   return prisma.photoShooting.findMany({
     where: { status: { in: PIPELINE_STATUSES } },
-    orderBy: { timeSlot: { startTime: 'asc' } },
+    orderBy: [
+      { isExpressPostProduction: 'desc' },
+      { timeSlot: { startTime: 'asc' } },
+    ],
     include: {
       ...photoShootingWithClientInclude.include,
       photographer: { select: { nickname: true } },
@@ -331,6 +334,7 @@ const photoShootingForClientPortalSelect = {
     selectionCompletedAt: true,
     declaredEditedImages: true,
     declaredRetouchedImages: true,
+    isExpressPostProduction: true,
     photographer: { select: { nickname: true } },
     // Az Invoice-nak nincs createdAt-je, a számlaszám viszont növekvő.
     invoices: {

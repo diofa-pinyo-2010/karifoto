@@ -4,22 +4,27 @@ import { useState, useTransition } from 'react';
 
 import { FlagIcon, RotateCwIcon } from 'lucide-react';
 
+import { ResponsiveDialog } from '@/components/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldTitle,
+} from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
+import {
+  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
+  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
+} from '@/lib/constants';
 import { formatMoney } from '@/lib/utils';
 import {
   confirmImageSelection,
   previewImageSelection,
 } from '@/server/image-selection';
+import { quoteImageSelection } from '@/server/image-selection-quote';
 
 import type { ImageSelectionPreview } from '@/server/image-selection';
 
@@ -41,9 +46,13 @@ export function ImageSelectionDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<ImageSelectionPreview | null>(null);
+  const [isExpressPostProduction, setIsExpressPostProduction] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCounting, startCounting] = useTransition();
   const [isConfirming, startConfirming] = useTransition();
+  const normalDays = PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION;
+  const expressDays =
+    PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS;
 
   function count() {
     setError(null);
@@ -74,13 +83,19 @@ export function ImageSelectionDialog({
           {
             editedImages: preview.editedImages,
             retouchedImages: preview.retouchedImages,
+            isExpressPostProduction,
           },
         );
         if ('error' in result) {
           setError(result.error);
           return;
         }
-        // A szerver újravalidálta az oldalt, a szekció átvált a köszönőre.
+
+        if ('checkoutUrl' in result) {
+          window.location.assign(result.checkoutUrl);
+          return;
+        }
+
         setOpen(false);
       } catch (caught) {
         console.error(caught);
@@ -89,32 +104,31 @@ export function ImageSelectionDialog({
     });
   }
 
-  const needsPayment = preview != null && preview.extraInCents > 0;
+  const quote =
+    preview != null
+      ? quoteImageSelection({ ...preview, isExpressPostProduction })
+      : null;
+  const needsPayment = quote != null && quote.extraInCents > 0;
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) count();
-      }}
-    >
-      <DialogTrigger
-        render={
-          <Button size="lg" disabled={disabled} className="w-full sm:w-fit" />
+        if (next) {
+          setIsExpressPostProduction(false);
+          count();
         }
-      >
-        Kész vagyok
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>A válogatásod</DialogTitle>
-          <DialogDescription>
-            Ezt látjuk most a galériában. Ha valami nem stimmel, zárd be,
-            javítsd a jelöléseket, és kattints újra.
-          </DialogDescription>
-        </DialogHeader>
-
+      }}
+      trigger={
+        <Button size="lg" disabled={disabled} className="w-full sm:w-fit">
+          Kész vagyok
+        </Button>
+      }
+      title="A válogatásod"
+      description="Ezt látjuk most a galériában. Ha valami nem stimmel, zárd be, javítsd a jelöléseket, és kattints újra."
+    >
+      <div className="flex flex-col gap-4">
         {isCounting && (
           <p className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
             <Spinner />
@@ -122,7 +136,7 @@ export function ImageSelectionDialog({
           </p>
         )}
 
-        {preview != null && (
+        {preview != null && quote != null && (
           <div className="flex flex-col gap-4 text-sm">
             <ul className="flex flex-col gap-2">
               <li className="flex items-center justify-between gap-4">
@@ -133,7 +147,8 @@ export function ImageSelectionDialog({
                 <span className="font-medium">
                   {preview.editedImages} db{' '}
                   <span className="text-muted-foreground">
-                    (csomagban: {preview.allowance} db)
+                    (csomagban: {preview.pricing.packageEditedImagesAllowance}{' '}
+                    db)
                   </span>
                 </span>
               </li>
@@ -148,8 +163,31 @@ export function ImageSelectionDialog({
               </li>
             </ul>
 
+            <FieldLabel htmlFor="express-post-production">
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="express-post-production"
+                  checked={isExpressPostProduction}
+                  onCheckedChange={setIsExpressPostProduction}
+                />
+                <FieldContent>
+                  <FieldTitle>
+                    Szeretnéd a képeket extra gyorsan, {expressDays} napon
+                    belül?
+                  </FieldTitle>
+                  <FieldDescription>
+                    A képek normál esetben {normalDays} nap alatt készülnek el.
+                    Az extra szolgáltatás +
+                    {formatMoney(
+                      preview.pricing.expressPostProductionPriceInCents,
+                    )}
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+
             <ul className="flex flex-col gap-2 border-t pt-3">
-              {preview.lines.map((line) => (
+              {quote.lines.map((line) => (
                 <li key={line.label} className="flex justify-between gap-4">
                   <span>{line.label}</span>
                   <span className="font-medium whitespace-nowrap">
@@ -160,7 +198,7 @@ export function ImageSelectionDialog({
               <li className="flex justify-between gap-4 text-base font-bold">
                 <span>Fizetendő</span>
                 <span className="whitespace-nowrap">
-                  {formatMoney(preview.extraInCents)}
+                  {formatMoney(quote.extraInCents)}
                 </span>
               </li>
             </ul>
@@ -187,7 +225,7 @@ export function ImageSelectionDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
             variant="outline"
             size="lg"
@@ -196,27 +234,19 @@ export function ImageSelectionDialog({
           >
             Mégse
           </Button>
-          {needsPayment ? (
-            // TODO: Stripe Checkout session indítása (lásd "The payment step"
-            // az image-selection.md-ben). Addig nincs bekötve.
-            <Button size="lg" className="w-full sm:w-auto" disabled>
-              Fizetés
-            </Button>
-          ) : (
-            <Button
-              size="lg"
-              className="w-full sm:w-auto"
-              disabled={
-                preview == null || preview.editedImages === 0 || isConfirming
-              }
-              onClick={confirm}
-            >
-              {isConfirming && <Spinner />}
-              Beküldés
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <Button
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={
+              preview == null || preview.editedImages === 0 || isConfirming
+            }
+            onClick={confirm}
+          >
+            {isConfirming && <Spinner />}
+            {needsPayment ? 'Fizetés' : 'Beküldés'}
+          </Button>
+        </div>
+      </div>
+    </ResponsiveDialog>
   );
 }

@@ -13,6 +13,7 @@ const reminderKey = (shootingId: string, dayKey: string) =>
   `reminder_on_the_day:${shootingId}:${dayKey}`;
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
 const finalInvoiceKey = (shootingId: string) => `final_inv:${shootingId}`;
+const extraInvoiceKey = (paymentIntent: string) => `extra_inv:${paymentIntent}`;
 // Both times in the key: a later, different reschedule gets its own email.
 const rescheduleEmailKey = (shootingId: string, oldTime: Date, newTime: Date) =>
   `reschedule_email:${shootingId}:${oldTime.toISOString()}:${newTime.toISOString()}`;
@@ -246,5 +247,45 @@ export const releaseFinalInvoiceClaim = async (
     await redis.del(finalInvoiceKey(shootingId));
   } catch (error) {
     console.error(`Error releasing final invoice: ${shootingId}`, error);
+  }
+};
+
+/**
+ * Az extra díj számlája: ugyanaz a három lépés és ugyanazok a hozzáállások,
+ * mint fent (a foglalás **dob**, a megerősítés és az elengedés lenyeli a
+ * hibát). A kulcs a payment intent, nem a fotózás: egy fotózáson több extra
+ * fizetés is lehet, és a második ne akadjon fenn az első jelölőjén.
+ */
+export const claimExtraInvoice = async (
+  paymentIntent: string,
+): Promise<boolean> => {
+  const inserted = await redis.set(
+    extraInvoiceKey(paymentIntent),
+    `claimed_at:${new Date().toISOString()}`,
+    { nx: true, ex: INVOICE_CLAIM_TTL },
+  );
+  return inserted !== null; // null = someone already claimed it
+};
+
+export const confirmExtraInvoice = async (
+  paymentIntent: string,
+  invoiceNumber: string,
+): Promise<void> => {
+  try {
+    await redis.set(extraInvoiceKey(paymentIntent), `issued:${invoiceNumber}`, {
+      ex: INVOICE_ISSUED_TTL,
+    });
+  } catch (error) {
+    console.error(`Error confirming extra invoice: ${paymentIntent}`, error);
+  }
+};
+
+export const releaseExtraInvoiceClaim = async (
+  paymentIntent: string,
+): Promise<void> => {
+  try {
+    await redis.del(extraInvoiceKey(paymentIntent));
+  } catch (error) {
+    console.error(`Error releasing extra invoice: ${paymentIntent}`, error);
   }
 };

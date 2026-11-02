@@ -1,24 +1,28 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import * as z from 'zod';
 
+import { env } from '@/env';
 import { APP_URLS, UUID_RE } from '@/lib/constants';
 import { requireClientAccess } from '@/lib/dal';
 import { countPicdropSelection } from '@/lib/picdrop';
 import { prisma } from '@/lib/prisma';
+import { stripe } from '@/lib/stripe';
+import { completeImageSelection } from '@/server/complete-image-selection';
 import { quoteImageSelection } from '@/server/image-selection-quote';
-import { resolveStatus } from '@/server/photo-shooting-status';
 
-import type { PriceLine } from '@/server/pricing';
+import type { CheckoutMetadata } from '@/lib/checkout-metadata';
+import type { QuotePricing } from '@/server/image-selection-quote';
 
+/**
+ * A számok és a díjak, nem a kész ár: a dialógus maga hívja a
+ * `quoteImageSelection()`-t, hogy az expressz pipa azonnal frissítse az
+ * összeget — ugyanazzal a függvénnyel, amelyik a beküldéskor számol.
+ */
 export type ImageSelectionPreview = {
   editedImages: number;
   retouchedImages: number;
-  allowance: number;
-  lines: PriceLine[];
-  extraInCents: number;
+  pricing: QuotePricing;
 };
 
 const COUNT_FAILED_ERROR =
@@ -46,6 +50,7 @@ async function loadSelectableShooting(
       pricing: true,
       adjustments: true,
       ledgerEntries: true,
+      client: { select: { stripeCustomerId: true } },
     },
   });
 
@@ -83,20 +88,28 @@ export async function previewImageSelection(
   const counts = await countPicdropSelection(shooting.rawImagesUrl);
   if (counts == null) return { error: COUNT_FAILED_ERROR };
 
+  const { pricing } = shooting;
   return {
     ...counts,
-    allowance: shooting.pricing.packageEditedImagesAllowance,
-    ...quoteImageSelection({ pricing: shooting.pricing, ...counts }),
+    pricing: {
+      extraEditedImageRateInCents: pricing.extraEditedImageRateInCents,
+      extraRetouchedImageRateInCents: pricing.extraRetouchedImageRateInCents,
+      packageEditedImagesAllowance: pricing.packageEditedImagesAllowance,
+      expressPostProductionPriceInCents:
+        pricing.expressPostProductionPriceInCents,
+    },
   };
 }
 
 const ShownCountsSchema = z.object({
   editedImages: z.number().int().nonnegative(),
   retouchedImages: z.number().int().nonnegative(),
+  isExpressPostProduction: z.boolean(),
 });
 
 /**
- * Lezárja a válogatást, ha nem jár extra díjjal.
+ * Lezárja a válogatást, ha nem jár extra díjjal; ha jár, Stripe Checkoutot
+ * nyit, és a lezárás a webhookra marad.
  *
  * A számokat **újra megszámoljuk** a galériából: a kliens csak azt küldi,
  * amit a dialógusban látott, és ha ez eltér, az ügyfélnek újra át kell néznie
@@ -105,8 +118,12 @@ const ShownCountsSchema = z.object({
 export async function confirmImageSelection(
   clientProfileId: string,
   shootingId: string,
-  shown: { editedImages: number; retouchedImages: number },
-): Promise<{ error: string } | { success: true }> {
+  shown: {
+    editedImages: number;
+    retouchedImages: number;
+    isExpressPostProduction: boolean;
+  },
+): Promise<{ error: string } | { success: true } | { checkoutUrl: string }> {
   const parsedShown = ShownCountsSchema.safeParse(shown);
   if (!parsedShown.success) {
     return { error: 'Érvénytelen adat.' };
@@ -129,41 +146,59 @@ export async function confirmImageSelection(
     };
   }
 
-  const { extraInCents } = quoteImageSelection({
-    pricing: shooting.pricing,
+  const selection = {
     ...counts,
+    isExpressPostProduction: parsedShown.data.isExpressPostProduction,
+  };
+  const { lines, extraInCents } = quoteImageSelection({
+    pricing: shooting.pricing,
+    ...selection,
   });
+
   if (extraInCents > 0) {
-    // TODO: Stripe Checkout (lásd "The payment step" az image-selection.md-ben).
-    return { error: 'A fizetés még nem érhető el. Keress minket.' };
+    const detailsUrl = `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.clientPortalShootingDetails(clientProfileId, shootingId)}`;
+    try {
+      const session = await stripe.checkout.sessions.create({
+        customer: shooting.client.stripeCustomerId,
+        mode: 'payment',
+        line_items: lines.map((line) => ({
+          price_data: {
+            currency: 'huf',
+            product_data: { name: line.name },
+            unit_amount: line.unitPriceInCents,
+          },
+          quantity: line.quantity,
+        })),
+        metadata: {
+          kind: 'image_selection_extra',
+          photo_shooting_id: shootingId,
+          edited_images: counts.editedImages,
+          retouched_images: counts.retouchedImages,
+          express_post_production: selection.isExpressPostProduction
+            ? 'true'
+            : 'false',
+        } satisfies CheckoutMetadata,
+        success_url: detailsUrl,
+        cancel_url: detailsUrl,
+      });
+      if (session.url == null) {
+        return { error: 'Nem tudtuk létrehozni a fizetést, próbáld újra.' };
+      }
+      return { checkoutUrl: session.url };
+    } catch (error) {
+      console.error('[image-selection] failed to create checkout', {
+        error,
+        shootingId,
+      });
+      return {
+        error:
+          'Nem sikerült kapcsolódni a fizetési szolgáltatóhoz, próbáld újra.',
+      };
+    }
   }
 
-  // A `declared*` azt rögzíti, amit a galéria a lezáráskor mutatott; a
-  // `total*` az, amit a szerkesztő később javíthat.
-  const updates = {
-    declaredEditedImages: counts.editedImages,
-    declaredRetouchedImages: counts.retouchedImages,
-    totalEditedImages: counts.editedImages,
-    totalRetouchedImages: counts.retouchedImages,
-    selectionCompletedAt: new Date(),
-  };
-
   try {
-    const status = resolveStatus({
-      current: shooting,
-      updates,
-      pricing: shooting.pricing,
-      adjustments: shooting.adjustments,
-      ledgerEntries: shooting.ledgerEntries,
-    });
-
-    // A `selectionCompletedAt: null` szűrő azt védi, hogy a dupla beküldés ne
-    // írjon felül egy már lezárt válogatást.
-    const { count } = await prisma.photoShooting.updateMany({
-      where: { id: shootingId, selectionCompletedAt: null },
-      data: { ...updates, status },
-    });
-    if (count === 0) {
+    if (!(await completeImageSelection(shootingId, selection, null))) {
       return { error: 'A válogatás már be van küldve.' };
     }
   } catch (error) {
@@ -174,8 +209,5 @@ export async function confirmImageSelection(
     return { error: 'Nem sikerült menteni a válogatást. Próbáld újra.' };
   }
 
-  revalidatePath(
-    APP_URLS.clientPortalShootingDetails(clientProfileId, shootingId),
-  );
   return { success: true };
 }

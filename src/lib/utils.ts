@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import {
   isLightPlayChargeable,
+  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
   STUDIO_ADDRESS,
   STUDIO_TZ,
 } from '@/lib/constants';
@@ -175,4 +176,11 @@ export function isWeekday(date: Date) {
 
 export function isWeekdayKey(dayKey: string) {
   return !isWeekend(parseISO(dayKey));
+}
+
+export function getExpressDeliveryDeadline(selectionCompletedAt: Date) {
+  return addDays(
+    selectionCompletedAt,
+    PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
+  );
 }

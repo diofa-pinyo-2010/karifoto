@@ -2,6 +2,25 @@ import type { PhotoShootingPricing } from '@/generated/prisma/client';
 import type { PriceLine } from '@/server/pricing';
 
 /**
+ * Egy `PriceLine` mennyiséggel és egységárral, hogy a Stripe Checkout és a
+ * belőle készülő számla tételesen mutassa (pl. 3 db × 2 000 Ft). A `name` a
+ * darabszám nélküli megnevezés — a darabszámot a Stripe és a számla maga írja.
+ */
+type QuoteLine = PriceLine & {
+  name: string;
+  quantity: number;
+  unitPriceInCents: number;
+};
+
+export type QuotePricing = Pick<
+  PhotoShootingPricing,
+  | 'extraEditedImageRateInCents'
+  | 'extraRetouchedImageRateInCents'
+  | 'packageEditedImagesAllowance'
+  | 'expressPostProductionPriceInCents'
+>;
+
+/**
  * Mennyibe kerül az ügyfél által megadott két szám a csomag kerete fölött.
  *
  * Tiszta függvény, a `'use server'` fájlok miatt külön fájlban (lásd
@@ -16,35 +35,47 @@ export function quoteImageSelection({
   pricing,
   editedImages,
   retouchedImages,
+  isExpressPostProduction,
 }: {
-  pricing: Pick<
-    PhotoShootingPricing,
-    | 'extraEditedImageRateInCents'
-    | 'extraRetouchedImageRateInCents'
-    | 'packageEditedImagesAllowance'
-  >;
+  pricing: QuotePricing;
   editedImages: number;
   retouchedImages: number;
-}): { lines: PriceLine[]; extraInCents: number } {
-  const lines: PriceLine[] = [];
+  isExpressPostProduction: boolean;
+}): { lines: QuoteLine[]; extraInCents: number } {
+  const lines: QuoteLine[] = [];
 
-  const extraEdited = Math.max(
-    0,
-    editedImages - pricing.packageEditedImagesAllowance,
+  const addLine = (
+    name: string,
+    quantity: number,
+    unitPriceInCents: number,
+    label = `${name} (${quantity} db)`,
+  ) => {
+    if (quantity <= 0) return;
+    lines.push({
+      label,
+      amountInCents: quantity * unitPriceInCents,
+      name,
+      quantity,
+      unitPriceInCents,
+    });
+  };
+
+  addLine(
+    'Extra szerkesztett képek',
+    Math.max(0, editedImages - pricing.packageEditedImagesAllowance),
+    pricing.extraEditedImageRateInCents,
   );
-  if (extraEdited > 0) {
-    lines.push({
-      label: `Extra szerkesztett képek (${extraEdited} db)`,
-      amountInCents: extraEdited * pricing.extraEditedImageRateInCents,
-    });
-  }
-
-  if (retouchedImages > 0) {
-    lines.push({
-      label: `Extra retusált képek (${retouchedImages} db)`,
-      amountInCents: retouchedImages * pricing.extraRetouchedImageRateInCents,
-    });
-  }
+  addLine(
+    'Extra retusált képek',
+    retouchedImages,
+    pricing.extraRetouchedImageRateInCents,
+  );
+  addLine(
+    'Expressz utómunka',
+    isExpressPostProduction ? 1 : 0,
+    pricing.expressPostProductionPriceInCents,
+    '⚡ Expressz utómunka',
+  );
 
   return {
     lines,

@@ -5,12 +5,16 @@ import { cache } from 'react';
 import {
   ArrowLeft,
   ArrowRightIcon,
+  BadgeCheckIcon,
+  CheckCircle2Icon,
+  CheckIcon,
   ExternalLinkIcon,
   UserIcon,
 } from 'lucide-react';
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
+import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
@@ -22,10 +26,21 @@ import { ExternalLinkItem } from '@/components/ExternalLinkItem';
 import { ItemsCollapsible } from '@/components/ItemsCollapsible';
 import { RefreshStatusButton } from '@/components/RefreshStatusButton';
 import { SendRawImages } from '@/components/SendRawImages';
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
@@ -570,6 +585,22 @@ export default async function PhotoShootingDetailPage({
               />
             </div>
             <div className="rounded-lg border bg-card px-4">
+              {shooting.selectionCompletedAt && (
+                <DetailRow
+                  label="Ügyfél a válogatást befejezte"
+                  value={
+                    <p className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <BadgeCheckIcon className="size-5 text-lime-600 dark:text-lime-400" />{' '}
+                        Elküldve:
+                      </span>{' '}
+                      {shortFullDateFormatter.format(
+                        shooting.selectionCompletedAt,
+                      )}
+                    </p>
+                  }
+                />
+              )}
               <DetailRow
                 label="Megszerkesztett képek"
                 value={
@@ -601,7 +632,12 @@ export default async function PhotoShootingDetailPage({
                 }
               />
               <DetailRow
-                label="Végleges képek (PicDrop URL)"
+                label={
+                  <span className="flex flex-col gap-2">
+                    <ExpressDeadlineBadge {...shooting} />
+                    Végleges képek (PicDrop URL)
+                  </span>
+                }
                 fullWidth
                 value={
                   <EditableTextField
@@ -630,6 +666,36 @@ export default async function PhotoShootingDetailPage({
                 }
               />
             </div>
+            {shooting.status === 'READY_TO_COMPLETE' && (
+              <Alert className="bg-lime-50 text-lime-900 dark:bg-lime-950 dark:text-lime-50">
+                <CheckCircle2Icon />
+                <AlertTitle>Minden kész!</AlertTitle>
+                <AlertDescription className="text-lime-900/70 dark:text-lime-50/70">
+                  A projekt zárható.
+                </AlertDescription>
+                <AlertAction>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button size="lg" variant="outline">
+                          <CheckIcon />
+                          Lezárás
+                        </Button>
+                      }
+                    />
+                    <TooltipContent>
+                      <p>
+                        Ha ezt a gombot látod, akkor nincs több fizetnivaló, és
+                        a végleges képek URL-je is fel van töltve: a projekt
+                        zárható. A gombra kattintva email-t küldünk az ügyfélnek
+                        a végleges képek linkjével, és a projektet
+                        "Teljesítettre" állítjuk.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </AlertAction>
+              </Alert>
+            )}
           </div>
 
           <Separator />

@@ -159,6 +159,7 @@ model PhotoShooting {
   declaredRetouchedImages Int?
   totalEditedImages       Int       @default(0)
   totalRetouchedImages    Int       @default(0)
+  isExpressPostProduction Boolean   @default(false)
 
   rawImagesUrl   String?
   finalImagesUrl String?
@@ -197,8 +198,9 @@ model PhotoShootingPricing {
   extraPeopleRateInCents Int
   extraPetRateInCents    Int
 
-  extraEditedImageRateInCents    Int
-  extraRetouchedImageRateInCents Int
+  extraEditedImageRateInCents       Int
+  extraRetouchedImageRateInCents    Int
+  expressPostProductionPriceInCents Int @default(1000000)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

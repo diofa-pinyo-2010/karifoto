@@ -39,6 +39,7 @@ function makePricing(): PhotoShootingPricing {
     extraPetRateInCents: 2_000_00,
     extraEditedImageRateInCents: 3_000_00,
     extraRetouchedImageRateInCents: 4_000_00,
+    expressPostProductionPriceInCents: 10_000_00,
     createdAt: NOW,
     updatedAt: NOW,
   };
@@ -68,6 +69,7 @@ function makeShooting(
     declaredRetouchedImages: null,
     totalEditedImages: 0,
     totalRetouchedImages: 0,
+    isExpressPostProduction: false,
     rawImagesUrl: null,
     finalImagesUrl: null,
     clientNote: null,

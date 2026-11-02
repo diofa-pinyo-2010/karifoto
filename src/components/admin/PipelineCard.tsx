@@ -1,12 +1,10 @@
-'use client';
-
 import Link from 'next/link';
 
 import { ArrowRightIcon, CameraIcon, WandSparklesIcon } from 'lucide-react';
 
+import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   APP_URLS,
   PACKAGE_LABEL,
@@ -22,7 +20,6 @@ type PipelineShooting = Awaited<
 >[number];
 
 export function PipelineCard({ shooting }: { shooting: PipelineShooting }) {
-  const isMobile = useIsMobile();
   return (
     <article className="relative flex flex-col gap-1.5 rounded-lg border bg-card p-3">
       <span className="truncate font-medium">{shooting.client.owner.name}</span>
@@ -44,10 +41,9 @@ export function PipelineCard({ shooting }: { shooting: PipelineShooting }) {
         variant="secondary"
         className={PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[shooting.status]}
       >
-        {isMobile
-          ? PHOTO_SHOOTING_STATUS_LABEL[shooting.status].short
-          : PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
+        {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].short}
       </Badge>
+      <ExpressDeadlineBadge {...shooting} />
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <span className="flex items-center gap-1" title="Fotós">
           <CameraIcon aria-label="Fotós" className="size-3.5 shrink-0" />

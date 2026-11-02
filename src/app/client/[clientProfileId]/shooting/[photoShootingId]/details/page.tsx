@@ -17,6 +17,7 @@ import {
   SparklesIcon,
   TreePineIcon,
   UsersIcon,
+  ZapIcon,
 } from 'lucide-react';
 
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
@@ -47,16 +48,24 @@ import {
   PHOTO_SHOOTING_STATUS_CLIENT_LABEL,
   STUDIO_ADDRESS,
   STUDIO_MAP_LINK,
+  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
 } from '@/lib/constants';
 import { getPortalAccess } from '@/lib/dal';
-import { dateWithYearFormatter, timeFormatter } from '@/lib/formatters';
+import {
+  dateWithYearFormatter,
+  // monthDayFormatter,
+  timeFormatter,
+} from '@/lib/formatters';
 // import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
   CLIENT_PORTAL_NEXT_PARAM,
   CLIENT_PORTAL_TOKEN_PARAM,
 } from '@/lib/session';
-import { formatMoney } from '@/lib/utils';
+import {
+  formatMoney,
+  //   getExpressDeliveryDeadline
+} from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
 import type { PhotoShootingForClientPortal } from '@/lib/queries';
@@ -403,6 +412,7 @@ function ClientImageSelection({
   selectionCompletedAt,
   declaredEditedImages,
   declaredRetouchedImages,
+  isExpressPostProduction,
   canSubmit,
 }: PhotoShootingForClientPortal & { canSubmit: boolean }) {
   if (selectionCompletedAt != null) {
@@ -422,6 +432,24 @@ function ClientImageSelection({
           </div>
         </div>
         <dl className="grid grid-cols-2 gap-3">
+          {isExpressPostProduction && (
+            <div className="col-span-2 flex flex-col gap-1 rounded-md bg-white/70 p-3">
+              <dt className="flex items-center gap-1.5 text-xs font-medium">
+                <ZapIcon className="size-3.5 fill-current" />
+                Expressz utómunka{' '}
+                {
+                  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS
+                }{' '}
+                napon belül!
+              </dt>
+              {/* <dd className="text-lg font-semibold">
+                A kész képeket legkésőbb ekkor küldjük:{' '}
+                {monthDayFormatter.format(
+                  getExpressDeliveryDeadline(selectionCompletedAt),
+                )}
+              </dd> */}
+            </div>
+          )}
           <div className="flex flex-col gap-1 rounded-md bg-white/70 p-3">
             <dt className="flex items-center gap-1.5 text-xs font-medium">
               <FlagIcon className="size-3.5 fill-red-500 text-red-500" />

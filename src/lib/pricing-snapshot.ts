@@ -4,6 +4,7 @@ import {
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
+  EXPRESS_POST_PRODUCTION_FEE,
 } from '@/lib/constants';
 
 import type { Package, PhotoShootingPricing } from '@/generated/prisma/client';
@@ -43,5 +44,7 @@ export function buildPricingSnapshot(
 
     extraEditedImageRateInCents: EXTRA_EDIT_PER_IMAGE,
     extraRetouchedImageRateInCents: EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
+
+    expressPostProductionPriceInCents: EXPRESS_POST_PRODUCTION_FEE,
   };
 }

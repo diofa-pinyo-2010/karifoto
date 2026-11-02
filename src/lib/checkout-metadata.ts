@@ -23,11 +23,25 @@ const bookingDepositMetadata = z.object({
   booking_intent_id: z.uuid(),
 });
 
-// One member today. It stays a discriminated union because the point is the
-// growth path: adding `balance` or `selection_extra` here turns every switch
-// over `kind` into a compile error until it handles the new case.
+/**
+ * The counts are frozen here, at session creation: the client pays for what
+ * the dialog showed, and the PicDrop flags may change before the webhook
+ * fires. Stripe hands metadata back as strings, hence `coerce`.
+ */
+const imageSelectionExtraMetadata = z.object({
+  kind: z.literal('image_selection_extra'),
+  photo_shooting_id: z.uuid(),
+  edited_images: z.coerce.number().int().nonnegative(),
+  retouched_images: z.coerce.number().int().nonnegative(),
+  // A string, not `z.coerce.boolean()`: that would read "false" as true.
+  express_post_production: z.enum(['true', 'false']),
+});
+
+// Adding a member here turns every switch over `kind` into a compile error
+// until it handles the new case.
 export const checkoutMetadataSchema = z.discriminatedUnion('kind', [
   bookingDepositMetadata,
+  imageSelectionExtraMetadata,
 ]);
 
 export type CheckoutMetadata = z.infer<typeof checkoutMetadataSchema>;
@@ -49,6 +63,7 @@ export const CHECKOUT_KIND_LEDGER_CATEGORY: Record<
   LedgerEntryCategory
 > = {
   booking_deposit: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT,
+  image_selection_extra: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_EXTRA,
 };
 
 // Read off the raw value rather than the zod error, so an unrecognised kind can
