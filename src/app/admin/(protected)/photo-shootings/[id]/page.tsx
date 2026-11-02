@@ -687,8 +687,9 @@ export default async function PhotoShootingDetailPage({
                       <p>
                         Ha ezt a gombot látod, akkor nincs több fizetnivaló, és
                         a végleges képek URL-je is fel van töltve: a projekt
-                        zárható. Email-t küldünk az ügyfélnek a végleges képek
-                        linkjével.
+                        zárható. A gombra kattintva email-t küldünk az ügyfélnek
+                        a végleges képek linkjével, és a projektet
+                        "Teljesítettre" állítjuk.
                       </p>
                     </TooltipContent>
                   </Tooltip>
