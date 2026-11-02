@@ -12,7 +12,6 @@ type QuoteLine = PriceLine & {
   unitPriceInCents: number;
 };
 
-/** A pillanatkép azon díjai, amelyekből a válogatás ára kijön. */
 export type QuotePricing = Pick<
   PhotoShootingPricing,
   | 'extraEditedImageRateInCents'
