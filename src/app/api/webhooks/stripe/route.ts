@@ -145,7 +145,7 @@ async function routeCheckoutSession(session: Stripe.Checkout.Session) {
 }
 
 /**
- * The client paid for images over the allowance and/or retouches. Ledger
+ * The client paid for images over the allowance and/or beauty retouches. Ledger
  * first (money moved), then the same save the free "Beküldés" path runs, then
  * the invoice job.
  */
@@ -565,6 +565,9 @@ async function handleBookingDeposit(
 
   // Only for a freshly created shooting — a webhook retry finds it existing.
   if (existingShooting == null) {
+    const note = bookingIntent.clientNote
+      ? `"${bookingIntent.clientNote}"`
+      : '-';
     await sendDiscordNotification({
       type: 'info',
       content: [
@@ -572,6 +575,7 @@ async function handleBookingDeposit(
         `Név: ${bookingIntent.name}`,
         `Csomag: ${PACKAGE_LABEL[selectedPackage]}`,
         `Időpont: ${formatSlotDateTime(shooting.timeSlot.startTime)}`,
+        `Megjegyzés: ${note}`,
         `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${shooting.id})`,
       ].join('\n'),
     });
