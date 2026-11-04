@@ -20,7 +20,9 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
         role={staffProfile.role}
         onLogout={logout}
       />
-      <SidebarInset>
+      {/* min-w-0: flex elemként különben a tartalom (pl. széles táblázat)
+          szélességére nyúlna, és az egész oldal görgetne vízszintesen. */}
+      <SidebarInset className="min-w-0">
         <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
           <SidebarTrigger />
           <ThemeToggle />

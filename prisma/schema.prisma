@@ -42,6 +42,7 @@ model StaffProfile {
   priceAdjustments PriceAdjustment[]
   comments         Comment[]
   commentMentions  CommentMention[]
+  feePayouts       LedgerEntry[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -202,6 +203,14 @@ model PhotoShootingPricing {
   extraRetouchedImageRateInCents    Int
   expressPostProductionPriceInCents Int @default(1000000)
 
+  // What the studio pays staff, not what the client pays.
+  photographerPackageFeeInCents     Int
+  photographerLightPlayFeeInCents   Int
+  photographerExtraPersonFeeInCents Int
+  photographerPetFeeInCents         Int
+  editorEditedImageFeeInCents       Int
+  editorRetouchedImageFeeInCents    Int
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -300,10 +309,15 @@ model LedgerEntry {
   photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id])
   photoShootingId String?        @db.Uuid
 
+  // The staff member a fee payout went to (EXPENSE_PHOTOGRAPHER_FEE / EXPENSE_EDITOR_FEE).
+  staffProfile   StaffProfile? @relation(fields: [staffProfileId], references: [id])
+  staffProfileId String?       @db.Uuid
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([photoShootingId])
+  @@index([staffProfileId])
 }
 
 model Invoice {

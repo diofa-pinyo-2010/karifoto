@@ -1,10 +1,14 @@
 import { ADD_ONS, PACKAGES } from '@/lib/catalog';
 import {
+  EDITOR_FEE_PER_EDITED_IMAGE,
+  EDITOR_FEE_PER_RETOUCHED_IMAGE,
   EXTRA_EDIT_PER_IMAGE,
   EXTRA_FEE_PER_EXTRA_PERSON,
   EXTRA_FEE_PER_PET,
   EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
   EXPRESS_POST_PRODUCTION_FEE,
+  PHOTOGRAPHER_FEE_PER_EXTRA_PERSON,
+  PHOTOGRAPHER_FEE_PER_PET,
 } from '@/lib/constants';
 
 import type { Package, PhotoShootingPricing } from '@/generated/prisma/client';
@@ -46,5 +50,13 @@ export function buildPricingSnapshot(
     extraRetouchedImageRateInCents: EXTRA_BEAUTY_RETOUCH_PER_IMAGE,
 
     expressPostProductionPriceInCents: EXPRESS_POST_PRODUCTION_FEE,
+
+    photographerPackageFeeInCents: pkg.photographerFeeInCents,
+    photographerLightPlayFeeInCents: ADD_ONS.LIGHT_PLAY.photographerFeeInCents,
+    photographerExtraPersonFeeInCents: PHOTOGRAPHER_FEE_PER_EXTRA_PERSON,
+    photographerPetFeeInCents: PHOTOGRAPHER_FEE_PER_PET,
+
+    editorEditedImageFeeInCents: EDITOR_FEE_PER_EDITED_IMAGE,
+    editorRetouchedImageFeeInCents: EDITOR_FEE_PER_RETOUCHED_IMAGE,
   };
 }

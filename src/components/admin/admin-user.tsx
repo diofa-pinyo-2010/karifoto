@@ -1,6 +1,8 @@
 'use client';
 
-import { ChevronsUpDown, LogOut } from 'lucide-react';
+import Link from 'next/link';
+
+import { ChevronsUpDown, LogOut, SquareCheckBigIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +22,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { StaffProfileRole } from '@/generated/prisma/enums';
+import { APP_URLS } from '@/lib/constants';
 
 const ROLE_LABELS: Record<StaffProfileRole, string> = {
   [StaffProfileRole.SUPERADMIN]: 'Admin',
@@ -34,7 +37,7 @@ type AdminUserProps = {
 };
 
 export function AdminUser({ name, email, role, onLogout }: AdminUserProps) {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const initial = name.charAt(0).toUpperCase();
 
   return (
@@ -81,6 +84,20 @@ export function AdminUser({ name, email, role, onLogout }: AdminUserProps) {
                   </div>
                 </div>
               </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href={APP_URLS.ownShootings}
+                    onClick={() => isMobile && setOpenMobile(false)}
+                  />
+                }
+              >
+                <SquareCheckBigIcon />
+                Feladatok
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
