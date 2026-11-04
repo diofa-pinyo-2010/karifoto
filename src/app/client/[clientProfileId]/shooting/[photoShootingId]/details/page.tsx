@@ -416,8 +416,6 @@ function ClientFinalImages({
   status,
   finalImagesUrl,
 }: PhotoShootingForClientPortal) {
-  // Önmagában a `finalImagesUrl` nem elég: a linket az ügyfél csak a Lezárás után
-  // láthatja. A COMPLETED státusz csak `completedAt` mellett érhető el.
   if (status !== 'COMPLETED' || finalImagesUrl == null) {
     return (
       <p className="text-brand-muted">
