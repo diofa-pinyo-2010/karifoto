@@ -341,14 +341,11 @@ export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
   PhotoShootingStatus,
   ClientPortalSection
 > = {
-  // Az ügyfélen a sor.
   USER_SELECTION: 'image-selection',
   WAITING_FOR_EXTRA_PAYMENT: 'invoices',
 
-  // Elkészültek a képek, ezért jött.
   COMPLETED: 'final-images',
 
-  // Nincs teendő, csak tájékozódik.
   PHOTOGRAPHER_SELECTION: 'details',
   WAITING_FOR_THE_DATE: 'details',
   WAITING_FOR_BALANCE_PAYMENT: 'details',
