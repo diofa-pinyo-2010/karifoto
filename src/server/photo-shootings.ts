@@ -90,10 +90,13 @@ export async function changeTimeOfPhotoShooting({
 
   const shooting = await prisma.photoShooting.findUnique({
     where: { id: shootingId },
-    select: { timeSlot: { select: { startTime: true } } },
+    select: { status: true, timeSlot: { select: { startTime: true } } },
   });
   if (shooting == null) {
     return { error: 'Ez a fotózás nem található.' };
+  }
+  if (shooting.status === PhotoShootingStatus.COMPLETED) {
+    return { error: 'A lezárt fotózás nem módosítható.' };
   }
   // Same time — nothing to move. Without this, the lookup below skips the
   // shooting's own (taken) slot and would create a duplicate one.

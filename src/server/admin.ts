@@ -5,7 +5,12 @@ import { revalidatePath } from 'next/cache';
 import * as z from 'zod';
 
 import { env } from '@/env';
-import { DecorSet, Package, Prisma } from '@/generated/prisma/client';
+import {
+  DecorSet,
+  Package,
+  PhotoShootingStatus,
+  Prisma,
+} from '@/generated/prisma/client';
 import {
   APP_URLS,
   isLightPlayChargeable,
@@ -129,6 +134,10 @@ export async function updatePhotoShooting(
       where: { id },
       ...photoShootingWithTimeSlotInclude,
     });
+
+    if (current.status === PhotoShootingStatus.COMPLETED) {
+      return { error: 'A lezárt fotózás nem módosítható.' };
+    }
 
     const currentPricing = current.pricing;
     if (currentPricing == null) {
