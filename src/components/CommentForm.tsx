@@ -420,13 +420,13 @@ export function CommentForm({
       action={formAction}
       className="flex flex-col gap-2 border-b px-4 pb-4"
     >
-      <Label
+      {/* <Label
         id={labelId}
         onClick={() => editor?.commands.focus()}
         className="font-normal text-muted-foreground"
       >
         Új megjegyzés a csapatnak
-      </Label>
+      </Label> */}
       <div
         data-invalid={failed ? true : undefined}
         className="rounded-lg border border-input bg-transparent text-base transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 lg:text-sm dark:bg-input/30 dark:data-invalid:border-destructive/50 dark:data-invalid:ring-destructive/40"
