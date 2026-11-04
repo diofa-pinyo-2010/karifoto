@@ -7,7 +7,6 @@ import {
   ArrowRightIcon,
   BadgeCheckIcon,
   CheckCircle2Icon,
-  CheckIcon,
   ExternalLinkIcon,
   UserIcon,
 } from 'lucide-react';
@@ -18,6 +17,7 @@ import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
+import { CompletePhotoShootingButton } from '@/components/CompletePhotoShootingButton';
 // import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
@@ -36,11 +36,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
@@ -674,25 +669,7 @@ export default async function PhotoShootingDetailPage({
                   A projekt zárható.
                 </AlertDescription>
                 <AlertAction>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button size="lg" variant="outline">
-                          <CheckIcon />
-                          Lezárás
-                        </Button>
-                      }
-                    />
-                    <TooltipContent>
-                      <p>
-                        Ha ezt a gombot látod, akkor nincs több fizetnivaló, és
-                        a végleges képek URL-je is fel van töltve: a projekt
-                        zárható. A gombra kattintva email-t küldünk az ügyfélnek
-                        a végleges képek linkjével, és a projektet
-                        "Teljesítettre" állítjuk.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <CompletePhotoShootingButton shootingId={shooting.id} />
                 </AlertAction>
               </Alert>
             )}

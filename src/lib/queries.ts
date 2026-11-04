@@ -387,6 +387,7 @@ const photoShootingForClientPortalSelect = {
     clientNote: true,
     timeSlot: { select: { startTime: true } },
     rawImagesUrl: true,
+    finalImagesUrl: true,
     selectionCompletedAt: true,
     declaredEditedImages: true,
     declaredRetouchedImages: true,

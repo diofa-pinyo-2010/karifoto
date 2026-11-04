@@ -8,6 +8,7 @@ import {
   ClockIcon,
   ExternalLinkIcon,
   FlagIcon,
+  ImageIcon,
   ImagesIcon,
   LayoutDashboardIcon,
   MapPinIcon,
@@ -159,6 +160,13 @@ export default async function ClientPortalShootingDetailsPage({
         ),
       disabled: photoShooting.status === 'CANCELLED',
       icon: ImagesIcon,
+    },
+    {
+      value: 'final-images',
+      trigger: 'Szerkesztett képek',
+      content: <ClientFinalImages {...photoShooting} />,
+      disabled: photoShooting.status === 'CANCELLED',
+      icon: ImageIcon,
     },
     {
       value: 'invoices',
@@ -401,6 +409,44 @@ function ClientPortalShootingDetails({
         </DetailRow>
       )}
     </dl>
+  );
+}
+
+function ClientFinalImages({
+  status,
+  finalImagesUrl,
+}: PhotoShootingForClientPortal) {
+  // Önmagában a `finalImagesUrl` nem elég: a linket az ügyfél csak a Lezárás után
+  // láthatja. A COMPLETED státusz csak `completedAt` mellett érhető el.
+  if (status !== 'COMPLETED' || finalImagesUrl == null) {
+    return (
+      <p className="text-brand-muted">
+        A szerkesztett képeket itt fogjátok megtalálni. Szólunk emailben, amint
+        elkészültek.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p>
+        Elkészültek a szerkesztett képeitek! A PicDrop galériában tudjátok
+        megnézni és letölteni őket.
+      </p>
+      <a
+        href={finalImagesUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={buttonVariants({
+          variant: 'secondary',
+          size: 'lg',
+          className: 'w-full sm:w-fit',
+        })}
+      >
+        Szerkesztett képek megnyitása
+        <ExternalLinkIcon />
+      </a>
+    </div>
   );
 }
 

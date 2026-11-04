@@ -100,6 +100,7 @@ const PhotoShootingUpdateSchema = z.object({
     .optional(),
   selectionRequestedAt: z.date().optional(),
   finalImagesUrl: z.url().nullable().optional(),
+  completedAt: z.date().optional(),
   totalEditedImages: z.coerce.number().optional(),
   totalRetouchedImages: z.coerce.number().optional(),
 });

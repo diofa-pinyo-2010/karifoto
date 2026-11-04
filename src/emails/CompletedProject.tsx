@@ -55,7 +55,7 @@ export default function CompletedProjectEmail({
               </Button>
             </Section>
             <Text>
-              Ha jól éreztétek magatokat kérjük értékeljetek minket ezen a
+              Ha jól éreztétek magatokat, kérjük értékeljetek minket ezen a
               linken:
               <Link
                 href="https://g.page/r/Cea1GVOmu475EBM/review"

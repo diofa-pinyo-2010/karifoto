@@ -6,6 +6,7 @@ type CompleteProjectEmailParams = {
   name: string;
   clientPortalLoginLink: string;
   shootingId: string;
+  clientId: string;
 };
 
 export function sendCompleteProjectEmail({
@@ -13,10 +14,13 @@ export function sendCompleteProjectEmail({
   name,
   clientPortalLoginLink,
   shootingId,
+  clientId,
 }: CompleteProjectEmailParams) {
   return sendClientEmail({
     type: EmailType.COMPLETED_PROJECT,
     to,
+    clientId,
+    photoShootingId: shootingId,
     props: {
       name,
       clientPortalLoginLink,
