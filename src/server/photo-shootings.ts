@@ -271,8 +271,6 @@ export async function completePhotoShooting({
     }
   }
 
-  // Csak az elfogadott email után: a `completedAt` hibás küldésnél is
-  // teljesítettnek mutatná a projektet, és az ügyfél nem kapná meg a képeket.
   const updateResult = await updatePhotoShooting(shootingId, {
     completedAt: new Date(),
   });
