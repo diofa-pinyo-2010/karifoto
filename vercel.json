@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     { "path": "/api/cron/ping-redis", "schedule": "0 6 * * *" },
-    { "path": "/api/cron/reminder-on-the-day", "schedule": "0 7 * * *" }
+    { "path": "/api/cron/reminder-on-the-day", "schedule": "0 7 * * *" },
+    {
+      "path": "/api/cron/sync-photo-shooting-status",
+      "schedule": "*/30 * * * *"
+    }
   ]
 }
