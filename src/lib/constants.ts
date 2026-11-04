@@ -331,6 +331,7 @@ export const PHOTO_SHOOTING_STATUS_CLIENT_BADGE_CLASSNAME: Record<
 export const CLIENT_PORTAL_SECTIONS = [
   'details',
   'image-selection',
+  'final-images',
   'invoices',
 ] as const;
 
@@ -340,14 +341,11 @@ export const CLIENT_PORTAL_DEFAULT_SECTION: Record<
   PhotoShootingStatus,
   ClientPortalSection
 > = {
-  // Az ügyfélen a sor.
   USER_SELECTION: 'image-selection',
   WAITING_FOR_EXTRA_PAYMENT: 'invoices',
 
-  // Megvan minden, a számla a legérdekesebb.
-  COMPLETED: 'invoices',
+  COMPLETED: 'final-images',
 
-  // Nincs teendő, csak tájékozódik.
   PHOTOGRAPHER_SELECTION: 'details',
   WAITING_FOR_THE_DATE: 'details',
   WAITING_FOR_BALANCE_PAYMENT: 'details',

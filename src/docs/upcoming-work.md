@@ -124,20 +124,16 @@ rows happen to exist.
 full-value discount to reach, so it is not worth a rushed schema change during
 the season. Pick one before the first free shoot, not after.
 
-### Both new gates are dead ends today
+### Cancellation is still a dead end
 
-**Nothing writes `completedAt` or `cancelledAt`.** So a shooting reaches
-`READY_TO_COMPLETE` and stops there — `COMPLETED` is unreachable — and
-`CANCELLED` is unreachable entirely. Two pieces of wiring are missing:
+**Nothing writes `cancelledAt`**, so `CANCELLED` is unreachable. Cancellation
+itself (priority 5) has to stamp `cancelledAt` and decide the refund.
 
-- the **Lezárás** button in [BalancePayment](../components/BalancePayment.tsx):
-  send the final-images email, stamp `completedAt`, and only then let the status
-  advance. Deriving the status from a `SentEmail` row instead of the column was
-  considered and rejected; with a column, a failed Resend call leaves the
-  shooting marked complete, so whatever sets `completedAt` must do it _after_
-  the email is accepted.
-- cancellation itself (priority 5), which stamps `cancelledAt` and decides the
-  refund.
+`completedAt` is written by `completePhotoShooting`, behind the **Lezárás**
+button on the admin shooting page. Deriving the status from a `SentEmail` row
+instead of the column was considered and rejected; with a column, a failed
+Resend call would leave the shooting marked complete, so `completedAt` is stamped
+only _after_ the email is accepted.
 
 ## 1. Invoice wrappers
 

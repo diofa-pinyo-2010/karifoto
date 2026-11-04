@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
+import { EmailType, PhotoShootingStatus } from '@/generated/prisma/enums';
 import { createClientPortalToken } from '@/lib/auth';
 import { livePendingIntentWhere } from '@/lib/booking-intent-hold';
 import { clientPortalLoginUrl } from '@/lib/client-portal';
@@ -11,6 +12,7 @@ import { verifySession } from '@/lib/dal';
 import { getOrCreateTimeSlot } from '@/lib/get-or-create-time-slot';
 import { prisma } from '@/lib/prisma';
 import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
+import { sendCompleteProjectEmail } from '@/lib/resend/complete-project';
 import { sendImageSelectionEmail } from '@/lib/resend/image-selection';
 import { qStashClient } from '@/lib/upstash';
 import { dayBounds } from '@/lib/utils';
@@ -88,10 +90,13 @@ export async function changeTimeOfPhotoShooting({
 
   const shooting = await prisma.photoShooting.findUnique({
     where: { id: shootingId },
-    select: { timeSlot: { select: { startTime: true } } },
+    select: { status: true, timeSlot: { select: { startTime: true } } },
   });
   if (shooting == null) {
     return { error: 'Ez a fotózás nem található.' };
+  }
+  if (shooting.status === PhotoShootingStatus.COMPLETED) {
+    return { error: 'A lezárt fotózás nem módosítható.' };
   }
   // Same time — nothing to move. Without this, the lookup below skips the
   // shooting's own (taken) slot and would create a duplicate one.
@@ -202,6 +207,72 @@ export async function sendRawImagesForSelection({
 
   const updateResult = await updatePhotoShooting(shootingId, {
     selectionRequestedAt: new Date(),
+  });
+
+  if (updateResult != null && 'error' in updateResult) {
+    return updateResult;
+  }
+
+  return { success: true };
+}
+
+export async function completePhotoShooting({
+  shootingId,
+}: {
+  shootingId: string;
+}): Promise<{ error: string } | { success: true }> {
+  await verifySession();
+
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { id: shootingId },
+    select: {
+      status: true,
+      client: {
+        select: {
+          id: true,
+          owner: { select: { id: true, name: true, email: true } },
+        },
+      },
+    },
+  });
+
+  if (shooting == null) {
+    return { error: 'Nem találjuk ezt a PhotoShootingot' };
+  }
+
+  if (shooting.status !== PhotoShootingStatus.READY_TO_COMPLETE) {
+    return { error: 'A projekt jelenleg nem zárható le.' };
+  }
+
+  const alreadySent = await prisma.sentEmail.findFirst({
+    where: { photoShootingId: shootingId, type: EmailType.COMPLETED_PROJECT },
+    select: { id: true },
+  });
+
+  if (alreadySent == null) {
+    const { raw: rawToken } = await createClientPortalToken(
+      shooting.client.owner.id,
+    );
+
+    const { error } = await sendCompleteProjectEmail({
+      shootingId,
+      to: shooting.client.owner.email,
+      name: shooting.client.owner.name,
+      clientId: shooting.client.id,
+      clientPortalLoginLink: clientPortalLoginUrl({
+        rawToken,
+        clientProfileId: shooting.client.id,
+        shootingId,
+      }),
+    });
+
+    if (error != null) {
+      return { error: 'Nem tudtuk elküldeni az emailt. Próbáld újra!' };
+    }
+  }
+
+  const updateResult = await updatePhotoShooting(shootingId, {
+    completedAt: new Date(),
   });
 
   if (updateResult != null && 'error' in updateResult) {

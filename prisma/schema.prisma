@@ -536,6 +536,7 @@ enum EmailType {
   REMINDER_ON_THE_DAY
   RESCHEDULE_NOTIFICATION
   IMAGE_SELECTION
+  COMPLETED_PROJECT
 }
 
 enum SumupCheckoutAttemptStatus {

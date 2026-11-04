@@ -7,7 +7,6 @@ import {
   ArrowRightIcon,
   BadgeCheckIcon,
   CheckCircle2Icon,
-  CheckIcon,
   ExternalLinkIcon,
   UserIcon,
 } from 'lucide-react';
@@ -18,6 +17,7 @@ import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
+import { CompletePhotoShootingButton } from '@/components/CompletePhotoShootingButton';
 // import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
@@ -36,11 +36,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
@@ -184,19 +179,18 @@ export default async function PhotoShootingDetailPage({
     (entry) => entry.invoice?.type === 'FINAL',
   );
 
+  const isCompleted = status === PhotoShootingStatus.COMPLETED;
+
   const readOnlyDetails =
     (shooting.selectionRequestedAt != null &&
       shooting.selectionCompletedAt == null) ||
-    status === PhotoShootingStatus.CANCELLED;
+    status === PhotoShootingStatus.CANCELLED ||
+    isCompleted;
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
       {backButtons}
-      {/*
-        Mobilon a sorrend: fejléc → megjegyzések → részletek, hogy a csapat
-        üzenetei a részletek előtt látszódjanak. lg-től a megjegyzések a jobb
-        oszlopba kerülnek, és mindkét sort átfogva sticky-k maradnak.
-      */}
+
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
         <div className="flex flex-col gap-1 lg:col-start-1 lg:row-start-1">
           <div className="mb-2 flex items-center gap-2">
@@ -221,10 +215,12 @@ export default async function PhotoShootingDetailPage({
               {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
               {timeFormatter.format(timeSlot.startTime)}
             </h2>
-            <ChangeStartTimeButton
-              currentStartTime={timeSlot.startTime}
-              shootingId={shooting.id}
-            />
+            {!isCompleted && (
+              <ChangeStartTimeButton
+                currentStartTime={timeSlot.startTime}
+                shootingId={shooting.id}
+              />
+            )}
           </div>
         </div>
 
@@ -314,6 +310,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'photographerId',
                     )}
+                    disabled={isCompleted}
                   />
                 }
               />
@@ -347,6 +344,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'editorId',
                     )}
+                    disabled={isCompleted}
                   />
                 }
               />
@@ -574,6 +572,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'rawImagesUrl',
                     )}
+                    disabled={isCompleted}
                   />
                 }
               />
@@ -613,6 +612,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'totalEditedImages',
                     )}
+                    disabled={isCompleted}
                   />
                 }
               />
@@ -628,6 +628,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'totalRetouchedImages',
                     )}
+                    disabled={isCompleted}
                   />
                 }
               />
@@ -662,6 +663,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'finalImagesUrl',
                     )}
+                    disabled={isCompleted}
                   />
                 }
               />
@@ -674,25 +676,7 @@ export default async function PhotoShootingDetailPage({
                   A projekt zárható.
                 </AlertDescription>
                 <AlertAction>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button size="lg" variant="outline">
-                          <CheckIcon />
-                          Lezárás
-                        </Button>
-                      }
-                    />
-                    <TooltipContent>
-                      <p>
-                        Ha ezt a gombot látod, akkor nincs több fizetnivaló, és
-                        a végleges képek URL-je is fel van töltve: a projekt
-                        zárható. A gombra kattintva email-t küldünk az ügyfélnek
-                        a végleges képek linkjével, és a projektet
-                        "Teljesítettre" állítjuk.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <CompletePhotoShootingButton shootingId={shooting.id} />
                 </AlertAction>
               </Alert>
             )}

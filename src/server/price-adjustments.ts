@@ -2,7 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { PriceAdjustmentType } from '@/generated/prisma/client';
+import {
+  PhotoShootingStatus,
+  PriceAdjustmentType,
+} from '@/generated/prisma/client';
 import {
   EARLY_BIRD_DISCOUNT_AMOUNT,
   WEEKDAY_DISCOUNT_AMOUNT,
@@ -24,6 +27,19 @@ async function refreshTarget(target: PriceAdjustmentTarget) {
   } else {
     await recalculatePhotoShootingStatus(target.photoShootingId);
   }
+}
+
+async function isTargetCompleted(target: PriceAdjustmentTarget) {
+  if ('bookingIntentId' in target) {
+    return false;
+  }
+
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { id: target.photoShootingId },
+    select: { status: true },
+  });
+
+  return shooting?.status === PhotoShootingStatus.COMPLETED;
 }
 
 export async function createPriceAdjustment({
@@ -57,6 +73,10 @@ export async function createPriceAdjustment({
   }
 
   try {
+    if (await isTargetCompleted(target)) {
+      return { error: 'A lezárt fotózás nem módosítható.' };
+    }
+
     const adjustment = await prisma.priceAdjustment.create({
       data: {
         type,
@@ -89,6 +109,10 @@ export async function deletePriceAdjustment({
   await verifySession();
 
   try {
+    if (await isTargetCompleted(target)) {
+      return { error: 'A lezárt fotózás nem módosítható.' };
+    }
+
     await prisma.priceAdjustment.delete({ where: { id } });
   } catch (error) {
     console.error(error);
