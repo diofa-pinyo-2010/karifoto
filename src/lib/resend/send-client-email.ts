@@ -4,6 +4,9 @@ import type { ComponentProps, FunctionComponent, ReactNode } from 'react';
 import BookingConfirmationEmail, {
   CLIENT_BOOKING_CONFIRMATION_SUBJECT,
 } from '@/emails/BookingConfirmation';
+import CompletedProjectEmail, {
+  CLIENT_COMPLETED_PROJECT_SUBJECT,
+} from '@/emails/CompletedProject';
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
@@ -45,6 +48,10 @@ const CLIENT_EMAILS = {
   IMAGE_SELECTION: {
     component: ImageSelectionEmail,
     subject: CLIENT_IMAGE_SELECTION_SUBJECT,
+  },
+  COMPLETED_PROJECT: {
+    component: CompletedProjectEmail,
+    subject: CLIENT_COMPLETED_PROJECT_SUBJECT,
   },
 } satisfies Record<
   EmailType,

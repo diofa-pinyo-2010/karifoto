@@ -7,6 +7,9 @@ import BookingConfirmationEmail, {
 import CommentMentionEmail, {
   COMMENT_MENTION_SUBJECT,
 } from '@/emails/CommentMention';
+import CompletedProjectEmail, {
+  CLIENT_COMPLETED_PROJECT_SUBJECT,
+} from '@/emails/CompletedProject';
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
@@ -106,6 +109,17 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <ImageSelectionEmail
         {...ImageSelectionEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-completed-project',
+    label: 'Végleges képek küldése',
+    subject: CLIENT_COMPLETED_PROJECT_SUBJECT,
+    element: () => (
+      <CompletedProjectEmail
+        {...CompletedProjectEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),
