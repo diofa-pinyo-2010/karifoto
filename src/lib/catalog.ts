@@ -5,6 +5,7 @@ export type AddOn = 'LIGHT_PLAY';
 type AddOnDefinition = {
   label: string;
   feeInCents: number;
+  photographerFeeInCents: number;
   tagline: string;
   description: string;
   tips: string;
@@ -14,6 +15,7 @@ export const ADD_ONS = {
   LIGHT_PLAY: {
     label: 'Fényjáték',
     feeInCents: 10000_00,
+    photographerFeeInCents: 1000_00,
     tagline: 'Extra ajánlat, bármelyik díszlet mellé',
     description:
       'Sötét tónusú, különleges képeink varázslatosan idézik fel a karácsony otthonos, meghitt hangulatát.',
@@ -28,6 +30,7 @@ type PackageDefinition = {
   label: string;
   basePriceInCents: number;
   studioPriceInCents: number;
+  photographerFeeInCents: number;
   editedImagesAllowance: number;
   downloadableImages: number;
   durationMinutes: number;
@@ -46,6 +49,7 @@ export const PACKAGES = {
     label: 'Mini',
     basePriceInCents: 39000_00,
     studioPriceInCents: 6000_00,
+    photographerFeeInCents: 3000_00,
     editedImagesAllowance: 10,
     downloadableImages: 100,
     durationMinutes: 30,
@@ -62,6 +66,7 @@ export const PACKAGES = {
     label: 'Classic',
     basePriceInCents: 49000_00,
     studioPriceInCents: 9000_00,
+    photographerFeeInCents: 4000_00,
     editedImagesAllowance: 15,
     downloadableImages: 150,
     durationMinutes: 40,
@@ -78,6 +83,7 @@ export const PACKAGES = {
     label: 'Family',
     basePriceInCents: 59000_00,
     studioPriceInCents: 12000_00,
+    photographerFeeInCents: 5000_00,
     editedImagesAllowance: 20,
     downloadableImages: 200,
     durationMinutes: 50,
@@ -94,6 +100,7 @@ export const PACKAGES = {
     label: 'Party',
     basePriceInCents: 98000_00,
     studioPriceInCents: 18000_00,
+    photographerFeeInCents: 9000_00,
     editedImagesAllowance: 50,
     downloadableImages: 500,
     durationMinutes: 90,

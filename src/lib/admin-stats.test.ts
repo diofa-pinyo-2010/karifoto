@@ -30,6 +30,12 @@ function makePricing(): PhotoShootingPricing {
     extraEditedImageRateInCents: 3_000_00,
     extraRetouchedImageRateInCents: 4_000_00,
     expressPostProductionPriceInCents: 10_000_00,
+    photographerPackageFeeInCents: 0,
+    photographerLightPlayFeeInCents: 0,
+    photographerExtraPersonFeeInCents: 0,
+    photographerPetFeeInCents: 0,
+    editorEditedImageFeeInCents: 0,
+    editorRetouchedImageFeeInCents: 0,
     createdAt: NOW,
     updatedAt: NOW,
   };

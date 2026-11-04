@@ -97,6 +97,10 @@ export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_POST_PRODUCTION_FEE = 10000_00;
 export const WEEKDAY_DISCOUNT_AMOUNT = 5000_00;
+export const PHOTOGRAPHER_FEE_PER_EXTRA_PERSON = 1000_00;
+export const PHOTOGRAPHER_FEE_PER_PET = 1000_00;
+export const EDITOR_FEE_PER_EDITED_IMAGE = 335_00;
+export const EDITOR_FEE_PER_RETOUCHED_IMAGE = 1000_00;
 // TODO: Somehow get these numbers from catalog.ts after adding Party
 // Upper bound across all packages; the per-package limit is `maxGuests`.
 export const MAX_PERSONS = Math.max(
@@ -178,7 +182,10 @@ export const PHOTO_SHOOTING_STATUS_LABEL: Record<
     long: 'Fotós kiválasztása',
   },
   WAITING_FOR_THE_DATE: { short: 'Fotózásra vár', long: 'Várunk a fotózásra' },
-  WAITING_FOR_BALANCE_PAYMENT: { short: 'Egyenleg', long: 'Egyenlegfizetés' },
+  WAITING_FOR_BALANCE_PAYMENT: {
+    short: 'Egyenleg',
+    long: 'Fotózás & egyenlegfizetés',
+  },
   RAW_PHOTOS_UPLOAD: {
     short: 'Nyers képek',
     long: 'Nyers képek feltöltése & küldése',
@@ -415,7 +422,7 @@ export const APP_URLS = {
   upcomingShootings: '/admin/bookings',
   allShootings: '/admin/photo-shootings',
   terminals: '/admin/terminals',
-  ownShootings: '/admin/my-shootings',
+  ownShootings: '/admin/my-tasks',
   pipeline: '/admin/pipeline',
   exportBookings: '/admin/time-slots/export',
 

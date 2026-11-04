@@ -4,6 +4,7 @@ import { cache } from 'react';
 
 import {
   BookingIntentStatus,
+  LedgerEntryCategory,
   PhotoShootingStatus,
   Prisma,
   StaffProfileRole,
@@ -24,6 +25,7 @@ import {
   splitPublicTimeSlots,
 } from '@/lib/public-time-slots';
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
+import { calculateOwnShootingFees, summarizeStaffFees } from '@/lib/staff-fees';
 import { OPEN_STATUSES } from '@/lib/sumup/reconcile';
 
 import type { MentionCandidate } from '@/lib/mentions';
@@ -105,6 +107,60 @@ export async function fetchOwnPhotoShootings() {
   ]);
 
   return { asPhotographer, asEditor };
+}
+
+export async function fetchOwnStaffFees() {
+  const { staffProfile } = await verifySession();
+
+  const shootings = await prisma.photoShooting.findMany({
+    where: {
+      status: { not: PhotoShootingStatus.CANCELLED },
+      OR: [{ photographerId: staffProfile.id }, { editorId: staffProfile.id }],
+    },
+    include: {
+      pricing: true,
+      ledgerEntries: {
+        where: {
+          staffProfileId: staffProfile.id,
+          category: {
+            in: [
+              LedgerEntryCategory.EXPENSE_PHOTOGRAPHER_FEE,
+              LedgerEntryCategory.EXPENSE_EDITOR_FEE,
+            ],
+          },
+        },
+        select: { category: true, amountInCents: true, staffProfileId: true },
+      },
+    },
+  });
+
+  return summarizeStaffFees(staffProfile.id, shootings);
+}
+
+export async function fetchOwnPhotoShootingsWithFees() {
+  const { staffProfile } = await verifySession();
+
+  const shootings = await prisma.photoShooting.findMany({
+    where: {
+      OR: [{ photographerId: staffProfile.id }, { editorId: staffProfile.id }],
+    },
+    orderBy: { timeSlot: { startTime: 'asc' } },
+    include: {
+      client: { include: { owner: { select: { name: true } } } },
+      timeSlot: { select: { startTime: true } },
+      pricing: true,
+      photographer: { select: { nickname: true } },
+      editor: { select: { nickname: true } },
+    },
+  });
+
+  return {
+    staffProfileId: staffProfile.id,
+    rows: shootings.map((shooting) => ({
+      shooting,
+      fees: calculateOwnShootingFees(staffProfile.id, shooting),
+    })),
+  };
 }
 
 export async function fetchPipelinePhotoShootings() {

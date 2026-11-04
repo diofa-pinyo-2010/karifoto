@@ -165,6 +165,7 @@ export async function updatePhotoShooting(
           packagePriceInCents,
           packageStudioPriceInCents,
           packageEditedImagesAllowance,
+          photographerPackageFeeInCents,
         } = buildPricingSnapshot(parsed.data.package);
 
         effectivePricing = await tx.photoShootingPricing.update({
@@ -173,6 +174,7 @@ export async function updatePhotoShooting(
             packagePriceInCents,
             packageStudioPriceInCents,
             packageEditedImagesAllowance,
+            photographerPackageFeeInCents,
           },
         });
 

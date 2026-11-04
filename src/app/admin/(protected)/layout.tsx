@@ -20,7 +20,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
         role={staffProfile.role}
         onLogout={logout}
       />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
           <SidebarTrigger />
           <ThemeToggle />

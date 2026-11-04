@@ -8,7 +8,6 @@ import {
   SearchIcon,
   TrendingUpIcon,
   CreditCardIcon,
-  CameraIcon,
   KanbanIcon,
 } from 'lucide-react';
 
@@ -42,12 +41,6 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         title: 'Következő fotózások',
         href: APP_URLS.upcomingShootings,
         icon: SpotlightIcon,
-        allowedRoles: ALL_STAFF,
-      },
-      {
-        title: 'Saját fotózások',
-        href: APP_URLS.ownShootings,
-        icon: CameraIcon,
         allowedRoles: ALL_STAFF,
       },
       {
