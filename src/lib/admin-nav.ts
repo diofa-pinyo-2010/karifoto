@@ -9,6 +9,7 @@ import {
   TrendingUpIcon,
   CreditCardIcon,
   KanbanIcon,
+  LayersIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -53,6 +54,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         title: 'Pipeline',
         href: APP_URLS.pipeline,
         icon: KanbanIcon,
+        allowedRoles: ALL_STAFF,
+      },
+      {
+        title: 'Pipeline Tabs',
+        href: APP_URLS.pipelineTabs,
+        icon: LayersIcon,
         allowedRoles: ALL_STAFF,
       },
       {
