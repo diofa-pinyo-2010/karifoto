@@ -6,8 +6,6 @@ import { requireNavAccess } from '@/lib/dal';
 import { groupByPipelineColumn } from '@/lib/pipeline';
 import { fetchPipelinePhotoShootings } from '@/lib/queries';
 
-// Ugyanaz az adat és oszlopbontás, mint a /admin/pipeline oldalon, csak az
-// oszlopok itt fülek: egyszerre egy kártyalista látszik, minden méreten.
 export default async function Pipeline2Page() {
   await requireNavAccess(APP_URLS.pipeline2);
 
@@ -21,12 +19,14 @@ export default async function Pipeline2Page() {
       </h1>
 
       <Tabs defaultValue={0} className="gap-4">
-        {/* Telefonon a négy fül nem fér ki egy sorba: vízszintesen görgethető
-            sáv, hogy az oldal maga ne görögjön oldalra. */}
         <div className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
           <TabsList className="h-9 w-max sm:w-full">
             {columns.map((column, index) => (
-              <TabsTrigger key={column.title} value={index} className="px-2.5">
+              <TabsTrigger
+                key={column.title}
+                value={index}
+                className="px-2.5 after:hidden"
+              >
                 {column.title}
                 <Badge variant="secondary" className="rounded-full">
                   {column.shootings.length}
