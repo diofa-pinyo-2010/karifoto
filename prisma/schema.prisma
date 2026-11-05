@@ -43,6 +43,8 @@ model StaffProfile {
   comments         Comment[]
   commentMentions  CommentMention[]
   feePayouts       LedgerEntry[]
+  reviewStands     ReviewStand[]
+  reviewTaps       ReviewTap[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -395,6 +397,48 @@ model SiteSettings {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+// One physical NFC/QR stand. The id is printed into its link (/r/<id>), so a
+// stand keeps working when it moves to another photographer.
+model ReviewStand {
+  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label String
+
+  staffProfile   StaffProfile? @relation(fields: [staffProfileId], references: [id])
+  staffProfileId String?       @db.Uuid
+
+  active Boolean     @default(true)
+  taps   ReviewTap[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([staffProfileId])
+}
+
+// A tap is someone opening a stand's link, not a review. It earns a bonus only
+// once staff paste a 5-star review's URL onto it. Restrict on both relations:
+// with a bonus on it this row is a money record.
+model ReviewTap {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stand          ReviewStand   @relation(fields: [standId], references: [id], onDelete: Restrict)
+  standId        String        @db.Uuid
+  // The stand's photographer at the moment of the tap, not the current one.
+  staffProfile   StaffProfile? @relation(fields: [staffProfileId], references: [id], onDelete: Restrict)
+  staffProfileId String?       @db.Uuid
+
+  channel TapChannel?
+
+  // Snapshotted together with reviewUrl, so changing the bonus later leaves past ones alone.
+  bonusInCents Int?
+  reviewUrl    String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([staffProfileId, createdAt])
+  @@index([standId, createdAt])
+}
+
 // Auth
 model MagicLinkToken {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -444,6 +488,11 @@ model ClientPortalToken {
 enum SessionKind {
   ADMIN
   CLIENT
+}
+
+enum TapChannel {
+  NFC
+  QR
 }
 
 enum StaffProfileRole {
