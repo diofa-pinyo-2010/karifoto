@@ -1,31 +1,29 @@
 'use client';
 
-import { useRef } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
 
 import { RATING, reviews } from '@/lib/data';
 
 /**
- * 2026-os arculat. Nem carousel könyvtár, hanem natív scroll-snap sáv: a
- * húzás-görgetés érintőn és trackpaden így is megvan, a görgetősáv pedig
- * magától jelzi, hogy van még tartalom. A nyilak csak egy képernyőnyit
- * görgetnek — a `snap-mandatory` utána a legközelebbi kártyára igazít, így nem
- * kell elemenkénti indexelés.
+ * 2026-os arculat. Embla a körbeforgatáshoz: húzás érintőn és egérrel is, a
+ * slide-okat transzformmal mozgatja, nem klónozza, így a képernyőolvasó minden
+ * véleményt egyszer kap meg. Nem új függőség, a `PhotoGallery` már behúzza a
+ * publikus oldalra; a `ui/carousel` wrapper viszont csak az adminé.
  *
- * Egérrel húzni nem lehet (ezt tudná az embla), ez tudatos csere: cserébe nincs
- * carousel-függőség a publikus oldalon.
+ * A kártyák közét `pl-4` + `-ml-4` adja, nem `gap`: az Embla az első és az utolsó
+ * slide méretébe nem számolja bele a köztes `gap`-et vagy margót, és elcsúszna a
+ * körbeérés.
+ *
+ * Asztali nézetben 3 kártya látszik, ezért legalább 4 vélemény kell: kevesebbnél
+ * az Embla némán kikapcsolja a loopot, és a nyilak a végén megállnak.
  */
 export function Reviews() {
-  const listRef = useRef<HTMLUListElement>(null);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' });
 
   const scroll = (direction: 1 | -1) => {
-    const list = listRef.current;
-    if (!list) return;
-    list.scrollBy({
-      left: direction * list.clientWidth,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'auto'
-        : 'smooth',
-    });
+    const jump = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (direction === 1) emblaApi?.scrollNext(jump);
+    else emblaApi?.scrollPrev(jump);
   };
 
   return (
@@ -61,52 +59,57 @@ export function Reviews() {
           </a>
         </div>
 
-        <ul
-          ref={listRef}
-          className="flex snap-x snap-mandatory [scrollbar-width:thin] [scrollbar-color:#b9c5ba_transparent] gap-4 overflow-x-auto pb-3"
+        <div
+          ref={emblaRef}
+          className="touch-pan-y touch-pinch-zoom overflow-hidden"
         >
-          {reviews.map((r) => (
-            <li
-              key={r.name}
-              // A `calc()`-ban kötelező a szóköz a `-` körül, arbitrary
-              // értékben pedig `_` jelöli — enélkül a szabály némán kimarad.
-              className="w-[88%] shrink-0 snap-start rounded-xl border border-[#d9ded3] bg-[#fcfaf4] p-6 sm:w-[47%] lg:w-[calc((100%_-_2rem)/3)]"
-            >
-              <a
-                href={r.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="flex h-full flex-col"
+          <ul className="-ml-4 flex">
+            {reviews.map((r) => (
+              <li
+                key={r.name}
+                // A `+ 1px` kell: az Embla egész pixelre kerekítve mér, és pontos
+                // harmadnál minden harmadik szélességen 1px hiányzik a loophoz. A
+                // többlet a következő kártya `pl-4`-ébe esik, nem látszik.
+                className="w-[88%] shrink-0 pl-4 sm:w-[47%] lg:w-[calc(100%/3+1px)]"
               >
-                <span aria-label="5 csillag" className="brand-stars">
-                  ★★★★★
-                </span>
-                <p className="mt-5 mb-7 line-clamp-6 text-sm leading-[1.85]">
-                  „{r.text}”
-                </p>
-                <div className="mt-auto flex items-center gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#e5eae2] font-display text-xl"
+                <div className="h-full rounded-xl border border-[#d9ded3] bg-[#fcfaf4] p-6">
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex h-full flex-col"
                   >
-                    {r.initial}
-                  </span>
-                  <div>
-                    <strong className="block text-[11px] font-semibold">
-                      {r.name}
-                    </strong>
-                    <span className="mt-1 block text-[10px] text-brand-muted">
-                      {r.when}
+                    <span aria-label="5 csillag" className="brand-stars">
+                      ★★★★★
                     </span>
-                  </div>
-                  <span aria-hidden="true" className="ml-auto">
-                    ↗
-                  </span>
+                    <p className="mt-5 mb-7 line-clamp-6 text-sm leading-[1.85]">
+                      „{r.text}”
+                    </p>
+                    <div className="mt-auto flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#e5eae2] font-display text-xl"
+                      >
+                        {r.initial}
+                      </span>
+                      <div>
+                        <strong className="block text-[11px] font-semibold">
+                          {r.name}
+                        </strong>
+                        <span className="mt-1 block text-[10px] text-brand-muted">
+                          {r.when}
+                        </span>
+                      </div>
+                      <span aria-hidden="true" className="ml-auto">
+                        ↗
+                      </span>
+                    </div>
+                  </a>
                 </div>
-              </a>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <div className="mt-5 flex items-center justify-between gap-4 text-[10px] text-brand-muted">
           <span>Valódi családok. Saját történetek.</span>

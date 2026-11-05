@@ -18,30 +18,44 @@ export const reviews = [
   {
     initial: 'B',
     name: 'Magashegyi Bettina',
-    when: '8 hónapja · Google',
+    when: '10 hónapja · Google',
     text: 'Nagyszerű élmény volt a fotózás, végig nagyon jó hangulatban telt. A díszletek csodálatosak, meghitt hangulatú a hely. Mi egy páros fotózásra mentünk, ahol Maru fotózott minket. Nagyon kedvesen, támogatóan állt hozzánk, így kellemes légkörben telt az egész fotózás. Figyelt ránk, meghallgatta az ötleteinket, és segített abban, hogy igazán felszabadultan érezzük magunkat a kamera előtt. Külön pozitívum, hogy már aznap megkaptuk az összes elkészült fényképet. A fényjátékos fotók szerintem a legjobbak. Tényleg csak ajánlani tudom a stúdiót! 🎄✨',
     href: 'https://maps.app.goo.gl/Zr8Thpygf9Dm92zGA',
   },
   {
     initial: 'T',
     name: 'Bunta-Kranabeth Terézia',
-    when: '7 hónapja · Google',
+    when: '10 hónapja · Google',
     text: 'Nagyon jól éreztük magunkat a fotózás során, végig kellemes és nyugodt volt a hangulat. A kisbabánk is nagyon élvezte, ami különösen sokat jelentett számunkra. A fotósunk rendkívül kedves és türelmes volt, ez igazán meglátszik a képeken is. Csak ajánlani tudjuk a Karifotó csapatát!',
     href: 'https://maps.app.goo.gl/o5AdDnsR7WEjZmt6A',
   },
   {
     initial: 'A',
     name: 'Gecser Adrienn',
-    when: '9 hónapja · Google',
+    when: '11 hónapja · Google',
     text: 'Nagyon kellemesen telt a fotózás, Niki profi volt és végtelenül kedves :) Pedig nem volt egyszerű dolga a 6 hónapos kislányunkkal :D Szívből ajánlom ❤️',
     href: 'https://maps.app.goo.gl/qW2poJWjruRYk9nb8',
   },
   {
     initial: 'M',
     name: 'Mesehős',
-    when: '9 hónapja · Google',
+    when: '10 hónapja · Google',
     text: 'Első családi fotózásunkat töltöttük náluk a 4 hónapos kislányunkkal. Márk fotózott minket, aki nagyon kedves, türelmes és segítőkész volt. Jövőre ugyanitt, ugyanekkor egy évvel idősebb kislánnyal térünk vissza hozzátok :)',
     href: 'https://maps.app.goo.gl/ZJzpCWSu3s34YDjV6',
+  },
+  {
+    initial: 'J',
+    name: 'Janka Tarjáni',
+    when: '1 éve · Google',
+    text: 'Immár negyedik éve járunk karácsonyi családi fotózásra, és minden évben örömmel nézzük vissza, mennyit nőtt a kislányunk, és mennyire gyönyörű képek készültek róla. Maru mindig kedves, türelmes, figyelmes, és igazi varázsló a kamerával. A hangulat mindig oldott, a képek pedig melegek, természetesek és tele vannak szeretettel. Köszönjük, hogy évről évre ilyen szép emlékeket adsz nekünk!',
+    href: 'https://maps.app.goo.gl/Br33WiuCEmJrVSt57',
+  },
+  {
+    initial: 'D',
+    name: 'Dorottya Kocztur-Simon',
+    when: '11 hónapja · Google',
+    text: 'Karácsonyi családi fotózáson vettünk részt immár másodszor. Eszméletlen kedvesek, aranyosak, és együttműködőek. A gyerekekkel is nyomban egy hullámhosszra kerülnek. A múltkori képeink nagyon professzionálisan sikerültek, izgatottan várjuk a mostaniakat. Köszönünk mindent! :)',
+    href: 'https://maps.app.goo.gl/Z55RF8nPfoZsNp2cA',
   },
 ];
 
