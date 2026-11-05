@@ -27,6 +27,7 @@ const EXTENDED_STUDIO_ADDRESS = `Karifoto Fotóstúdió Karácsonyi Fotózás ${
 
 export const SUPPORT_EMAIL = 'info@karifoto.hu';
 export const SUPPORT_TEL = '+36 30 108 6063';
+export const GOOGLE_REVIEW_URL = 'https://g.page/r/Cea1GVOmu475EBM/review';
 
 export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
 

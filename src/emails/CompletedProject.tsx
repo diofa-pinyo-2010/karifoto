@@ -12,6 +12,8 @@ import {
   Link,
 } from 'react-email';
 
+import { GOOGLE_REVIEW_URL } from '@/lib/constants';
+
 export const CLIENT_COMPLETED_PROJECT_SUBJECT =
   '🎉 Itt vannak az elkészült karácsonyi fotóitok! 🎄📸';
 
@@ -58,10 +60,10 @@ export default function CompletedProjectEmail({
               Ha jól éreztétek magatokat, kérjük értékeljetek minket ezen a
               linken:
               <Link
-                href="https://g.page/r/Cea1GVOmu475EBM/review"
+                href={GOOGLE_REVIEW_URL}
                 className="block underline underline-offset-4"
               >
-                https://g.page/r/Cea1GVOmu475EBM/review
+                {GOOGLE_REVIEW_URL}
               </Link>
               <span className="text-xs text-gray-500">
                 (Ha szeretnétek, bátran töltsetek fel az elkészült képekből is
