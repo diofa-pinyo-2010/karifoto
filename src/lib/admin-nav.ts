@@ -57,8 +57,8 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         allowedRoles: ALL_STAFF,
       },
       {
-        title: 'Pipeline 2',
-        href: APP_URLS.pipeline2,
+        title: 'Pipeline Tabs',
+        href: APP_URLS.pipelineTabs,
         icon: LayersIcon,
         allowedRoles: ALL_STAFF,
       },

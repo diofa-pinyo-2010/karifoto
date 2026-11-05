@@ -6,8 +6,8 @@ import { requireNavAccess } from '@/lib/dal';
 import { groupByPipelineColumn } from '@/lib/pipeline';
 import { fetchPipelinePhotoShootings } from '@/lib/queries';
 
-export default async function Pipeline2Page() {
-  await requireNavAccess(APP_URLS.pipeline2);
+export default async function PipelineTabs() {
+  await requireNavAccess(APP_URLS.pipelineTabs);
 
   const shootings = await fetchPipelinePhotoShootings();
   const columns = groupByPipelineColumn(shootings);

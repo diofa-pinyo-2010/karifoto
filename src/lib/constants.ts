@@ -422,7 +422,7 @@ export const APP_URLS = {
   terminals: '/admin/terminals',
   ownShootings: '/admin/my-tasks',
   pipeline: '/admin/pipeline',
-  pipeline2: '/admin/pipeline-2',
+  pipelineTabs: '/admin/pipeline-tabs',
   exportBookings: '/admin/time-slots/export',
 
   // Client portal. The first two are public and meant to be shared; only
