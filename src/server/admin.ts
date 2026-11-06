@@ -39,6 +39,8 @@ export async function fetchPhotographers() {
   return prisma.staffProfile.findMany({
     where: { isPhotographer: true },
     select: { id: true, nickname: true, owner: { select: { name: true } } },
+    // A badge színek a sorrendből jönnek, ezért ennek stabilnak kell lennie.
+    orderBy: { createdAt: 'asc' },
   });
 }
 

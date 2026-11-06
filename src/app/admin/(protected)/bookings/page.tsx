@@ -1,29 +1,44 @@
 import Link from 'next/link';
 
-import { ChevronRightIcon, FaceSlightlyFrowningIcon } from 'lucide-react';
+import {
+  ChevronRightIcon,
+  FaceSlightlyFrowningIcon,
+  NotebookPenIcon,
+  PawPrintIcon,
+  UsersIcon,
+  WandIcon,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription,
   ItemTitle,
 } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import { requiresDecorChoice } from '@/lib/catalog';
 import {
   APP_URLS,
+  buildPhotographerBadgeClassNames,
   DECOR_SET_LABEL,
+  isLightPlayChargeable,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
 } from '@/lib/constants';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchUpcomingPhotoShootings } from '@/lib/queries';
 import { groupByDay } from '@/lib/utils';
+import { fetchPhotographers } from '@/server/admin';
 
 export default async function BookingsPage() {
-  const photoShootings = await fetchUpcomingPhotoShootings();
+  const [photoShootings, photographers] = await Promise.all([
+    fetchUpcomingPhotoShootings(),
+    fetchPhotographers(),
+  ]);
+  const photographerBadgeClassNames = buildPhotographerBadgeClassNames(
+    photographers.map((photographer) => photographer.id),
+  );
 
   const groupedShootings = groupByDay(
     photoShootings,
@@ -63,32 +78,73 @@ export default async function BookingsPage() {
                   render={
                     <Link href={APP_URLS.photoShootingAdminPage(shooting.id)}>
                       <ItemContent className="gap-2">
-                        <Badge
-                          variant="secondary"
-                          className={
-                            PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[
-                              shooting.status
-                            ]
-                          }
-                        >
-                          {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className={
+                              PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME[
+                                shooting.status
+                              ]
+                            }
+                          >
+                            {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
+                          </Badge>
+                          {shooting.photographer && (
+                            <Badge
+                              variant="secondary"
+                              className={
+                                shooting.photographerId
+                                  ? photographerBadgeClassNames.get(
+                                      shooting.photographerId,
+                                    )
+                                  : undefined
+                              }
+                            >
+                              {shooting.photographer.nickname}
+                            </Badge>
+                          )}
+                        </div>
                         <ItemTitle>
-                          <span className="text-muted-foreground">
-                            #{shooting.sequenceNumber}
-                          </span>{' '}
-                          {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
-                          <span className="text-primary dark:text-primary-foreground">
-                            {shooting.package}
-                          </span>{' '}
-                          • {shooting.client.owner.name}
+                          <div>
+                            <span className="text-muted-foreground">
+                              #{shooting.sequenceNumber}
+                            </span>{' '}
+                            {timeFormatter.format(shooting.timeSlot.startTime)}{' '}
+                            •{' '}
+                            <span className="text-primary dark:text-primary-foreground">
+                              {shooting.package}
+                              {requiresDecorChoice(shooting.package) &&
+                                shooting.decorSet &&
+                                `(${DECOR_SET_LABEL[shooting.decorSet]})`}
+                            </span>{' '}
+                            • {shooting.client.owner.name}
+                          </div>
                         </ItemTitle>
-                        <ItemDescription>
-                          {` 
-                            ${requiresDecorChoice(shooting.package) && shooting.decorSet ? `Dekor: ${DECOR_SET_LABEL[shooting.decorSet]} //` : ''}
-                            Fényjáték: ${shooting.package === 'FAMILY' ? 'IGEN' : shooting.isLightPlaySelected ? 'IGEN' : 'NEM'}
-                          `}
-                        </ItemDescription>
+                        <div className="mt-2 flex items-center gap-3">
+                          <div className="flex items-center gap-1">
+                            <UsersIcon className="size-4 text-muted-foreground" />
+                            <p className="font-medium">
+                              {shooting.numberOfGuests}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <PawPrintIcon className="size-4 text-muted-foreground" />
+                            <p className="font-medium">
+                              {shooting.numberOfPets}
+                            </p>
+                          </div>
+                          {shooting.clientNote != null && (
+                            <div className="flex items-center gap-1">
+                              <NotebookPenIcon className="size-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          {isLightPlayChargeable(shooting.package) &&
+                            shooting.isLightPlaySelected && (
+                              <div className="flex items-center gap-1">
+                                <WandIcon className="size-4 text-muted-foreground" />
+                              </div>
+                            )}
+                        </div>
                       </ItemContent>
                       <ItemActions>
                         <ChevronRightIcon className="size-4" />

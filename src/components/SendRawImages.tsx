@@ -64,8 +64,8 @@ export function SendRawImages({
           return;
         }
         toast.add({
-          description: 'A végszámla hamarosan megérkezik az ügyfélhez.',
-          title: 'Készpénzes fizetés rögzítve',
+          description: 'Az ügyfél hamarosan megkapja a képeket válogatásra.',
+          title: 'A nyers képeket elküldtük.',
           type: 'success',
         });
       } catch (err) {

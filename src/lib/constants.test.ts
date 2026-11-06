@@ -1,7 +1,37 @@
 import { describe, expect, it } from 'vitest';
 
 import { Package } from '@/generated/prisma/enums';
-import { hasLightPlay, isLightPlayChargeable } from '@/lib/constants';
+import {
+  buildPhotographerBadgeClassNames,
+  hasLightPlay,
+  isLightPlayChargeable,
+} from '@/lib/constants';
+
+describe('buildPhotographerBadgeClassNames', () => {
+  it('gives each of five photographers a different color', () => {
+    const ids = ['a', 'b', 'c', 'd', 'e'];
+    const classNames = buildPhotographerBadgeClassNames(ids);
+
+    expect(new Set(ids.map((id) => classNames.get(id))).size).toBe(5);
+  });
+
+  it('wraps around instead of leaving the sixth without a color', () => {
+    const classNames = buildPhotographerBadgeClassNames([
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+    ]);
+
+    expect(classNames.get('f')).toBe(classNames.get('a'));
+  });
+
+  it('has no color for an id that was not passed', () => {
+    expect(buildPhotographerBadgeClassNames(['a']).get('b')).toBeUndefined();
+  });
+});
 
 describe('light play', () => {
   describe('isLightPlayChargeable', () => {
