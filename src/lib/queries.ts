@@ -34,6 +34,7 @@ const photoShootingWithClientInclude = {
   include: {
     client: { include: { owner: true } },
     timeSlot: { select: { startTime: true } },
+    photographer: { select: { nickname: true } },
   },
 } satisfies Prisma.PhotoShootingDefaultArgs;
 
