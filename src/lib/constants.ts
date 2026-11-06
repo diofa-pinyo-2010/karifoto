@@ -386,6 +386,29 @@ export const PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME: Record<
     'bg-red-500/10 text-red-600 dark:bg-red-500/20 border border-red-500/80 dark:border-red-500/40 dark:text-red-400 uppercase font-mono font-medium',
 };
 
+// Avoids yellow/green/red, which the status badges above already mean something by.
+const PHOTOGRAPHER_BADGE_COLORS = [
+  'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/80 dark:border-blue-500/40',
+  'bg-pink-500/10 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400 border border-pink-500/80 dark:border-pink-500/40',
+  'bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/80 dark:border-violet-500/40',
+  'bg-cyan-500/10 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400 border border-cyan-500/80 dark:border-cyan-500/40',
+  'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 border border-orange-500/80 dark:border-orange-500/40',
+];
+
+// Assigned by position, not by anything stored on the profile, so it works on
+// whatever staff a database holds. Callers pass the ids in a stable order;
+// colors only repeat past the fifth photographer.
+export function buildPhotographerBadgeClassNames(
+  photographerIds: string[],
+): Map<string, string> {
+  return new Map(
+    photographerIds.map((id, index) => [
+      id,
+      PHOTOGRAPHER_BADGE_COLORS[index % PHOTOGRAPHER_BADGE_COLORS.length],
+    ]),
+  );
+}
+
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   CARD: 'Bankkártya',
   TRANSFER: 'Átutalás',
