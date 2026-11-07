@@ -29,6 +29,7 @@ describe('summarizeDailyIncome', () => {
       total: 55_000_00,
       card: 30_000_00,
       cash: 25_000_00,
+      staffPayoutCash: 0,
       cashBox: 25_000_00,
     });
   });
@@ -80,7 +81,44 @@ describe('summarizeDailyIncome', () => {
       total: 0,
       card: 0,
       cash: 0,
+      staffPayoutCash: 0,
       cashBox: 15_000_00,
+    });
+  });
+
+  it('subtracts cash staff payouts from the cash box', () => {
+    const summary = summarizeDailyIncome(
+      [
+        {
+          category: 'INCOME_CLIENT_PAYMENT_BALANCE',
+          method: 'CASH',
+          amountInCents: 25_000_00,
+        },
+        {
+          category: 'EXPENSE_PHOTOGRAPHER_FEE',
+          method: 'CASH',
+          amountInCents: -8_000_00,
+        },
+        {
+          category: 'EXPENSE_STAFF_BONUS',
+          method: 'CASH',
+          amountInCents: -2_000_00,
+        },
+        {
+          category: 'EXPENSE_EDITOR_FEE',
+          method: 'TRANSFER',
+          amountInCents: -5_000_00,
+        },
+      ],
+      10_000_00,
+    );
+
+    expect(summary).toEqual({
+      total: 25_000_00,
+      card: 0,
+      cash: 25_000_00,
+      staffPayoutCash: 10_000_00,
+      cashBox: 25_000_00,
     });
   });
 });
