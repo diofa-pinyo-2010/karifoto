@@ -200,15 +200,11 @@ async function handleImageSelectionExtra(
     }
   }
 
-  const completed = await completeImageSelection(
-    shootingId,
-    {
-      editedImages: metadata.edited_images,
-      retouchedImages: metadata.retouched_images,
-      isExpressPostProduction: metadata.express_post_production === 'true',
-    },
-    amountTotal,
-  );
+  const completed = await completeImageSelection(shootingId, {
+    editedImages: metadata.edited_images,
+    retouchedImages: metadata.retouched_images,
+    isExpressPostProduction: metadata.express_post_production === 'true',
+  });
   if (!completed) {
     // Either a retry, or a second payment for an already closed selection
     // (two tabs). The ledger has it either way; the latter needs a refund.

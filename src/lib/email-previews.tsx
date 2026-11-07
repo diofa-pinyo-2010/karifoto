@@ -13,6 +13,9 @@ import CompletedProjectEmail, {
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
+import EditorSelectionCompletedEmail, {
+  EDITOR_SELECTION_COMPLETED_SUBJECT,
+} from '@/emails/EditorSelectionCompleted';
 import ImageSelectionEmail, {
   CLIENT_IMAGE_SELECTION_SUBJECT,
 } from '@/emails/ImageSelection';
@@ -54,6 +57,17 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <CommentMentionEmail
         {...CommentMentionEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'editor-selection-completed',
+    label: 'Képválogatás kész (szerkesztőnek)',
+    subject: EDITOR_SELECTION_COMPLETED_SUBJECT,
+    element: () => (
+      <EditorSelectionCompletedEmail
+        {...EditorSelectionCompletedEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),

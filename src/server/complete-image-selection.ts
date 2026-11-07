@@ -2,9 +2,10 @@ import { revalidatePath } from 'next/cache';
 
 import { env } from '@/env';
 import { APP_URLS } from '@/lib/constants';
-import { sendDiscordNotification } from '@/lib/discord';
+import { formatLongDate, monthDayFormatter } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
-import { formatMoney } from '@/lib/utils';
+import { sendEditorSelectionCompletedEmail } from '@/lib/resend/editor-selection-completed';
+import { getDeliveryDeadline } from '@/lib/utils';
 import { resolveStatus } from '@/server/photo-shooting-status';
 
 /**
@@ -17,7 +18,10 @@ import { resolveStatus } from '@/server/photo-shooting-status';
  *
  * `false`, ha a válogatás már le volt zárva — a `selectionCompletedAt: null`
  * szűrő védi, hogy a dupla beküldés vagy a webhook újrapróbálása ne írjon
- * felül egy lezárt válogatást, és ne pingeljen kétszer.
+ * felül egy lezárt válogatást, és ne küldjön kétszer emailt.
+ *
+ * A szerkesztő csak akkor kap emailt, ha már ki van jelölve; ha nincs, a
+ * fotózás EDITOR_SELECTION státuszba kerül, és az adminon látszik.
  */
 export async function completeImageSelection(
   shootingId: string,
@@ -26,7 +30,6 @@ export async function completeImageSelection(
     retouchedImages: number;
     isExpressPostProduction: boolean;
   },
-  paidInCents: number | null,
 ): Promise<boolean> {
   const shooting = await prisma.photoShooting.findUniqueOrThrow({
     where: { id: shootingId },
@@ -36,6 +39,9 @@ export async function completeImageSelection(
       adjustments: true,
       ledgerEntries: true,
       client: { select: { owner: { select: { name: true } } } },
+      editor: {
+        select: { nickname: true, owner: { select: { email: true } } },
+      },
     },
   });
   if (shooting.pricing == null) {
@@ -71,18 +77,34 @@ export async function completeImageSelection(
     APP_URLS.clientPortalShootingDetails(shooting.clientId, shootingId),
   );
 
-  await sendDiscordNotification({
-    type: 'info',
-    content: [
-      '🖼️ **Képválogatás beküldve!**\n',
-      `Név: ${shooting.client.owner.name}`,
-      `Szerkesztésre: ${selection.editedImages} db (csomagban: ${shooting.pricing.packageEditedImagesAllowance} db)`,
-      `Extra retusra: ${selection.retouchedImages} db`,
-      `Expressz utómunka: ${selection.isExpressPostProduction ? 'igen ⚡' : 'nem'}`,
-      `Fizetett extra: ${paidInCents != null ? formatMoney(paidInCents) : '—'}`,
-      `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shootingId)})`,
-    ].join('\n'),
-  });
+  if (shooting.editor != null) {
+    // Nem dobunk: a válogatás már le van zárva, egy elakadt email miatt ne
+    // bukjon el a beküldés vagy a Stripe webhook.
+    try {
+      const { error } = await sendEditorSelectionCompletedEmail({
+        shootingId,
+        to: shooting.editor.owner.email,
+        name: shooting.editor.nickname,
+        shootingLabel: `${shooting.client.owner.name} · ${formatLongDate(shooting.timeSlot.startTime)} · ${shooting.package}`,
+        editedImages: selection.editedImages,
+        retouchedImages: selection.retouchedImages,
+        isExpressPostProduction: selection.isExpressPostProduction,
+        deadline: monthDayFormatter.format(
+          getDeliveryDeadline(
+            updates.selectionCompletedAt,
+            selection.isExpressPostProduction,
+          ),
+        ),
+        shootingUrl: `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shootingId)}`,
+      });
+      if (error != null) throw error;
+    } catch (error) {
+      console.error('[image-selection] editor email failed', {
+        shootingId,
+        error,
+      });
+    }
+  }
 
   return true;
 }

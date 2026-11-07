@@ -30,6 +30,13 @@ export const commentMentionEmailKey = (commentMentionId: string) =>
   `comment-mention/${commentMentionId}`;
 
 /**
+ * Resend `Idempotency-Key` too: the selection closes once per shooting (the
+ * `selectionCompletedAt: null` guard), this only covers a duplicate send.
+ */
+export const editorSelectionCompletedEmailKey = (shootingId: string) =>
+  `editor-selection-completed/${shootingId}`;
+
+/**
  * Atomically marks an event as processed.
  * Returns true if this is the first time we're seeing this event (should process).
  * Returns false if the event was already processed (should skip).
