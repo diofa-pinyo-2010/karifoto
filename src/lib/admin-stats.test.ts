@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildAdminStats } from '@/lib/admin-stats';
+import { buildAdminStats, buildExpenseItems } from '@/lib/admin-stats';
 
 import type {
   PhotoShooting,
@@ -212,5 +212,70 @@ describe('buildAdminStats', () => {
     expect(stats.expenses).toBe(10_000_00);
     expect(stats.profit).toBe(11_000_00);
     expect(stats.expectedProfit).toBe(BASE - 10_000_00);
+  });
+});
+
+describe('buildExpenseItems', () => {
+  const payout = {
+    id: 'payout-1',
+    method: 'CASH' as const,
+    note: 'december',
+    createdAt: new Date('2026-12-03T10:00:00.000Z'),
+    staffProfile: { nickname: 'Anna' },
+  };
+
+  function makeEntry(
+    overrides: Partial<Parameters<typeof buildExpenseItems>[0][number]>,
+  ) {
+    return {
+      id: 'entry-1',
+      category: 'EXPENSE_RENT' as const,
+      amountInCents: -1_000_00,
+      method: 'TRANSFER' as const,
+      description: null,
+      createdAt: NOW,
+      staffPayout: null,
+      ...overrides,
+    };
+  }
+
+  it('collapses a payout into one positive line and sorts oldest first', () => {
+    const items = buildExpenseItems([
+      makeEntry({ id: 'fee-1', amountInCents: -8_000_00, staffPayout: payout }),
+      makeEntry({
+        id: 'rent',
+        description: 'Stúdió',
+        createdAt: new Date('2026-11-01T10:00:00.000Z'),
+      }),
+      makeEntry({
+        id: 'fee-2',
+        category: 'EXPENSE_STAFF_BONUS',
+        amountInCents: -2_000_00,
+        staffPayout: payout,
+      }),
+    ]);
+
+    expect(items).toEqual([
+      {
+        key: 'entry-rent',
+        date: '2026-11-01T10:00:00.000Z',
+        description: 'Stúdió',
+        method: 'TRANSFER',
+        amountInCents: 1_000_00,
+      },
+      {
+        key: 'payout-payout-1',
+        date: '2026-12-03T10:00:00.000Z',
+        description: 'Kifizetés – Anna: december',
+        method: 'CASH',
+        amountInCents: 10_000_00,
+      },
+    ]);
+  });
+
+  it('falls back to the category label without a description', () => {
+    const [item] = buildExpenseItems([makeEntry({})]);
+
+    expect(item.description).toBe('Bérleti díj');
   });
 });

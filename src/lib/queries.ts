@@ -9,10 +9,15 @@ import {
   Prisma,
   StaffProfileRole,
 } from '@/generated/prisma/client';
-import { ADMIN_STATS_TAG, buildAdminStats } from '@/lib/admin-stats';
+import {
+  ADMIN_STATS_TAG,
+  buildAdminStats,
+  buildExpenseItems,
+} from '@/lib/admin-stats';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
   EARLY_BIRD_DATE_DEADLINE,
+  LEDGER_ENTRY_CATEGORY_SIGN,
   SITE_SETTINGS_TABLE_ID,
   UPCOMING_SHOOTINGS_TO_SHOW,
   UUID_RE,
@@ -645,7 +650,11 @@ const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `buildAdminStats()` visszatérési alakja változik! A Vercel Data
 // Cache túléli a deployt, és a kulcs csak a callback forrásából + ebből áll,
 // ezért enélkül az új kód a régi alakú cache-elt adatot kapná vissza.
-const ADMIN_STATS_CACHE_VERSION = 'v2';
+const ADMIN_STATS_CACHE_VERSION = 'v3';
+
+const INCOME_CATEGORIES = Object.values(LedgerEntryCategory).filter(
+  (category) => LEDGER_ENTRY_CATEGORY_SIGN[category] === 1,
+);
 
 /**
  * Az összes fotózás és könyvelési tétel alapján számolt statisztika, egy óráig
@@ -657,25 +666,55 @@ const ADMIN_STATS_CACHE_VERSION = 'v2';
  */
 export const getAdminStats = unstable_cache(
   async () => {
-    const [shootings, ledgerGroups] = await Promise.all([
+    const [shootings, incomeGroups, expenseEntries] = await Promise.all([
       prisma.photoShooting.findMany({
         include: { pricing: true, adjustments: true },
       }),
       prisma.ledgerEntry.groupBy({
         by: ['category'],
+        where: { category: { in: INCOME_CATEGORIES } },
         _sum: { amountInCents: true },
+      }),
+      // A kiadásokat soronként töltjük be, és a kártya összegét is ezekből
+      // számoljuk, hogy a tételes lista végösszege mindig egyezzen vele.
+      prisma.ledgerEntry.findMany({
+        where: { category: { notIn: INCOME_CATEGORIES } },
+        select: {
+          id: true,
+          category: true,
+          amountInCents: true,
+          method: true,
+          description: true,
+          createdAt: true,
+          staffPayout: {
+            select: {
+              id: true,
+              method: true,
+              note: true,
+              createdAt: true,
+              staffProfile: { select: { nickname: true } },
+            },
+          },
+        },
       }),
     ]);
 
     const stats = buildAdminStats({
       shootings,
-      ledgerSums: ledgerGroups.map((group) => ({
-        category: group.category,
-        amountInCents: group._sum.amountInCents ?? 0,
-      })),
+      ledgerSums: [
+        ...incomeGroups.map((group) => ({
+          category: group.category,
+          amountInCents: group._sum.amountInCents ?? 0,
+        })),
+        ...expenseEntries,
+      ],
     });
 
-    return { ...stats, syncedAt: new Date().toISOString() };
+    return {
+      ...stats,
+      expenseItems: buildExpenseItems(expenseEntries),
+      syncedAt: new Date().toISOString(),
+    };
   },
   [ADMIN_STATS_TAG, ADMIN_STATS_CACHE_VERSION],
   { tags: [ADMIN_STATS_TAG], revalidate: ADMIN_STATS_REVALIDATE_SECONDS },

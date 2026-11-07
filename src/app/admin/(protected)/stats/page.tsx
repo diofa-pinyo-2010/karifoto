@@ -1,6 +1,10 @@
+import Link from 'next/link';
+
 import { RefreshStatsButton } from '@/components/RefreshStatsButton';
+import { Button } from '@/components/ui/button';
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -49,6 +53,7 @@ export default async function StatsAdminPage() {
       amount: stats.expenses,
       description: 'Minden kiadás: fotós, bérleti díj, terminál, Stripe, stb.',
       estimated: false,
+      href: '/admin/stats/expenses',
     },
   ];
 
@@ -81,6 +86,16 @@ export default async function StatsAdminPage() {
               >
                 {formatMoney(card.amount)}
               </CardTitle>
+              {card.href && (
+                <CardAction>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    nativeButton={false}
+                    render={<Link href={card.href}>Tételes lista</Link>}
+                  />
+                </CardAction>
+              )}
             </CardHeader>
             <CardContent className="text-xs text-muted-foreground">
               {card.description}
