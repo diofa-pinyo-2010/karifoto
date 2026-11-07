@@ -59,7 +59,7 @@ export const reviews = [
   },
 ];
 
-export const RATING = { score: '5,0', count: 100 };
+export const RATING = { score: '5,0', count: 104 };
 
 // --- Díszletek ---------------------------------------------------------------
 
