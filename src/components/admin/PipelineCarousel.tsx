@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 // Telefonon az oszlopok egymás mellett, lapozva csúsznak (a következő széle
 // kilóg, hogy látszódjon, van még), így az oldal csak függőlegesen görget.
-// Desktopon sima négyoszlopos rács.
+// Desktopon sima hatoszlopos rács.
 export function PipelineCarousel({ children }: { children: React.ReactNode }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -35,7 +35,7 @@ export function PipelineCarousel({ children }: { children: React.ReactNode }) {
       <div
         ref={scrollerRef}
         onScroll={handleScroll}
-        className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 scrollbar-none items-start gap-3 overflow-x-auto px-4 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden [&>*]:w-[85%] [&>*]:shrink-0 [&>*]:snap-start lg:[&>*]:w-auto"
+        className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 scrollbar-none items-start gap-3 overflow-x-auto px-4 lg:mx-0 lg:grid lg:grid-cols-6 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden [&>*]:w-[85%] [&>*]:shrink-0 [&>*]:snap-start lg:[&>*]:w-auto"
       >
         {children}
       </div>

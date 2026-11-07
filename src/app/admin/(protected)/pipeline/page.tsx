@@ -1,15 +1,20 @@
 import { PipelineCard } from '@/components/admin/PipelineCard';
 import { PipelineCarousel } from '@/components/admin/PipelineCarousel';
 import { Badge } from '@/components/ui/badge';
-import { APP_URLS } from '@/lib/constants';
+import { APP_URLS, buildStaffBadgeClassNames } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { groupByPipelineColumn } from '@/lib/pipeline';
 import { fetchPipelinePhotoShootings } from '@/lib/queries';
+import { fetchStaffIdsForBadges } from '@/server/admin';
 
 export default async function PipelinePage() {
   await requireNavAccess(APP_URLS.pipeline);
 
-  const shootings = await fetchPipelinePhotoShootings();
+  const [shootings, staffIds] = await Promise.all([
+    fetchPipelinePhotoShootings(),
+    fetchStaffIdsForBadges(),
+  ]);
+  const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
   const columns = groupByPipelineColumn(shootings);
 
   return (
@@ -39,7 +44,11 @@ export default async function PipelinePage() {
                 </p>
               ) : (
                 column.shootings.map((shooting) => (
-                  <PipelineCard key={shooting.id} shooting={shooting} />
+                  <PipelineCard
+                    key={shooting.id}
+                    shooting={shooting}
+                    staffBadgeClassNames={staffBadgeClassNames}
+                  />
                 ))
               )}
             </div>
