@@ -442,12 +442,11 @@ describe('calculatePricing', () => {
   // Asserts the shape, not the wording: these labels are user-facing copy that
   // also lands on an invoice, so pinning the exact strings here would turn every
   // copy tweak into a failing test.
-  it('always lists the package and the studio fee, and nothing else by default', () => {
+  it('always lists the package with the studio fee included, and nothing else by default', () => {
     const result = breakdown();
 
-    expect(result.lines).toHaveLength(2);
-    expect(result.lines[0].amountInCents).toBe(PACKAGE);
-    expect(result.lines[1].amountInCents).toBe(STUDIO);
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0].amountInCents).toBe(PACKAGE + STUDIO);
     expect(result.lines[0].label).toContain('CLASSIC');
   });
 

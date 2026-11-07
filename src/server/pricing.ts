@@ -61,7 +61,8 @@ type PricingArgs = {
  * the admin page show a light-play charge the total did not include.
  *
  * A line is only present when it costs something, so nothing renders a
- * 0 Ft row — except the package and studio fee, which always apply.
+ * 0 Ft row — except the package, which always applies. Its line includes the
+ * studio fee, matching how the price is shown everywhere else in the UI.
  */
 export function calculatePricing({
   pricing,
@@ -72,11 +73,8 @@ export function calculatePricing({
   const lines: PriceLine[] = [
     {
       label: `${shooting.package} csomag`,
-      amountInCents: pricing.packagePriceInCents,
-    },
-    {
-      label: 'Stúdió bérlés',
-      amountInCents: pricing.packageStudioPriceInCents,
+      amountInCents:
+        pricing.packagePriceInCents + pricing.packageStudioPriceInCents,
     },
   ];
 
