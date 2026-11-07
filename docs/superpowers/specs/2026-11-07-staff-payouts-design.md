@@ -53,11 +53,11 @@ dolgozik, az új esedékes tételek felülre adódnak hozzá.
 Három fajta. Mindegyiknek van **összege**, **esedékesség időpontja** (ez adja a
 sor dátumát és a rendezést) és **hivatkozása**.
 
-| Tétel | Kié | Mikor esedékes | Dátum | Összeg | Hivatkozás |
-|---|---|---|---|---|---|
-| Fotós díj | `photographerId` | balance befizetés rögzítve | az `INCOME_CLIENT_PAYMENT_BALANCE` ledger sor `createdAt`-je | `calculatePhotographerFee(pricing, shooting)` | fotózás |
-| Szerkesztői díj | `editorId` | `status === COMPLETED` | `completedAt` | `calculateEditorFee(pricing, shooting)` | fotózás |
-| Review bónusz | `ReviewTap.staffProfileId` | `reviewUrl` kitöltve | `reviewUrlSetAt` | `ReviewTap.bonusInCents` (snapshot) | review tap |
+| Tétel           | Kié                        | Mikor esedékes             | Dátum                                                        | Összeg                                        | Hivatkozás |
+| --------------- | -------------------------- | -------------------------- | ------------------------------------------------------------ | --------------------------------------------- | ---------- |
+| Fotós díj       | `photographerId`           | balance befizetés rögzítve | az `INCOME_CLIENT_PAYMENT_BALANCE` ledger sor `createdAt`-je | `calculatePhotographerFee(pricing, shooting)` | fotózás    |
+| Szerkesztői díj | `editorId`                 | `status === COMPLETED`     | `completedAt`                                                | `calculateEditorFee(pricing, shooting)`       | fotózás    |
+| Review bónusz   | `ReviewTap.staffProfileId` | `reviewUrl` kitöltve       | `reviewUrlSetAt`                                             | `ReviewTap.bonusInCents` (snapshot)           | review tap |
 
 - Lemondott (`CANCELLED`) fotózás és pricing snapshot nélküli fotózás nem ad
   tételt (mint ma a `summarizeStaffFees`-ben).
@@ -112,8 +112,8 @@ A kifizetés rögzítésekor a szerver:
    - `EXPENSE_PHOTOGRAPHER_FEE` + `photoShootingId`,
    - `EXPENSE_EDITOR_FEE` + `photoShootingId`,
    - `EXPENSE_STAFF_BONUS` + `reviewTapId`,
-   mind `staffProfileId`-vel, `staffPayoutId`-vel, a fejléc `method`-jával,
-   negatív előjellel.
+     mind `staffProfileId`-vel, `staffPayoutId`-vel, a fejléc `method`-jával,
+     negatív előjellel.
 
 Részkifizetésnél az utolsó érintett tétel részben kifizetett marad, a maradéka
 esedékes. Ha az összeg > esedékes egyenleg, vagy ≤ 0: `{ error: '…' }`.

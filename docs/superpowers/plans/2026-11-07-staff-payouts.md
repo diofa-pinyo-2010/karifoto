@@ -37,12 +37,14 @@
 ### Task 1: Schema, constants, nav entry
 
 **Files:**
+
 - Modify: `prisma/schema.prisma` (models `StaffProfile`, `LedgerEntry`, `ReviewTap`, enum `LedgerEntryCategory`; new model `StaffPayout`)
 - Create: `prisma/migrations/<timestamp>_add_staff_payouts/migration.sql` (generated)
 - Modify: `src/lib/constants.ts` (`LEDGER_ENTRY_CATEGORY_SIGN`, `LEDGER_ENTRY_CATEGORY_LABEL`, `APP_URLS`, new constant)
 - Modify: `src/lib/admin-nav.ts`
 
 **Interfaces:**
+
 - Produces: `LedgerEntryCategory.EXPENSE_STAFF_BONUS`; `StaffPayout` model; `LedgerEntry.staffPayoutId`, `LedgerEntry.reviewTapId`; `ReviewTap.reviewUrlSetAt`; `GOOGLE_REVIEW_BONUS_IN_CENTS`; `APP_URLS.staffPayouts = '/admin/staff-payouts'`.
 
 - [ ] **Step 1: Edit schema**
@@ -61,10 +63,12 @@
 ### Task 2: Due items and account summary (pure)
 
 **Files:**
+
 - Create: `src/lib/staff-ledger.ts`
 - Test: `src/lib/staff-ledger.test.ts`
 
 **Interfaces:**
+
 - Consumes: `calculatePhotographerFee`, `calculateEditorFee` from `@/lib/staff-fees`; `isStatusBefore` from `@/lib/constants`.
 - Produces (all exported, used by Tasks 3, 5, 6):
 
@@ -116,6 +120,7 @@ export function buildStaffAccount(items: DueItem[], payouts: LedgerPayout[]): St
 ```
 
 Rules `collectDueItems` encodes (skip CANCELLED and `pricing == null` shootings entirely):
+
 - Photographer item when `photographerId === staffProfileId` and (`balancePaidAt != null` → `dueAt = balancePaidAt`; else if `!isStatusBefore(status, RAW_PHOTOS_UPLOAD)` → `dueAt = timeSlot.startTime`; else none). Amount = `calculatePhotographerFee`.
 - Editor item when `editorId === staffProfileId` and `status === COMPLETED`; `dueAt = completedAt ?? timeSlot.startTime`. Amount = `calculateEditorFee`.
 - Bonus item when `tap.staffProfileId === staffProfileId && tap.reviewUrlSetAt != null && tap.bonusInCents != null`.
@@ -144,10 +149,12 @@ Rules `collectDueItems` encodes (skip CANCELLED and `pricing == null` shootings 
 ### Task 3: FIFO payout allocation (pure)
 
 **Files:**
+
 - Modify: `src/lib/staff-ledger.ts`
 - Test: `src/lib/staff-ledger.test.ts`
 
 **Interfaces:**
+
 - Consumes: `DueItem`, `PaidLedgerEntry`, `paidByItemKey`, `buildStaffAccount` from Task 2.
 - Produces:
 
@@ -179,10 +186,12 @@ Algorithm: reject unless `Number.isInteger(amountInCents) && amountInCents > 0` 
 ### Task 4: Mai nap — cash staff payouts reduce the brifkó
 
 **Files:**
+
 - Modify: `src/lib/daily-income.ts`, `src/lib/daily-income.test.ts`
 - Modify: `src/app/admin/(protected)/today/page.tsx` (cash card description)
 
 **Interfaces:**
+
 - Produces: `summarizeDailyIncome` return gains `staffPayoutCash: number` (positive fillér); `cashBox = cash + dailyChangeInCents − staffPayoutCash`.
 
 - [ ] **Step 1: Tests** — add `staffPayoutCash: 0` to the existing `toEqual` expectation; new case `subtracts cash staff payouts from the cash box`: cash balance `25_000_00`, change `10_000_00`, entries `EXPENSE_PHOTOGRAPHER_FEE CASH -8_000_00`, `EXPENSE_STAFF_BONUS CASH -2_000_00`, `EXPENSE_EDITOR_FEE TRANSFER -5_000_00` → `staffPayoutCash 10_000_00`, `cashBox 25_000_00`, `total`/`cash` unchanged.
@@ -197,41 +206,59 @@ Algorithm: reject unless `Number.isInteger(amountInCents) && amountInCents > 0` 
 ### Task 5: Loader and server actions
 
 **Files:**
+
 - Create: `src/server/load-staff-ledger.ts` (`import 'server-only'`)
 - Create: `src/server/staff-payouts.ts` (`'use server'`)
 
 **Interfaces:**
+
 - Consumes: Task 2/3 exports; `GOOGLE_REVIEW_BONUS_IN_CENTS`, `APP_URLS.staffPayouts`.
 - Produces:
 
 ```ts
 // load-staff-ledger.ts
 type Db = Prisma.TransactionClient | typeof prisma;
-export async function loadStaffLedger(db: Db, staffProfileId: string): Promise<{
+export async function loadStaffLedger(
+  db: Db,
+  staffProfileId: string,
+): Promise<{
   items: DueItem[];
   payouts: LedgerPayout[];
   shootings: { id: string; clientName: string; startTime: Date }[]; // for row labels
-  taps: { id: string; createdAt: Date; standLabel: string; reviewUrl: string | null;
-          reviewUrlSetAt: Date | null; bonusInCents: number | null }[]; // newest first
+  taps: {
+    id: string;
+    createdAt: Date;
+    standLabel: string;
+    reviewUrl: string | null;
+    reviewUrlSetAt: Date | null;
+    bonusInCents: number | null;
+  }[]; // newest first
 }>;
 
 // staff-payouts.ts
 export async function recordStaffPayout(input: {
-  staffProfileId: string; amountHuf: number; method: 'CASH' | 'TRANSFER'; note: string | null;
+  staffProfileId: string;
+  amountHuf: number;
+  method: 'CASH' | 'TRANSFER';
+  note: string | null;
 }): Promise<{ success: true } | { error: string }>;
-export async function setReviewTapUrl(reviewTapId: string, url: string | null)
-  : Promise<{ success: true } | { error: string }>;
+export async function setReviewTapUrl(
+  reviewTapId: string,
+  url: string | null,
+): Promise<{ success: true } | { error: string }>;
 ```
 
 Loader queries: shootings where `photographerId` or `editorId` = staff, not CANCELLED, include `pricing`, `timeSlot.startTime`, client owner name, and `ledgerEntries` filtered to `INCOME_CLIENT_PAYMENT_BALANCE` (→ `balancePaidAt` = its `createdAt`); taps where `staffProfileId` = staff, include `stand.label`; `staffPayout.findMany({ where: { staffProfileId }, include: { ledgerEntries: { select: category, amountInCents, photoShootingId, reviewTapId } } })`.
 
 `recordStaffPayout`:
+
 1. SUPERADMIN gate; zod: `staffProfileId` uuid, `amountHuf` positive int, `method` enum, `note` trimmed ≤ 500 or null.
-2. `prisma.$transaction(async (tx) => …)`: first `await tx.$queryRaw\`SELECT id FROM "StaffProfile" WHERE id = ${id}::uuid FOR UPDATE\`` (Review Focus 1 — serializes concurrent payouts for one staff); 0 rows → `'Nem találjuk ezt a munkatársat.'`. Then `loadStaffLedger(tx, id)`, `allocatePayout(...)`; on `ok: false` throw a local error class carrying the message and return it as `{ error }`.
+2. `prisma.$transaction(async (tx) => …)`: first `await tx.$queryRaw\`SELECT id FROM "StaffProfile" WHERE id = ${id}::uuid FOR UPDATE\``(Review Focus 1 — serializes concurrent payouts for one staff); 0 rows →`'Nem találjuk ezt a munkatársat.'`. Then `loadStaffLedger(tx, id)`, `allocatePayout(...)`; on `ok: false`throw a local error class carrying the message and return it as`{ error }`.
 3. Create `StaffPayout` with nested `ledgerEntries.create` — one per allocation: `category: item.category`, `amountInCents: -a.amountInCents`, `method`, `staffProfileId`, `photoShootingId`/`reviewTapId` from the item.
 4. `revalidatePath(APP_URLS.staffPayouts)` and `revalidatePath(APP_URLS.today)`. Unexpected error → log + `'Nem sikerült rögzíteni a kifizetést. Próbáld újra.'`.
 
 `setReviewTapUrl`:
+
 1. SUPERADMIN gate; `reviewTapId` uuid; url `z.url()` after trim, empty → `'Adj meg egy érvényes linket.'`.
 2. `prisma.reviewTap.updateMany({ where: { id, reviewUrl: null, staffProfileId: { not: null } }, data: { reviewUrl, reviewUrlSetAt: new Date(), bonusInCents: GOOGLE_REVIEW_BONUS_IN_CENTS } })`; `count === 0` → `'Ennél a tapnél már ki van töltve a review URL.'` (Review Focus 4).
 3. P2002 → `'Ez a review URL már egy másik taphez tartozik.'` (Review Focus 3).
@@ -246,6 +273,7 @@ Loader queries: shootings where `photographerId` or `editorId` = staff, not CANC
 ### Task 6: Page and components
 
 **Files:**
+
 - Create: `src/app/admin/(protected)/staff-payouts/page.tsx`
 - Create: `src/components/admin/staff-payouts/StaffAccountTable.tsx` (`'use client'`, expandable payout rows)
 - Create: `src/components/admin/staff-payouts/RecordPayoutDialog.tsx` (`'use client'`)
@@ -253,10 +281,12 @@ Loader queries: shootings where `photographerId` or `editorId` = staff, not CANC
 - Modify: `src/lib/queries.ts` — `fetchStaffPayoutTabs()`
 
 **Interfaces:**
+
 - Consumes: `loadStaffLedger`, `buildStaffAccount`, `recordStaffPayout`, `setReviewTapUrl`.
 - Produces: `fetchStaffPayoutTabs(): Promise<{ id: string; nickname: string; dueInCents: number }[]>` — staff with `isPhotographer || isEditor` or any payout/tap, ordered by nickname; `dueInCents` via `loadStaffLedger(prisma, id)` + `buildStaffAccount` (small staff count; per-staff loop is acceptable).
 
 Layout (approved mockup v3, „A”):
+
 - `requireNavAccess(APP_URLS.staffPayouts)`. `searchParams.staff` selects the staff; missing/unknown → first tab.
 - Tabs: `Link` pills `?staff=<id>` showing `nickname · formatMoney(dueInCents)`.
 - Header: nickname + `RecordPayoutDialog` trigger „+ Kifizetés rögzítése”.
