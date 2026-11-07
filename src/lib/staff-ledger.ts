@@ -4,6 +4,7 @@ import {
 } from '@/generated/prisma/enums';
 import { isStatusBefore } from '@/lib/constants';
 import { calculateEditorFee, calculatePhotographerFee } from '@/lib/staff-fees';
+import { formatMoney } from '@/lib/utils';
 
 import type {
   LedgerEntry,
@@ -228,7 +229,7 @@ export function buildStaffAccount(
   const events = [
     ...items.map((item) => ({ at: item.dueAt, order: 0, item })),
     ...payouts.map((payout) => ({ at: payout.createdAt, order: 1, payout })),
-  ].sort((a, b) => a.at.getTime() - b.at.getTime() || a.order - b.order);
+  ].toSorted((a, b) => a.at.getTime() - b.at.getTime() || a.order - b.order);
 
   let balance = 0;
   const rows: AccountRow[] = events.map((event) => {
@@ -280,6 +281,53 @@ export function buildStaffAccount(
       0,
     ),
     paidByCategory,
-    rows: rows.reverse(),
+    rows: rows.toReversed(),
   };
+}
+
+type PayoutAllocation = { item: DueItem; amountInCents: number };
+
+/**
+ * Splits a payout over the items it pays for, oldest first, so a lump sum
+ * still says which fee or bonus it covered. Never more than the due balance:
+ * there are no advances.
+ */
+export function allocatePayout(
+  items: DueItem[],
+  payouts: LedgerPayout[],
+  amountInCents: number,
+):
+  | { ok: true; allocations: PayoutAllocation[] }
+  | { ok: false; error: string } {
+  if (!Number.isInteger(amountInCents) || amountInCents <= 0) {
+    return { ok: false, error: 'Adj meg egy pozitív összeget.' };
+  }
+
+  const payable = Math.max(0, buildStaffAccount(items, payouts).dueInCents);
+  if (amountInCents > payable) {
+    return {
+      ok: false,
+      error: `Legfeljebb ${formatMoney(payable)} fizethető ki.`,
+    };
+  }
+
+  const paid = paidByItemKey(payouts);
+  const allocations: PayoutAllocation[] = [];
+  let left = amountInCents;
+
+  const oldestFirst = items.toSorted(
+    (a, b) =>
+      a.dueAt.getTime() - b.dueAt.getTime() || a.key.localeCompare(b.key),
+  );
+  for (const item of oldestFirst) {
+    if (left === 0) break;
+    const remaining = item.amountInCents - (paid.get(item.key) ?? 0);
+    if (remaining <= 0) continue;
+
+    const share = Math.min(remaining, left);
+    allocations.push({ item, amountInCents: share });
+    left -= share;
+  }
+
+  return { ok: true, allocations };
 }

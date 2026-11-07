@@ -4,7 +4,11 @@ import {
   LedgerEntryCategory,
   PhotoShootingStatus,
 } from '@/generated/prisma/enums';
-import { buildStaffAccount, collectDueItems } from '@/lib/staff-ledger';
+import {
+  allocatePayout,
+  buildStaffAccount,
+  collectDueItems,
+} from '@/lib/staff-ledger';
 
 import type { PhotoShootingPricing } from '@/generated/prisma/client';
 import type {
@@ -214,7 +218,7 @@ describe('collectDueItems', () => {
       [],
     );
 
-    expect(items.map((item) => item.kind).sort()).toEqual([
+    expect(items.map((item) => item.kind).toSorted()).toEqual([
       'EDITOR_FEE',
       'PHOTOGRAPHER_FEE',
     ]);
@@ -317,5 +321,70 @@ describe('buildStaffAccount', () => {
     );
 
     expect(account.dueInCents).toBe(-PACKAGE_FEE);
+  });
+});
+
+describe('allocatePayout', () => {
+  const a = makeItem('shooting-a', T1);
+  const b = makeItem('shooting-b', T2);
+  const c: DueItem = {
+    ...makeItem('tap-c', T3, BONUS),
+    key: 'EXPENSE_STAFF_BONUS:tap-c',
+    kind: 'REVIEW_BONUS',
+    category: LedgerEntryCategory.EXPENSE_STAFF_BONUS,
+    photoShootingId: null,
+    reviewTapId: 'tap-c',
+  };
+  const later = new Date('2026-12-10T11:00:00.000Z');
+
+  it('pays the oldest items first', () => {
+    expect(allocatePayout([c, b, a], [], 6_000_00)).toEqual({
+      ok: true,
+      allocations: [
+        { item: a, amountInCents: 4_000_00 },
+        { item: b, amountInCents: 2_000_00 },
+      ],
+    });
+  });
+
+  it('skips items already paid', () => {
+    const earlier = makePayout(later, [{ item: a, amountInCents: 4_000_00 }]);
+
+    expect(allocatePayout([a, b, c], [earlier], 4_000_00)).toEqual({
+      ok: true,
+      allocations: [{ item: b, amountInCents: 4_000_00 }],
+    });
+  });
+
+  it('continues a partly paid item', () => {
+    const earlier = makePayout(later, [{ item: a, amountInCents: 1_000_00 }]);
+
+    expect(allocatePayout([a, b, c], [earlier], 3_000_00)).toEqual({
+      ok: true,
+      allocations: [{ item: a, amountInCents: 3_000_00 }],
+    });
+  });
+
+  it('rejects more than the due balance', () => {
+    expect(allocatePayout([a, b, c], [], 10_000_01)).toMatchObject({
+      ok: false,
+    });
+    expect(allocatePayout([a, b, c], [], 10_000_00)).toMatchObject({
+      ok: true,
+    });
+  });
+
+  it('rejects zero, negative and fractional amounts', () => {
+    for (const amount of [0, -1_00, 1.5]) {
+      expect(allocatePayout([a], [], amount)).toMatchObject({ ok: false });
+    }
+  });
+
+  it('rejects any amount when the balance is negative', () => {
+    const overpaid = makePayout(later, [
+      { item: makeItem('gone', T1), amountInCents: 4_000_00 },
+    ]);
+
+    expect(allocatePayout([], [overpaid], 1_00)).toMatchObject({ ok: false });
   });
 });
