@@ -39,7 +39,7 @@ describe('groupByPipelineColumn', () => {
 
     expect(idsByTitle(columns)).toEqual([
       { title: 'Mai fotózások', ids: [] },
-      { title: 'Fotózás alatt', ids: ['a'] },
+      { title: 'Fotó & Fizetés', ids: ['a'] },
       { title: 'Képfeltöltés', ids: ['b'] },
       { title: 'Ügyfél válogatás', ids: ['c'] },
       { title: 'Utómunka', ids: ['d', 'e', 'f'] },
