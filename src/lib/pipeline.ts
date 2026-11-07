@@ -3,7 +3,7 @@ import { dayBounds } from '@/lib/utils';
 
 export const PIPELINE_COLUMNS = [
   {
-    title: 'Fotózás alatt',
+    title: 'Fotó & Fizetés',
     statuses: [PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT],
   },
   {
