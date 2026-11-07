@@ -1,7 +1,10 @@
 import * as z from 'zod';
 
 import { getTransaction } from '@/lib/sumup/client';
-import { reconcileSumUpAttempt } from '@/server/reconcile-sumup-attempt';
+import {
+  cancelSumUpAttemptWithoutTransaction,
+  reconcileSumUpAttempt,
+} from '@/server/reconcile-sumup-attempt';
 
 // Aláírás nélküli: a payloadból csak a tranzakció azonosítóját használjuk, az
 // állapotot és az összeget mindig a SumUp API-tól kérjük le. A payload
@@ -29,13 +32,27 @@ export async function POST(req: Request) {
 
   const {
     event_type,
-    payload: { client_transaction_id: clientTransactionId },
+    payload: { client_transaction_id: clientTransactionId, status },
   } = parsed.data;
   if (event_type !== 'solo.transaction.updated') {
     return new Response('unknown webhook type', { status: 200 });
   }
 
   const transactionFull = await getTransaction(clientTransactionId);
+
+  if (transactionFull == null) {
+    // Kártya nélküli megszakításnál a SumUp `failed`-et küld, de tranzakció nem
+    // jön létre: a SumUp API-ja szerint nem mozdult pénz, ezért lezárjuk.
+    // Sikeres fizetésnél a tranzakció hiánya csak késés lehet: a retry segít.
+    if (status !== 'failed') {
+      throw new Error(
+        `SumUp transaction not found for ${status} webhook: ${clientTransactionId}`,
+      );
+    }
+    const result =
+      await cancelSumUpAttemptWithoutTransaction(clientTransactionId);
+    return new Response(result, { status: 200 });
+  }
 
   const foreignTransactionId = z
     .uuid()

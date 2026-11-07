@@ -30,10 +30,21 @@ export async function createSumUpCheckout({
   });
 }
 
+/**
+ * `null`, ha a SumUp nem tud a tranzakcióról: a checkoutot kártya nélkül
+ * szakították meg (a terminálon vagy a `terminateCheckout`-tal).
+ */
 export async function getTransaction(clientTransactionId: string) {
-  return sumup.transactions.get(env.SUMUP_MERCHANT_CODE, {
-    client_transaction_id: clientTransactionId,
-  });
+  try {
+    return await sumup.transactions.get(env.SUMUP_MERCHANT_CODE, {
+      client_transaction_id: clientTransactionId,
+    });
+  } catch (error) {
+    if (error instanceof APIError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 /**

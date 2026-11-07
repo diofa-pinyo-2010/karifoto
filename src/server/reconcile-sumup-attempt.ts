@@ -213,3 +213,22 @@ export async function reconcileSumUpAttempt(
 
   return 'Received';
 }
+
+/**
+ * Kártya nélkül megszakított checkout lezárása. A SumUp ilyenkor nem hoz létre
+ * tranzakciót, így a kísérletet a checkoutnál elmentett `clientTransactionId`
+ * alapján találjuk meg.
+ */
+export async function cancelSumUpAttemptWithoutTransaction(
+  clientTransactionId: string,
+): Promise<string> {
+  const { count } = await prisma.sumupCheckoutAttempt.updateMany({
+    where: { clientTransactionId, status: OPEN },
+    data: { status: SumupCheckoutAttemptStatus.CANCELLED },
+  });
+  if (count === 0) {
+    console.warn('No open attempt for cancelled checkout', clientTransactionId);
+    return 'ignored';
+  }
+  return 'cancelled';
+}
