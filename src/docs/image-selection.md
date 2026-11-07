@@ -186,7 +186,7 @@ The webhook's `handleImageSelectionExtra()`:
 
 - writes a `LedgerEntry` with `INCOME_CLIENT_PAYMENT_EXTRA` (P2002 = retry)
 - runs `completeImageSelection()` — the same save the zero-extra path uses,
-  which also sends the "Képválogatás beküldve" Discord ping
+  which also emails the assigned editor (no editor yet → no email)
 - publishes `generate-extra-invoice`, a normal számla (`InvoiceType.NORMAL`)
   whose Redis claim is keyed by payment intent, not shooting
 

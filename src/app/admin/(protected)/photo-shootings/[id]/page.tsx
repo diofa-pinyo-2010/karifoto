@@ -13,7 +13,7 @@ import {
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
-import { ExpressDeadlineBadge } from '@/components/admin/ExpressDeadlineBadge';
+import { DeadlineBadge } from '@/components/admin/DeadlineBadge';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
@@ -59,7 +59,7 @@ import {
 } from '@/lib/formatters';
 import { fetchMentionableStaff, getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
-import { capitalize, cn, formatMoney } from '@/lib/utils';
+import { capitalize, cn, formatMoney, getUrlHostname } from '@/lib/utils';
 import {
   fetchPhotographers,
   fetchEditors,
@@ -562,7 +562,7 @@ export default async function PhotoShootingDetailPage({
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
                         >
-                          PicDrop
+                          {getUrlHostname(rawImagesUrl)}
                           <ExternalLinkIcon className="size-4" />
                         </a>
                       )
@@ -586,7 +586,7 @@ export default async function PhotoShootingDetailPage({
             <div className="rounded-lg border bg-card px-4">
               {shooting.selectionCompletedAt && (
                 <DetailRow
-                  label="Ügyfél a válogatást befejezte"
+                  label="Válogatás"
                   value={
                     <p className="flex items-center gap-2">
                       <span className="flex items-center gap-1 text-muted-foreground">
@@ -635,7 +635,7 @@ export default async function PhotoShootingDetailPage({
               <DetailRow
                 label={
                   <span className="flex flex-col gap-2">
-                    <ExpressDeadlineBadge {...shooting} />
+                    <DeadlineBadge {...shooting} />
                     Végleges képek (PicDrop URL)
                   </span>
                 }
@@ -653,7 +653,7 @@ export default async function PhotoShootingDetailPage({
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-blue-600 underline underline-offset-4 dark:text-blue-300"
                         >
-                          PicDrop
+                          {getUrlHostname(finalImagesUrl)}
                           <ExternalLinkIcon className="size-4" />
                         </a>
                       )

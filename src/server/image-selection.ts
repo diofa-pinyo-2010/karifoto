@@ -198,7 +198,7 @@ export async function confirmImageSelection(
   }
 
   try {
-    if (!(await completeImageSelection(shootingId, selection, null))) {
+    if (!(await completeImageSelection(shootingId, selection))) {
       return { error: 'A válogatás már be van küldve.' };
     }
   } catch (error) {
