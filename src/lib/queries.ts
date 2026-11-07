@@ -62,6 +62,32 @@ export async function fetchUpcomingPhotoShootings(): Promise<
     ...photoShootingWithClientInclude,
   });
 
+  return withSequenceNumbers(shootings);
+}
+
+/**
+ * The day's shootings for /admin/today, every status except cancelled, in
+ * start order.
+ */
+export async function fetchTodayPhotoShootings(): Promise<
+  (PhotoShootingWithClient & { sequenceNumber: number })[]
+> {
+  await verifySession();
+
+  const today = dayBounds(new Date());
+  const shootings = await prisma.photoShooting.findMany({
+    where: {
+      timeSlot: { startTime: { gte: today.start, lt: today.end } },
+      status: { not: PhotoShootingStatus.CANCELLED },
+    },
+    orderBy: { timeSlot: { startTime: 'asc' } },
+    ...photoShootingWithClientInclude,
+  });
+
+  return withSequenceNumbers(shootings);
+}
+
+async function withSequenceNumbers(shootings: PhotoShootingWithClient[]) {
   if (shootings.length === 0) return [];
 
   // The list itself is the boundary: everything before its first item has
@@ -464,8 +490,20 @@ export const getSiteSettings = cache(async () => {
     automaticEarlyBirdEnabled:
       row?.automaticEarlyBirdEnabled ?? AUTOMATIC_EARLY_BIRD_ENABLED,
     sumupReaderId: row?.sumupReaderId ?? null,
+    dailyChangeInCents: row?.dailyChangeInCents ?? 0,
   };
 });
+
+/** Money that came in today (Budapest day), for the cards on /admin/today. */
+export async function fetchTodayLedgerEntries() {
+  await verifySession();
+
+  const today = dayBounds(new Date());
+  return prisma.ledgerEntry.findMany({
+    where: { createdAt: { gte: today.start, lt: today.end } },
+    select: { category: true, method: true, amountInCents: true },
+  });
+}
 
 const bookingIntentWithTimeSlot = {
   include: {

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { AutomaticEarlyBirdSwitch } from '@/components/AutomaticEarlyBirdSwitch';
+import { DailyChangeField } from '@/components/DailyChangeField';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { APP_URLS } from '@/lib/constants';
@@ -11,7 +12,8 @@ import { fetchEditors, setDefaultEditor } from '@/server/admin';
 export default async function SettingsPage() {
   await requireNavAccess('/admin/settings');
 
-  const { automaticEarlyBirdEnabled, sumupReaderId } = await getSiteSettings();
+  const { automaticEarlyBirdEnabled, sumupReaderId, dailyChangeInCents } =
+    await getSiteSettings();
   const editors = await fetchEditors();
   const defaultEditor = editors.find((editor) => editor.isDefaultEditor);
 
@@ -39,6 +41,10 @@ export default async function SettingsPage() {
               onSave={setDefaultEditor}
             />
           }
+        />
+        <DetailRow
+          label="Napi váltó"
+          value={<DailyChangeField dailyChangeInCents={dailyChangeInCents} />}
         />
         <DetailRow
           label="Automatikus Early Bird (nem ez alapján történik)"

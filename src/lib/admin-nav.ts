@@ -10,6 +10,7 @@ import {
   CreditCardIcon,
   KanbanIcon,
   LayersIcon,
+  CalendarCheckIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -38,6 +39,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
   {
     label: 'Minden munkatárs',
     items: [
+      {
+        title: 'Mai nap',
+        href: APP_URLS.today,
+        icon: CalendarCheckIcon,
+        allowedRoles: ALL_STAFF,
+      },
       {
         title: 'Következő fotózások',
         href: APP_URLS.upcomingShootings,

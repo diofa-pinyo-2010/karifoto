@@ -393,6 +393,9 @@ model SiteSettings {
   automaticEarlyBirdEnabled Boolean @default(false)
   // A Terminálok oldalon kiválasztott SumUp reader, erre indul a fizetés.
   sumupReaderId             String?
+  // Napi váltó: a kasszában reggel hagyott készpénz. Egyetlen, bármikor
+  // felülírható érték, nincs napokra bontott története.
+  dailyChangeInCents        Int     @default(0)
 
   updatedAt DateTime @default(now()) @updatedAt
 }
