@@ -28,6 +28,8 @@ const EXTENDED_STUDIO_ADDRESS = `Karifoto Fotóstúdió Karácsonyi Fotózás ${
 export const SUPPORT_EMAIL = 'info@karifoto.hu';
 export const SUPPORT_TEL = '+36 30 108 6063';
 export const GOOGLE_REVIEW_URL = 'https://g.page/r/Cea1GVOmu475EBM/review';
+// Snapshotted onto the ReviewTap when its review URL is filled in.
+export const GOOGLE_REVIEW_BONUS_IN_CENTS = 2000_00;
 
 export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
 
@@ -125,6 +127,7 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   INCOME_OTHER: 1,
   EXPENSE_PHOTOGRAPHER_FEE: -1,
   EXPENSE_EDITOR_FEE: -1,
+  EXPENSE_STAFF_BONUS: -1,
   EXPENSE_EQUIPMENT: -1,
   EXPENSE_RENT: -1,
   EXPENSE_SOFTWARE: -1,
@@ -434,6 +437,7 @@ export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
     INCOME_OTHER: 'Egyéb bevétel',
     EXPENSE_PHOTOGRAPHER_FEE: 'Fotós díja',
     EXPENSE_EDITOR_FEE: 'Szerkesztő díja',
+    EXPENSE_STAFF_BONUS: 'Staff bónusz',
     EXPENSE_EQUIPMENT: 'Eszköz',
     EXPENSE_RENT: 'Bérleti díj',
     EXPENSE_SOFTWARE: 'Szoftver',
@@ -444,6 +448,7 @@ export const APP_URLS = {
   photoShootingAdminPage: (shootingId: string) =>
     `/admin/photo-shootings/${shootingId}`,
   today: '/admin/today',
+  staffPayouts: '/admin/staff-payouts',
   upcomingShootings: '/admin/bookings',
   allShootings: '/admin/photo-shootings',
   terminals: '/admin/terminals',

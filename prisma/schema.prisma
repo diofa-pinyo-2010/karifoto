@@ -45,6 +45,7 @@ model StaffProfile {
   feePayouts       LedgerEntry[]
   reviewStands     ReviewStand[]
   reviewTaps       ReviewTap[]
+  staffPayouts     StaffPayout[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -311,15 +312,42 @@ model LedgerEntry {
   photoShooting   PhotoShooting? @relation(fields: [photoShootingId], references: [id])
   photoShootingId String?        @db.Uuid
 
-  // The staff member a fee payout went to (EXPENSE_PHOTOGRAPHER_FEE / EXPENSE_EDITOR_FEE).
+  // The staff member a fee payout went to (EXPENSE_PHOTOGRAPHER_FEE / EXPENSE_EDITOR_FEE / EXPENSE_STAFF_BONUS).
   staffProfile   StaffProfile? @relation(fields: [staffProfileId], references: [id])
   staffProfileId String?       @db.Uuid
+
+  // The payout this row is one slice of; a payout is split FIFO over the items it covers.
+  staffPayout   StaffPayout? @relation(fields: [staffPayoutId], references: [id], onDelete: Restrict)
+  staffPayoutId String?      @db.Uuid
+
+  // The review tap an EXPENSE_STAFF_BONUS row pays for.
+  reviewTap   ReviewTap? @relation(fields: [reviewTapId], references: [id], onDelete: Restrict)
+  reviewTapId String?    @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([photoShootingId])
   @@index([staffProfileId])
+  @@index([staffPayoutId])
+  @@index([reviewTapId])
+}
+
+// One payout handed to a staff member. Its money lives in the LedgerEntry rows
+// it is split into, one per fee or bonus it covers.
+model StaffPayout {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  staffProfile   StaffProfile  @relation(fields: [staffProfileId], references: [id])
+  staffProfileId String        @db.Uuid
+  amountInCents  Int // positive: the whole amount paid out
+  method         PaymentMethod
+  note           String?
+  ledgerEntries  LedgerEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([staffProfileId, createdAt])
 }
 
 model Invoice {
@@ -432,8 +460,11 @@ model ReviewTap {
   channel TapChannel?
 
   // Snapshotted together with reviewUrl, so changing the bonus later leaves past ones alone.
-  bonusInCents Int?
-  reviewUrl    String? @unique
+  bonusInCents   Int?
+  reviewUrl      String?   @unique
+  reviewUrlSetAt DateTime? @db.Timestamptz()
+
+  ledgerEntries LedgerEntry[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -517,6 +548,7 @@ enum LedgerEntryCategory {
 
   EXPENSE_PHOTOGRAPHER_FEE
   EXPENSE_EDITOR_FEE
+  EXPENSE_STAFF_BONUS
   EXPENSE_EQUIPMENT
   EXPENSE_RENT
   EXPENSE_SOFTWARE

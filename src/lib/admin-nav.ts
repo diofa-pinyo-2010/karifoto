@@ -11,6 +11,7 @@ import {
   KanbanIcon,
   LayersIcon,
   CalendarCheckIcon,
+  WalletIcon,
 } from 'lucide-react';
 
 import { StaffProfileRole } from '@/generated/prisma/enums';
@@ -84,6 +85,12 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
         title: 'Statisztikák',
         href: '/admin/stats',
         icon: TrendingUpIcon,
+        allowedRoles: [StaffProfileRole.SUPERADMIN],
+      },
+      {
+        title: 'Staff kifizetések',
+        href: APP_URLS.staffPayouts,
+        icon: WalletIcon,
         allowedRoles: [StaffProfileRole.SUPERADMIN],
       },
       {
