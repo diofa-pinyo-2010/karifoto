@@ -26,8 +26,10 @@ import {
 } from '@/lib/public-time-slots';
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
 import { calculateOwnShootingFees, summarizeStaffFees } from '@/lib/staff-fees';
+import { buildStaffAccount } from '@/lib/staff-ledger';
 import { OPEN_STATUSES } from '@/lib/sumup/reconcile';
 import { dayBounds } from '@/lib/utils';
+import { loadStaffLedger } from '@/server/load-staff-ledger';
 
 import type { MentionCandidate } from '@/lib/mentions';
 
@@ -678,3 +680,35 @@ export const getAdminStats = unstable_cache(
   [ADMIN_STATS_TAG, ADMIN_STATS_CACHE_VERSION],
   { tags: [ADMIN_STATS_TAG], revalidate: ADMIN_STATS_REVALIDATE_SECONDS },
 );
+
+/**
+ * A kifizetések oldal fülei: aki fotós vagy szerkesztő, vagy akinek valaha
+ * volt kifizetése vagy review tapje, a mostani esedékes egyenlegével.
+ */
+export async function fetchStaffPayoutTabs() {
+  await verifySession();
+
+  const staff = await prisma.staffProfile.findMany({
+    where: {
+      OR: [
+        { isPhotographer: true },
+        { isEditor: true },
+        { staffPayouts: { some: {} } },
+        { reviewTaps: { some: {} } },
+      ],
+    },
+    orderBy: { nickname: 'asc' },
+    select: { id: true, nickname: true },
+  });
+
+  return Promise.all(
+    staff.map(async ({ id, nickname }) => {
+      const { items, payouts } = await loadStaffLedger(prisma, id);
+      return {
+        id,
+        nickname,
+        dueInCents: buildStaffAccount(items, payouts).dueInCents,
+      };
+    }),
+  );
+}
