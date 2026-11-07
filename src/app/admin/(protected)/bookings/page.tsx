@@ -20,7 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { requiresDecorChoice } from '@/lib/catalog';
 import {
   APP_URLS,
-  buildPhotographerBadgeClassNames,
+  buildStaffBadgeClassNames,
   DECOR_SET_LABEL,
   isLightPlayChargeable,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
@@ -29,16 +29,14 @@ import {
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchUpcomingPhotoShootings } from '@/lib/queries';
 import { groupByDay } from '@/lib/utils';
-import { fetchPhotographers } from '@/server/admin';
+import { fetchStaffIdsForBadges } from '@/server/admin';
 
 export default async function BookingsPage() {
-  const [photoShootings, photographers] = await Promise.all([
+  const [photoShootings, staffIds] = await Promise.all([
     fetchUpcomingPhotoShootings(),
-    fetchPhotographers(),
+    fetchStaffIdsForBadges(),
   ]);
-  const photographerBadgeClassNames = buildPhotographerBadgeClassNames(
-    photographers.map((photographer) => photographer.id),
-  );
+  const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
 
   const groupedShootings = groupByDay(
     photoShootings,
@@ -94,7 +92,7 @@ export default async function BookingsPage() {
                               variant="secondary"
                               className={
                                 shooting.photographerId
-                                  ? photographerBadgeClassNames.get(
+                                  ? staffBadgeClassNames.get(
                                       shooting.photographerId,
                                     )
                                   : undefined

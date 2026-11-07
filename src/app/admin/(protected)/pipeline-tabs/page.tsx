@@ -1,15 +1,20 @@
 import { PipelineCard } from '@/components/admin/PipelineCard';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { APP_URLS } from '@/lib/constants';
+import { APP_URLS, buildStaffBadgeClassNames } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { groupByPipelineColumn } from '@/lib/pipeline';
 import { fetchPipelinePhotoShootings } from '@/lib/queries';
+import { fetchStaffIdsForBadges } from '@/server/admin';
 
 export default async function PipelineTabs() {
   await requireNavAccess(APP_URLS.pipelineTabs);
 
-  const shootings = await fetchPipelinePhotoShootings();
+  const [shootings, staffIds] = await Promise.all([
+    fetchPipelinePhotoShootings(),
+    fetchStaffIdsForBadges(),
+  ]);
+  const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
   const columns = groupByPipelineColumn(shootings);
 
   return (
@@ -20,7 +25,7 @@ export default async function PipelineTabs() {
 
       <Tabs defaultValue={0} className="gap-4">
         <div className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
-          <TabsList className="h-9 w-max sm:w-full">
+          <TabsList className="h-9 w-max sm:min-w-full">
             {columns.map((column, index) => (
               <TabsTrigger
                 key={column.title}
@@ -48,7 +53,11 @@ export default async function PipelineTabs() {
               </p>
             ) : (
               column.shootings.map((shooting) => (
-                <PipelineCard key={shooting.id} shooting={shooting} />
+                <PipelineCard
+                  key={shooting.id}
+                  shooting={shooting}
+                  staffBadgeClassNames={staffBadgeClassNames}
+                />
               ))
             )}
           </TabsContent>

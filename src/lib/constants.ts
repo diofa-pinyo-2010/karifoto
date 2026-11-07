@@ -387,7 +387,7 @@ export const PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME: Record<
 };
 
 // Avoids yellow/green/red, which the status badges above already mean something by.
-const PHOTOGRAPHER_BADGE_COLORS = [
+const STAFF_BADGE_COLORS = [
   'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/80 dark:border-blue-500/40',
   'bg-pink-500/10 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400 border border-pink-500/80 dark:border-pink-500/40',
   'bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/80 dark:border-violet-500/40',
@@ -396,15 +396,17 @@ const PHOTOGRAPHER_BADGE_COLORS = [
 ];
 
 // Assigned by position, not by anything stored on the profile, so it works on
-// whatever staff a database holds. Callers pass the ids in a stable order;
-// colors only repeat past the fifth photographer.
-export function buildPhotographerBadgeClassNames(
-  photographerIds: string[],
+// whatever staff a database holds. Callers pass every staff id (not just
+// photographers or editors) in a stable order, so one person keeps one color
+// in every role and a role change never reshuffles the others; colors only
+// repeat past the fifth staff member.
+export function buildStaffBadgeClassNames(
+  staffIds: string[],
 ): Map<string, string> {
   return new Map(
-    photographerIds.map((id, index) => [
+    staffIds.map((id, index) => [
       id,
-      PHOTOGRAPHER_BADGE_COLORS[index % PHOTOGRAPHER_BADGE_COLORS.length],
+      STAFF_BADGE_COLORS[index % STAFF_BADGE_COLORS.length],
     ]),
   );
 }

@@ -2,21 +2,21 @@ import { describe, expect, it } from 'vitest';
 
 import { Package } from '@/generated/prisma/enums';
 import {
-  buildPhotographerBadgeClassNames,
+  buildStaffBadgeClassNames,
   hasLightPlay,
   isLightPlayChargeable,
 } from '@/lib/constants';
 
-describe('buildPhotographerBadgeClassNames', () => {
-  it('gives each of five photographers a different color', () => {
+describe('buildStaffBadgeClassNames', () => {
+  it('gives each of five staff members a different color', () => {
     const ids = ['a', 'b', 'c', 'd', 'e'];
-    const classNames = buildPhotographerBadgeClassNames(ids);
+    const classNames = buildStaffBadgeClassNames(ids);
 
     expect(new Set(ids.map((id) => classNames.get(id))).size).toBe(5);
   });
 
   it('wraps around instead of leaving the sixth without a color', () => {
-    const classNames = buildPhotographerBadgeClassNames([
+    const classNames = buildStaffBadgeClassNames([
       'a',
       'b',
       'c',
@@ -29,7 +29,7 @@ describe('buildPhotographerBadgeClassNames', () => {
   });
 
   it('has no color for an id that was not passed', () => {
-    expect(buildPhotographerBadgeClassNames(['a']).get('b')).toBeUndefined();
+    expect(buildStaffBadgeClassNames(['a']).get('b')).toBeUndefined();
   });
 });
 
