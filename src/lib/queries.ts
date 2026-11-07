@@ -18,7 +18,7 @@ import {
   UUID_RE,
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
-import { PIPELINE_STATUSES } from '@/lib/pipeline';
+import { PIPELINE_STATUSES, TODAY_STATUSES } from '@/lib/pipeline';
 import { prisma } from '@/lib/prisma';
 import {
   PUBLIC_TIME_SLOTS_TAG,
@@ -27,6 +27,7 @@ import {
 import { SHOOTING_ORDER_BY, type ShootingOrder } from '@/lib/shooting-order';
 import { calculateOwnShootingFees, summarizeStaffFees } from '@/lib/staff-fees';
 import { OPEN_STATUSES } from '@/lib/sumup/reconcile';
+import { dayBounds } from '@/lib/utils';
 
 import type { MentionCandidate } from '@/lib/mentions';
 
@@ -167,8 +168,17 @@ export async function fetchOwnPhotoShootingsWithFees() {
 export async function fetchPipelinePhotoShootings() {
   await verifySession();
 
+  const today = dayBounds(new Date());
   return prisma.photoShooting.findMany({
-    where: { status: { in: PIPELINE_STATUSES } },
+    where: {
+      OR: [
+        { status: { in: PIPELINE_STATUSES } },
+        {
+          status: { in: TODAY_STATUSES },
+          timeSlot: { startTime: { gte: today.start, lt: today.end } },
+        },
+      ],
+    },
     orderBy: [
       { isExpressPostProduction: 'desc' },
       { timeSlot: { startTime: 'asc' } },
