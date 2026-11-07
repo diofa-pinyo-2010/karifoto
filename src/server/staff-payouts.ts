@@ -9,6 +9,7 @@ import { PaymentMethod, StaffProfileRole } from '@/generated/prisma/enums';
 import { APP_URLS, GOOGLE_REVIEW_BONUS_IN_CENTS } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
+import { parseReviewUrl } from '@/lib/review-url';
 import { allocatePayout } from '@/lib/staff-ledger';
 import { hufToCents } from '@/lib/utils';
 import { loadStaffLedger } from '@/server/load-staff-ledger';
@@ -111,8 +112,8 @@ export async function setReviewTapUrl(
   }
 
   const parsedId = z.uuid().safeParse(reviewTapId);
-  const parsedUrl = z.url().safeParse(url?.trim() ?? '');
-  if (!parsedId.success || !parsedUrl.success) {
+  const reviewUrl = parseReviewUrl(url);
+  if (!parsedId.success || reviewUrl == null) {
     return { error: 'Adj meg egy érvényes linket.' };
   }
 
@@ -124,7 +125,7 @@ export async function setReviewTapUrl(
         staffProfileId: { not: null },
       },
       data: {
-        reviewUrl: parsedUrl.data,
+        reviewUrl,
         reviewUrlSetAt: new Date(),
         bonusInCents: GOOGLE_REVIEW_BONUS_IN_CENTS,
       },
