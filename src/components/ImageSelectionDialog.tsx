@@ -243,7 +243,7 @@ export function ImageSelectionDialog({
             onClick={confirm}
           >
             {isConfirming && <Spinner />}
-            {needsPayment ? 'Fizetés' : 'Beküldés'}
+            {needsPayment ? 'Fizetés' : isConfirming ? 'Várj...' : 'Beküldés'}
           </Button>
         </div>
       </div>
