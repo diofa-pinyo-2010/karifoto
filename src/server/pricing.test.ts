@@ -119,6 +119,8 @@ function makeLedgerEntry(overrides: Partial<LedgerEntry> = {}): LedgerEntry {
     paymentIntent: null,
     invoiceId: null,
     staffProfileId: null,
+    staffPayoutId: null,
+    reviewTapId: null,
     description: null,
     photoShootingId: 'shooting-1',
     createdAt: NOW,

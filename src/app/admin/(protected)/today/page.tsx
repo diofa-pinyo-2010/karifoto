@@ -50,6 +50,7 @@ export default async function TodayPage() {
       description: (
         <>
           <p>Váltó: {formatMoney(dailyChangeInCents)}</p>
+          <p>Staff kifizetés: −{formatMoney(income.staffPayoutCash)}</p>
           <p className="font-semibold text-foreground">
             Brifkó: {formatMoney(income.cashBox)}
           </p>
