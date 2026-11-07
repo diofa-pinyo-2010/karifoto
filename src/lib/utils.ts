@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import {
   isLightPlayChargeable,
+  PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
   STUDIO_ADDRESS,
   STUDIO_TZ,
@@ -178,9 +179,23 @@ export function isWeekdayKey(dayKey: string) {
   return !isWeekend(parseISO(dayKey));
 }
 
-export function getExpressDeliveryDeadline(selectionCompletedAt: Date) {
+export function getDeliveryDeadline(
+  selectionCompletedAt: Date,
+  isExpressPostProduction: boolean,
+) {
   return addDays(
     selectionCompletedAt,
-    PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
+    isExpressPostProduction
+      ? PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS
+      : PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   );
+}
+
+/** `https://www.picdrop.com/a/b` → `www.picdrop.com`; a non-URL comes back unchanged. */
+export function getUrlHostname(value: string) {
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return value;
+  }
 }

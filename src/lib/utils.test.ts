@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInitials, getShootingEndTime } from '@/lib/utils';
+import { getInitials, getShootingEndTime, getUrlHostname } from '@/lib/utils';
 
 import type { Package } from '@/generated/prisma/enums';
 
@@ -43,5 +43,17 @@ describe('getInitials', () => {
   it('falls back to a question mark for an empty name', () => {
     expect(getInitials('')).toBe('?');
     expect(getInitials('   ')).toBe('?');
+  });
+});
+
+describe('getUrlHostname', () => {
+  it('keeps only the hostname', () => {
+    expect(getUrlHostname('https://www.picdrop.com/a/b?x=1')).toBe(
+      'www.picdrop.com',
+    );
+  });
+
+  it('returns a non-URL unchanged', () => {
+    expect(getUrlHostname('not a url')).toBe('not a url');
   });
 });

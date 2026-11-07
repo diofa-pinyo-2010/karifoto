@@ -65,7 +65,7 @@ import {
 } from '@/lib/session';
 import {
   formatMoney,
-  //   getExpressDeliveryDeadline
+  //   getDeliveryDeadline
 } from '@/lib/utils';
 
 import type { ClientPortalSection } from '@/lib/constants';
@@ -489,7 +489,7 @@ function ClientImageSelection({
               {/* <dd className="text-lg font-semibold">
                 A kész képeket legkésőbb ekkor küldjük:{' '}
                 {monthDayFormatter.format(
-                  getExpressDeliveryDeadline(selectionCompletedAt),
+                  getDeliveryDeadline(selectionCompletedAt, true),
                 )}
               </dd> */}
             </div>
