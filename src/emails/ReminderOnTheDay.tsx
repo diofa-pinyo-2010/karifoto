@@ -53,6 +53,10 @@ export default function ReminderOnTheDayEmail({
             <Text>
               📍 Címünk: <strong>{studioAddress}</strong>
             </Text>
+            <Text>
+              Amikor bejöttök az épületbe, ne az első, hanem a{' '}
+              <strong>második lépcsőházba</strong> gyertek, hátra.
+            </Text>
             <Text>Szeretettel várunk benneteket!</Text>
             <Text className="m-0">Üdvözlettel,</Text>
             <Text className="m-0 font-semibold">🎄 📸 A Karifoto csapata</Text>
