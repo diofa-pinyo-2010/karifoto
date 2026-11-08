@@ -14,6 +14,7 @@ import {
   MapPinIcon,
   MessageSquareTextIcon,
   PackageIcon,
+  PlusIcon,
   ReceiptTextIcon,
   SparklesIcon,
   TreePineIcon,
@@ -521,44 +522,61 @@ function ClientImageSelection({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <p>Itt van a nyers képek galériája:</p>
-        {rawImagesUrl != null ? (
-          <a
-            href={rawImagesUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({
-              variant: 'secondary',
-              size: 'lg',
-              className: 'w-full sm:w-fit',
-            })}
-          >
-            PicDrop galéria megnyitása
-            <ExternalLinkIcon />
-          </a>
-        ) : (
-          <p className="font-bold text-red-500">
-            Nem találjuk a linket :( Kérlek, hívj fel minket.
-          </p>
-        )}
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col gap-4">
-        <h3 className="text-lg font-semibold">➕ Plusz képek rendelése</h3>
+      <div className="flex flex-col gap-3">
         <p>
-          Több képet is választhattok, mint amennyit a csomagotok tartalmaz. A
-          plusz képek ára <strong>{formatMoney(EXTRA_EDIT_PER_IMAGE)}</strong>
-          /kép,
+          🎄 Köszönjük, hogy részt vettetek karácsonyi fotózásunkon! Meghoztuk a{' '}
+          <strong>nyers képeket</strong>! 🎉
         </p>
+        <p className="text-center font-bold underline underline-offset-4">
+          Kérjük, olvassátok el figyelmesen az alábbiakat!
+        </p>
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <div className="rounded-full bg-brand-accent p-1">
+            <FlagIcon className="size-4 text-brand-champagne-hover" />
+          </div>
+          Válogatás, utómunka
+        </h2>
         <p>
-          <strong>
-            A Csomagotok ({PACKAGE_LABEL[shootingPackage]}) tartalma:
-          </strong>{' '}
-          {}
+          A következő lépésben kiválaszthatjátok azokat a képeket, amiket
+          megszerkesztünk, utómunkázunk a számotokra. A megvásárolt csomagotok a{' '}
+          <strong>{PACKAGE_LABEL[shootingPackage]}</strong> volt, ami már
+          tartalmazza
         </p>
+        <p className="m-0 text-center text-2xl font-black">{allowance} kép</p>
+        <p>megszerkesztését, vagyis ennyit bátran megjelölhettek.</p>
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <div className="rounded-full bg-brand-accent p-1">
+            <PlusIcon className="size-4 text-brand-champagne-hover" />
+          </div>
+          Plusz képek rendelése
+        </h2>
+        <p>
+          Több képet is kiválaszthattok, mint {allowance}. A plusz képek ára{' '}
+          <strong>{formatMoney(EXTRA_EDIT_PER_IMAGE)}/kép</strong>.
+        </p>
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <div className="rounded-full bg-brand-accent p-1">
+            <SparklesIcon className="size-4 text-brand-champagne-hover" />
+          </div>
+          Mit tartalmaz a szerkesztés?
+        </h2>
+        <p className="m-0! font-semibold">A kiválasztott képeken:</p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>szín- és fénykorrekciót végzünk,</li>
+          <li>javítjuk a kép dőlését,</li>
+          <li>és méretre vágjuk a fotót</li>
+        </ul>
+        <p className="m-0! font-semibold">
+          Ha szeretnél extra (beauty) retust, például:
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>bőr kisimítás,</li>
+          <li>fogfehérítés,</li>
+          <li>vagy egyéb esztétikai módosítás,</li>
+          ennek díja{' '}
+          <strong>{formatMoney(EXTRA_BEAUTY_RETOUCH_PER_IMAGE)}/kép</strong>.
+        </ul>
+        <Separator />
         <h3 className="text-lg font-semibold">Hogyan válogass?</h3>
         <ol className="flex flex-col gap-4">
           <li className="flex gap-3">
@@ -567,14 +585,14 @@ function ClientImageSelection({
             </span>
             <div className="flex flex-col gap-1">
               <p className="flex items-center gap-2 font-semibold">
-                <FlagIcon className="size-4 fill-red-500 text-red-500" />
                 Szerkesztésre: piros zászló
+                <FlagIcon className="size-4 fill-red-500 text-red-500" />
               </p>
               <p className="text-brand-muted">
-                Nyisd meg a képet, kattints a zászló ikonra, és válaszd a piros
-                zászlót ("Kiválasztott"). Ezeket szerkesztjük meg. A csomagod{' '}
-                <strong>{allowance} db</strong> szerkesztett képet tartalmaz,
-                minden további kép {formatMoney(EXTRA_EDIT_PER_IMAGE)}/db.
+                Nyisd meg a képet, kattints a zászló ikonra bal alul, és válaszd
+                a piros zászlót ("Kiválasztott"). Ezeket szerkesztjük meg. A
+                csomagod <strong>{allowance} db</strong> szerkesztett képet
+                tartalmaz.
               </p>
             </div>
           </li>
@@ -584,60 +602,42 @@ function ClientImageSelection({
             </span>
             <div className="flex flex-col gap-1">
               <p className="flex items-center gap-2 font-semibold">
+                Extra (beauty) retusra: fekete zászló
                 <FlagIcon className="size-4 fill-black text-black" />
-                Extra retusra: fekete zászló
               </p>
               <p className="text-brand-muted">
                 Ha egy képre beauty retust kérsz (bőrsimítás, alakformálás,
-                fogfehérítés stb.), jelöld a piros szívvel is. Díja{' '}
-                {formatMoney(EXTRA_BEAUTY_RETOUCH_PER_IMAGE)}/kép. A retusált
-                képnek a fekete zászlós képek között is szerepelnie kell.
+                fogfehérítés stb.), jelöld fekete zászlóval. Díja{' '}
+                {formatMoney(EXTRA_BEAUTY_RETOUCH_PER_IMAGE)}/kép. Az így
+                megjelölt képekhez egy rövid leírást kérünk, hogy a retusőr
+                kollégánk tudja, min dolgozzon.
               </p>
             </div>
           </li>
         </ol>
-
-        {/* {rawImagesUrl != null && (
-          <div className="flex flex-col gap-2 rounded-lg bg-brand-cream p-4">
-            <p className="text-sm font-semibold">
-              Ellenőrizd a megjelölt képeidet:
+        <div className="flex flex-col gap-2">
+          <p className="text-lg font-bold">Nyisd meg a galériát:</p>
+          {rawImagesUrl != null ? (
+            <a
+              href={rawImagesUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({
+                variant: 'default',
+                size: 'lg',
+                className: 'w-full sm:w-fit',
+              })}
+            >
+              Nyers képek
+              <ExternalLinkIcon />
+            </a>
+          ) : (
+            <p className="font-bold text-red-500">
+              Nem találjuk a linket :( Kérlek, hívj fel minket.
             </p>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <a
-                href={buildPicdropFilterUrl(rawImagesUrl, 'red')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonVariants({
-                  variant: 'outline',
-                  size: 'default',
-                  className: 'fill-red-500',
-                })}
-              >
-                <FlagIcon className="fill-red-500 text-red-500" />
-                Piros zászlós képek
-              </a>
-              <a
-                href={buildPicdropFilterUrl(rawImagesUrl, 'final')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonVariants({
-                  variant: 'outline',
-                  size: 'default',
-                  className: 'fill-black',
-                })}
-              >
-                <FlagIcon className="fill-black" />
-                Fekete zászlós képek
-              </a>
-            </div>
-          </div>
-        )} */}
-
-        <p className="text-sm text-brand-muted">
-          A galériából az összes képet le is tudod tölteni a „Download … files”
-          gombbal.
-        </p>
-        <p className="text-sm text-brand-muted">
+          )}
+        </div>
+        <p className="text-lg font-bold">
           Amikor végeztél a válogatással, gyere ide vissza.
         </p>
       </div>
@@ -651,7 +651,10 @@ function ClientImageSelection({
           képeket, és megmutatjuk, jár-e vele extra díj. Ha a megjelölt képek
           száma belefér a csomagodba, akkor küldheted, és azonnal kezdjük a
           szerkesztést. A kész képeket a jelölés beérkezésétől számított{' '}
-          {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon belül
+          <strong>
+            {PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION} napon
+            belül
+          </strong>{' '}
           küldjük.
         </p>
         <ImageSelectionDialog
