@@ -21,9 +21,10 @@ export const STUDIO_TZ = 'Europe/Budapest';
 
 export const SITE_NAME = 'Karifoto';
 
-export const STUDIO_ADDRESS = '1053 Budapest, Veres Pálné u. 14.';
+export const STUDIO_ADDRESS =
+  '1053 Budapest, Veres Pálné u. 14. (kapucsengő: 22)';
 
-const EXTENDED_STUDIO_ADDRESS = `Karifoto Fotóstúdió Karácsonyi Fotózás ${STUDIO_ADDRESS}`;
+export const EXTENDED_STUDIO_ADDRESS = `Karifoto Fotóstúdió Karácsonyi Fotózás ${STUDIO_ADDRESS}`;
 
 export const SUPPORT_EMAIL = 'info@karifoto.hu';
 export const SUPPORT_TEL = '+36 30 108 6063';

@@ -5,7 +5,7 @@ import { env } from '@/env';
 import {
   APP_URLS,
   isLightPlayChargeable,
-  STUDIO_ADDRESS,
+  EXTENDED_STUDIO_ADDRESS,
 } from '@/lib/constants';
 import { getShootingEndTime } from '@/lib/utils';
 
@@ -74,7 +74,7 @@ export async function createCalendarEvent({
     requestBody: {
       summary: title,
       description,
-      location: STUDIO_ADDRESS,
+      location: EXTENDED_STUDIO_ADDRESS,
       start: { dateTime: startTime.toISOString() },
       end: { dateTime: endTime.toISOString() },
     },
@@ -102,7 +102,7 @@ export async function updateCalendarEvent({
     requestBody: {
       summary: title,
       description,
-      location: STUDIO_ADDRESS,
+      location: EXTENDED_STUDIO_ADDRESS,
       start: { dateTime: startTime.toISOString() },
       end: { dateTime: endTime.toISOString() },
     },
