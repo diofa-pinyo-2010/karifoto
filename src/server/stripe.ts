@@ -7,7 +7,12 @@ import * as z from 'zod';
 import { env } from '@/env';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
 import { PACKAGES } from '@/lib/catalog';
-import { DEPOSIT_AMOUNT, MAX_PERSONS, MAX_PETS } from '@/lib/constants';
+import {
+  CHECKOUT_SESSION_EXPIRY_MINUTES,
+  DEPOSIT_AMOUNT,
+  MAX_PERSONS,
+  MAX_PETS,
+} from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import hofeherDiszlet from '@/photos/2026/decor-sets/hofeher-diszlet.png';
@@ -101,6 +106,8 @@ export async function createCheckoutSession(
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomer.id,
       mode: 'payment',
+      expires_at:
+        Math.floor(Date.now() / 1000) + CHECKOUT_SESSION_EXPIRY_MINUTES * 60,
       line_items: [
         {
           price_data: {
