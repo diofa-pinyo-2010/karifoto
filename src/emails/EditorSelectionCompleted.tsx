@@ -8,6 +8,7 @@ import {
   Button,
   Tailwind,
   Img,
+  Link,
   Section,
 } from 'react-email';
 
@@ -20,6 +21,8 @@ type EditorSelectionCompletedEmailProps = {
   editedImages: number;
   retouchedImages: number;
   isExpressPostProduction: boolean;
+  beautyRetouchNotes: string | null;
+  rawImagesUrl: string | null;
   /** Already formatted in Budapest time by the sender. */
   deadline: string;
   shootingUrl: string;
@@ -32,6 +35,8 @@ export default function EditorSelectionCompletedEmail({
   editedImages,
   retouchedImages,
   isExpressPostProduction,
+  beautyRetouchNotes,
+  rawImagesUrl,
   deadline,
   shootingUrl,
   baseUrl,
@@ -66,6 +71,21 @@ export default function EditorSelectionCompletedEmail({
                 <br />
                 Határidő: <strong>{deadline}</strong>
               </Text>
+              {beautyRetouchNotes != null && (
+                <Text className="whitespace-pre-line">
+                  Retus kérések:
+                  <br />
+                  <strong>{beautyRetouchNotes}</strong>
+                </Text>
+              )}
+              {rawImagesUrl != null && (
+                <Text>
+                  Nyers képek:{' '}
+                  <Link href={rawImagesUrl} className="break-all">
+                    {rawImagesUrl}
+                  </Link>
+                </Text>
+              )}
             </Section>
             <Section className="text-center">
               <Button
@@ -91,6 +111,9 @@ EditorSelectionCompletedEmail.PreviewProps = {
   editedImages: 15,
   retouchedImages: 2,
   isExpressPostProduction: true,
+  beautyRetouchNotes:
+    'A 12-es képen a pattanást az arcomon, a 27-esen a karikás szemeket.',
+  rawImagesUrl: 'https://karifoto.picdrop.com/galeria',
   deadline: 'December 17.',
   shootingUrl: 'http://localhost:3000/admin/photo-shootings/1',
   baseUrl: 'http://localhost:3000',

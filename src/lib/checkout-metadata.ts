@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 import { LedgerEntryCategory } from '@/generated/prisma/enums';
+import { BEAUTY_RETOUCH_NOTES_MAX_LENGTH } from '@/lib/beauty-retouch-notes';
 
 /**
  * Every Stripe Checkout Session we create carries a `kind` telling the webhook
@@ -35,6 +36,12 @@ const imageSelectionExtraMetadata = z.object({
   retouched_images: z.coerce.number().int().nonnegative(),
   // A string, not `z.coerce.boolean()`: that would read "false" as true.
   express_post_production: z.enum(['true', 'false']),
+  // Present only when images are flagged for retouch: Stripe drops a key
+  // whose value is an empty string, so "no notes" is an absent key.
+  beauty_retouch_notes: z
+    .string()
+    .max(BEAUTY_RETOUCH_NOTES_MAX_LENGTH)
+    .optional(),
 });
 
 // Adding a member here turns every switch over `kind` into a compile error

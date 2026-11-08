@@ -76,6 +76,7 @@ function makeShooting(
     totalEditedImages: 0,
     totalRetouchedImages: 0,
     isExpressPostProduction: false,
+    beautyRetouchNotes: null,
     rawImagesUrl: null,
     finalImagesUrl: null,
     clientNote: null,

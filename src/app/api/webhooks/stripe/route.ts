@@ -204,6 +204,7 @@ async function handleImageSelectionExtra(
     editedImages: metadata.edited_images,
     retouchedImages: metadata.retouched_images,
     isExpressPostProduction: metadata.express_post_production === 'true',
+    beautyRetouchNotes: metadata.beauty_retouch_notes ?? null,
   });
   if (!completed) {
     // Either a retry, or a second payment for an already closed selection

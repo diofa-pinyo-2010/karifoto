@@ -29,6 +29,7 @@ export async function completeImageSelection(
     editedImages: number;
     retouchedImages: number;
     isExpressPostProduction: boolean;
+    beautyRetouchNotes: string | null;
   },
 ): Promise<boolean> {
   const shooting = await prisma.photoShooting.findUniqueOrThrow({
@@ -56,6 +57,7 @@ export async function completeImageSelection(
     totalEditedImages: selection.editedImages,
     totalRetouchedImages: selection.retouchedImages,
     isExpressPostProduction: selection.isExpressPostProduction,
+    beautyRetouchNotes: selection.beautyRetouchNotes,
     selectionCompletedAt: new Date(),
   };
 
@@ -89,6 +91,8 @@ export async function completeImageSelection(
         editedImages: selection.editedImages,
         retouchedImages: selection.retouchedImages,
         isExpressPostProduction: selection.isExpressPostProduction,
+        beautyRetouchNotes: selection.beautyRetouchNotes,
+        rawImagesUrl: shooting.rawImagesUrl,
         deadline: monthDayFormatter.format(
           getDeliveryDeadline(
             updates.selectionCompletedAt,

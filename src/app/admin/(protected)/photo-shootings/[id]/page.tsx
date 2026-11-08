@@ -633,6 +633,14 @@ export default async function PhotoShootingDetailPage({
                 }
               />
               <DetailRow
+                label="Retus kérések"
+                value={
+                  <span className="whitespace-pre-line">
+                    {shooting.beautyRetouchNotes ?? '–'}
+                  </span>
+                }
+              />
+              <DetailRow
                 label={
                   <span className="flex flex-col gap-2">
                     <DeadlineBadge {...shooting} />

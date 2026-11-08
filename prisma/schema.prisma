@@ -164,6 +164,7 @@ model PhotoShooting {
   totalEditedImages       Int       @default(0)
   totalRetouchedImages    Int       @default(0)
   isExpressPostProduction Boolean   @default(false)
+  beautyRetouchNotes      String?
 
   rawImagesUrl   String?
   finalImagesUrl String?
