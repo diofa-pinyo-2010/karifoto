@@ -54,7 +54,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useShootingsForDay } from '@/hooks/use-shootings-for-day';
 import {
   PACKAGE_LABEL,
-  PENDING_INTENT_HOLD_HOURS,
+  PENDING_INTENT_HOLD_MINUTES,
   STUDIO_TZ,
 } from '@/lib/constants';
 import { shortFullDateFormatter, timeInputFormatter } from '@/lib/formatters';
@@ -263,8 +263,8 @@ export function StartTimeDrawer({
                   </div>
                 </CardTitle>
                 <CardDescription>
-                  {PENDING_INTENT_HOLD_HOURS} órán belül megkezdett foglalásokat
-                  tartjuk.
+                  {PENDING_INTENT_HOLD_MINUTES} percen belül megkezdett
+                  foglalásokat tartjuk.
                 </CardDescription>
               </CardHeader>
               <CardContent>

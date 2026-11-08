@@ -157,9 +157,14 @@ export const UPCOMING_SHOOTINGS_TO_SHOW = 300;
 
 export const TIME_SLOT_DURATION_MINUTES = 60;
 
+// Stripe Checkout sessions expire after this long (Stripe's minimum is 30).
+export const CHECKOUT_SESSION_EXPIRY_MINUTES = 30;
+
 // A PENDING BookingIntent touched within this window may still have a live
-// Stripe Checkout session (default expiry: 24h), so its slot counts as held.
-export const PENDING_INTENT_HOLD_HOURS = 24;
+// Stripe Checkout session, so its slot counts as held. One minute longer than
+// the session expiry: the intent's updatedAt is bumped just before the session
+// is created, so the hold must outlive the session.
+export const PENDING_INTENT_HOLD_MINUTES = CHECKOUT_SESSION_EXPIRY_MINUTES + 1;
 
 export const PACKAGE_LABEL = Object.fromEntries(
   ALL_PACKAGES.map((pkg) => [pkg.key, pkg.label]),
