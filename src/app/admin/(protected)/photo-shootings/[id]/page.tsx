@@ -57,6 +57,7 @@ import {
   dateFormatter,
   shortFullDateFormatter,
   timeFormatter,
+  timeInputFormatter,
 } from '@/lib/formatters';
 import { fetchMentionableStaff, getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
@@ -162,6 +163,10 @@ export default async function PhotoShootingDetailPage({
     totalEditedImages,
     totalRetouchedImages,
   } = shooting;
+  const rawImagesGalleryName = `
+    ${timeInputFormatter.format(timeSlot.startTime).replace(':', '')} 
+    ${client.owner.name}
+  `;
   const picdropHeading = `🎄 Karifoto 2026 - ${client.owner.name}`;
 
   const priceBreakdown = calculatePricing({
@@ -548,6 +553,15 @@ export default async function PhotoShootingDetailPage({
           <div className="flex flex-col gap-3">
             <h3 className="text-lg font-medium">Utómunka</h3>
             <div className="rounded-lg border bg-card px-4">
+              <DetailRow
+                label="Nyers képek galéria név"
+                value={
+                  <span className="flex items-center gap-1">
+                    {rawImagesGalleryName}
+                    <CopyButton value={rawImagesGalleryName} />
+                  </span>
+                }
+              />
               <DetailRow
                 label="Nyers képek (PicDrop URL)"
                 fullWidth
