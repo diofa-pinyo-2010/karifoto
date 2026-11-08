@@ -3,6 +3,7 @@
 import * as z from 'zod';
 
 import { env } from '@/env';
+import { resolveBeautyRetouchNotes } from '@/lib/beauty-retouch-notes';
 import { APP_URLS, UUID_RE } from '@/lib/constants';
 import { requireClientAccess } from '@/lib/dal';
 import { countPicdropSelection } from '@/lib/picdrop';
@@ -105,6 +106,7 @@ const ShownCountsSchema = z.object({
   editedImages: z.number().int().nonnegative(),
   retouchedImages: z.number().int().nonnegative(),
   isExpressPostProduction: z.boolean(),
+  beautyRetouchNotes: z.string().nullable(),
 });
 
 /**
@@ -122,6 +124,7 @@ export async function confirmImageSelection(
     editedImages: number;
     retouchedImages: number;
     isExpressPostProduction: boolean;
+    beautyRetouchNotes: string | null;
   },
 ): Promise<{ error: string } | { success: true } | { checkoutUrl: string }> {
   const parsedShown = ShownCountsSchema.safeParse(shown);
@@ -146,9 +149,18 @@ export async function confirmImageSelection(
     };
   }
 
+  // Az újraszámolt darabszám dönt: ha közben eltűnt a retus jelölés, a
+  // jegyzet sem kell.
+  const notes = resolveBeautyRetouchNotes(
+    counts.retouchedImages,
+    parsedShown.data.beautyRetouchNotes,
+  );
+  if (!notes.ok) return { error: notes.error };
+
   const selection = {
     ...counts,
     isExpressPostProduction: parsedShown.data.isExpressPostProduction,
+    beautyRetouchNotes: notes.notes,
   };
   const { lines, extraInCents } = quoteImageSelection({
     pricing: shooting.pricing,
@@ -177,6 +189,9 @@ export async function confirmImageSelection(
           express_post_production: selection.isExpressPostProduction
             ? 'true'
             : 'false',
+          ...(selection.beautyRetouchNotes != null && {
+            beauty_retouch_notes: selection.beautyRetouchNotes,
+          }),
         } satisfies CheckoutMetadata,
         success_url: detailsUrl,
         cancel_url: detailsUrl,

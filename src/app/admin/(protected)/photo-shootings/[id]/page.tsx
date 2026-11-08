@@ -13,12 +13,13 @@ import {
 
 import { AddPriceAdjustmentDialog } from '@/components/AddPriceAdjustmentDialog';
 import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
+// import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
+import { CopyButton } from '@/components/admin/CopyButton';
 import { DeadlineBadge } from '@/components/admin/DeadlineBadge';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
 import { CompletePhotoShootingButton } from '@/components/CompletePhotoShootingButton';
-// import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { DetailRow } from '@/components/DetailRow';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { EditableTextField } from '@/components/EditableTextField';
@@ -161,6 +162,7 @@ export default async function PhotoShootingDetailPage({
     totalEditedImages,
     totalRetouchedImages,
   } = shooting;
+  const picdropHeading = `🎄 Karifoto 2026 - ${client.owner.name}`;
 
   const priceBreakdown = calculatePricing({
     pricing,
@@ -630,6 +632,23 @@ export default async function PhotoShootingDetailPage({
                     )}
                     disabled={isCompleted}
                   />
+                }
+              />
+              <DetailRow
+                label="Retus kérések"
+                value={
+                  <span className="whitespace-pre-line">
+                    {shooting.beautyRetouchNotes ?? '–'}
+                  </span>
+                }
+              />
+              <DetailRow
+                label="PicDrop Alternative Heading"
+                value={
+                  <span className="flex items-center gap-1">
+                    {picdropHeading}
+                    <CopyButton value={picdropHeading} />
+                  </span>
                 }
               />
               <DetailRow

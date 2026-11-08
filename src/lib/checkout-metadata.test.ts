@@ -49,6 +49,29 @@ describe('parseCheckoutMetadata', () => {
     });
   });
 
+  it('reads back beauty retouch notes and rejects them over the Stripe limit', () => {
+    const base = {
+      kind: 'image_selection_extra',
+      photo_shooting_id: BOOKING_INTENT_ID,
+      edited_images: '12',
+      retouched_images: '1',
+      express_post_production: 'false',
+    };
+
+    const parsed = parseCheckoutMetadata({
+      ...base,
+      beauty_retouch_notes: 'pattanás az arcomon',
+    });
+    expect(parsed.ok && parsed.metadata).toMatchObject({
+      beauty_retouch_notes: 'pattanás az arcomon',
+    });
+
+    expect(
+      parseCheckoutMetadata({ ...base, beauty_retouch_notes: 'a'.repeat(501) })
+        .ok,
+    ).toBe(false);
+  });
+
   it('rejects null, which is what Stripe sends when metadata was never set', () => {
     const parsed = parseCheckoutMetadata(null);
 

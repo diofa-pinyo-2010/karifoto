@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 
 import { FlagIcon, RotateCwIcon } from 'lucide-react';
 
@@ -11,10 +11,13 @@ import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldError,
   FieldLabel,
   FieldTitle,
 } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
+import { Textarea } from '@/components/ui/textarea';
+import { BEAUTY_RETOUCH_NOTES_MAX_LENGTH } from '@/lib/beauty-retouch-notes';
 import {
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
@@ -47,6 +50,11 @@ export function ImageSelectionDialog({
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<ImageSelectionPreview | null>(null);
   const [isExpressPostProduction, setIsExpressPostProduction] = useState(false);
+  // Újranyitáskor megmarad, hogy egy javított jelölés után ne kelljen újraírni.
+  const [beautyRetouchNotes, setBeautyRetouchNotes] = useState('');
+  // Csak az első beküldési kísérlet után pirosítunk, ne már megnyitáskor.
+  const [showRetouchNotesError, setShowRetouchNotesError] = useState(false);
+  const retouchNotesRef = useRef<HTMLTextAreaElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCounting, startCounting] = useTransition();
   const [isConfirming, startConfirming] = useTransition();
@@ -75,6 +83,11 @@ export function ImageSelectionDialog({
   function confirm() {
     if (preview == null) return;
     setError(null);
+    if (preview.retouchedImages > 0 && beautyRetouchNotes.trim() === '') {
+      setShowRetouchNotesError(true);
+      retouchNotesRef.current?.focus();
+      return;
+    }
     startConfirming(async () => {
       try {
         const result = await confirmImageSelection(
@@ -84,6 +97,7 @@ export function ImageSelectionDialog({
             editedImages: preview.editedImages,
             retouchedImages: preview.retouchedImages,
             isExpressPostProduction,
+            beautyRetouchNotes,
           },
         );
         if ('error' in result) {
@@ -109,6 +123,9 @@ export function ImageSelectionDialog({
       ? quoteImageSelection({ ...preview, isExpressPostProduction })
       : null;
   const needsPayment = quote != null && quote.extraInCents > 0;
+  const needsRetouchNotes = preview != null && preview.retouchedImages > 0;
+  const isRetouchNotesInvalid =
+    showRetouchNotesError && beautyRetouchNotes.trim() === '';
 
   return (
     <ResponsiveDialog
@@ -117,6 +134,7 @@ export function ImageSelectionDialog({
         setOpen(next);
         if (next) {
           setIsExpressPostProduction(false);
+          setShowRetouchNotesError(false);
           count();
         }
       }}
@@ -162,6 +180,39 @@ export function ImageSelectionDialog({
                 </span>
               </li>
             </ul>
+
+            {needsRetouchNotes && (
+              <Field data-invalid={isRetouchNotesInvalid}>
+                <FieldLabel htmlFor="beauty-retouch-notes">
+                  Mit retusáljunk a képeken?
+                  <span aria-hidden className="text-destructive">
+                    *
+                  </span>
+                </FieldLabel>
+                <Textarea
+                  ref={retouchNotesRef}
+                  id="beauty-retouch-notes"
+                  required
+                  aria-invalid={isRetouchNotesInvalid}
+                  aria-describedby={
+                    isRetouchNotesInvalid
+                      ? 'beauty-retouch-notes-error'
+                      : undefined
+                  }
+                  maxLength={BEAUTY_RETOUCH_NOTES_MAX_LENGTH}
+                  value={beautyRetouchNotes}
+                  onChange={(event) =>
+                    setBeautyRetouchNotes(event.target.value)
+                  }
+                  placeholder="Pl. a 7209156-os képen fogfehérítést és bőrsimítást kérek…"
+                />
+                {isRetouchNotesInvalid && (
+                  <FieldError id="beauty-retouch-notes-error">
+                    Írd le, mit retusáljunk a képeken.
+                  </FieldError>
+                )}
+              </Field>
+            )}
 
             <FieldLabel htmlFor="express-post-production">
               <Field orientation="horizontal">

@@ -13,6 +13,8 @@ type SendEditorSelectionCompletedEmailParams = {
   editedImages: number;
   retouchedImages: number;
   isExpressPostProduction: boolean;
+  beautyRetouchNotes: string | null;
+  rawImagesUrl: string | null;
   deadline: string;
   shootingUrl: string;
 };
