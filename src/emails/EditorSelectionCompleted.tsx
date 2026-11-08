@@ -94,7 +94,7 @@ export default function EditorSelectionCompletedEmail({
                 rel="noopener noreferrer"
                 className="font-base my-4 inline-block rounded-lg bg-gray-800 px-7 py-4 text-center font-sans leading-6 font-semibold tracking-wide text-white uppercase"
               >
-                Megnyitás
+                Admin
               </Button>
             </Section>
             <Text className="m-0 font-semibold">📸 Karifoto Team</Text>
