@@ -8,6 +8,7 @@ import {
 } from '@/generated/prisma/client';
 import {
   EARLY_BIRD_DISCOUNT_AMOUNT,
+  LAST_MINUTE_DISCOUNT_AMOUNT,
   WEEKDAY_DISCOUNT_AMOUNT,
 } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
@@ -142,6 +143,30 @@ export async function attachEarlyBirdDiscount(
     console.error(err);
     return {
       error: `Nem sikerült elmenteni az automatikus early bird-öt, és hozzáadni a booking intenthez. bi ID:${bookingIntentId}`,
+    };
+  }
+}
+
+export async function attachLastMinuteDiscount(
+  bookingIntentId: string,
+): Promise<{ success: true } | { error: string }> {
+  try {
+    await prisma.priceAdjustment.create({
+      data: {
+        type: PriceAdjustmentType.DISCOUNT,
+        amountInCents: LAST_MINUTE_DISCOUNT_AMOUNT,
+        publicLabel: 'Last Minute kedvezmény 🎉',
+        internalNote: 'Automatikus last minute kedvezmény.',
+        bookingIntent: { connect: { id: bookingIntentId } },
+      },
+      select: { id: true },
+    });
+
+    return { success: true };
+  } catch (err) {
+    console.error(err);
+    return {
+      error: `Nem sikerült elmenteni az automatikus last minute kedvezményt, és hozzáadni a booking intenthez. bi ID:${bookingIntentId}`,
     };
   }
 }
