@@ -66,7 +66,7 @@ export function LastMinuteNote() {
           </svg>
         </span>{' '}
         kedvezménnyel* !
-        <span className="mt-1 block text-base">
+        <span className="mt-1 block text-sm lg:text-base">
           *A hétköznapi {formatMoney(LAST_MINUTE_DISCOUNT_AMOUNT)} kedvezmény
           még ezen felül értendő
         </span>
