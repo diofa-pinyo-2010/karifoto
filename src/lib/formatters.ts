@@ -62,6 +62,7 @@ export const shortFullDateFormatter = new Intl.DateTimeFormat('hu-Hu', {
 
 // szombat, december 13.
 export const dateFormatter = new Intl.DateTimeFormat('hu-HU', {
+  timeZone: STUDIO_TZ,
   weekday: 'long',
   month: 'long',
   day: 'numeric',

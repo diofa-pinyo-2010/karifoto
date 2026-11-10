@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { cn } from '@/lib/utils';
+import { EARLY_BIRD_DISCOUNT_AMOUNT } from '@/lib/constants';
+import { cn, formatMoney } from '@/lib/utils';
 
 export function EarlyBirdNote() {
   const ref = useRef<HTMLDivElement>(null);
@@ -45,7 +46,7 @@ export function EarlyBirdNote() {
         <br />
         most{' '}
         <span className="relative inline-block">
-          10&nbsp;000&nbsp;Ft
+          {formatMoney(EARLY_BIRD_DISCOUNT_AMOUNT)}
           {/* összeg aláhúzása */}
           <svg
             viewBox="0 0 100 8"

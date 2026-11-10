@@ -6,7 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { isPackageAllowed } from '@/lib/time-slot-packages';
 import { isWeekday } from '@/lib/utils';
 import {
-  attachEarlyBirdDiscount,
+  // attachEarlyBirdDiscount,
+  attachLastMinuteDiscount,
   attachWeekdayDiscount,
 } from '@/server/price-adjustments';
 
@@ -124,7 +125,8 @@ export async function createBookingIntent(
       }
 
       if (intent.timeSlot.startTime <= new Date(EARLY_BIRD_DATE_DEADLINE)) {
-        const res = await attachEarlyBirdDiscount(intent.id);
+        // const res = await attachEarlyBirdDiscount(intent.id);
+        const res = await attachLastMinuteDiscount(intent.id);
         if ('error' in res) {
           console.error(res.error);
         }
@@ -137,7 +139,7 @@ export async function createBookingIntent(
         }
       }
     } catch (err) {
-      console.error('Early bird and/or Weekday discount failed: ', err);
+      console.error('Last minute and/or Weekday discount failed: ', err);
     }
 
     return { id: intent.id };

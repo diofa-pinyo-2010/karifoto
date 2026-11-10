@@ -1,36 +1,23 @@
 'use client';
 
-import Link from 'next/link';
-
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 import { FaceSlightlyFrowningIcon } from 'lucide-react';
 
 import { useBookingSelection } from '@/components/BookingSelectionProvider';
-import { PACKAGE_LABEL, WEEKDAY_DISCOUNT_AMOUNT } from '@/lib/constants';
+import { TimeSlotItem } from '@/components/TimeSlotItem';
+import { WeekdayNote } from '@/components/WeekdayNote';
 import {
   monthDayFormatter,
-  shortDateFormatter,
-  timeFormatter,
   weekDayFormatter,
   weekDayFormatterShort,
 } from '@/lib/formatters';
-import {
-  capitalize,
-  cn,
-  formatMoney,
-  isWeekdayKey,
-  type GroupedSlots,
-} from '@/lib/utils';
+import { isWeekdayKey, type GroupedSlots } from '@/lib/utils';
 
 import type { TimeSlotPublic } from '@/lib/queries';
 
 // SZEPTEMBER 13., VASÁRNAP/V
 const formatDayTitle = (date: Date, opts: { short: boolean }) =>
   `${monthDayFormatter.format(date)}, ${opts.short ? weekDayFormatterShort.format(date) : weekDayFormatter.format(date)}`.toUpperCase();
-
-// Szept. 13. 12:00
-const formatSlotLabel = (date: Date) =>
-  `${capitalize(shortDateFormatter.format(date))} ${timeFormatter.format(date)}`;
 
 export function TimeSlotAccordion({
   groupedTimeSlots,
@@ -74,15 +61,7 @@ export function TimeSlotAccordion({
             <AccordionPrimitive.Header className="flex">
               <AccordionPrimitive.Trigger className="group flex min-h-16 flex-1 items-center justify-between gap-2 py-4 text-left text-[11px] font-semibold tracking-wide focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]">
                 {formatDayTitle(daySlots[0].startTime, { short: isWeekday })}
-                {isWeekday && (
-                  <span className="relative isolate inline-block px-1.5 font-handwritten text-base font-normal text-brand-accent lg:text-xl">
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-0 top-[30%] bottom-[8%] -z-10 -rotate-1 rounded-[3px_10px_4px_12px] bg-[#ffe27a]/70"
-                    />
-                    hétköznap -{formatMoney(WEEKDAY_DISCOUNT_AMOUNT)}!
-                  </span>
-                )}
+                {isWeekday && <WeekdayNote />}
                 <span
                   aria-hidden="true"
                   className="text-2xl leading-none font-normal text-[#657a70]"
@@ -97,70 +76,13 @@ export function TimeSlotAccordion({
                 {/* Két oszlop `sm`-től: a panel `lg`-n a rács fele, de ott is elég
                   széles két idősávhoz. */}
                 <ul className="grid gap-2 pb-5 sm:grid-cols-2">
-                  {daySlots.map(
-                    ({
-                      id,
-                      startTime,
-                      revealed,
-                      photoShooting,
-                      allowedPackages,
-                    }) => {
-                      const taken = !revealed || photoShooting != null;
-
-                      const row = (
-                        <>
-                          <span className={cn(taken && 'line-through')}>
-                            {formatSlotLabel(startTime)}
-                          </span>
-                          {allowedPackages.length > 0 && !taken && (
-                            <span className="font-medium">
-                              Csak{' '}
-                              {allowedPackages
-                                .map((p) => PACKAGE_LABEL[p])
-                                .join(', ')}
-                            </span>
-                          )}
-                          <span
-                            className={cn(
-                              'text-[10px] font-semibold uppercase',
-                              taken ? 'text-brand-taken' : 'text-brand-free',
-                            )}
-                          >
-                            {taken ? 'Foglalt' : 'Szabad'}
-                          </span>
-                        </>
-                      );
-
-                      const rowClass =
-                        'flex min-h-13 items-center justify-between gap-3 rounded-md border px-3 py-3 text-[11px]';
-
-                      return (
-                        <li key={id}>
-                          {taken ? (
-                            <div
-                              aria-disabled
-                              className={cn(
-                                rowClass,
-                                'cursor-not-allowed border-brand-taken-edge bg-brand-taken-surface text-brand-taken',
-                              )}
-                            >
-                              {row}
-                            </div>
-                          ) : (
-                            <Link
-                              href={`/foglalas/${id}${selectionQuery}`}
-                              className={cn(
-                                rowClass,
-                                'border-brand-free-edge bg-brand-free-surface transition-colors hover:border-brand-free-edge-hover hover:bg-brand-free-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ad7135]',
-                              )}
-                            >
-                              {row}
-                            </Link>
-                          )}
-                        </li>
-                      );
-                    },
-                  )}
+                  {daySlots.map((slot) => (
+                    <TimeSlotItem
+                      key={slot.id}
+                      slot={slot}
+                      selectionQuery={selectionQuery}
+                    />
+                  ))}
                 </ul>
               </div>
             </AccordionPrimitive.Panel>

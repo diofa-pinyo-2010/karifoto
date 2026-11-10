@@ -1,4 +1,5 @@
-import { BookingEarlyBird } from '@/components/BookingEarlyBird';
+// import { BookingEarlyBird } from '@/components/BookingEarlyBird';
+import { BookingLastMinute } from '@/components/BookingLastMinute';
 import { BookingNormal } from '@/components/BookingNormal';
 import { BookingSelectionProvider } from '@/components/BookingSelectionProvider';
 import { Faq } from '@/components/Faq';
@@ -36,7 +37,8 @@ export default async function Home() {
         <Reviews />
         <Pricing />
         <Video />
-        <BookingEarlyBird />
+        <BookingLastMinute />
+        {/* <BookingEarlyBird /> */}
         <BookingNormal />
         <Faq />
         <Location />

@@ -152,6 +152,7 @@ export const SITE_SETTINGS_TABLE_ID = 'singleton';
 
 export const AUTOMATIC_EARLY_BIRD_ENABLED = false;
 export const EARLY_BIRD_DISCOUNT_AMOUNT = 10_000_00;
+export const LAST_MINUTE_DISCOUNT_AMOUNT = 5_000_00;
 
 export const UPCOMING_SHOOTINGS_TO_SHOW = 300;
 
