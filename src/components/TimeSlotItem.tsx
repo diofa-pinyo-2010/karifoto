@@ -28,7 +28,7 @@ export function TimeSlotItem({
         {formatSlotLabel(startTime)}
       </span>
       {allowedPackages.length > 0 && !taken && (
-        <span className="font-medium">
+        <span className="font-bold text-destructive">
           Csak {allowedPackages.map((p) => PACKAGE_LABEL[p]).join(', ')}
         </span>
       )}
