@@ -15,6 +15,7 @@ import {
   ItemContent,
   ItemTitle,
 } from '@/components/ui/item';
+import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import { requiresDecorChoice } from '@/lib/catalog';
 import {
   APP_URLS,
@@ -24,6 +25,7 @@ import {
   PHOTO_SHOOTING_STATUS_LABEL,
 } from '@/lib/constants';
 import { timeFormatter } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 
 import type { fetchUpcomingPhotoShootings } from '@/lib/queries';
 
@@ -38,14 +40,26 @@ export function PhotoShootingListItem({
   shooting: ListedPhotoShooting;
   staffBadgeClassNames: Map<string, string>;
 }) {
+  const isWaitingForBalancePayment =
+    shooting.status === PhotoShootingStatus.WAITING_FOR_BALANCE_PAYMENT;
+
   return (
     <Item
       variant="outline"
-      className="bg-card"
+      className={cn(
+        'bg-card',
+        isWaitingForBalancePayment && 'border-green-500',
+      )}
       render={
         <Link href={APP_URLS.photoShootingAdminPage(shooting.id)}>
           <ItemContent className="gap-2">
             <div className="flex items-center gap-2">
+              {isWaitingForBalancePayment && (
+                <span aria-hidden className="relative flex size-2.5">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
+                  <span className="relative inline-flex size-2.5 rounded-full bg-green-500" />
+                </span>
+              )}
               <Badge
                 variant="secondary"
                 className={
