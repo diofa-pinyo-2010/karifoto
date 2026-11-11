@@ -140,3 +140,6 @@ export const formatOffsetDateTime = (date: Date) => {
 // 2026-12-10_14-30 — for file names; `:` is not allowed in Windows file names.
 export const formatFileNameDateTime = (date: Date) =>
   csvDateTimeFormatter.format(date).replace(' ', '_').replace(':', '-');
+
+// 12 340 — darabszámokhoz, ezres tagolással.
+export const countFormatter = new Intl.NumberFormat('hu-HU');

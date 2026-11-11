@@ -224,6 +224,18 @@ export async function fetchPipelinePhotoShootings() {
   });
 }
 
+/**
+ * A valaha lezárt fotózások száma a pipeline fejlécéhez. Csak `count`, hogy ne
+ * töltsük be a lezárt sorokat.
+ */
+export async function countCompletedPhotoShootings() {
+  await verifySession();
+
+  return prisma.photoShooting.count({
+    where: { status: PhotoShootingStatus.COMPLETED },
+  });
+}
+
 export async function fetchAllPhotoShootings({
   search,
   order,
