@@ -49,7 +49,7 @@ export function PhotoShootingListItem({
       className={cn(
         'bg-card',
         isWaitingForBalancePayment &&
-          'border-green-500 bg-green-50 dark:bg-green-950',
+          'border-green-500 bg-green-50 dark:bg-green-950 [a]:hover:bg-green-100 dark:[a]:hover:bg-green-900',
       )}
       render={
         <Link href={APP_URLS.photoShootingAdminPage(shooting.id)}>
