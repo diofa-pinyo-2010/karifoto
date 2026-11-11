@@ -224,10 +224,6 @@ export async function fetchPipelinePhotoShootings() {
   });
 }
 
-/**
- * A valaha lezárt fotózások száma a pipeline fejlécéhez. Csak `count`, hogy ne
- * töltsük be a lezárt sorokat.
- */
 export async function countCompletedPhotoShootings() {
   await verifySession();
 

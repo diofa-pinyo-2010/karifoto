@@ -1,7 +1,5 @@
 import { countFormatter } from '@/lib/formatters';
 
-// A pipeline oldalak fejléce: a folyamatban lévő fotózások száma, mellette
-// ünnepi kártyán a valaha lezártaké — erre büszkék vagyunk, ezért kiemelt.
 export function PipelineHeader({
   inProgressCount,
   completedCount,
