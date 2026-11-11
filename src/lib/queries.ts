@@ -215,12 +215,18 @@ export async function fetchPipelinePhotoShootings() {
   });
 }
 
-export async function countCompletedPhotoShootings() {
+export async function countPhotoShootingTotals() {
   await verifySession();
 
-  return prisma.photoShooting.count({
-    where: { status: PhotoShootingStatus.COMPLETED },
-  });
+  const [booked, completed] = await Promise.all([
+    prisma.photoShooting.count({
+      where: { status: { not: PhotoShootingStatus.CANCELLED } },
+    }),
+    prisma.photoShooting.count({
+      where: { status: PhotoShootingStatus.COMPLETED },
+    }),
+  ]);
+  return { booked, completed };
 }
 
 export async function fetchAllPhotoShootings({

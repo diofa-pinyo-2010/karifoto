@@ -1,15 +1,29 @@
 import { countFormatter } from '@/lib/formatters';
 
 export function PipelineHeader({
+  bookedCount,
   inProgressCount,
   completedCount,
 }: {
+  bookedCount: number;
   inProgressCount: number;
   completedCount: number;
 }) {
   return (
     <header className="flex items-center gap-4">
       <h1 className="sr-only">Pipeline</h1>
+
+      <div className="flex h-full flex-col items-center gap-1 rounded-xl px-5 py-2.5 text-center">
+        <span aria-hidden="true" className="text-lg">
+          📸
+        </span>
+        <span className="text-3xl leading-none font-extrabold lg:text-4xl">
+          {countFormatter.format(bookedCount)}
+        </span>
+        <span className="text-xs tracking-wider text-muted-foreground uppercase">
+          Foglalt
+        </span>
+      </div>
 
       <div className="flex h-full flex-col items-center gap-1 rounded-xl px-5 py-2.5 text-center">
         <span aria-hidden="true" className="text-lg">
