@@ -90,7 +90,7 @@ export default async function TodayPage() {
           Ma nincs fotózás.
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-3">
           {photoShootings.map((shooting) => (
             <PhotoShootingListItem
               key={shooting.id}
