@@ -21,7 +21,7 @@ export function PipelineHeader({
           {countFormatter.format(bookedCount)}
         </span>
         <span className="text-xs tracking-normal text-muted-foreground uppercase sm:tracking-wider">
-          Foglalt
+          Összes
         </span>
       </div>
 
