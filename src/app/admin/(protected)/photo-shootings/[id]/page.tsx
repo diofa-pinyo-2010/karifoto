@@ -163,10 +163,7 @@ export default async function PhotoShootingDetailPage({
     totalEditedImages,
     totalRetouchedImages,
   } = shooting;
-  const rawImagesGalleryName = `
-    ${timeInputFormatter.format(timeSlot.startTime).replace(':', '')} 
-    ${client.owner.name}
-  `;
+  const rawImagesGalleryName = `${timeInputFormatter.format(timeSlot.startTime).replace(':', '')} ${client.owner.name}`;
   const picdropHeading = `🎄 Karifoto 2026 - ${client.owner.name}`;
 
   const priceBreakdown = calculatePricing({
