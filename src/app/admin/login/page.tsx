@@ -9,7 +9,7 @@ export default async function AdminLoginPage(props: PageProps<'/admin/login'>) {
   const session = await getSession();
 
   if (session) {
-    redirect(APP_URLS.upcomingShootings);
+    redirect(APP_URLS.today);
   }
 
   const searchParams = await props.searchParams;

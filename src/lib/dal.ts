@@ -57,7 +57,7 @@ export async function requireNavAccess(href: string) {
   }
 
   if (!navItem.allowedRoles.includes(session.staffProfile.role)) {
-    redirect(APP_URLS.upcomingShootings);
+    redirect(APP_URLS.today);
   }
 
   return session;

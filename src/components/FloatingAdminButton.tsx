@@ -13,7 +13,7 @@ export function FloatingAdminButton() {
       size="lg"
       nativeButton={false}
       className="fixed right-5 bottom-5 z-20 gap-2 rounded-lg"
-      render={<Link href={APP_URLS.upcomingShootings} />}
+      render={<Link href={APP_URLS.today} />}
     >
       <LayoutDashboard size={18} />
       ADMIN

@@ -112,10 +112,10 @@ export default async function PhotoShootingDetailPage({
         size="lg"
         className="w-fit"
         nativeButton={false}
-        render={<Link href={APP_URLS.upcomingShootings} />}
+        render={<Link href={APP_URLS.today} />}
       >
         <ArrowLeft />
-        Következő fotózások
+        Mai nap
       </Button>
       <Button
         variant="outline"
