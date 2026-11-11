@@ -232,25 +232,28 @@ export async function countPhotoShootingTotals() {
 export async function fetchAllPhotoShootings({
   search,
   order,
+  status,
 }: {
   search: string;
   order: ShootingOrder;
+  status: PhotoShootingStatus | null;
 }): Promise<PhotoShootingWithClient[]> {
   await verifySession();
 
   return prisma.photoShooting.findMany({
-    where: search
-      ? {
-          client: {
-            owner: {
-              OR: [
-                { email: { contains: search, mode: 'insensitive' } },
-                { name: { contains: search, mode: 'insensitive' } },
-              ],
-            },
+    where: {
+      ...(search && {
+        client: {
+          owner: {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' } },
+              { name: { contains: search, mode: 'insensitive' } },
+            ],
           },
-        }
-      : undefined,
+        },
+      }),
+      ...(status && { status }),
+    },
     orderBy: SHOOTING_ORDER_BY[order],
     ...photoShootingWithClientInclude,
   });

@@ -18,23 +18,27 @@ import {
 import { fetchAllPhotoShootings } from '@/lib/queries';
 import {
   parseShootingOrder,
+  parseShootingStatus,
   SHOOTING_ORDER_PARAM,
   SHOOTING_SEARCH_PARAM,
+  SHOOTING_STATUS_PARAM,
 } from '@/lib/shooting-order';
 
 export default async function AllPhotoShootingsPage({
   searchParams,
-}: PageProps<'/admin/photo-shootings'>) {
+}: PageProps<'/admin/search'>) {
   await requireNavAccess(APP_URLS.allShootings);
 
   const params = await searchParams;
   const rawSearch = params[SHOOTING_SEARCH_PARAM];
   const search = (Array.isArray(rawSearch) ? rawSearch[0] : rawSearch)?.trim();
   const order = parseShootingOrder(params[SHOOTING_ORDER_PARAM]);
+  const status = parseShootingStatus(params[SHOOTING_STATUS_PARAM]);
 
   const shootings = await fetchAllPhotoShootings({
     search: search ?? '',
     order,
+    status,
   });
 
   return (
@@ -42,7 +46,11 @@ export default async function AllPhotoShootingsPage({
       <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
         Kereső ({shootings.length} fotózás)
       </h1>
-      <ShootingListControls search={search ?? ''} order={order} />
+      <ShootingListControls
+        search={search ?? ''}
+        order={order}
+        status={status}
+      />
 
       {shootings.length === 0 ? (
         <div className="flex items-center justify-center gap-2 rounded-[22px] border border-border bg-muted px-5 py-8 text-center text-sm text-muted-foreground">
