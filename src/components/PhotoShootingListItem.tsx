@@ -69,32 +69,14 @@ export function PhotoShootingListItem({
               >
                 {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
               </Badge>
-              {shooting.photographer && (
-                <Badge
-                  variant="secondary"
-                  className={
-                    shooting.photographerId
-                      ? staffBadgeClassNames.get(shooting.photographerId)
-                      : undefined
-                  }
-                >
-                  {shooting.photographer.nickname}
-                </Badge>
-              )}
             </div>
             <ItemTitle>
               <div>
-                <span className="text-muted-foreground">
+                {/* <span className="text-muted-foreground">
                   #{shooting.sequenceNumber}
-                </span>{' '}
+                </span>{' '} */}
                 {timeFormatter.format(shooting.timeSlot.startTime)} •{' '}
-                <span className="text-primary dark:text-primary-foreground">
-                  {shooting.package}
-                  {requiresDecorChoice(shooting.package) &&
-                    shooting.decorSet &&
-                    `(${DECOR_SET_LABEL[shooting.decorSet]})`}
-                </span>{' '}
-                • {shooting.client.owner.name}
+                {shooting.client.owner.name}
               </div>
             </ItemTitle>
             <div className="mt-2 flex items-center gap-3">
@@ -111,12 +93,30 @@ export function PhotoShootingListItem({
                   <NotebookPenIcon className="size-4 text-muted-foreground" />
                 </div>
               )}
+              <span className="font-bold">
+                {shooting.package}{' '}
+                {requiresDecorChoice(shooting.package) &&
+                  shooting.decorSet &&
+                  `(${DECOR_SET_LABEL[shooting.decorSet]})`}
+              </span>
               {isLightPlayChargeable(shooting.package) &&
                 shooting.isLightPlaySelected && (
                   <div className="flex items-center gap-1">
                     <WandIcon className="size-4 text-muted-foreground" />
                   </div>
                 )}
+              {shooting.photographer && (
+                <Badge
+                  variant="secondary"
+                  className={
+                    shooting.photographerId
+                      ? staffBadgeClassNames.get(shooting.photographerId)
+                      : undefined
+                  }
+                >
+                  {shooting.photographer.nickname}
+                </Badge>
+              )}
             </div>
           </ItemContent>
           <ItemActions>
