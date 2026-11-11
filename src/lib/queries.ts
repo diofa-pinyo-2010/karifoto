@@ -224,6 +224,14 @@ export async function fetchPipelinePhotoShootings() {
   });
 }
 
+export async function countCompletedPhotoShootings() {
+  await verifySession();
+
+  return prisma.photoShooting.count({
+    where: { status: PhotoShootingStatus.COMPLETED },
+  });
+}
+
 export async function fetchAllPhotoShootings({
   search,
   order,

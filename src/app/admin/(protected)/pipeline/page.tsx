@@ -1,27 +1,33 @@
 import { PipelineCard } from '@/components/admin/PipelineCard';
 import { PipelineCarousel } from '@/components/admin/PipelineCarousel';
+import { PipelineHeader } from '@/components/admin/PipelineHeader';
 import { Badge } from '@/components/ui/badge';
 import { APP_URLS, buildStaffBadgeClassNames } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { groupByPipelineColumn } from '@/lib/pipeline';
-import { fetchPipelinePhotoShootings } from '@/lib/queries';
+import {
+  countCompletedPhotoShootings,
+  fetchPipelinePhotoShootings,
+} from '@/lib/queries';
 import { fetchStaffIdsForBadges } from '@/server/admin';
 
 export default async function PipelinePage() {
   await requireNavAccess(APP_URLS.pipeline);
 
-  const [shootings, staffIds] = await Promise.all([
+  const [shootings, staffIds, completedCount] = await Promise.all([
     fetchPipelinePhotoShootings(),
     fetchStaffIdsForBadges(),
+    countCompletedPhotoShootings(),
   ]);
   const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
   const columns = groupByPipelineColumn(shootings);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      <h1 className="text-lg font-semibold text-muted-foreground lg:text-2xl">
-        Pipeline ({shootings.length} fotózás)
-      </h1>
+      <PipelineHeader
+        inProgressCount={shootings.length}
+        completedCount={completedCount}
+      />
 
       <PipelineCarousel>
         {columns.map((column) => (
