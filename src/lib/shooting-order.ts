@@ -1,7 +1,10 @@
+import { PhotoShootingStatus } from '@/generated/prisma/enums';
+
 import type { Prisma } from '@/generated/prisma/client';
 
 export const SHOOTING_ORDER_PARAM = 'rendezes';
 export const SHOOTING_SEARCH_PARAM = 'q';
+export const SHOOTING_STATUS_PARAM = 'status';
 
 export const SHOOTING_ORDER_BY = {
   'start-asc': { timeSlot: { startTime: 'asc' } },
@@ -28,4 +31,13 @@ export function parseShootingOrder(value: unknown): ShootingOrder {
   return typeof value === 'string' && value in SHOOTING_ORDER_BY
     ? (value as ShootingOrder)
     : DEFAULT_SHOOTING_ORDER;
+}
+
+/** Ismeretlen vagy hiányzó érték esetén `null`, azaz minden státusz. */
+export function parseShootingStatus(
+  value: unknown,
+): PhotoShootingStatus | null {
+  return typeof value === 'string' && value in PhotoShootingStatus
+    ? (value as PhotoShootingStatus)
+    : null;
 }

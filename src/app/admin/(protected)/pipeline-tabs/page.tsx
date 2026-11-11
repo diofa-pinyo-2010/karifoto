@@ -6,7 +6,7 @@ import { APP_URLS, buildStaffBadgeClassNames } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { groupByPipelineColumn } from '@/lib/pipeline';
 import {
-  countCompletedPhotoShootings,
+  countPhotoShootingTotals,
   fetchPipelinePhotoShootings,
 } from '@/lib/queries';
 import { fetchStaffIdsForBadges } from '@/server/admin';
@@ -14,10 +14,10 @@ import { fetchStaffIdsForBadges } from '@/server/admin';
 export default async function PipelineTabs() {
   await requireNavAccess(APP_URLS.pipelineTabs);
 
-  const [shootings, staffIds, completedCount] = await Promise.all([
+  const [shootings, staffIds, totals] = await Promise.all([
     fetchPipelinePhotoShootings(),
     fetchStaffIdsForBadges(),
-    countCompletedPhotoShootings(),
+    countPhotoShootingTotals(),
   ]);
   const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
   const columns = groupByPipelineColumn(shootings);
@@ -25,8 +25,9 @@ export default async function PipelineTabs() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       <PipelineHeader
+        bookedCount={totals.booked}
         inProgressCount={shootings.length}
-        completedCount={completedCount}
+        completedCount={totals.completed}
       />
 
       <Tabs defaultValue={0} className="gap-4">

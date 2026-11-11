@@ -215,36 +215,45 @@ export async function fetchPipelinePhotoShootings() {
   });
 }
 
-export async function countCompletedPhotoShootings() {
+export async function countPhotoShootingTotals() {
   await verifySession();
 
-  return prisma.photoShooting.count({
-    where: { status: PhotoShootingStatus.COMPLETED },
-  });
+  const [booked, completed] = await Promise.all([
+    prisma.photoShooting.count({
+      where: { status: { not: PhotoShootingStatus.CANCELLED } },
+    }),
+    prisma.photoShooting.count({
+      where: { status: PhotoShootingStatus.COMPLETED },
+    }),
+  ]);
+  return { booked, completed };
 }
 
 export async function fetchAllPhotoShootings({
   search,
   order,
+  status,
 }: {
   search: string;
   order: ShootingOrder;
+  status: PhotoShootingStatus | null;
 }): Promise<PhotoShootingWithClient[]> {
   await verifySession();
 
   return prisma.photoShooting.findMany({
-    where: search
-      ? {
-          client: {
-            owner: {
-              OR: [
-                { email: { contains: search, mode: 'insensitive' } },
-                { name: { contains: search, mode: 'insensitive' } },
-              ],
-            },
+    where: {
+      ...(search && {
+        client: {
+          owner: {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' } },
+              { name: { contains: search, mode: 'insensitive' } },
+            ],
           },
-        }
-      : undefined,
+        },
+      }),
+      ...(status && { status }),
+    },
     orderBy: SHOOTING_ORDER_BY[order],
     ...photoShootingWithClientInclude,
   });

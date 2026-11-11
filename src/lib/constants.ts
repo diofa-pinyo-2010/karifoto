@@ -457,7 +457,7 @@ export const APP_URLS = {
   today: '/admin/today',
   staffPayouts: '/admin/staff-payouts',
   upcomingShootings: '/admin/bookings',
-  allShootings: '/admin/photo-shootings',
+  allShootings: '/admin/search',
   terminals: '/admin/terminals',
   ownShootings: '/admin/my-tasks',
   pipeline: '/admin/pipeline',

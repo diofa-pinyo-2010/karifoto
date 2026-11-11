@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { ArrowDownUpIcon, SearchIcon } from 'lucide-react';
+import { ArrowDownUpIcon, FilterIcon, SearchIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,37 +18,46 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { PhotoShootingStatus } from '@/generated/prisma/enums';
+import { PHOTO_SHOOTING_STATUS_LABEL } from '@/lib/constants';
 import {
   DEFAULT_SHOOTING_ORDER,
   SHOOTING_ORDER_BY,
   SHOOTING_ORDER_LABEL,
   SHOOTING_ORDER_PARAM,
   SHOOTING_SEARCH_PARAM,
+  SHOOTING_STATUS_PARAM,
   type ShootingOrder,
 } from '@/lib/shooting-order';
 
 type ShootingListControlsProps = {
   search: string;
   order: ShootingOrder;
+  status: PhotoShootingStatus | null;
 };
 
 const SEARCH_DEBOUNCE_MS = 300;
+// A rádiócsoport értéke nem lehet null, ezért az „összes” külön kulcsot kap.
+const ALL_STATUSES = 'all';
 
 export function ShootingListControls({
   search,
   order,
+  status,
 }: ShootingListControlsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = useState(search);
   const isFirstRender = useRef(true);
 
-  function navigate(nextSearch: string, nextOrder: ShootingOrder) {
+  function navigate(changes: Partial<ShootingListControlsProps>) {
+    const next = { search: query.trim(), order, status, ...changes };
     const params = new URLSearchParams();
-    if (nextSearch) params.set(SHOOTING_SEARCH_PARAM, nextSearch);
-    if (nextOrder !== DEFAULT_SHOOTING_ORDER) {
-      params.set(SHOOTING_ORDER_PARAM, nextOrder);
+    if (next.search) params.set(SHOOTING_SEARCH_PARAM, next.search);
+    if (next.order !== DEFAULT_SHOOTING_ORDER) {
+      params.set(SHOOTING_ORDER_PARAM, next.order);
     }
+    if (next.status) params.set(SHOOTING_STATUS_PARAM, next.status);
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname);
   }
@@ -60,7 +69,7 @@ export function ShootingListControls({
       return;
     }
     const timeout = setTimeout(() => {
-      navigate(query.trim(), order);
+      navigate({});
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- csak a beírt szövegre reagálunk
@@ -80,11 +89,45 @@ export function ShootingListControls({
           aria-label="Keresés név vagy e-mail cím alapján"
         />
       </InputGroup>
-      <div className="flex justify-end">
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="outline" className="bg-card">
+              <Button variant="outline" className="w-full bg-card sm:w-auto">
+                <FilterIcon />
+                {status
+                  ? PHOTO_SHOOTING_STATUS_LABEL[status].long
+                  : 'Összes státusz'}
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-auto">
+            <DropdownMenuRadioGroup
+              value={status ?? ALL_STATUSES}
+              onValueChange={(value) =>
+                navigate({
+                  status:
+                    value === ALL_STATUSES
+                      ? null
+                      : (value as PhotoShootingStatus),
+                })
+              }
+            >
+              <DropdownMenuRadioItem closeOnClick value={ALL_STATUSES}>
+                Összes státusz
+              </DropdownMenuRadioItem>
+              {Object.values(PhotoShootingStatus).map((key) => (
+                <DropdownMenuRadioItem closeOnClick key={key} value={key}>
+                  {PHOTO_SHOOTING_STATUS_LABEL[key].long}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" className="w-full bg-card sm:w-auto">
                 <ArrowDownUpIcon />
                 {SHOOTING_ORDER_LABEL[order]}
               </Button>
@@ -94,12 +137,12 @@ export function ShootingListControls({
             <DropdownMenuRadioGroup
               value={order}
               onValueChange={(value) =>
-                navigate(query.trim(), value as ShootingOrder)
+                navigate({ order: value as ShootingOrder })
               }
             >
               {(Object.keys(SHOOTING_ORDER_BY) as ShootingOrder[]).map(
                 (key) => (
-                  <DropdownMenuRadioItem key={key} value={key}>
+                  <DropdownMenuRadioItem closeOnClick key={key} value={key}>
                     {SHOOTING_ORDER_LABEL[key]}
                   </DropdownMenuRadioItem>
                 ),
