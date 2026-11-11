@@ -560,7 +560,7 @@ export default async function PhotoShootingDetailPage({
                 }
               />
               <DetailRow
-                label="Nyers képek (PicDrop URL)"
+                label="Nyers képek URL"
                 fullWidth
                 value={
                   <EditableTextField
@@ -614,7 +614,7 @@ export default async function PhotoShootingDetailPage({
                 />
               )}
               <DetailRow
-                label="Megszerkesztett képek"
+                label="Szerkesztett képek"
                 value={
                   <EditableTextField
                     type="number"
@@ -666,7 +666,7 @@ export default async function PhotoShootingDetailPage({
                 label={
                   <span className="flex flex-col gap-2">
                     <DeadlineBadge {...shooting} />
-                    Végleges képek (PicDrop URL)
+                    Végleges képek URL
                   </span>
                 }
                 fullWidth

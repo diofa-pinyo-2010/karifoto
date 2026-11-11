@@ -80,7 +80,7 @@ export function SendRawImages({
     <DetailRow
       label={
         <div className="flex items-center gap-1">
-          <p>Küldés</p>
+          <p>Nyers képek küldése</p>
           <Tooltip>
             <TooltipTrigger
               render={
