@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
-import { AutomaticEarlyBirdSwitch } from '@/components/AutomaticEarlyBirdSwitch';
+// import { AutomaticEarlyBirdSwitch } from '@/components/AutomaticEarlyBirdSwitch';
 import { DailyChangeField } from '@/components/DailyChangeField';
 import { DetailRow } from '@/components/DetailRow';
+import { EarlyBirdDeadlineField } from '@/components/EarlyBirdDeadlineField';
 import { EditableComboboxField } from '@/components/EditableComboboxField';
 import { APP_URLS } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
@@ -12,8 +13,12 @@ import { fetchEditors, setDefaultEditor } from '@/server/admin';
 export default async function SettingsPage() {
   await requireNavAccess('/admin/settings');
 
-  const { automaticEarlyBirdEnabled, sumupReaderId, dailyChangeInCents } =
-    await getSiteSettings();
+  const {
+    // automaticEarlyBirdEnabled,
+    sumupReaderId,
+    dailyChangeInCents,
+    earlyBirdDeadline,
+  } = await getSiteSettings();
   const editors = await fetchEditors();
   const defaultEditor = editors.find((editor) => editor.isDefaultEditor);
 
@@ -47,6 +52,12 @@ export default async function SettingsPage() {
           value={<DailyChangeField dailyChangeInCents={dailyChangeInCents} />}
         />
         <DetailRow
+          label="Early B./LM határidő"
+          value={
+            <EarlyBirdDeadlineField earlyBirdDeadline={earlyBirdDeadline} />
+          }
+        />
+        {/* <DetailRow
           label="Automatikus Early Bird (nem ez alapján történik)"
           value={
             <AutomaticEarlyBirdSwitch
@@ -55,7 +66,7 @@ export default async function SettingsPage() {
             />
           }
           htmlForId="automaticEarlyBirdEnabled"
-        />
+        /> */}
         <DetailRow
           label={
             <>

@@ -425,6 +425,10 @@ model SiteSettings {
   // Napi váltó: a kasszában reggel hagyott készpénz. Egyetlen, bármikor
   // felülírható érték, nincs napokra bontott története.
   dailyChangeInCents        Int     @default(0)
+  // Az early bird / last minute határnap: az ennél a napnál (budapesti éjfél)
+  // korábban kezdődő idősávok számítanak early birdnek. Csak nap, idő nélkül;
+  // null → nincs early bird időszak.
+  earlyBirdDeadline         DateTime? @db.Date
 
   updatedAt DateTime @default(now()) @updatedAt
 }

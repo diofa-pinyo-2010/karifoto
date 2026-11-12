@@ -16,13 +16,13 @@ import {
 } from '@/lib/admin-stats';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
-  EARLY_BIRD_DATE_DEADLINE,
   LEDGER_ENTRY_CATEGORY_SIGN,
   SITE_SETTINGS_TABLE_ID,
   UPCOMING_SHOOTINGS_TO_SHOW,
   UUID_RE,
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
+import { dbDateToDayKey, earlyBirdDeadlineFromDayKey } from '@/lib/early-bird';
 import { PIPELINE_STATUSES } from '@/lib/pipeline';
 import { prisma } from '@/lib/prisma';
 import {
@@ -289,24 +289,37 @@ export async function getTimeSlot(id: string) {
 const PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `timeSlotsPublicSelect` alakja változik! A Vercel Data Cache
 // túléli a deployt, és a kulcs csak a callback forrásából + ebből áll.
-const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v2';
+const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v3';
 
 /**
  * A főoldal mindkét foglalási szekciójának idősávjai egyetlen, cache-elt
  * lekérdezésben, hogy a látogatók (és a crawlerek) ne ébresszék fel az
  * adatbázist. Az alsó határ a feltöltés pillanatához kötött; a pontos,
  * kérésenkénti szűrést a `splitPublicTimeSlots()` végzi a cache-en kívül.
+ *
+ * Az early bird határnap is itt, a cache-en belül olvasódik ki, hogy a főoldal
+ * ne kérdezze le külön a beállításokat; mentéskor a `setEarlyBirdDeadline()`
+ * üríti ezt a cache-t.
  */
 const getPublicTimeSlotsCached = unstable_cache(
   async () => {
     const now = new Date();
-    const deadline = new Date(EARLY_BIRD_DATE_DEADLINE);
+    const settings = await prisma.siteSettings.findUnique({
+      where: { id: SITE_SETTINGS_TABLE_ID },
+      select: { earlyBirdDeadline: true },
+    });
+    const deadlineDayKey = dbDateToDayKey(settings?.earlyBirdDeadline ?? null);
+    const deadline = earlyBirdDeadlineFromDayKey(deadlineDayKey);
 
-    return prisma.timeSlot.findMany({
-      where: { startTime: { gte: now < deadline ? now : deadline } },
+    const slots = await prisma.timeSlot.findMany({
+      where: {
+        startTime: { gte: deadline && deadline < now ? deadline : now },
+      },
       ...timeSlotsPublicSelect,
       orderBy: { startTime: 'asc' },
     });
+
+    return { slots, deadlineDayKey };
   },
   [PUBLIC_TIME_SLOTS_TAG, PUBLIC_TIME_SLOTS_CACHE_VERSION],
   {
@@ -316,9 +329,14 @@ const getPublicTimeSlotsCached = unstable_cache(
 );
 
 // Egy renderen belül a két szekció ugyanazt a felosztást kapja.
-const getPublicTimeSlots = cache(async () =>
-  splitPublicTimeSlots(await getPublicTimeSlotsCached(), new Date()),
-);
+const getPublicTimeSlots = cache(async () => {
+  const { slots, deadlineDayKey } = await getPublicTimeSlotsCached();
+  return splitPublicTimeSlots(
+    slots,
+    new Date(),
+    earlyBirdDeadlineFromDayKey(deadlineDayKey),
+  );
+});
 
 export async function fetchTimeSlotsPublic(): Promise<TimeSlotPublic[]> {
   return (await getPublicTimeSlots()).normal;
@@ -506,6 +524,8 @@ export const getSiteSettings = cache(async () => {
       row?.automaticEarlyBirdEnabled ?? AUTOMATIC_EARLY_BIRD_ENABLED,
     sumupReaderId: row?.sumupReaderId ?? null,
     dailyChangeInCents: row?.dailyChangeInCents ?? 0,
+    // yyyy-MM-dd, vagy null, ha nincs early bird időszak.
+    earlyBirdDeadline: dbDateToDayKey(row?.earlyBirdDeadline ?? null),
   };
 });
 
