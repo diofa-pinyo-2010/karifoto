@@ -90,6 +90,15 @@ export const dateWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
   day: 'numeric',
 });
 
+// 2026. november 21., szombat
+export const longDateWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
+  timeZone: STUDIO_TZ,
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+});
+
 // 2026. dec. 10. 14:30
 export const dateTimeWithYearFormatter = new Intl.DateTimeFormat('hu-HU', {
   timeZone: STUDIO_TZ,

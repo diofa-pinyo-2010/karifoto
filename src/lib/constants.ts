@@ -32,8 +32,6 @@ export const GOOGLE_REVIEW_URL = 'https://g.page/r/Cea1GVOmu475EBM/review';
 // Snapshotted onto the ReviewTap when its review URL is filled in.
 export const GOOGLE_REVIEW_BONUS_IN_CENTS = 2000_00;
 
-export const EARLY_BIRD_DATE_DEADLINE = '2026-11-16';
-
 /**
  * A stúdió Google-térkép beágyazása, a fenti címből származtatva — így egy
  * forrásból jön a cím és a térkép pin.

@@ -1,7 +1,5 @@
 import { revalidateTag } from 'next/cache';
 
-import { EARLY_BIRD_DATE_DEADLINE } from '@/lib/constants';
-
 export const PUBLIC_TIME_SLOTS_TAG = 'public-time-slots';
 
 /**
@@ -23,12 +21,13 @@ type WithDate<T> = Omit<T, 'startTime'> & { startTime: Date };
  * kívül értékelődik ki, így egy épp elkezdődött időpont azonnal eltűnik, nem
  * csak a cache lejártakor. A `startTime` a cache-ből JSON-ként, stringként jön
  * vissza (a típus ezt nem tükrözi), ezért itt alakítjuk vissza `Date`-té.
+ * `deadline` null → nincs early bird, minden idősáv normál.
  */
 export function splitPublicTimeSlots<T extends { startTime: Date | string }>(
   slots: T[],
   now: Date,
+  deadline: Date | null,
 ): { earlyBird: WithDate<T>[]; normal: WithDate<T>[] } {
-  const deadline = new Date(EARLY_BIRD_DATE_DEADLINE);
   const earlyBird: WithDate<T>[] = [];
   const normal: WithDate<T>[] = [];
 
@@ -36,7 +35,7 @@ export function splitPublicTimeSlots<T extends { startTime: Date | string }>(
     const startTime = new Date(slot.startTime);
     const withDate = { ...slot, startTime };
 
-    if (startTime >= deadline) {
+    if (deadline == null || startTime >= deadline) {
       normal.push(withDate);
     } else if (startTime >= now) {
       earlyBird.push(withDate);

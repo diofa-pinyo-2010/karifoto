@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { EARLY_BIRD_DATE_DEADLINE } from '@/lib/constants';
 import { splitPublicTimeSlots } from '@/lib/public-time-slots';
 
-const DEADLINE = new Date(EARLY_BIRD_DATE_DEADLINE);
+// 2026-11-16 00:00 Budapest
+const DEADLINE = new Date('2026-11-15T23:00:00Z');
 const HOUR = 60 * 60 * 1000;
 
 const at = (offsetMs: number, base: Date = DEADLINE) =>
@@ -19,7 +19,7 @@ describe('splitPublicTimeSlots', () => {
       { id: 'future', startTime: at(HOUR, now) },
     ];
 
-    const { earlyBird, normal } = splitPublicTimeSlots(slots, now);
+    const { earlyBird, normal } = splitPublicTimeSlots(slots, now, DEADLINE);
 
     expect(earlyBird.map((s) => s.id)).toEqual(['now', 'future']);
     expect(normal).toEqual([]);
@@ -32,7 +32,7 @@ describe('splitPublicTimeSlots', () => {
       { id: 'after', startTime: at(HOUR) },
     ];
 
-    const { earlyBird, normal } = splitPublicTimeSlots(slots, now);
+    const { earlyBird, normal } = splitPublicTimeSlots(slots, now, DEADLINE);
 
     expect(earlyBird.map((s) => s.id)).toEqual(['before']);
     expect(normal.map((s) => s.id)).toEqual(['exactly', 'after']);
@@ -42,7 +42,7 @@ describe('splitPublicTimeSlots', () => {
     const afterSeason = new Date(DEADLINE.getTime() + 10 * HOUR);
     const slots = [{ id: 'normal-past', startTime: at(HOUR) }];
 
-    const { normal } = splitPublicTimeSlots(slots, afterSeason);
+    const { normal } = splitPublicTimeSlots(slots, afterSeason, DEADLINE);
 
     expect(normal.map((s) => s.id)).toEqual(['normal-past']);
   });
@@ -53,7 +53,7 @@ describe('splitPublicTimeSlots', () => {
       { id: 'a', startTime: iso, revealed: true, photoShooting: null },
     ];
 
-    const [slot] = splitPublicTimeSlots(slots, now).normal;
+    const [slot] = splitPublicTimeSlots(slots, now, DEADLINE).normal;
 
     expect(slot.startTime).toBeInstanceOf(Date);
     expect(slot.startTime.toISOString()).toBe(iso);
@@ -71,10 +71,20 @@ describe('splitPublicTimeSlots', () => {
       { id: '3', startTime: at(3 * HOUR) },
     ];
 
-    expect(splitPublicTimeSlots(slots, now).normal.map((s) => s.id)).toEqual([
-      '1',
-      '2',
-      '3',
-    ]);
+    expect(
+      splitPublicTimeSlots(slots, now, DEADLINE).normal.map((s) => s.id),
+    ).toEqual(['1', '2', '3']);
+  });
+
+  it('puts every slot into normal when there is no deadline', () => {
+    const slots = [
+      { id: 'soon', startTime: at(HOUR, now) },
+      { id: 'later', startTime: at(HOUR) },
+    ];
+
+    const { earlyBird, normal } = splitPublicTimeSlots(slots, now, null);
+
+    expect(earlyBird).toEqual([]);
+    expect(normal.map((s) => s.id)).toEqual(['soon', 'later']);
   });
 });

@@ -1,8 +1,10 @@
 'use server';
 
 import { DECOR_SETS, PACKAGES, requiresDecorChoice } from '@/lib/catalog';
-import { EARLY_BIRD_DATE_DEADLINE, MAX_PETS, UUID_RE } from '@/lib/constants';
+import { MAX_PETS, UUID_RE } from '@/lib/constants';
+import { earlyBirdDeadlineFromDayKey } from '@/lib/early-bird';
 import { prisma } from '@/lib/prisma';
+import { getSiteSettings } from '@/lib/queries';
 import { isPackageAllowed } from '@/lib/time-slot-packages';
 import { isWeekday } from '@/lib/utils';
 import {
@@ -124,7 +126,12 @@ export async function createBookingIntent(
         };
       }
 
-      if (intent.timeSlot.startTime <= new Date(EARLY_BIRD_DATE_DEADLINE)) {
+      const deadline = earlyBirdDeadlineFromDayKey(
+        (await getSiteSettings()).earlyBirdDeadline,
+      );
+      // Ugyanaz a szabály, mint a főoldali felosztásban: a határnap budapesti
+      // éjfele előtt kezdődő idősáv last minute.
+      if (deadline && intent.timeSlot.startTime < deadline) {
         // const res = await attachEarlyBirdDiscount(intent.id);
         const res = await attachLastMinuteDiscount(intent.id);
         if ('error' in res) {
