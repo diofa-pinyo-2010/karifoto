@@ -25,7 +25,11 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
-import { APP_URLS, PACKAGE_LABEL } from '@/lib/constants';
+import {
+  APP_URLS,
+  isLightPlayChargeable,
+  PACKAGE_LABEL,
+} from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { dateFormatter, timeFormatter } from '@/lib/formatters';
 import { fetchTimeSlotsAdmin } from '@/lib/queries';
@@ -102,19 +106,17 @@ export default async function AdminTimeSlotsPage() {
                         id,
                         revealed,
                         startTime,
-                        photoShooting,
+                        photoShooting: shooting,
                         allowedPackages,
                       }) => {
                         return (
                           <li key={id} className="flex items-center gap-2">
                             <Item
                               variant="outline"
-                              className={cn(
-                                photoShooting != null && 'bg-primary/5',
-                              )}
+                              className={cn(shooting != null && 'bg-primary/5')}
                             >
                               <ItemMedia>
-                                {photoShooting != null ? (
+                                {shooting != null ? (
                                   <div className="rounded-full bg-primary p-1">
                                     <CameraIcon className="text-primary-foreground" />
                                   </div>
@@ -137,14 +139,19 @@ export default async function AdminTimeSlotsPage() {
                                   {timeFormatter.format(startTime)}
                                 </ItemTitle>
                                 <ItemDescription>
-                                  {photoShooting != null ? (
+                                  {shooting != null ? (
                                     <Link
                                       href={APP_URLS.photoShootingAdminPage(
-                                        photoShooting.id,
+                                        shooting.id,
                                       )}
                                     >
-                                      {photoShooting.package} •{' '}
-                                      {photoShooting.client.owner.name}
+                                      {shooting.package}
+                                      {isLightPlayChargeable(
+                                        shooting.package,
+                                      ) &&
+                                        shooting.isLightPlaySelected &&
+                                        ' (+F)'}{' '}
+                                      • {shooting.client.owner.name}
                                     </Link>
                                   ) : (
                                     <>
@@ -165,7 +172,7 @@ export default async function AdminTimeSlotsPage() {
                               </ItemContent>
                               <ItemActions>
                                 <RevealedSwitch
-                                  disabled={photoShooting != null}
+                                  disabled={shooting != null}
                                   timeSlotId={id}
                                   revealed={revealed}
                                 />
@@ -173,7 +180,7 @@ export default async function AdminTimeSlotsPage() {
                             </Item>
                             <DeleteTimeSlotButton
                               timeSlotId={id}
-                              disabled={photoShooting != null}
+                              disabled={shooting != null}
                             />
                           </li>
                         );

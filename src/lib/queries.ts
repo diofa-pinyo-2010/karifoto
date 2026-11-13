@@ -361,6 +361,7 @@ export async function fetchTimeSlotsAdmin() {
         select: {
           id: true,
           package: true,
+          isLightPlaySelected: true,
           client: { select: { owner: { select: { name: true } } } },
         },
       },
