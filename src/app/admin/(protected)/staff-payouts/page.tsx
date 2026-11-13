@@ -67,7 +67,7 @@ export default async function StaffPayoutsPage({
   const shootingLabels = Object.fromEntries(
     ledger.shootings.map((shooting) => [
       shooting.id,
-      `${shooting.package}${isLightPlayChargeable(shooting.package) && shooting.isLightPlaySelected && ' (+F)'}${shooting.numberOfPets > 0 && ` (${shooting.numberOfPets} kisállat)`} · ${shooting.clientName} · ${dateTimeWithYearFormatter.format(shooting.startTime)}`,
+      `${shooting.package}${isLightPlayChargeable(shooting.package) && shooting.isLightPlaySelected ? ' (+F)' : ''}${shooting.numberOfPets > 0 ? ` (${shooting.numberOfPets} kisállat)` : ''} · ${shooting.clientName} · ${dateTimeWithYearFormatter.format(shooting.startTime)}`,
     ]),
   );
   const bonusStateByTap = new Map(
