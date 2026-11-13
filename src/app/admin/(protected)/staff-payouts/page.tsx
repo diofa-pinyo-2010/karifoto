@@ -21,7 +21,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { APP_URLS, GOOGLE_REVIEW_LIST_URL } from '@/lib/constants';
+import {
+  APP_URLS,
+  GOOGLE_REVIEW_LIST_URL,
+  isLightPlayChargeable,
+} from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { dateTimeWithYearFormatter } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
@@ -63,7 +67,7 @@ export default async function StaffPayoutsPage({
   const shootingLabels = Object.fromEntries(
     ledger.shootings.map((shooting) => [
       shooting.id,
-      `${shooting.clientName} · ${dateTimeWithYearFormatter.format(shooting.startTime)}`,
+      `${shooting.package}${isLightPlayChargeable(shooting.package) && shooting.isLightPlaySelected && ' (+F)'}${shooting.numberOfPets > 0 && ` (${shooting.numberOfPets} kisállat)`} · ${shooting.clientName} · ${dateTimeWithYearFormatter.format(shooting.startTime)}`,
     ]),
   );
   const bonusStateByTap = new Map(

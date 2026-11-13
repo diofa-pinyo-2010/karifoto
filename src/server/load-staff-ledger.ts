@@ -65,6 +65,9 @@ export async function loadStaffLedger(db: Db, staffProfileId: string) {
     payouts,
     shootings: shootings.map((shooting) => ({
       id: shooting.id,
+      package: shooting.package,
+      isLightPlaySelected: shooting.isLightPlaySelected,
+      numberOfPets: shooting.numberOfPets,
       clientName: shooting.client.owner.name,
       startTime: shooting.timeSlot.startTime,
     })),
