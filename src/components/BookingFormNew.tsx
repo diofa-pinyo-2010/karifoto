@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { BadgeQuestionMarkIcon, MinusIcon, PlusIcon } from 'lucide-react';
 import * as z from 'zod';
 
+import { ImageInfoDialog } from '@/components/ImageInfoDialog';
 import { PackageInfoDialog } from '@/components/PackageInfoDialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -40,7 +41,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { DecorSet, Package } from '@/generated/prisma/enums';
 import {
   ADD_ONS,
-  ALL_DECOR_SETS,
   packageIncludesAddOn,
   PACKAGES,
   PRICING_TABLE_PACKAGES,
@@ -52,6 +52,7 @@ import {
   MAX_PETS,
   PACKAGE_LABEL,
 } from '@/lib/constants';
+import { decorSetSections, lightPlaySection } from '@/lib/data';
 import {
   initialPackageForSlot,
   isPackageAllowed,
@@ -391,7 +392,7 @@ export function BookingFormNew({
 
               {decorLocked ? (
                 <div className="grid w-full gap-3">
-                  {ALL_DECOR_SETS.map((set) => (
+                  {decorSetSections.map((set) => (
                     <FieldLabel
                       key={set.key}
                       htmlFor={`decor-${set.key}`}
@@ -401,6 +402,12 @@ export function BookingFormNew({
                         <FieldContent className="gap-1">
                           <FieldTitle className="text-lg text-ink">
                             {set.label}
+                            <ImageInfoDialog
+                              title={`${set.label} díszlet`}
+                              description={set.tagline}
+                              image={set.mainImage}
+                              triggerLabel={`${set.label} díszlet megtekintése`}
+                            />
                           </FieldTitle>
                           <FieldDescription className="text-base text-cream-muted">
                             {set.tagline} · a csomag része
@@ -423,7 +430,7 @@ export function BookingFormNew({
                   aria-invalid={fieldState.invalid}
                   className="gap-3"
                 >
-                  {ALL_DECOR_SETS.map((set, index) => (
+                  {decorSetSections.map((set, index) => (
                     <FieldLabel
                       key={set.key}
                       htmlFor={`decor-${set.key}`}
@@ -433,6 +440,12 @@ export function BookingFormNew({
                         <FieldContent className="gap-1">
                           <FieldTitle className="text-lg text-ink">
                             {set.label}
+                            <ImageInfoDialog
+                              title={`${set.label} díszlet`}
+                              description={set.tagline}
+                              image={set.mainImage}
+                              triggerLabel={`${set.label} díszlet megtekintése`}
+                            />
                           </FieldTitle>
                           <FieldDescription className="text-base text-cream-muted">
                             {set.tagline}
@@ -476,6 +489,12 @@ export function BookingFormNew({
                   <FieldContent className="gap-1">
                     <FieldTitle className="text-lg text-ink">
                       Kérem a fényjátékos képeket
+                      <ImageInfoDialog
+                        title={ADD_ONS.LIGHT_PLAY.label}
+                        description={ADD_ONS.LIGHT_PLAY.description}
+                        image={lightPlaySection.mainImage}
+                        triggerLabel="Fényjátékos képek megtekintése"
+                      />
                     </FieldTitle>
                     <FieldDescription className="text-base text-cream-muted">
                       {lightLocked
