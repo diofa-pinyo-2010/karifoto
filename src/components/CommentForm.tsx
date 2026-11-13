@@ -28,6 +28,7 @@ import {
   ListOrderedIcon,
   SendIcon,
   StrikethroughIcon,
+  TextQuoteIcon,
 } from 'lucide-react';
 
 import {
@@ -43,6 +44,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Spinner } from '@/components/ui/spinner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { filterMentionCandidates } from '@/lib/mentions';
 import { cn } from '@/lib/utils';
 
@@ -114,45 +120,75 @@ const TOOLBAR: {
   label: string;
   icon: LucideIcon;
   name: string;
+  /** TipTap's built-in shortcut, shown in the tooltip */
+  shortcut: string;
   toggle: (editor: Editor) => void;
 }[] = [
   {
     label: 'Félkövér',
     icon: BoldIcon,
     name: 'bold',
+    shortcut: 'Ctrl/⌘ + B',
     toggle: (editor) => editor.chain().focus().toggleBold().run(),
   },
   {
     label: 'Dőlt',
     icon: ItalicIcon,
     name: 'italic',
+    shortcut: 'Ctrl/⌘ + I',
     toggle: (editor) => editor.chain().focus().toggleItalic().run(),
   },
   {
     label: 'Áthúzott',
     icon: StrikethroughIcon,
     name: 'strike',
+    shortcut: 'Ctrl/⌘ + Shift + S',
     toggle: (editor) => editor.chain().focus().toggleStrike().run(),
   },
   {
     label: 'Kód',
     icon: CodeIcon,
     name: 'code',
+    shortcut: 'Ctrl/⌘ + E',
     toggle: (editor) => editor.chain().focus().toggleCode().run(),
   },
   {
     label: 'Felsorolás',
     icon: ListIcon,
     name: 'bulletList',
+    shortcut: 'Ctrl/⌘ + Shift + 8',
     toggle: (editor) => editor.chain().focus().toggleBulletList().run(),
   },
   {
     label: 'Számozott lista',
     icon: ListOrderedIcon,
     name: 'orderedList',
+    shortcut: 'Ctrl/⌘ + Shift + 7',
     toggle: (editor) => editor.chain().focus().toggleOrderedList().run(),
   },
+  {
+    label: 'Idézet',
+    icon: TextQuoteIcon,
+    name: 'blockquote',
+    shortcut: 'Ctrl/⌘ + Shift + B',
+    toggle: (editor) => editor.chain().focus().toggleBlockquote().run(),
+  },
 ];
+
+function ToolbarTooltip({
+  label,
+  shortcut,
+}: {
+  label: string;
+  shortcut?: string;
+}) {
+  return (
+    <TooltipContent>
+      {label}
+      {shortcut && <span className="opacity-60">{shortcut}</span>}
+    </TooltipContent>
+  );
+}
 
 function LinkButton({
   editor,
@@ -244,21 +280,28 @@ function LinkButton({
         setOpen(next);
       }}
     >
-      <PopoverTrigger
-        render={
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Link"
-            aria-pressed={active}
-            disabled={editor == null}
-            className={cn(active && 'bg-muted')}
-          />
-        }
-      >
-        <LinkIcon />
-      </PopoverTrigger>
+      <Tooltip>
+        <PopoverTrigger
+          render={
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Link"
+                  aria-pressed={active}
+                  disabled={editor == null}
+                  className={cn(active && 'bg-muted')}
+                />
+              }
+            />
+          }
+        >
+          <LinkIcon />
+        </PopoverTrigger>
+        <ToolbarTooltip label="Link" />
+      </Tooltip>
       {/* The editor takes focus back itself; returning it to the button would steal it */}
       <PopoverContent align="start" initialFocus={hrefRef} finalFocus={false}>
         {/* Portalled outside the comment form, so Enter here cannot submit it */}
@@ -436,20 +479,26 @@ export function CommentForm({
           aria-label="Formázás"
           className="flex gap-0.5 border-b p-1"
         >
-          {TOOLBAR.map(({ label, icon: Icon, toggle }, index) => (
-            <Button
-              key={label}
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label={label}
-              aria-pressed={editorState?.active[index] ?? false}
-              disabled={editor == null}
-              onClick={() => editor && toggle(editor)}
-              className={cn(editorState?.active[index] && 'bg-muted')}
-            >
-              <Icon />
-            </Button>
+          {TOOLBAR.map(({ label, icon: Icon, shortcut, toggle }, index) => (
+            <Tooltip key={label}>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={label}
+                    aria-pressed={editorState?.active[index] ?? false}
+                    disabled={editor == null}
+                    onClick={() => editor && toggle(editor)}
+                    className={cn(editorState?.active[index] && 'bg-muted')}
+                  />
+                }
+              >
+                <Icon />
+              </TooltipTrigger>
+              <ToolbarTooltip label={label} shortcut={shortcut} />
+            </Tooltip>
           ))}
           <LinkButton editor={editor} active={editorState?.isLink ?? false} />
         </div>
