@@ -122,6 +122,8 @@ export function Sets() {
                 {ALL_PACKAGES.filter((p) =>
                   packageIncludesAddOn(p.key, 'LIGHT_PLAY'),
                 )
+                  // do not show the Party here because it's not available on the site now.
+                  .filter((p) => p.label !== 'Party')
                   .map((p) => p.label)
                   .join(', ')}
               </a>{' '}
