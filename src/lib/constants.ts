@@ -31,6 +31,8 @@ export const SUPPORT_TEL = '+36 30 108 6063';
 export const GOOGLE_REVIEW_URL = 'https://g.page/r/Cea1GVOmu475EBM/review';
 // Snapshotted onto the ReviewTap when its review URL is filled in.
 export const GOOGLE_REVIEW_BONUS_IN_CENTS = 2000_00;
+export const GOOGLE_REVIEW_LIST_URL =
+  'https://www.google.com/maps/place/Karifoto/data=!4m7!3m6!1s0x4741dd1f6c0d1fb5:0xf98ebba65319b5e6!8m2!3d47.4914253!4d19.0560926!9m1!1b1';
 
 /**
  * A stúdió Google-térkép beágyazása, a fenti címből származtatva — így egy

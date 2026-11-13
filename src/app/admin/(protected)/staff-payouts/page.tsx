@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { ExternalLinkIcon } from 'lucide-react';
+
 import { RecordPayoutDialog } from '@/components/admin/staff-payouts/RecordPayoutDialog';
 import { ReviewTapUrlField } from '@/components/admin/staff-payouts/ReviewTapUrlField';
 import { StaffAccountTable } from '@/components/admin/staff-payouts/StaffAccountTable';
@@ -19,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { APP_URLS } from '@/lib/constants';
+import { APP_URLS, GOOGLE_REVIEW_LIST_URL } from '@/lib/constants';
 import { requireNavAccess } from '@/lib/dal';
 import { dateTimeWithYearFormatter } from '@/lib/formatters';
 import { prisma } from '@/lib/prisma';
@@ -138,7 +140,18 @@ export default async function StaffPayoutsPage({
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="font-semibold">{selected.nickname} review tapjei</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold">{selected.nickname} review tapjei</h3>
+          <a
+            href={GOOGLE_REVIEW_LIST_URL}
+            className="flex items-center gap-1 text-xs text-blue-600 underline underline-offset-4 transition-colors hover:text-blue-500 dark:text-blue-300 hover:dark:text-blue-400"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Google Reviews</span>
+            <ExternalLinkIcon className="size-4" />
+          </a>
+        </div>
         {ledger.taps.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nincs review tap.</p>
         ) : (
