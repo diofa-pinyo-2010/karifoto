@@ -47,6 +47,7 @@ import {
   requiresDecorChoice,
 } from '@/lib/catalog';
 import {
+  DECOR_SET_LABEL,
   EXTRA_FEE_PER_PET,
   MAX_PERSONS,
   MAX_PETS,
@@ -387,7 +388,7 @@ export function BookingFormNew({
               <FieldDescription className={HINT_CLASS}>
                 {decorLocked
                   ? `✅ A ${packageKey} csomagban mindkét díszletben fotózunk.`
-                  : `${decorKey != null ? '✅' : ''} A Mini csomaghoz válassz egy díszletet.`}
+                  : `${decorKey != null ? `✅ A ${DECOR_SET_LABEL[decorKey]} díszletben fogunk fotózni.` : 'A Mini csomaghoz válassz egy díszletet. Kattints a "?" ikonra, hogy megnézd a díszletet.'}`}
               </FieldDescription>
 
               {decorLocked ? (
