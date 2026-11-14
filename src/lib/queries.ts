@@ -583,6 +583,7 @@ const bookingIntentpublicSelect = {
     status: true,
     package: true,
     isLightPlaySelected: true,
+    isGift: true,
     numberOfGuests: true,
     numberOfPets: true,
     requestedStartTime: true,

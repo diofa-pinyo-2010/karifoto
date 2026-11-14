@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 import { PriceAdjustmentType } from '@/generated/prisma/enums';
 import { calculateBookingIntentTotal } from '@/lib/booking-intent-total';
@@ -24,6 +24,7 @@ export function BookingReview({
 }: {
   bookingIntent: BookingIntentPublic;
 }) {
+  const [isGift, setIsGift] = useState(bookingIntent.isGift);
   const pkg = PACKAGES[bookingIntent.package];
 
   const [state, formAction, isPending] = useActionState(
@@ -124,13 +125,26 @@ export function BookingReview({
           </span>
           <div>
             <span className="text-[15px] leading-[1.6] font-light text-pretty text-cream-muted">
-              A következő lépésben{' '}
-              <strong className="font-medium text-ink">
-                {formatMoney(DEPOSIT_AMOUNT)} előleget
-              </strong>{' '}
-              kérünk, ennek megfizetésével válik véglegessé a foglalásotok. A
-              fennmaradó összeget a fotózáskor készpénzben, vagy kártyával
-              tudjátok rendezni.
+              {isGift ? (
+                <>
+                  Ajándék esetén a fotózás{' '}
+                  <strong className="font-medium text-ink">
+                    teljes díját ({formatMoney(total)})
+                  </strong>{' '}
+                  most kérjük; a fizetés után kapsz egy linket, amivel átadhatod
+                  az ajándékot.
+                </>
+              ) : (
+                <>
+                  A következő lépésben{' '}
+                  <strong className="font-medium text-ink">
+                    {formatMoney(DEPOSIT_AMOUNT)} előleget
+                  </strong>{' '}
+                  kérünk, ennek megfizetésével válik véglegessé a foglalásotok.
+                  A fennmaradó összeget a fotózáskor készpénzben, vagy kártyával
+                  tudjátok rendezni.
+                </>
+              )}
             </span>
             <p className="mt-2 text-xs">
               Betegség esetén felár nélkül találunk Nektek másik időpontot
@@ -138,6 +152,28 @@ export function BookingReview({
             </p>
           </div>
         </div>
+        <label
+          htmlFor="booking-gift"
+          className="mt-3.5 flex cursor-pointer items-start gap-3.25 rounded-[18px] border border-ink/15 bg-white/62 p-4.5 has-checked:border-brand-free-edge/75"
+        >
+          <span className="mt-0.5 text-xl leading-none">🎁</span>
+          <span className="flex-1">
+            <span className="block text-[15px] font-medium text-ink">
+              Ajándékba veszem
+            </span>
+            <span className="mt-1 block text-[13px] leading-[1.5] text-pretty text-muted-foreground">
+              Ajándékba adnád a fotózást? A teljes díjat most fizeted, és kapsz
+              egy linket, amivel átadhatod.
+            </span>
+          </span>
+          <input
+            id="booking-gift"
+            type="checkbox"
+            checked={isGift}
+            onChange={(event) => setIsGift(event.target.checked)}
+            className="mt-1 size-5 accent-brand-free-edge"
+          />
+        </label>
         <div className="mt-3.5 text-[12.5px] leading-[1.6] text-pretty text-muted-foreground">
           A fizetés biztonságos Stripe oldalon történik, bankkártya adataidat
           nem látjuk. A fizetés gombbal elfogadod az{' '}
@@ -149,6 +185,7 @@ export function BookingReview({
       </section>
 
       {/* A createCheckoutSession FormData-ból olvas; az értékek a foglalásból jönnek. */}
+      <input type="hidden" name="isGift" value={String(isGift)} />
       <input
         type="hidden"
         name="numberOfGuests"
@@ -169,10 +206,10 @@ export function BookingReview({
         <div className="mx-auto flex max-w-180 items-center gap-4">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] tracking-[.16em] text-sage-dim uppercase">
-              Előleg
+              {isGift ? 'Teljes összeg' : 'Előleg'}
             </span>
             <span className="text-[26px] leading-none text-cream">
-              {formatMoney(DEPOSIT_AMOUNT)}
+              {formatMoney(isGift ? total : DEPOSIT_AMOUNT)}
             </span>
           </div>
           <button

@@ -27,6 +27,7 @@ const remoteBookingSchema = z
     numberOfPets: z.number().int().min(0).max(MAX_PETS),
     customerNote: z.string().max(NOTE_MAX_LENGTH),
     optOutFromMarketingEmails: z.boolean(),
+    isGift: z.boolean(),
   })
   .superRefine((values, ctx) => {
     if (
@@ -77,6 +78,7 @@ export function useRemoteBookingForm() {
       numberOfPets: 0,
       customerNote: '',
       optOutFromMarketingEmails: false,
+      isGift: false,
     },
   });
 
