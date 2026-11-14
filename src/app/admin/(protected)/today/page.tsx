@@ -18,18 +18,24 @@ import {
   getSiteSettings,
 } from '@/lib/queries';
 import { formatMoney } from '@/lib/utils';
-import { fetchStaffIdsForBadges } from '@/server/admin';
+import { fetchPhotographers, fetchStaffIdsForBadges } from '@/server/admin';
 
 export default async function TodayPage() {
   await requireNavAccess(APP_URLS.today);
 
-  const [photoShootings, ledgerEntries, { dailyChangeInCents }, staffIds] =
-    await Promise.all([
-      fetchTodayPhotoShootings(),
-      fetchTodayLedgerEntries(),
-      getSiteSettings(),
-      fetchStaffIdsForBadges(),
-    ]);
+  const [
+    photoShootings,
+    ledgerEntries,
+    { dailyChangeInCents },
+    staffIds,
+    photographers,
+  ] = await Promise.all([
+    fetchTodayPhotoShootings(),
+    fetchTodayLedgerEntries(),
+    getSiteSettings(),
+    fetchStaffIdsForBadges(),
+    fetchPhotographers(),
+  ]);
   const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
   const income = summarizeDailyIncome(ledgerEntries, dailyChangeInCents);
 
@@ -96,6 +102,7 @@ export default async function TodayPage() {
               key={shooting.id}
               shooting={shooting}
               staffBadgeClassNames={staffBadgeClassNames}
+              photographers={photographers}
             />
           ))}
         </div>
