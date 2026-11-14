@@ -12,6 +12,8 @@ import {
   Link,
 } from 'react-email';
 
+import { arrivalSuggestions } from '@/lib/constants-jsx';
+
 export const CLIENT_BOOKING_CONFIRMATION_SUBJECT =
   '🗓️ Időpontfoglalásod beérkezett hozzánk';
 
@@ -59,9 +61,12 @@ export default function BookingConfirmationEmail({
             >
               Hozzáadás Google naptárhoz
             </Link>
+            <Text>{arrivalSuggestions}</Text>
             <Text>
-              Várunk titeket szeretettel a stúdiónkba, addig is a foglalás
-              részleteit az Ügyfélportálunkon keresztül tudjátok megnézni.
+              Várunk titeket szeretettel a stúdiónkba,{' '}
+              <span className="font-bold">a fotózásig más teendőtök nincs</span>
+              . A foglalás részleteit az Ügyfélportálunkon keresztül tudjátok
+              megnézni.
             </Text>
             <Section className="mb-0 text-center">
               <Button
@@ -71,7 +76,7 @@ export default function BookingConfirmationEmail({
                 Ügyfélportál
               </Button>
             </Section>
-            <Text className="mt-0 text-sm text-slate-500">
+            <Text className="mt-0 text-xs text-slate-500">
               A végleges fotók készhezvételéig minden részletet itt tudtok majd
               nyomon követni, bejelentkezni pedig mindig ezzel a gombbal fogtok
               tudni, tehát érdemes megtartani ezt az emailt :)
