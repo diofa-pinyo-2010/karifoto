@@ -4,10 +4,7 @@ import Stripe from 'stripe';
 
 import { env } from '@/env';
 import { Prisma } from '@/generated/prisma/client';
-import {
-  BookingIntentStatus,
-  LedgerEntryCategory,
-} from '@/generated/prisma/enums';
+import { BookingIntentStatus } from '@/generated/prisma/enums';
 import {
   CHECKOUT_KIND_LEDGER_CATEGORY,
   parseCheckoutMetadata,
@@ -22,12 +19,17 @@ import { formatSlotDateTime } from '@/lib/formatters';
 import { isEventProcessed, releaseEvent } from '@/lib/idempotency';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
+import { isUniqueViolationOnField } from '@/lib/prisma-errors';
 import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 import { getBookingIntent } from '@/lib/queries';
 import { stripe, stripePaymentIntentUrl } from '@/lib/stripe';
+import { generateGiftCode } from '@/lib/token';
 import { qStashClient } from '@/lib/upstash';
+import { formatMoney } from '@/lib/utils';
 import { completeImageSelection } from '@/server/complete-image-selection';
+import { calculatePricing } from '@/server/pricing';
 
+import type { PhotoShooting } from '@/generated/prisma/client';
 import type { CheckoutMetadata } from '@/lib/checkout-metadata';
 
 export async function POST(req: NextRequest) {
@@ -126,8 +128,9 @@ async function routeCheckoutSession(session: Stripe.Checkout.Session) {
   const metadata = parsed.metadata;
 
   switch (metadata.kind) {
-    case 'booking_deposit': {
-      await handleBookingDeposit(session, metadata.booking_intent_id);
+    case 'booking_deposit':
+    case 'booking_gift': {
+      await handleBooking(session, metadata.booking_intent_id, metadata.kind);
       return;
     }
     case 'image_selection_extra': {
@@ -222,10 +225,49 @@ async function handleImageSelectionExtra(
   });
 }
 
-async function handleBookingDeposit(
+// 32^8 lehetséges kód mellett már egy ütközés is valószínűtlen; a 3. után
+// inkább dobunk (→ 500, a Stripe újrapróbálja), mint hogy a végtelenségig
+// próbálkozzunk.
+const GIFT_CODE_MAX_ATTEMPTS = 3;
+
+/**
+ * Runs `create` with a fresh gift code, again with a new one if the code was
+ * already taken. Any other error — including a P2002 on another column, e.g.
+ * a double-sold slot — is rethrown untouched.
+ */
+async function withGiftCodeRetry<T>(
+  create: (giftCode: string) => Promise<T>,
+): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await create(generateGiftCode());
+    } catch (err) {
+      const isGiftCodeCollision =
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002' &&
+        isUniqueViolationOnField(err.meta, 'giftCode');
+      if (!isGiftCodeCollision || attempt >= GIFT_CODE_MAX_ATTEMPTS) {
+        throw err;
+      }
+      console.warn('[stripe-webhook] gift code collision, retrying', {
+        attempt,
+      });
+    }
+  }
+}
+
+/**
+ * A paid booking: the deposit, or the full amount up front when it is a gift.
+ * The two share everything except the ledger category (derived from `kind`),
+ * the gift code on the shooting and which invoice job runs.
+ */
+async function handleBooking(
   session: Stripe.Checkout.Session,
   bookingIntentId: string,
+  kind: 'booking_deposit' | 'booking_gift',
 ) {
+  const isGift = kind === 'booking_gift';
+
   const userEmail = session.customer_details?.email;
   const invoicingName = session.customer_details?.individual_name;
   const userPhoneNumber = session.customer_details?.phone;
@@ -456,9 +498,8 @@ async function handleBookingDeposit(
     return; // 200 - no retry, no invoice, no email
   }
 
-  const shooting =
-    existingShooting ??
-    (await prisma.$transaction(async (tx) => {
+  const createShooting = (giftCode: string | null) =>
+    prisma.$transaction(async (tx) => {
       const defaultEditor = await tx.staffProfile.findFirst({
         where: { isDefaultEditor: true },
         select: { id: true },
@@ -471,6 +512,7 @@ async function handleBookingDeposit(
           bookingIntent: { connect: { id: bookingIntentId } },
           package: selectedPackage,
           clientNote,
+          giftCode,
           decorSet: bookingIntent.decorSet,
           numberOfGuests: bookingIntent.numberOfGuests,
           numberOfPets: bookingIntent.numberOfPets,
@@ -496,7 +538,13 @@ async function handleBookingDeposit(
         data: { revealed: false },
       });
       return newPhotoShooting;
-    }));
+    });
+
+  const shooting =
+    existingShooting ??
+    (isGift
+      ? await withGiftCodeRetry(createShooting)
+      : await createShooting(null));
   // Az idősáv foglalt lett — a főoldal ne mutassa tovább szabadnak.
   invalidatePublicTimeSlots();
 
@@ -534,7 +582,7 @@ async function handleBookingDeposit(
     // invoicing (a 3rd-party call) succeeds. The invoice job
     // attaches the Invoice to this row later; it never creates the row itself.
     try {
-      const category = LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT;
+      const category = CHECKOUT_KIND_LEDGER_CATEGORY[kind];
       await prisma.ledgerEntry.create({
         data: {
           category,
@@ -560,6 +608,13 @@ async function handleBookingDeposit(
     }
   }
 
+  // Ajándéknál a teljes összeget fizették: ha nem egyezik azzal, amit a
+  // fotózásra számolunk, a pénz attól még be van könyvelve, de szólunk.
+  // Csak friss fotózásnál — egy retry már létezőt talál.
+  if (isGift && existingShooting == null) {
+    await alertOnGiftAmountMismatch(session, shooting);
+  }
+
   // Only for a freshly created shooting — a webhook retry finds it existing.
   if (existingShooting == null) {
     const note = bookingIntent.clientNote
@@ -573,6 +628,7 @@ async function handleBookingDeposit(
         `Csomag: ${PACKAGE_LABEL[selectedPackage]}`,
         `Időpont: ${formatSlotDateTime(shooting.timeSlot.startTime)}`,
         `Megjegyzés: ${note}`,
+        ...(isGift ? ['🎁 Ajándék (teljes összeg)'] : []),
         `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${shooting.id})`,
       ].join('\n'),
     });
@@ -588,7 +644,11 @@ async function handleBookingDeposit(
       }),
       hasPaymentIntent
         ? qStashClient.publishJSON({
-            url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-deposit-invoice`,
+            url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/${
+              isGift
+                ? 'generate-full-amount-invoice'
+                : 'generate-deposit-invoice'
+            }`,
             body: {
               shootingId: shooting.id,
               bookingIntentId,
@@ -622,4 +682,63 @@ async function handleBookingDeposit(
     calendarMessageId: calendarEventJob.messageId,
     createResendContactMessageId: createResendContactJob?.messageId,
   });
+}
+
+/**
+ * Compares what Stripe charged for a gift with the total the new shooting
+ * computes to, once the intent's adjustments are reparented onto it. Only an
+ * alert: the ledger already holds what was actually paid.
+ */
+async function alertOnGiftAmountMismatch(
+  session: Stripe.Checkout.Session,
+  shooting: PhotoShooting,
+) {
+  try {
+    const [pricing, adjustments] = await Promise.all([
+      prisma.photoShootingPricing.findUnique({
+        where: { photoShootingId: shooting.id },
+      }),
+      prisma.priceAdjustment.findMany({
+        where: { photoShootingId: shooting.id },
+      }),
+    ]);
+    if (pricing == null) {
+      throw new Error('Missing pricing snapshot');
+    }
+
+    const expected = calculatePricing({
+      pricing,
+      shooting,
+      adjustments,
+      ledgerEntries: [],
+    }).totalToBePaid;
+    const paid = session.amount_total ?? 0;
+    if (paid === expected) {
+      return;
+    }
+
+    console.error('[stripe-webhook] gift amount mismatch', {
+      shootingId: shooting.id,
+      sessionId: session.id,
+      paid,
+      expected,
+    });
+    await sendDiscordNotification({
+      type: 'warning',
+      content: [
+        '**Ajándék fotózás: a fizetett összeg eltér a fotózás teljes árától!**\n',
+        'A fizetést rögzítettük, de az egyenleget kézzel ellenőrizni kell.',
+        `Fizetett (Stripe): ${formatMoney(paid)}`,
+        `Fotózás teljes ára: ${formatMoney(expected)}`,
+        `Shooting ID: ${shooting.id}`,
+        `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${shooting.id})`,
+      ].join('\n'),
+    });
+  } catch (err) {
+    // Csak riasztás — emiatt nem buktatjuk el (és nem ismételtetjük) a webhookot.
+    console.error('[stripe-webhook] could not check gift amount', {
+      shootingId: shooting.id,
+      err,
+    });
+  }
 }

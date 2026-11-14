@@ -97,6 +97,7 @@ export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PETS = 3;
 export const COMMENT_MAX_LENGTH = 2000;
 export const DEPOSIT_AMOUNT = 10000_00;
+export const GIFT_LINE_ITEM_NAME = 'Fotózás';
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_POST_PRODUCTION_FEE = 10000_00;

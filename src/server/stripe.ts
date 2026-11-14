@@ -6,10 +6,12 @@ import * as z from 'zod';
 
 import { env } from '@/env';
 import { BookingIntentStatus } from '@/generated/prisma/enums';
+import { calculateBookingIntentTotal } from '@/lib/booking-intent-total';
 import { PACKAGES } from '@/lib/catalog';
 import {
   CHECKOUT_SESSION_EXPIRY_MINUTES,
   DEPOSIT_AMOUNT,
+  GIFT_LINE_ITEM_NAME,
   MAX_PERSONS,
   MAX_PETS,
 } from '@/lib/constants';
@@ -30,6 +32,11 @@ const CheckoutSchema = z.object({
     .max(500)
     .optional()
     .transform((v) => (v === '' ? null : v)),
+  // Hiányzó mező = nem ajándék.
+  isGift: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
 });
 
 export type CheckoutFormState = { error?: string } | undefined;
@@ -43,13 +50,14 @@ export async function createCheckoutSession(
     numberOfGuests: formData.get('numberOfGuests'),
     numberOfPets: formData.get('numberOfPets'),
     clientNote: formData.get('clientNote'),
+    isGift: formData.get('isGift') ?? undefined,
   });
 
   if (!parsed.success) {
     return { error: 'Add meg, hányan jöttök (legalább 1 fő).' };
   }
 
-  const { numberOfGuests, numberOfPets, clientNote } = parsed.data;
+  const { numberOfGuests, numberOfPets, clientNote, isGift } = parsed.data;
 
   const bookingIntent = await prisma.bookingIntent.findUnique({
     where: { id: bookingIntentId },
@@ -57,6 +65,7 @@ export async function createCheckoutSession(
       timeSlot: {
         select: { revealed: true, photoShooting: { select: { id: true } } },
       },
+      adjustments: { select: { amountInCents: true, type: true } },
     },
   });
 
@@ -85,8 +94,49 @@ export async function createCheckoutSession(
 
   await prisma.bookingIntent.update({
     where: { id: bookingIntentId },
-    data: { numberOfGuests, numberOfPets, clientNote },
+    data: { numberOfGuests, numberOfPets, clientNote, isGift },
   });
+
+  const productImages =
+    process.env.NODE_ENV === 'development' ? [] : [stripeCheckoutImageUrl];
+
+  // Ajándéknál a teljes összeget fizetik előre. Az összeget mindig itt
+  // számoljuk újra a beküldött létszámokból — beküldött összegben nem bízunk.
+  const lineItem = isGift
+    ? {
+        price_data: {
+          currency: 'huf',
+          product_data: { name: GIFT_LINE_ITEM_NAME, images: productImages },
+          unit_amount: calculateBookingIntentTotal({
+            ...bookingIntent,
+            numberOfGuests,
+            numberOfPets,
+          }),
+        },
+        quantity: 1,
+      }
+    : {
+        price_data: {
+          currency: 'huf',
+          product_data: {
+            name: 'Fotózás előleg',
+            description: 'Betegség esetén találunk nektek másik időpontot',
+            images: productImages,
+          },
+          unit_amount: DEPOSIT_AMOUNT,
+        },
+        quantity: 1,
+      };
+
+  const metadata = isGift
+    ? ({
+        kind: 'booking_gift',
+        booking_intent_id: bookingIntent.id,
+      } satisfies CheckoutMetadata)
+    : ({
+        kind: 'booking_deposit',
+        booking_intent_id: bookingIntent.id,
+      } satisfies CheckoutMetadata);
 
   let sessionUrl: string | null;
   try {
@@ -108,23 +158,7 @@ export async function createCheckoutSession(
       mode: 'payment',
       expires_at:
         Math.floor(Date.now() / 1000) + CHECKOUT_SESSION_EXPIRY_MINUTES * 60,
-      line_items: [
-        {
-          price_data: {
-            currency: 'huf',
-            product_data: {
-              name: 'Fotózás előleg',
-              description: 'Betegség esetén találunk nektek másik időpontot',
-              images:
-                process.env.NODE_ENV === 'development'
-                  ? []
-                  : [stripeCheckoutImageUrl],
-            },
-            unit_amount: DEPOSIT_AMOUNT,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: [lineItem],
       custom_text: {
         // submit: { message: 'submit custom text' },
         // after_submit: { message: 'after_submit custom text' },
@@ -135,10 +169,7 @@ export async function createCheckoutSession(
       name_collection: {
         individual: { enabled: true, optional: false },
       },
-      metadata: {
-        kind: 'booking_deposit',
-        booking_intent_id: bookingIntent.id,
-      } satisfies CheckoutMetadata,
+      metadata,
       success_url: `${origin}/success/${bookingIntentId}`,
       cancel_url: `${origin}/foglalas-osszegzese/${bookingIntentId}`,
     });
