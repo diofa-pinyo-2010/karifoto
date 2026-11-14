@@ -215,7 +215,9 @@ export default async function PhotoShootingDetailPage({
             />
           </div>
           <h1 className="text-3xl font-semibold lg:text-4xl">
-            {shooting.purchasedById != null && '🎁 '}
+            {shooting.purchasedById != null && (
+              <span aria-hidden="true">🎁 </span>
+            )}
             {client.owner.name}
           </h1>
           <div className="item-center flex flex-col gap-2 lg:flex-row">
