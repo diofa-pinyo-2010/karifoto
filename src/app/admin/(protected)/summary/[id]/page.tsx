@@ -57,6 +57,9 @@ export default async function RemoteBookingSummaryPage({
           label="Csomag"
           value={PACKAGE_LABEL[bookingIntent.package]}
         />
+        {bookingIntent.isGift && (
+          <SummaryRow label="Ajándék" value="🎁 Igen, teljes összeg" />
+        )}
         <SummaryRow
           label="Díszlet"
           value={
