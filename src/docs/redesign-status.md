@@ -5,7 +5,7 @@ agency) is a **design spec**, not code to merge. The landing page has been
 restyled in place against it. This file records what is finished, what is not,
 and what is blocked.
 
-Last updated: 2026-09-29.
+Last updated: 2026-11-14.
 
 ---
 
@@ -18,6 +18,7 @@ The **landing page** (`src/app/page.tsx`) is fully on the 2026 identity:
 | Sections | Hero, Sets, Reviews, Pricing, Video, Booking, Faq, Location |
 | Chrome   | Header (overlay + mobile menu), Footer, MobileBookingBar    |
 | Legal    | `/impresszum`, `/adatkezeles`, `/aszf`                      |
+| Gift     | `/ajandek/[giftCode]` (built on the 2026 `brand-*` tokens)  |
 
 Supporting work: `--ui-font-*` indirection so admin and public can carry
 different typography; the `--color-brand-*` palette; Manrope and Cormorant (with
