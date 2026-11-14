@@ -20,7 +20,7 @@ is a January problem.
 - [5. `PriceAdjustment` needs a surcharge](#5-priceadjustment-needs-a-surcharge)
 - [6. The next checkout kind](#6-the-next-checkout-kind)
 - [7. Rounding, if VAT ever stops being AAM](#7-rounding-if-vat-ever-stops-being-aam)
-- [8. Paying the full amount at booking ](#8-paying-the-full-amount-at-booking)
+- [8. Paying the full amount at booking](#8-paying-the-full-amount-at-booking)
 - [Open questions](#open-questions)
 
 ## Priority order
