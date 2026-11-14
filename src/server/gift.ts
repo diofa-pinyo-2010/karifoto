@@ -18,6 +18,7 @@ import {
   normalizeGiftCode,
   planGiftRedemption,
 } from '@/lib/gift';
+import { parsePhoneNumberInput } from '@/lib/phone';
 import { prisma } from '@/lib/prisma';
 import { getGiftShootingByCode } from '@/lib/queries';
 import {
@@ -45,7 +46,18 @@ const GENERIC_ERROR = 'Nem sikerült beváltani az ajándékot. Próbáld újra.
 const RedeemSchema = z.object({
   name: z.string().trim().min(2, 'Add meg a teljes neved.').max(100),
   email: z.email('Adj meg egy érvényes e-mail címet.'),
-  phone: z.string().trim().min(6, 'Add meg a telefonszámod.').max(30),
+  // Stored in E.164 form ("+36209876543"), whatever format was typed.
+  phone: z.string().transform((value, ctx) => {
+    const phone = parsePhoneNumberInput(value);
+    if (phone == null) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Adj meg egy érvényes telefonszámot, pl. +36 30 123 4567.',
+      });
+      return z.NEVER;
+    }
+    return phone;
+  }),
   optOut: z.boolean(),
 });
 
