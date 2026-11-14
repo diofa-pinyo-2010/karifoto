@@ -498,6 +498,13 @@ under the line name `'Fotózás előleg'`. "Paying in full" means charging the p
 known at booking instead. Note it is only full _as of booking_: edited and
 retouched counts are still 0 then, so the extras path survives either way.
 
+**Known gap (accepted, later):** a gift shooting that later grows — a
+surcharge, an extra guest on the day — cannot be collected through the balance
+flow, because the `INCOME_CLIENT_PAYMENT_FULL` row already makes
+`isBalanceCollected` true, and `generate-final-invoice` expects an advance
+invoice that does not exist. Staff handle it manually: take the money outside
+the system (or waive it as a `DEDUCTION` adjustment) and invoice it by hand.
+
 ### The partial unique index is not the obstacle
 
 `LedgerEntry_one_balance_per_photo_shooting_key` permits at most one balance row,
