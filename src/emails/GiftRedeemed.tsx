@@ -9,7 +9,7 @@ import {
   Img,
 } from 'react-email';
 
-export const CLIENT_GIFT_REDEEMED_SUBJECT = '🎁 Az ajándékod beváltották';
+export const CLIENT_GIFT_REDEEMED_SUBJECT = '🎁 Beváltották az ajándékodat';
 
 type GiftRedeemedEmailProps = {
   baseUrl: string;
@@ -40,9 +40,9 @@ export default function GiftRedeemedEmail({
             />
             <Heading className="text-xl">Kedves {name}!</Heading>
             <Text>
-              🎁 {recipientName} beváltotta a(z){' '}
-              <span className="font-bold">{bookedTime}</span> időpontra szóló
-              fotózás-ajándékodat. Innentől minden tudnivalót ő kap meg tőlünk.
+              🎁 {recipientName} beváltotta a fotózásra szóló ajándékodat (
+              <span className="font-bold">{bookedTime}</span>). Innentől minden
+              tudnivalót ő kap meg tőlünk.
             </Text>
             <Text>Köszönjük, hogy minket választottál!</Text>
             <Text className="m-0">Üdvözlettel,</Text>
