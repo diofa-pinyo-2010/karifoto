@@ -6,12 +6,13 @@ import { buildStaffBadgeClassNames } from '@/lib/constants';
 import { dateFormatter } from '@/lib/formatters';
 import { fetchUpcomingPhotoShootings } from '@/lib/queries';
 import { groupByDay } from '@/lib/utils';
-import { fetchStaffIdsForBadges } from '@/server/admin';
+import { fetchPhotographers, fetchStaffIdsForBadges } from '@/server/admin';
 
 export default async function BookingsPage() {
-  const [photoShootings, staffIds] = await Promise.all([
+  const [photoShootings, staffIds, photographers] = await Promise.all([
     fetchUpcomingPhotoShootings(),
     fetchStaffIdsForBadges(),
+    fetchPhotographers(),
   ]);
   const staffBadgeClassNames = buildStaffBadgeClassNames(staffIds);
 
@@ -49,6 +50,7 @@ export default async function BookingsPage() {
                 key={shooting.id}
                 shooting={shooting}
                 staffBadgeClassNames={staffBadgeClassNames}
+                photographers={photographers}
               />
             ))}
             <Separator className="mt-4" />
