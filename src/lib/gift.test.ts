@@ -10,6 +10,7 @@ import {
   giftRedeemPath,
   isGiftTransferable,
   normalizeGiftCode,
+  planGiftRedemption,
 } from '@/lib/gift';
 
 const paidFull = {
@@ -94,4 +95,41 @@ describe('isGiftTransferable', () => {
   it.each(GIFT_TRANSFERABLE_STATUSES)('allows %s', (status) =>
     expect(isGiftTransferable(input({ status }))).toBe(true),
   );
+});
+
+describe('planGiftRedemption', () => {
+  const currentClientEmail = 'Buyer@Example.com';
+
+  it.each(['buyer@example.com', '  BUYER@example.COM ', 'Buyer@Example.com'])(
+    'refuses the current client’s own email (%s)',
+    (submittedEmail) =>
+      expect(
+        planGiftRedemption({
+          submittedEmail,
+          currentClientEmail,
+          existingUser: true,
+        }),
+      ).toEqual({
+        ok: false,
+        error: 'Ezt az ajándékot nem adhatod saját magadnak.',
+      }),
+  );
+
+  it('logs in a brand-new email', () =>
+    expect(
+      planGiftRedemption({
+        submittedEmail: 'anna@example.com',
+        currentClientEmail,
+        existingUser: false,
+      }),
+    ).toEqual({ ok: true, logIn: true }));
+
+  it('never logs in an email that already belongs to a user', () =>
+    expect(
+      planGiftRedemption({
+        submittedEmail: 'anna@example.com',
+        currentClientEmail,
+        existingUser: true,
+      }),
+    ).toEqual({ ok: true, logIn: false }));
 });

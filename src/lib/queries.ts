@@ -23,6 +23,7 @@ import {
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { dbDateToDayKey, earlyBirdDeadlineFromDayKey } from '@/lib/early-bird';
+import { isGiftTransferable } from '@/lib/gift';
 import { PIPELINE_STATUSES } from '@/lib/pipeline';
 import { prisma } from '@/lib/prisma';
 import {
@@ -35,6 +36,7 @@ import { buildStaffAccount } from '@/lib/staff-ledger';
 import { OPEN_STATUSES } from '@/lib/sumup/reconcile';
 import { dayBounds } from '@/lib/utils';
 import { loadStaffLedger } from '@/server/load-staff-ledger';
+import { calculatePricing } from '@/server/pricing';
 
 import type { MentionCandidate } from '@/lib/mentions';
 
@@ -624,6 +626,48 @@ export async function getCreatedShooting(bookingIntentId: string) {
     where: { bookingIntentId },
     include: { pricing: true, adjustments: true, ledgerEntries: true },
   });
+}
+
+const giftShootingInclude = {
+  include: {
+    timeSlot: { select: { startTime: true } },
+    client: { select: { owner: { select: { email: true, name: true } } } },
+    pricing: true,
+    adjustments: true,
+    ledgerEntries: true,
+  },
+} satisfies Prisma.PhotoShootingDefaultArgs;
+
+/**
+ * Nyilvános, munkamenet nélkül: az `/ajandek/[giftCode]` oldal és a
+ * `redeemGift` action közös lekérdezése, hogy a kettő ugyanazt tartsa
+ * beválthatónak. `code` már normalizált (`normalizeGiftCode`).
+ *
+ * Az ismeretlen és a nem (már nem) beváltható ajándék egyaránt `null`: a hívó
+ * mindkettőre ugyanazt az üzenetet mutatja, így nem derül ki, létezik-e a kód.
+ */
+export async function getGiftShootingByCode(code: string) {
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { giftCode: code },
+    ...giftShootingInclude,
+  });
+
+  if (shooting?.pricing == null) return null;
+
+  const { totalToBePaid } = calculatePricing({
+    pricing: shooting.pricing,
+    shooting,
+    adjustments: shooting.adjustments,
+    ledgerEntries: shooting.ledgerEntries,
+  });
+
+  const transferable = isGiftTransferable({
+    status: shooting.status,
+    totalToBePaidInCents: totalToBePaid,
+    ledgerEntries: shooting.ledgerEntries,
+  });
+
+  return transferable ? shooting : null;
 }
 
 const converted = await prisma.bookingIntent.findMany({

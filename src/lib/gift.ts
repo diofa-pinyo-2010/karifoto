@@ -55,3 +55,28 @@ export function isGiftTransferable(input: {
     )
   );
 }
+
+export function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+// Typing an address proves nothing, so a session is only ever minted for an
+// email nobody owned before — otherwise whoever holds the gift link could open
+// that person's portal. An existing user gets in through the emailed link.
+export function planGiftRedemption(input: {
+  submittedEmail: string;
+  currentClientEmail: string;
+  existingUser: boolean;
+}): { ok: false; error: string } | { ok: true; logIn: boolean } {
+  if (
+    normalizeEmail(input.submittedEmail) ===
+    normalizeEmail(input.currentClientEmail)
+  ) {
+    return {
+      ok: false,
+      error: 'Ezt az ajándékot nem adhatod saját magadnak.',
+    };
+  }
+
+  return { ok: true, logIn: !input.existingUser };
+}
