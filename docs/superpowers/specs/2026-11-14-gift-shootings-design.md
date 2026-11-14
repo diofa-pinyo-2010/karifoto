@@ -134,7 +134,7 @@ On `BookingIntent`: `isGift Boolean @default(false)`.
 
 New `EmailType` values for the two new emails: gift received (to the
 recipient) and gift redeemed (to the buyer). The gift purchase confirmation
-reuses the booking confirmation's type. *(Names: builder's call.)*
+reuses the booking confirmation's type. _(Names: builder's call.)_
 
 ### Part 1 — gift handover
 
@@ -157,7 +157,7 @@ reuses the booking confirmation's type. *(Names: builder's call.)*
   `calculatePricing(...).totalToBePaid <= 0` **and**
   `status ∈ {PHOTOGRAPHER_SELECTION, WAITING_FOR_THE_DATE, WAITING_FOR_BALANCE_PAYMENT, RAW_PHOTOS_UPLOAD}`
   **and** every income `LedgerEntry` of the shooting has an `invoiceId`.
-  The last clause is *my call*: invoice jobs run async and read the client's
+  The last clause is _my call_: invoice jobs run async and read the client's
   email/billing address when they run, so a handover while one is pending
   would send the buyer's invoice to the recipient. Status alone cannot say
   "balance paid" (a gift purchase is fully paid while still pre-shoot). Put the
@@ -230,7 +230,7 @@ initially checked when `bookingIntent.isGift`. Checked → the deposit copy is
 swapped for gift copy (a gift is paid in full up front; Hungarian wording is
 the builder's call), and the full amount replaces the deposit amount. The checkbox value goes with the form to
 `createCheckoutSession`, which saves it to `BookingIntent.isGift` and picks the
-session shape from it. *(Not the dead `src/app/foglalas-veglegesitese/`.)*
+session shape from it. _(Not the dead `src/app/foglalas-veglegesitese/`.)_
 The checkbox is plain component state initialised from `isGift`, not in the
 URL: since `isGift` is saved on submit, returning from Stripe's `cancel_url`
 already restores it; only an unsubmitted click is lost on refresh, which is

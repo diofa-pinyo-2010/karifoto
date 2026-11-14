@@ -39,6 +39,7 @@
 ### Task 1: Schema, ledger category, `SETTLES_BALANCE`
 
 **Files:**
+
 - Modify: `prisma/schema.prisma` (PhotoShooting, ClientProfile, BookingIntent, `LedgerEntryCategory`)
 - Create: `prisma/migrations/<ts>_gift_shootings/migration.sql` (generated)
 - Create: `prisma/migrations/<ts>_settling_payment_index/migration.sql` (hand-written)
@@ -47,6 +48,7 @@
 - Test: `src/lib/utils.test.ts` (create if absent, else extend)
 
 **Interfaces:**
+
 - Produces: `PhotoShooting.purchasedById: string | null`, `PhotoShooting.purchasedBy` (relation `"PurchasedShootings"`), `PhotoShooting.giftCode: string | null @unique`, `ClientProfile.purchasedShootings`, `BookingIntent.isGift: boolean @default(false)`, `LedgerEntryCategory.INCOME_CLIENT_PAYMENT_FULL`, `SETTLES_BALANCE: Record<LedgerEntryCategory, boolean>` exported from `@/lib/constants`.
 
 - [ ] **Step 1: Write the failing test**
@@ -54,18 +56,26 @@
 ```ts
 describe('isBalanceCollected', () => {
   it('is true for a balance payment', () => {
-    expect(isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_BALANCE')])).toBe(true);
+    expect(isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_BALANCE')])).toBe(
+      true,
+    );
   });
   it('is true for a full (gift) payment', () => {
-    expect(isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_FULL')])).toBe(true);
+    expect(isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_FULL')])).toBe(
+      true,
+    );
   });
   it('is false for deposit + extra only', () => {
     expect(
-      isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_DEPOSIT'), entry('INCOME_CLIENT_PAYMENT_EXTRA')]),
+      isBalanceCollected([
+        entry('INCOME_CLIENT_PAYMENT_DEPOSIT'),
+        entry('INCOME_CLIENT_PAYMENT_EXTRA'),
+      ]),
     ).toBe(false);
   });
 });
 ```
+
 (`entry(category)` = a minimal `LedgerEntry` fixture cast; only `category` is read.)
 
 - [ ] **Step 2: Schema edit**
@@ -87,6 +97,7 @@ CREATE UNIQUE INDEX "LedgerEntry_one_balance_per_photo_shooting_key"
   ON "LedgerEntry" ("photoShootingId")
   WHERE "category" IN ('INCOME_CLIENT_PAYMENT_BALANCE', 'INCOME_CLIENT_PAYMENT_FULL');
 ```
+
 Then `pnpm db:migrate`. Expected: applied, no drift reported.
 
 - [ ] **Step 5: Constants + predicate**
@@ -105,11 +116,13 @@ Expected: PASS. Typecheck will flag any other exhaustive `LedgerEntryCategory` r
 ### Task 2: Gift code + transfer eligibility (pure)
 
 **Files:**
+
 - Modify: `src/lib/token.ts` (`generateGiftCode` only)
 - Create: `src/lib/gift.ts` (everything else)
 - Test: `src/lib/token.test.ts` (extend or create), `src/lib/gift.test.ts`
 
 **Interfaces:**
+
 - Produces (`@/lib/token`, server-only because of `node:crypto`): `generateGiftCode(): string` (8 chars, uppercase, alphabet above).
 - Produces (`@/lib/gift`, pure, no `node:crypto`/`env` imports — safe for client components and Vitest): `GIFT_CODE_ALPHABET`, `formatGiftCode(code: string): string` (`'KF7MQ2XR'` → `'KF7M-Q2XR'`), `normalizeGiftCode(input: unknown): string | null`, `giftRedeemPath(code: string): string` (→ `/ajandek/KF7M-Q2XR`), `GIFT_TRANSFERABLE_STATUSES: readonly PhotoShootingStatus[]` = `[PHOTOGRAPHER_SELECTION, WAITING_FOR_THE_DATE, WAITING_FOR_BALANCE_PAYMENT, RAW_PHOTOS_UPLOAD]`; `isGiftTransferable(input: { status: PhotoShootingStatus; totalToBePaidInCents: number; ledgerEntries: Pick<LedgerEntry, 'category' | 'invoiceId'>[] }): boolean`.
 
@@ -157,28 +170,53 @@ it.each(GIFT_TRANSFERABLE_STATUSES)('allows %s', ...);
 ### Task 3: Booking-intent total (pure) and summary page refactor
 
 **Files:**
+
 - Create: `src/lib/booking-intent-total.ts`
 - Test: `src/lib/booking-intent-total.test.ts`
 - Modify: `src/components/BookingReview.tsx:33-55` (replace inline total)
 
 **Interfaces:**
+
 - Produces: `calculateBookingIntentTotal(intent: { package: Package; isLightPlaySelected: boolean; numberOfGuests: number; numberOfPets: number; adjustments: Pick<PriceAdjustment, 'amountInCents' | 'type'>[] }): number` (cents).
 
 - [ ] **Step 1: Write the failing test** — the guard is equality with what the webhook-created shooting will report:
 
 ```ts
 it.each([
-  ['base package', { numberOfGuests: 2, numberOfPets: 0, isLightPlaySelected: false, adjustments: [] }],
-  ['light play + extra people + pets', { numberOfGuests: 6, numberOfPets: 2, isLightPlaySelected: true, adjustments: [] }],
-  ['early-bird discount', { numberOfGuests: 2, numberOfPets: 0, isLightPlaySelected: false,
-      adjustments: [{ type: 'DISCOUNT', amountInCents: 5000_00 }] }],
+  [
+    'base package',
+    {
+      numberOfGuests: 2,
+      numberOfPets: 0,
+      isLightPlaySelected: false,
+      adjustments: [],
+    },
+  ],
+  [
+    'light play + extra people + pets',
+    {
+      numberOfGuests: 6,
+      numberOfPets: 2,
+      isLightPlaySelected: true,
+      adjustments: [],
+    },
+  ],
+  [
+    'early-bird discount',
+    {
+      numberOfGuests: 2,
+      numberOfPets: 0,
+      isLightPlaySelected: false,
+      adjustments: [{ type: 'DISCOUNT', amountInCents: 5000_00 }],
+    },
+  ],
 ])('matches calculatePricing().totalToBePaid for %s', (_, intent) => {
   for (const pkg of Object.keys(PACKAGES) as Package[]) {
     const input = { ...intent, package: pkg };
     expect(calculateBookingIntentTotal(input)).toBe(
       calculatePricing({
         pricing: { ...buildPricingSnapshot(pkg) } as PhotoShootingPricing,
-        shooting: shootingFrom(input),   // fixture: same fields as webhook's photoShooting.create, counters 0
+        shooting: shootingFrom(input), // fixture: same fields as webhook's photoShooting.create, counters 0
         adjustments: input.adjustments as PriceAdjustment[],
         ledgerEntries: [],
       }).totalToBePaid,
@@ -186,6 +224,7 @@ it.each([
   }
 });
 ```
+
 `shootingFrom` mirrors the webhook's `photoShooting.create` data (incl. `isLightPlaySelected: isLightPlayChargeable(pkg) && intent.isLightPlaySelected`, `totalEditedImages: 0`, `totalRetouchedImages: 0`, `isExpressPostProduction: false`).
 
 - [ ] **Step 2: Run, expect FAIL**
@@ -201,12 +240,14 @@ it.each([
 ### Task 4: Gift checkout session + webhook `booking_gift` path
 
 **Files:**
+
 - Modify: `src/lib/checkout-metadata.ts`, `src/lib/checkout-metadata.test.ts`
 - Modify: `src/server/stripe.ts` (`createCheckoutSession`)
 - Modify: `src/app/api/webhooks/stripe/route.ts` (`routeCheckoutSession`, `handleBookingDeposit`)
 - Modify: `src/lib/constants.ts` (`GIFT_LINE_ITEM_NAME = 'Fotózás'`)
 
 **Interfaces:**
+
 - Consumes: `calculateBookingIntentTotal` (Task 3), `generateGiftCode` (Task 2), `BookingIntent.isGift`, `INCOME_CLIENT_PAYMENT_FULL` (Task 1).
 - Produces: checkout kind `{ kind: 'booking_gift'; booking_intent_id: string }`; `CHECKOUT_KIND_LEDGER_CATEGORY.booking_gift = INCOME_CLIENT_PAYMENT_FULL`; QStash publish to `/api/jobs/generate-full-amount-invoice` with body `{ shootingId, bookingIntentId, sessionId, paymentIntent, amountTotal }` (same shape as the deposit job).
 
@@ -234,10 +275,12 @@ it.each([
 ### Task 5: `generate-full-amount-invoice` job
 
 **Files:**
+
 - Create: `src/app/api/jobs/generate-full-amount-invoice/route.ts`
 - Modify: `src/lib/idempotency.ts`
 
 **Interfaces:**
+
 - Consumes: payload from Task 4.
 - Produces: `claimFullAmountInvoice(shootingId)`, `confirmFullAmountInvoice(shootingId, invoiceNumber)`, `releaseFullAmountInvoiceClaim(shootingId)`, key `full_amount_inv:${shootingId}`, same stances as the deposit trio (claim throws; others swallow).
 
@@ -252,9 +295,11 @@ it.each([
 ### Task 6: Gift variant of the booking confirmation email
 
 **Files:**
+
 - Modify: `src/emails/BookingConfirmation.tsx`, `src/lib/resend/booking-confirmation.ts`, `src/app/api/jobs/email-confirmation/route.ts`, `src/lib/email-previews.tsx`
 
 **Interfaces:**
+
 - Consumes: `PhotoShooting.giftCode`, `giftRedeemPath` (Task 2).
 - Produces: `BookingConfirmationEmailProps.giftUrl?: string`; `sendBookingConfirmationEmail({ ..., giftUrl?: string })`.
 
@@ -269,10 +314,12 @@ it.each([
 ### Task 7: Gift checkbox on the summary page + remote booking toggle
 
 **Files:**
+
 - Modify: `src/components/BookingReview.tsx`, `src/lib/queries.ts` (`bookingIntentpublicSelect` + `isGift`)
 - Modify: `src/server/booking-intent.ts` (`CreateBookingIntentInput.isGift: boolean`, persisted), `src/components/BookingFormNew.tsx` (pass `isGift: false`), `src/components/RemoteBookingForm.tsx` (Switch "Ajándék", default off)
 
 **Interfaces:**
+
 - Consumes: `calculateBookingIntentTotal`, form field `isGift` read by Task 4.
 
 - [ ] **Step 1: Summary UI** — `const [isGift, setIsGift] = useState(bookingIntent.isGift)`; a checkbox block (icon 🎁, title "Ajándékba veszem", one-line description) under the deposit box, `brand-*` tokens per `src/docs/redesign-status.md`; hidden input `name="isGift" value={String(isGift)}`. When checked: deposit box text replaced by gift copy ("Ajándék esetén a fotózás teljes díját most kérjük; a fizetés után kapsz egy linket, amivel átadhatod az ajándékot."), sticky footer label "Teljes összeg" + `formatMoney(total)` instead of "Előleg" + deposit.
@@ -285,11 +332,13 @@ it.each([
 ### Task 8: Gift-received / gift-redeemed emails
 
 **Files:**
+
 - Modify: `prisma/schema.prisma` (`EmailType`: `GIFT_RECEIVED`, `GIFT_REDEEMED`) + `pnpm db:migrate --name gift_email_types`
 - Create: `src/emails/GiftReceived.tsx`, `src/emails/GiftRedeemed.tsx`, `src/lib/resend/gift.ts`
 - Modify: `src/lib/resend/send-client-email.ts` (`CLIENT_EMAILS`), `src/lib/email-previews.tsx`
 
 **Interfaces:**
+
 - Produces: `sendGiftReceivedEmail({ to, name, buyerName, bookedTimeString, addToGoogleCalendarLink, clientPortalLoginLink, shootingId, clientId })` (to recipient — reworded booking confirmation: "<buyerName> megajándékozott egy fotózással", date, calendar link, arrival tips, portal button) and `sendGiftRedeemedEmail({ to, name, recipientName, bookedTimeString, shootingId, clientId })` (to buyer, short: "<recipientName> beváltotta az ajándékot"). Both via `sendClientEmail`, subject constants exported from the templates, `PreviewProps` set.
 
 - [ ] **Step 1: Migration + templates + senders + registry entries + 2 preview entries.**
@@ -301,10 +350,12 @@ it.each([
 ### Task 9: `/ajandek/[giftCode]` page and redemption action
 
 **Files:**
+
 - Create: `src/app/ajandek/[giftCode]/page.tsx`, `src/components/GiftRedeemForm.tsx` (client), `src/server/gift.ts`
 - Modify: `src/lib/gift.ts` (+ `planGiftRedemption`), `src/lib/gift.test.ts`, `src/lib/queries.ts` (`getGiftShootingByCode(code)`)
 
 **Interfaces:**
+
 - Consumes: `normalizeGiftCode`, `isGiftTransferable`, `calculatePricing`, `createSession`, `createClientPortalToken`, `clientPortalLoginUrl`, `sessionCookieOptions`, `CLIENT_SESSION_COOKIE_NAME`, Task 8 senders.
 - Produces: `planGiftRedemption(input: { submittedEmail: string; currentClientEmail: string; existingUser: boolean }): { ok: false; error: string } | { ok: true; logIn: boolean }`; `redeemGift(giftCode: string, _prev: GiftRedeemState, formData: FormData): Promise<GiftRedeemState>` where `GiftRedeemState = { error?: string; checkInbox?: boolean } | undefined`.
 
@@ -331,9 +382,11 @@ it.each([
 ### Task 10: Recipient's first extra payment collects billing details
 
 **Files:**
+
 - Modify: `src/server/image-selection.ts` (`loadSelectableShooting` select + `confirmImageSelection` session options), `src/app/api/webhooks/stripe/route.ts` (`handleImageSelectionExtra`)
 
 **Interfaces:**
+
 - Consumes: `ClientProfile.billingAddresses`.
 
 - [ ] **Step 1:** In `loadSelectableShooting`, also select `client.billingAddresses: { take: 1, select: { id: true } }`. In the extra session, when it is empty add `billing_address_collection: 'required'` and `name_collection: { individual: { enabled: true, optional: false } }`.
@@ -346,11 +399,13 @@ it.each([
 ### Task 11: Admin gift link + 🎁 marker, docs
 
 **Files:**
+
 - Create: `src/components/admin/GiftLinkRow.tsx` (client, copy button)
 - Modify: `src/app/admin/(protected)/photo-shootings/[id]/page.tsx` (~line 215 name, details list)
 - Modify: `src/docs/upcoming-work.md` §8 + open questions, `src/docs/redesign-status.md` if the new page is tracked there
 
 **Interfaces:**
+
 - Consumes: `PhotoShooting.giftCode`, `purchasedById`, `giftRedeemPath` (absolute URL built server-side with `env.NEXT_PUBLIC_SITE_URL`, passed to the client component as a string).
 
 - [ ] **Step 1:** Prefix the client name with `🎁 ` when `purchasedById != null`. When `giftCode != null`, a `DetailRow`-style "Ajándék link" row showing the absolute URL and a copy button (`navigator.clipboard.writeText`, toast as elsewhere in admin). Nothing else.
