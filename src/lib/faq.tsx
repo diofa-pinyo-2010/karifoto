@@ -11,6 +11,7 @@ import {
   MAX_PERSONS_EXCLUDED_PARTY,
   WEEKDAY_DISCOUNT_AMOUNT,
 } from '@/lib/constants';
+import { arrivalSuggestions } from '@/lib/constants-jsx';
 import { faqImages } from '@/lib/fetch-photos';
 import { formatMoney } from '@/lib/utils';
 
@@ -67,10 +68,7 @@ export const faqs: FaqItem[] = [
     q: '2. Mikor érkezzünk a stúdióba?',
     a: (
       <>
-        <p>
-          Ideális esetben{' '}
-          <strong>5-10 perccel a megbeszélt időpont előtt</strong>.
-        </p>
+        {arrivalSuggestions}
         <p>
           Mindenkit megkérünk, hogy ne késsetek, vagy ha mégis, akkor kérjük,
           jelezzétek időben.
@@ -97,8 +95,7 @@ export const faqs: FaqItem[] = [
           is az igazán varázslatos képek.
         </p>
         <p>
-          Fotózásaink az idő nagy részében{' '}
-          <strong>cipő nélkül, otthonos hangulatban</strong>
+          Fotózásaink <strong>cipő nélkül, otthonos hangulatban</strong>{' '}
           zajlanak, így a készülődésnél érdemes a zoknik színét is szemügyre
           venni.
         </p>
