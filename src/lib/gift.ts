@@ -1,6 +1,9 @@
 // Client-safe (no node:crypto, no env): shared by the gift page, the admin
 // and Vitest. Code generation lives in token.ts because it needs node:crypto.
-import { PhotoShootingStatus } from '@/generated/prisma/enums';
+import {
+  LedgerEntryCategory,
+  PhotoShootingStatus,
+} from '@/generated/prisma/enums';
 import { LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import { stripLoginCodeSeparators } from '@/lib/login-code';
 
@@ -79,4 +82,22 @@ export function planGiftRedemption(input: {
   }
 
   return { ok: true, logIn: !input.existingUser };
+}
+
+// A redeemed gift (purchasedById set) belongs to the recipient, but the buyer's
+// invoices — issued to the buyer's name and address — still hang off the
+// shooting. The recipient's portal lists only the invoices of their own extra
+// payments; staff views keep showing everything.
+export function invoicesVisibleToClient<
+  T extends { ledgerEntry: Pick<LedgerEntry, 'category'> | null },
+>(invoices: T[], purchasedById: string | null): T[] {
+  if (purchasedById == null) {
+    return invoices;
+  }
+
+  return invoices.filter(
+    (invoice) =>
+      invoice.ledgerEntry?.category ===
+      LedgerEntryCategory.INCOME_CLIENT_PAYMENT_EXTRA,
+  );
 }

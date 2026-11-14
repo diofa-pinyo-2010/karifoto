@@ -466,6 +466,9 @@ const photoShootingForClientPortalSelect = {
     declaredRetouchedImages: true,
     isExpressPostProduction: true,
     photographer: { select: { nickname: true } },
+    // Beváltott ajándéknál az ügyfél csak a saját számláit látja
+    // (`invoicesVisibleToClient`), ehhez kell a vásárló és a könyvelési sor.
+    purchasedById: true,
     // Az Invoice-nak nincs createdAt-je, a számlaszám viszont növekvő.
     invoices: {
       select: {
@@ -474,6 +477,7 @@ const photoShootingForClientPortalSelect = {
         publicUrl: true,
         amountInCents: true,
         status: true,
+        ledgerEntry: { select: { category: true } },
       },
       orderBy: { invoiceNumber: 'asc' },
     },

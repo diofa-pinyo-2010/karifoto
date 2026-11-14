@@ -8,6 +8,7 @@ import {
   formatGiftCode,
   GIFT_TRANSFERABLE_STATUSES,
   giftRedeemPath,
+  invoicesVisibleToClient,
   isGiftTransferable,
   normalizeGiftCode,
   planGiftRedemption,
@@ -132,4 +133,38 @@ describe('planGiftRedemption', () => {
         existingUser: true,
       }),
     ).toEqual({ ok: true, logIn: false }));
+});
+
+describe('invoicesVisibleToClient', () => {
+  const buyerFull = {
+    id: 'inv_full',
+    ledgerEntry: { category: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_FULL },
+  };
+  const recipientExtra = {
+    id: 'inv_extra',
+    ledgerEntry: { category: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_EXTRA },
+  };
+  const deposit = {
+    id: 'inv_deposit',
+    ledgerEntry: {
+      category: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT,
+    },
+  };
+  const unlinked = { id: 'inv_unlinked', ledgerEntry: null };
+
+  it('shows every invoice of a non-gift shooting', () => {
+    const invoices = [deposit, recipientExtra, unlinked];
+    expect(invoicesVisibleToClient(invoices, null)).toEqual(invoices);
+  });
+
+  it('shows a redeemed gift recipient only their own extra payments', () =>
+    expect(
+      invoicesVisibleToClient(
+        [buyerFull, recipientExtra, unlinked],
+        'buyer_profile',
+      ),
+    ).toEqual([recipientExtra]));
+
+  it('shows nothing when a redeemed gift has no extra payment yet', () =>
+    expect(invoicesVisibleToClient([buyerFull], 'buyer_profile')).toEqual([]));
 });

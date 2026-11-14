@@ -59,6 +59,7 @@ import {
   // monthDayFormatter,
   timeFormatter,
 } from '@/lib/formatters';
+import { invoicesVisibleToClient } from '@/lib/gift';
 // import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
@@ -173,7 +174,14 @@ export default async function ClientPortalShootingDetailsPage({
     {
       value: 'invoices',
       trigger: 'Pénzügyek',
-      content: <ClientPortalInvoices invoices={photoShooting.invoices} />,
+      content: (
+        <ClientPortalInvoices
+          invoices={invoicesVisibleToClient(
+            photoShooting.invoices,
+            photoShooting.purchasedById,
+          )}
+        />
+      ),
       disabled: false,
       icon: ReceiptTextIcon,
     },
