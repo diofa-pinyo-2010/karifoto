@@ -1,0 +1,102 @@
+import {
+  Html,
+  Head,
+  Body,
+  Container,
+  Heading,
+  Text,
+  Button,
+  Tailwind,
+  Img,
+  Section,
+  Link,
+} from 'react-email';
+
+import { arrivalSuggestions } from '@/lib/constants-jsx';
+
+export const CLIENT_GIFT_RECEIVED_SUBJECT =
+  '🎁 Ajándékba kaptatok egy fotózást';
+
+type GiftReceivedEmailProps = {
+  baseUrl: string;
+  name: string;
+  buyerName: string;
+  bookedTime: string;
+  addToGoogleCalendarLink: string;
+  clientPortalLoginLink: string;
+};
+
+export default function GiftReceivedEmail({
+  baseUrl,
+  name,
+  buyerName,
+  bookedTime,
+  addToGoogleCalendarLink,
+  clientPortalLoginLink,
+}: GiftReceivedEmailProps) {
+  return (
+    <Html lang="hu">
+      <Tailwind>
+        <Head>
+          <title>{CLIENT_GIFT_RECEIVED_SUBJECT}</title>
+        </Head>
+        <Body className="m-0 font-sans sm:bg-[#fafafa] sm:py-8">
+          <Container className="max-w-140 rounded-lg bg-white px-6 py-8">
+            <Img
+              src={`${baseUrl}/images/karifoto-logo-arany.png`}
+              alt="Karifotó"
+              width="100"
+              className="mx-auto mb-8"
+            />
+            <Heading className="text-xl">Kedves {name}!</Heading>
+            <Text>
+              🎁 {buyerName} megajándékozott titeket egy karácsonyi fotózással a
+              Karifotóban! Az ajándékotokat rögzítettük, az időpont már foglalt.
+            </Text>
+            <Text className="mt-8 text-center">
+              📸 A fotózásotok időpontja:
+            </Text>
+            <Text className="text-center text-lg font-bold">{bookedTime}</Text>
+            <Link
+              href={addToGoogleCalendarLink}
+              className="mb-8 block text-center underline underline-offset-4"
+            >
+              Hozzáadás Google naptárhoz
+            </Link>
+            <Text>{arrivalSuggestions}</Text>
+            <Text>
+              Várunk titeket szeretettel a stúdiónkba,{' '}
+              <span className="font-bold">a fotózásig más teendőtök nincs</span>
+              . A foglalás részleteit az Ügyfélportálunkon keresztül tudjátok
+              megnézni.
+            </Text>
+            <Section className="mb-0 text-center">
+              <Button
+                href={clientPortalLoginLink}
+                className="font-base my-4 inline-block rounded-lg bg-gray-800 px-7 py-4 text-center font-sans leading-6 font-semibold tracking-wide text-white uppercase"
+              >
+                Ügyfélportál
+              </Button>
+            </Section>
+            <Text className="mt-0 text-xs text-slate-500">
+              A végleges fotók készhezvételéig minden részletet itt tudtok majd
+              nyomon követni, bejelentkezni pedig mindig ezzel a gombbal fogtok
+              tudni, tehát érdemes megtartani ezt az emailt :)
+            </Text>
+            <Text className="m-0">Üdvözlettel,</Text>
+            <Text className="m-0 font-semibold">🎄 📸 A Karifoto csapata</Text>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  );
+}
+
+GiftReceivedEmail.PreviewProps = {
+  baseUrl: 'http://localhost:3000',
+  name: 'Anna',
+  buyerName: 'Péter',
+  bookedTime: 'Szeptember 29., kedd · 11:00',
+  addToGoogleCalendarLink: 'https://example.com',
+  clientPortalLoginLink: 'https://example.com',
+} satisfies GiftReceivedEmailProps;

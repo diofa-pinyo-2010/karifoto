@@ -10,6 +10,12 @@ import CompletedProjectEmail, {
 import DepositRequestEmail, {
   CLIENT_DEPOSIT_REQUEST_SUBJECT,
 } from '@/emails/DepositRequest';
+import GiftReceivedEmail, {
+  CLIENT_GIFT_RECEIVED_SUBJECT,
+} from '@/emails/GiftReceived';
+import GiftRedeemedEmail, {
+  CLIENT_GIFT_REDEEMED_SUBJECT,
+} from '@/emails/GiftRedeemed';
 import ImageSelectionEmail, {
   CLIENT_IMAGE_SELECTION_SUBJECT,
 } from '@/emails/ImageSelection';
@@ -52,6 +58,14 @@ const CLIENT_EMAILS = {
   COMPLETED_PROJECT: {
     component: CompletedProjectEmail,
     subject: CLIENT_COMPLETED_PROJECT_SUBJECT,
+  },
+  GIFT_RECEIVED: {
+    component: GiftReceivedEmail,
+    subject: CLIENT_GIFT_RECEIVED_SUBJECT,
+  },
+  GIFT_REDEEMED: {
+    component: GiftRedeemedEmail,
+    subject: CLIENT_GIFT_REDEEMED_SUBJECT,
   },
 } satisfies Record<
   EmailType,
