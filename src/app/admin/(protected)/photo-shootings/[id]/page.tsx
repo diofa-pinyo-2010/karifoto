@@ -214,11 +214,11 @@ export default async function PhotoShootingDetailPage({
               action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
             />
           </div>
-          <h1 className="text-3xl font-semibold lg:text-4xl">
+          <h1 className="flex items-center gap-3 text-3xl font-semibold lg:text-4xl">
+            {client.owner.name}
             {shooting.purchasedById != null && (
               <span aria-hidden="true">🎁 </span>
             )}
-            {client.owner.name}
           </h1>
           <div className="item-center flex flex-col gap-2 lg:flex-row">
             <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">

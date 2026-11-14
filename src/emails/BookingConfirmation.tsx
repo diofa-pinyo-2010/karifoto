@@ -71,8 +71,8 @@ export default function BookingConfirmationEmail({
                   Ezt a fotózást ajándékba vettétek. Az alábbi linket akkor
                   adjátok át az ajándékozottnak, amikor csak szeretnétek: ő
                   megadja a saját adatait, és innentől kezdve minden értesítést
-                  és információt ő kap meg. Ha inkább ti jöttök el a fotózásra,
-                  nincs más teendőtök.
+                  és információt ő kap meg. Ha mégis inkább ti jöttök el a
+                  fotózásra, nincs más teendőtök.
                 </Text>
                 {/* Szándékosan nem link: a vásárló kimásolja és továbbadja,
                     nem neki kell rákattintania. */}
