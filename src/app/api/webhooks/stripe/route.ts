@@ -218,11 +218,68 @@ async function handleImageSelectionExtra(
     });
   }
 
+  await saveExtraBillingAddress(session, shootingId);
+
   await qStashClient.publishJSON({
     url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/generate-extra-invoice`,
     body: { shootingId, sessionId: session.id, paymentIntent, amountTotal },
     retries: 5,
   });
+}
+
+/**
+ * The checkout asks for billing details only when the client has none (e.g. a
+ * gift recipient's first extra payment). Save them before the invoice job runs;
+ * skipped when the client already has one, so a webhook retry cannot duplicate.
+ * Failure is logged + alerted, not thrown: the invoice job alerts on a missing
+ * address too.
+ */
+async function saveExtraBillingAddress(
+  session: Stripe.Checkout.Session,
+  shootingId: string,
+) {
+  const name = session.customer_details?.individual_name;
+  const zip = session.customer_details?.address?.postal_code;
+  const city = session.customer_details?.address?.city;
+  const addressLine1 = session.customer_details?.address?.line1;
+  if (name == null || zip == null || city == null || addressLine1 == null) {
+    return;
+  }
+
+  try {
+    const shooting = await prisma.photoShooting.findUnique({
+      where: { id: shootingId },
+      select: {
+        clientId: true,
+        client: {
+          select: { billingAddresses: { take: 1, select: { id: true } } },
+        },
+      },
+    });
+    if (shooting == null || shooting.client.billingAddresses.length > 0) return;
+
+    await prisma.billingAddress.create({
+      data: {
+        name,
+        zip,
+        city,
+        addressLine1,
+        clientProfileId: shooting.clientId,
+      },
+    });
+  } catch (err) {
+    console.error('[stripe-webhook] could not save extra billing address', {
+      shootingId,
+      err,
+    });
+    await sendDiscordNotification({
+      type: 'warning',
+      content: [
+        '**Nem sikerült elmenteni a számlázási címet (extra fizetés)**\n',
+        `Shooting ID: ${shootingId}`,
+      ].join('\n'),
+    });
+  }
 }
 
 // 32^8 lehetséges kód mellett már egy ütközés is valószínűtlen; a 3. után

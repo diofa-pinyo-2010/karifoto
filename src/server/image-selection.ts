@@ -51,7 +51,12 @@ async function loadSelectableShooting(
       pricing: true,
       adjustments: true,
       ledgerEntries: true,
-      client: { select: { stripeCustomerId: true } },
+      client: {
+        select: {
+          stripeCustomerId: true,
+          billingAddresses: { take: 1, select: { id: true } },
+        },
+      },
     },
   });
 
@@ -173,6 +178,12 @@ export async function confirmImageSelection(
       const session = await stripe.checkout.sessions.create({
         customer: shooting.client.stripeCustomerId,
         mode: 'payment',
+        // Az ajándékba kapott fotózás címzettjének még nincs számlázási címe:
+        // az első extra fizetésnél bekérjük (a webhook menti el).
+        ...(shooting.client.billingAddresses.length === 0 && {
+          billing_address_collection: 'required',
+          name_collection: { individual: { enabled: true, optional: false } },
+        }),
         line_items: lines.map((line) => ({
           price_data: {
             currency: 'huf',
