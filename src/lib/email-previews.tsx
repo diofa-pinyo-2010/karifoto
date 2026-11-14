@@ -84,6 +84,18 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     ),
   },
   {
+    slug: 'client-booking-confirmation-gift',
+    label: 'Foglalás megerősítése (ajándék)',
+    subject: CLIENT_BOOKING_CONFIRMATION_SUBJECT,
+    element: () => (
+      <BookingConfirmationEmail
+        {...BookingConfirmationEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+        giftUrl="https://karifoto.hu/ajandek/KF7M-Q2XR"
+      />
+    ),
+  },
+  {
     slug: 'client-deposit-request',
     label: 'Előleg bekérő',
     subject: CLIENT_DEPOSIT_REQUEST_SUBJECT,

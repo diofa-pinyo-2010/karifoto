@@ -23,6 +23,7 @@ type BookingConfirmationEmailProps = {
   bookedTime: string;
   addToGoogleCalendarLink: string;
   clientPortalLoginLink: string;
+  giftUrl?: string;
 };
 
 export default function BookingConfirmationEmail({
@@ -31,6 +32,7 @@ export default function BookingConfirmationEmail({
   bookedTime,
   addToGoogleCalendarLink,
   clientPortalLoginLink,
+  giftUrl,
 }: BookingConfirmationEmailProps) {
   return (
     <Html lang="hu">
@@ -48,8 +50,9 @@ export default function BookingConfirmationEmail({
             />
             <Heading className="text-xl">Kedves {name}!</Heading>
             <Text>
-              Köszönjük, hogy a Karifotot választottátok! Az előleg megérkezett
-              hozzánk, a foglalásotokat pedig rögzítettük.
+              {giftUrl == null
+                ? 'Köszönjük, hogy a Karifotot választottátok! Az előleg megérkezett hozzánk, a foglalásotokat pedig rögzítettük.'
+                : 'Köszönjük, hogy a Karifotot választottátok! A fotózás teljes díja megérkezett hozzánk, a foglalást rögzítettük.'}
             </Text>
             <Text className="mt-8 text-center">
               📸 A fotózásotok időpontja:
@@ -61,6 +64,24 @@ export default function BookingConfirmationEmail({
             >
               Hozzáadás Google naptárhoz
             </Link>
+            {giftUrl != null && (
+              <Section className="mb-8 rounded-lg bg-[#fafafa] px-4 py-2">
+                <Text className="text-lg font-bold">🎁 Ajándék</Text>
+                <Text>
+                  Ezt a fotózást ajándékba vettétek. Az alábbi linket akkor
+                  adjátok át az ajándékozottnak, amikor csak szeretnétek: ő
+                  megadja a saját adatait, és innentől kezdve minden értesítést
+                  és információt ő kap meg. Ha inkább ti jöttök el a fotózásra,
+                  nincs más teendőtök.
+                </Text>
+                <Link
+                  href={giftUrl}
+                  className="block text-center break-all underline underline-offset-4"
+                >
+                  {giftUrl}
+                </Link>
+              </Section>
+            )}
             <Text>{arrivalSuggestions}</Text>
             <Text>
               Várunk titeket szeretettel a stúdiónkba,{' '}
