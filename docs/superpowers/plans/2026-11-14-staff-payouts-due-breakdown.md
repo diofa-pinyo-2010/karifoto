@@ -27,10 +27,12 @@
 ### Task 1: `dueByCategory` in `buildStaffAccount`
 
 **Files:**
+
 - Modify: `src/lib/staff-ledger.ts` (`StaffAccount` type, `buildStaffAccount`)
 - Test: `src/lib/staff-ledger.test.ts` (`describe('buildStaffAccount')`)
 
 **Interfaces:**
+
 - Produces: `StaffAccount.dueByCategory: Record<StaffPayoutCategory, number>` (keys `EXPENSE_PHOTOGRAPHER_FEE`, `EXPENSE_EDITOR_FEE`, `EXPENSE_STAFF_BONUS`).
 
 - [ ] **Step 1: Write failing tests** in `describe('buildStaffAccount')`:
@@ -54,9 +56,9 @@ it('breaks the due balance down by category', () => {
     EXPENSE_EDITOR_FEE: 2_000_00,
     EXPENSE_STAFF_BONUS: 0,
   });
-  expect(
-    Object.values(account.dueByCategory).reduce((a, b) => a + b, 0),
-  ).toBe(account.dueInCents);
+  expect(Object.values(account.dueByCategory).reduce((a, b) => a + b, 0)).toBe(
+    account.dueInCents,
+  );
 });
 
 it('shows a negative category when an item disappears after its payout', () => {
@@ -89,9 +91,11 @@ it('is all zero for an empty account', () => {
 ### Task 2: Render on the Esedékes card
 
 **Files:**
+
 - Modify: `src/app/admin/(protected)/staff-payouts/page.tsx` (Esedékes `Card`)
 
 **Interfaces:**
+
 - Consumes: `account.dueByCategory` from Task 1.
 
 - [ ] **Step 1: Implement.** Add a `CardContent className="text-xs text-muted-foreground"` to the Esedékes card with the same line as the payouts card, reading `account.dueByCategory`.
