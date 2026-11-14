@@ -88,6 +88,11 @@ type StaffAccount = {
   dueInCents: number;
   paidTotalInCents: number;
   paidByCategory: Record<StaffPayoutCategory, number>;
+  /**
+   * Earned minus paid out per category. Sums to `dueInCents`, so a category
+   * goes negative the same way the total does.
+   */
+  dueByCategory: Record<StaffPayoutCategory, number>;
   /** Newest first. */
   rows: AccountRow[];
 };
@@ -274,6 +279,18 @@ export function buildStaffAccount(
     }
   }
 
+  const dueByCategory: Record<StaffPayoutCategory, number> = {
+    EXPENSE_PHOTOGRAPHER_FEE: 0,
+    EXPENSE_EDITOR_FEE: 0,
+    EXPENSE_STAFF_BONUS: 0,
+  };
+  for (const item of items) {
+    dueByCategory[item.category] += item.amountInCents;
+  }
+  for (const category of Object.keys(dueByCategory) as StaffPayoutCategory[]) {
+    dueByCategory[category] -= paidByCategory[category];
+  }
+
   return {
     dueInCents: balance,
     paidTotalInCents: payouts.reduce(
@@ -281,6 +298,7 @@ export function buildStaffAccount(
       0,
     ),
     paidByCategory,
+    dueByCategory,
     rows: rows.toReversed(),
   };
 }

@@ -322,6 +322,47 @@ describe('buildStaffAccount', () => {
 
     expect(account.dueInCents).toBe(-PACKAGE_FEE);
   });
+
+  it('breaks the due balance down by category', () => {
+    const photo = makeItem('shooting-1', T1);
+    const editor = {
+      ...makeItem('shooting-1', T1, 2_000_00),
+      key: `${LedgerEntryCategory.EXPENSE_EDITOR_FEE}:shooting-1`,
+      kind: 'EDITOR_FEE',
+      category: LedgerEntryCategory.EXPENSE_EDITOR_FEE,
+    } satisfies DueItem;
+    const account = buildStaffAccount(
+      [photo, editor],
+      [makePayout(T2, [{ item: photo, amountInCents: 1_000_00 }])],
+    );
+
+    expect(account.dueByCategory).toEqual({
+      EXPENSE_PHOTOGRAPHER_FEE: PACKAGE_FEE - 1_000_00,
+      EXPENSE_EDITOR_FEE: 2_000_00,
+      EXPENSE_STAFF_BONUS: 0,
+    });
+    expect(
+      Object.values(account.dueByCategory).reduce((a, b) => a + b, 0),
+    ).toBe(account.dueInCents);
+  });
+
+  it('shows a negative category when an item disappears after its payout', () => {
+    const gone = makeItem('shooting-1', T1);
+    const account = buildStaffAccount(
+      [],
+      [makePayout(T2, [{ item: gone, amountInCents: PACKAGE_FEE }])],
+    );
+
+    expect(account.dueByCategory.EXPENSE_PHOTOGRAPHER_FEE).toBe(-PACKAGE_FEE);
+  });
+
+  it('is all zero for an empty account', () => {
+    expect(buildStaffAccount([], []).dueByCategory).toEqual({
+      EXPENSE_PHOTOGRAPHER_FEE: 0,
+      EXPENSE_EDITOR_FEE: 0,
+      EXPENSE_STAFF_BONUS: 0,
+    });
+  });
 });
 
 describe('allocatePayout', () => {
