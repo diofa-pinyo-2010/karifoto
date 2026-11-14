@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 
 import { PriceAdjustmentType } from '@/generated/prisma/enums';
+import { calculateBookingIntentTotal } from '@/lib/booking-intent-total';
 import { ADD_ONS, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
@@ -43,16 +44,7 @@ export function BookingReview({
   const headFee = extraHeads * EXTRA_FEE_PER_EXTRA_PERSON;
   const petFee = bookingIntent.numberOfPets * EXTRA_FEE_PER_PET;
 
-  const totalAdjustments = bookingIntent.adjustments.reduce((sum, adj) => {
-    return sum + adj.amountInCents * PRICE_ADJUSTMENT_TYPE_SIGN[adj.type];
-  }, 0);
-  const total =
-    pkg.basePriceInCents +
-    pkg.studioPriceInCents +
-    lightFee +
-    headFee +
-    petFee +
-    totalAdjustments;
+  const total = calculateBookingIntentTotal(bookingIntent);
 
   return (
     <form action={formAction}>
