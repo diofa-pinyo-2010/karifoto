@@ -119,6 +119,11 @@ export default async function StaffPayoutsPage({
               {formatMoney(account.dueInCents)}
             </CardTitle>
           </CardHeader>
+          <CardContent className="text-xs text-muted-foreground">
+            fotós {formatMoney(account.dueByCategory.EXPENSE_PHOTOGRAPHER_FEE)}{' '}
+            · szerk. {formatMoney(account.dueByCategory.EXPENSE_EDITOR_FEE)} ·
+            bónusz {formatMoney(account.dueByCategory.EXPENSE_STAFF_BONUS)}
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
