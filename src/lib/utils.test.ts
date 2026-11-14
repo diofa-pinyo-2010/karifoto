@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInitials, getShootingEndTime, getUrlHostname } from '@/lib/utils';
+import {
+  getInitials,
+  getShootingEndTime,
+  getUrlHostname,
+  isBalanceCollected,
+} from '@/lib/utils';
 
-import type { Package } from '@/generated/prisma/enums';
+import type { LedgerEntry } from '@/generated/prisma/client';
+import type { LedgerEntryCategory, Package } from '@/generated/prisma/enums';
 
 describe('getShootingEndTime', () => {
   const start = new Date('2026-12-10T10:00:00Z');
@@ -55,5 +61,30 @@ describe('getUrlHostname', () => {
 
   it('returns a non-URL unchanged', () => {
     expect(getUrlHostname('not a url')).toBe('not a url');
+  });
+});
+
+const entry = (category: LedgerEntryCategory) => ({ category }) as LedgerEntry;
+
+describe('isBalanceCollected', () => {
+  it('is true for a balance payment', () => {
+    expect(isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_BALANCE')])).toBe(
+      true,
+    );
+  });
+
+  it('is true for a full (gift) payment', () => {
+    expect(isBalanceCollected([entry('INCOME_CLIENT_PAYMENT_FULL')])).toBe(
+      true,
+    );
+  });
+
+  it('is false for deposit + extra only', () => {
+    expect(
+      isBalanceCollected([
+        entry('INCOME_CLIENT_PAYMENT_DEPOSIT'),
+        entry('INCOME_CLIENT_PAYMENT_EXTRA'),
+      ]),
+    ).toBe(false);
   });
 });

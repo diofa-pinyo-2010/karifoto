@@ -57,6 +57,8 @@ model ClientProfile {
   userId           String          @unique @db.Uuid
   stripeCustomerId String
   photoShootings   PhotoShooting[]
+  // Gift shootings this client paid for but that are redeemed by someone else.
+  purchasedShootings PhotoShooting[] @relation("PurchasedShootings")
 
   billingAddresses   BillingAddress[]
   sentEmails         SentEmail[]
@@ -87,6 +89,7 @@ model BookingIntent {
   package             Package
   decorSet            DecorSet?
   isLightPlaySelected Boolean             @default(false)
+  isGift              Boolean             @default(false)
   numberOfGuests      Int                 @default(0)
   numberOfPets        Int                 @default(0)
   clientNote          String?
@@ -147,6 +150,11 @@ model PhotoShooting {
   bookingIntent   BookingIntent? @relation(fields: [bookingIntentId], references: [id])
   bookingIntentId String?        @unique @db.Uuid
 
+  // Gift shootings: who paid, and the redemption code (8 chars, uppercase, no separator).
+  purchasedBy   ClientProfile? @relation("PurchasedShootings", fields: [purchasedById], references: [id])
+  purchasedById String?        @db.Uuid
+  giftCode      String?        @unique
+
   ledgerEntries LedgerEntry[]
   invoices      Invoice[]
   status        PhotoShootingStatus @default(PHOTOGRAPHER_SELECTION)
@@ -186,6 +194,7 @@ model PhotoShooting {
   @@index([clientId])
   @@index([photographerId])
   @@index([editorId])
+  @@index([purchasedById])
 }
 
 model PhotoShootingPricing {
@@ -548,6 +557,7 @@ enum PaymentMethod {
 enum LedgerEntryCategory {
   INCOME_CLIENT_PAYMENT_DEPOSIT
   INCOME_CLIENT_PAYMENT_BALANCE
+  INCOME_CLIENT_PAYMENT_FULL
   INCOME_CLIENT_PAYMENT_EXTRA
   INCOME_OTHER
 

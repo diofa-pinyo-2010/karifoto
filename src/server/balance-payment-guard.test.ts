@@ -60,6 +60,8 @@ function makeShooting(overrides: Partial<PhotoShooting> = {}): PhotoShooting {
     numberOfPets: 0,
     timeSlotId: 'slot-1',
     bookingIntentId: null,
+    purchasedById: null,
+    giftCode: null,
     status: 'WAITING_FOR_BALANCE_PAYMENT',
     photographerId: 'staff-1',
     editorId: null,
