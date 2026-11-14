@@ -14,6 +14,8 @@ const reminderKey = (shootingId: string, dayKey: string) =>
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
 const finalInvoiceKey = (shootingId: string) => `final_inv:${shootingId}`;
 const extraInvoiceKey = (paymentIntent: string) => `extra_inv:${paymentIntent}`;
+const fullAmountInvoiceKey = (shootingId: string) =>
+  `full_amount_inv:${shootingId}`;
 // Both times in the key: a later, different reschedule gets its own email.
 const rescheduleEmailKey = (shootingId: string, oldTime: Date, newTime: Date) =>
   `reschedule_email:${shootingId}:${oldTime.toISOString()}:${newTime.toISOString()}`;
@@ -294,5 +296,47 @@ export const releaseExtraInvoiceClaim = async (
     await redis.del(extraInvoiceKey(paymentIntent));
   } catch (error) {
     console.error(`Error releasing extra invoice: ${paymentIntent}`, error);
+  }
+};
+
+/**
+ * Az ajándékvásárlás teljes összegű számlája: ugyanaz a három lépés és
+ * ugyanazok a hozzáállások, mint az előlegszámlánál (a foglalás **dob**, a
+ * megerősítés és az elengedés lenyeli a hibát). Külön kulcs, hogy ne ütközzön
+ * az előleg- és végszámla jelölőivel.
+ */
+export const claimFullAmountInvoice = async (
+  shootingId: string,
+): Promise<boolean> => {
+  const inserted = await redis.set(
+    fullAmountInvoiceKey(shootingId),
+    `claimed_at:${new Date().toISOString()}`,
+    { nx: true, ex: INVOICE_CLAIM_TTL },
+  );
+  return inserted !== null; // null = someone already claimed it
+};
+
+export const confirmFullAmountInvoice = async (
+  shootingId: string,
+  invoiceNumber: string,
+): Promise<void> => {
+  try {
+    await redis.set(
+      fullAmountInvoiceKey(shootingId),
+      `issued:${invoiceNumber}`,
+      { ex: INVOICE_ISSUED_TTL },
+    );
+  } catch (error) {
+    console.error(`Error confirming full amount invoice: ${shootingId}`, error);
+  }
+};
+
+export const releaseFullAmountInvoiceClaim = async (
+  shootingId: string,
+): Promise<void> => {
+  try {
+    await redis.del(fullAmountInvoiceKey(shootingId));
+  } catch (error) {
+    console.error(`Error releasing full amount invoice: ${shootingId}`, error);
   }
 };
