@@ -51,7 +51,7 @@ export default function EditorSelectionCompletedEmail({
           <Container className="max-w-140 rounded-lg bg-white px-6 py-8">
             <Img
               src={`${baseUrl}/images/karifoto-logo-arany.png`}
-              alt="Karifotó"
+              alt="Karifoto"
               width="100"
               className="mx-auto mb-8"
             />

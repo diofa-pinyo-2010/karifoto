@@ -44,14 +44,15 @@ export default function GiftReceivedEmail({
           <Container className="max-w-140 rounded-lg bg-white px-6 py-8">
             <Img
               src={`${baseUrl}/images/karifoto-logo-arany.png`}
-              alt="Karifotó"
+              alt="Karifoto"
               width="100"
               className="mx-auto mb-8"
             />
             <Heading className="text-xl">Kedves {name}!</Heading>
             <Text>
               🎁 {buyerName} megajándékozott titeket egy karácsonyi fotózással a
-              Karifotóban! Az ajándékotokat rögzítettük, az időpont már foglalt.
+              Karifoto-ban! Az ajándékotokat rögzítettük, az időpont már
+              foglalt.
             </Text>
             <Text className="mt-8 text-center">
               📸 A fotózásotok időpontja:
