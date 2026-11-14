@@ -1,5 +1,3 @@
-// REMINDER_ON_THE_DAY
-
 import {
   Html,
   Head,
@@ -10,6 +8,8 @@ import {
   Tailwind,
   Img,
 } from 'react-email';
+
+import { arrivalSuggestions } from '@/lib/constants-jsx';
 
 export const CLIENT_REMINDER_ON_THE_DAY_SUBJECT =
   '🗓️ Ma találkozunk a stúdiónkban! ☺️';
@@ -50,11 +50,12 @@ export default function ReminderOnTheDayEmail({
               ⏰ Az időpont: A mai napon <strong>{hourAndMinuteString}</strong>{' '}
               órakor.
             </Text>
+            <Text>💡 {arrivalSuggestions}</Text>
             <Text>
               📍 Címünk: <strong>{studioAddress}</strong>
             </Text>
             <Text>
-              Amikor bejöttök az épületbe, ne az első, hanem a{' '}
+              🗺️ Amikor bejöttök az épületbe, ne az első, hanem a{' '}
               <strong>második lépcsőházba</strong> gyertek, hátra.
             </Text>
             <Text>Szeretettel várunk benneteket!</Text>

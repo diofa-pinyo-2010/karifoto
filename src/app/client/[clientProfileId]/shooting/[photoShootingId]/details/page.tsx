@@ -52,6 +52,7 @@ import {
   STUDIO_MAP_LINK,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
 } from '@/lib/constants';
+import { arrivalSuggestions } from '@/lib/constants-jsx';
 import { getPortalAccess } from '@/lib/dal';
 import {
   dateWithYearFormatter,
@@ -353,10 +354,7 @@ function ClientPortalShootingDetails({
         <span className="font-medium">
           {timeFormatter.format(shooting.timeSlot.startTime)}
         </span>
-        <span className="text-brand-muted">
-          {' '}
-          — érdemes 5–10 perccel korábban érkezni
-        </span>
+        <span className="text-brand-muted"> — {arrivalSuggestions}</span>
       </DetailRow>
 
       <DetailRow icon={MapPinIcon} label="Helyszín">

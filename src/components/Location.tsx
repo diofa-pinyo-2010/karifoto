@@ -27,8 +27,8 @@ export function Location() {
             <em>Budapest szívében.</em>
           </h2>
           <p className="brand-intro">
-            Saját stúdiónkban két karácsonyi díszlettel várunk benneteket. Nézd
-            meg a térképen, merre találsz minket.
+            Belvárosi stúdiónkban két karácsonyi díszlettel várunk benneteket.
+            Nézd meg a térképen, merre találsz minket.
           </p>
 
           <address className="mt-7 flex flex-col gap-2 text-xs not-italic">
