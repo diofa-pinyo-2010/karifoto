@@ -652,17 +652,71 @@ async function handleBooking(
       });
     } catch (err) {
       if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002'
+        !(err instanceof Prisma.PrismaClientKnownRequestError) ||
+        err.code !== 'P2002'
       ) {
+        throw err;
+      }
+
+      // Ugyanez a payment intent már be van könyvelve: ez egy retry.
+      if (isUniqueViolationOnField(err.meta, 'paymentIntent')) {
         console.warn(
           '[stripe-webhook] ledger entry already recorded (retry), skipping',
           { shootingId: shooting.id, paymentIntent },
         );
       } else {
-        throw err;
+        // Másik ütközés (pl. egy fotózásra csak egy rendező befizetés lehet):
+        // egy másik fizetés ugyanarra a foglalásra. A pénz megmozdult, de egy
+        // retry ezen nem segít — ember kell hozzá, ezért 200 és nincs több job.
+        console.error('[stripe-webhook] second payment for the same shooting', {
+          shootingId: shooting.id,
+          paymentIntent,
+          amountTotal: session.amount_total,
+          err,
+        });
+        await sendDiscordNotification({
+          type: 'error',
+          content: [
+            '**Második fizetés ugyanarra a fotózásra — kézi ellenőrzés kell**\n',
+            'A fizetés nincs rögzítve a könyvelésben, számla nem készül.',
+            `Fotózás ID: ${shooting.id}`,
+            `Fizetés (Stripe): ${stripePaymentIntentUrl(paymentIntent)}`,
+            `Összeg: ${formatMoney(session.amount_total ?? 0)}`,
+            `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${shooting.id})`,
+          ].join('\n'),
+        });
+        return;
       }
     }
+  }
+
+  // Ajándékot fizettek ki egy már létező, kód nélküli (és be sem váltott)
+  // fotózásra — pl. a foglalást előbb előleggel fizették. A vásárló nem kap
+  // ajándéklinket, ezt kézzel kell rendezni.
+  if (
+    isGift &&
+    existingShooting != null &&
+    existingShooting.giftCode == null &&
+    existingShooting.purchasedById == null
+  ) {
+    console.error(
+      '[stripe-webhook] gift paid for a shooting with no gift code',
+      {
+        shootingId: shooting.id,
+        paymentIntent,
+      },
+    );
+    await sendDiscordNotification({
+      type: 'error',
+      content: [
+        '**Ajándékot fizettek, de a fotózásnak nincs ajándékkódja — kézi ellenőrzés kell**\n',
+        'A vásárló nem kap ajándéklinket.',
+        `Fotózás ID: ${shooting.id}`,
+        `Fizetés (Stripe): ${hasPaymentIntent ? stripePaymentIntentUrl(paymentIntent) : '-'}`,
+        `Összeg: ${formatMoney(session.amount_total ?? 0)}`,
+        `[Fotózás megnyitása az adminon](${env.NEXT_PUBLIC_SITE_URL}/admin/photo-shootings/${shooting.id})`,
+      ].join('\n'),
+    });
   }
 
   // Ajándéknál a teljes összeget fizették: ha nem egyezik azzal, amit a
