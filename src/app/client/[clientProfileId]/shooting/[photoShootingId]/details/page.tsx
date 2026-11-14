@@ -228,9 +228,10 @@ export default async function ClientPortalShootingDetailsPage({
       >
         {PHOTO_SHOOTING_STATUS_CLIENT_LABEL[photoShooting.status]}
       </Badge>
-      {/* Csak a vásárló látja: beváltáskor a `giftCode` nullázódik, előtte
-          pedig a fotózás kliense maga a vásárló. A staff nézetben nem kell. */}
-      {photoShooting.giftCode != null && access.as === 'client' && (
+      {/* A kedvezményezett sosem látja: beváltáskor a `giftCode` nullázódik,
+          előtte pedig a fotózás kliense maga a vásárló. A staff is láthatja —
+          az admin oldalon amúgy is ott a link. */}
+      {photoShooting.giftCode != null && (
         <GiftLinkBanner
           url={new URL(
             giftRedeemPath(photoShooting.giftCode),
