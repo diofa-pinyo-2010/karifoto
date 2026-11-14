@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { ExternalLinkItem } from '@/components/ExternalLinkItem';
+import { GiftLinkBanner } from '@/components/GiftLinkBanner';
 import { ImageSelectionDialog } from '@/components/ImageSelectionDialog';
 import {
   Accordion,
@@ -34,6 +35,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { env } from '@/env';
 import { buildSub, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
@@ -59,7 +61,7 @@ import {
   // monthDayFormatter,
   timeFormatter,
 } from '@/lib/formatters';
-import { invoicesVisibleToClient } from '@/lib/gift';
+import { giftRedeemPath, invoicesVisibleToClient } from '@/lib/gift';
 // import { buildPicdropFilterUrl } from '@/lib/picdrop-filter';
 import { fetchPhotoShootingForClientPortal } from '@/lib/queries';
 import {
@@ -226,6 +228,16 @@ export default async function ClientPortalShootingDetailsPage({
       >
         {PHOTO_SHOOTING_STATUS_CLIENT_LABEL[photoShooting.status]}
       </Badge>
+      {/* Csak a vásárló látja: beváltáskor a `giftCode` nullázódik, előtte
+          pedig a fotózás kliense maga a vásárló. A staff nézetben nem kell. */}
+      {photoShooting.giftCode != null && access.as === 'client' && (
+        <GiftLinkBanner
+          url={new URL(
+            giftRedeemPath(photoShooting.giftCode),
+            env.NEXT_PUBLIC_SITE_URL,
+          ).toString()}
+        />
+      )}
       <Accordion
         key={photoShooting.status}
         multiple={false}

@@ -450,6 +450,7 @@ const photoShootingForClientPortalSelect = {
   select: {
     id: true,
     clientId: true,
+    giftCode: true,
     client: { select: { owner: { select: { name: true } } } },
     status: true,
     package: true,

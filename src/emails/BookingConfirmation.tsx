@@ -74,12 +74,11 @@ export default function BookingConfirmationEmail({
                   és információt ő kap meg. Ha inkább ti jöttök el a fotózásra,
                   nincs más teendőtök.
                 </Text>
-                <Link
-                  href={giftUrl}
-                  className="block text-center break-all underline underline-offset-4"
-                >
+                {/* Szándékosan nem link: a vásárló kimásolja és továbbadja,
+                    nem neki kell rákattintania. */}
+                <Text className="rounded-md bg-[#ececec] px-3 py-2 text-center font-mono text-sm break-all select-all">
                   {giftUrl}
-                </Link>
+                </Text>
               </Section>
             )}
             <Text>{arrivalSuggestions}</Text>
