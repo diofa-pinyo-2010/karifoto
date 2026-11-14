@@ -84,6 +84,8 @@ export async function redeemGift(
   // an existing user, or it would get a fresh account and a session.
   const existingUser = await prisma.user.findFirst({
     where: { email: { equals: email, mode: 'insensitive' } },
+    // Several case-variants may exist; always pick the same (oldest) one.
+    orderBy: { createdAt: 'asc' },
     include: { clientProfile: true },
   });
 
@@ -294,12 +296,20 @@ async function notifyAfterRedemption({
           retries: 3,
         })
       : null,
+    // The staff calendar event still names the buyer; the sync job rebuilds it
+    // from the shooting's current client.
+    qStashClient.publishJSON({
+      url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/calendar-event-sync`,
+      body: { shootingId: shooting.id },
+      retries: 3,
+    }),
   ]);
 
   const labels = [
     'ajándék megérkezett email (megajándékozott)',
     'ajándék beváltva email (vásárló)',
     'Resend kontakt job',
+    'naptáresemény frissítése job',
   ];
 
   for (const [index, result] of results.entries()) {
