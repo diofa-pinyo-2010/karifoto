@@ -382,6 +382,8 @@ const photoShootingDetailSelect = {
     numberOfGuests: true,
     numberOfPets: true,
     clientNote: true,
+    giftCode: true,
+    purchasedById: true,
     rawImagesUrl: true,
     finalImagesUrl: true,
     selectionRequestedAt: true,
