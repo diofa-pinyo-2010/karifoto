@@ -372,18 +372,66 @@ export async function fetchTimeSlotsAdmin() {
   });
 }
 
-const photoShootingDetailInclude = {
-  include: {
-    client: { include: { owner: true } },
-    timeSlot: true,
-    photographer: { include: { owner: true } },
-    editor: { include: { owner: true } },
+const photoShootingDetailSelect = {
+  select: {
+    id: true,
+    status: true,
+    package: true,
+    decorSet: true,
+    isLightPlaySelected: true,
+    numberOfGuests: true,
+    numberOfPets: true,
+    clientNote: true,
+    rawImagesUrl: true,
+    finalImagesUrl: true,
+    selectionRequestedAt: true,
+    selectionCompletedAt: true,
+    totalEditedImages: true,
+    totalRetouchedImages: true,
+    beautyRetouchNotes: true,
+    isExpressPostProduction: true,
+    client: {
+      select: {
+        id: true,
+        owner: { select: { name: true, email: true, phoneNumber: true } },
+      },
+    },
+    timeSlot: { select: { startTime: true } },
+    photographer: {
+      select: {
+        id: true,
+        nickname: true,
+        owner: { select: { name: true, phoneNumber: true } },
+      },
+    },
+    editor: {
+      select: {
+        id: true,
+        nickname: true,
+        owner: { select: { name: true, phoneNumber: true } },
+      },
+    },
     ledgerEntries: {
-      include: { invoice: true },
+      select: {
+        id: true,
+        category: true,
+        method: true,
+        amountInCents: true,
+        invoice: { select: { type: true, publicUrl: true } },
+      },
       orderBy: { createdAt: 'asc' },
     },
     pricing: true,
-    adjustments: { include: { createdBy: { select: { nickname: true } } } },
+    adjustments: {
+      select: {
+        id: true,
+        type: true,
+        amountInCents: true,
+        publicLabel: true,
+        internalNote: true,
+        createdBy: { select: { nickname: true } },
+      },
+    },
     sentEmails: {
       select: {
         id: true,
@@ -414,7 +462,7 @@ const photoShootingDetailInclude = {
 } satisfies Prisma.PhotoShootingDefaultArgs;
 
 type PhotoShootingDetail = Prisma.PhotoShootingGetPayload<
-  typeof photoShootingDetailInclude
+  typeof photoShootingDetailSelect
 >;
 
 export async function getPhotoShooting(
@@ -426,7 +474,7 @@ export async function getPhotoShooting(
 
   return prisma.photoShooting.findUnique({
     where: { id },
-    ...photoShootingDetailInclude,
+    ...photoShootingDetailSelect,
   });
 }
 
