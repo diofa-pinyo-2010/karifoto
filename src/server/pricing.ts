@@ -45,11 +45,24 @@ export type PriceBreakdown = {
   totalToBePaid: number;
 };
 
+// Only the fields read below, so a caller can pass a `select`-ed row.
 type PricingArgs = {
   pricing: PhotoShootingPricing;
-  shooting: PhotoShooting;
-  adjustments: PriceAdjustment[];
-  ledgerEntries: LedgerEntry[];
+  shooting: Pick<
+    PhotoShooting,
+    | 'package'
+    | 'isLightPlaySelected'
+    | 'numberOfGuests'
+    | 'numberOfPets'
+    | 'totalEditedImages'
+    | 'totalRetouchedImages'
+    | 'isExpressPostProduction'
+  >;
+  adjustments: Pick<
+    PriceAdjustment,
+    'id' | 'type' | 'amountInCents' | 'publicLabel'
+  >[];
+  ledgerEntries: Pick<LedgerEntry, 'category' | 'amountInCents'>[];
 };
 
 /**
