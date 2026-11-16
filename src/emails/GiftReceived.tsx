@@ -15,7 +15,7 @@ import {
 import { arrivalSuggestions } from '@/lib/constants-jsx';
 
 export const CLIENT_GIFT_RECEIVED_SUBJECT =
-  '🎁 Ajándékba kaptatok egy fotózást';
+  '🎁 Ajándékba kaptatok egy karácsonyi fotózást';
 
 type GiftReceivedEmailProps = {
   baseUrl: string;
