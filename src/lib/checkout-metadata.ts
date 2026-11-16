@@ -25,6 +25,16 @@ const bookingDepositMetadata = z.object({
 });
 
 /**
+ * A booking paid in full up front as a gift. Same shape as the deposit: the
+ * webhook runs the same booking handler, the kind only decides the ledger
+ * category, the gift code and the invoice job.
+ */
+const bookingGiftMetadata = z.object({
+  kind: z.literal('booking_gift'),
+  booking_intent_id: z.uuid(),
+});
+
+/**
  * The counts are frozen here, at session creation: the client pays for what
  * the dialog showed, and the PicDrop flags may change before the webhook
  * fires. Stripe hands metadata back as strings, hence `coerce`.
@@ -48,6 +58,7 @@ const imageSelectionExtraMetadata = z.object({
 // until it handles the new case.
 export const checkoutMetadataSchema = z.discriminatedUnion('kind', [
   bookingDepositMetadata,
+  bookingGiftMetadata,
   imageSelectionExtraMetadata,
 ]);
 
@@ -70,6 +81,7 @@ export const CHECKOUT_KIND_LEDGER_CATEGORY: Record<
   LedgerEntryCategory
 > = {
   booking_deposit: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT,
+  booking_gift: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_FULL,
   image_selection_extra: LedgerEntryCategory.INCOME_CLIENT_PAYMENT_EXTRA,
 };
 

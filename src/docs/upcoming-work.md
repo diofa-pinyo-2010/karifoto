@@ -20,7 +20,7 @@ is a January problem.
 - [5. `PriceAdjustment` needs a surcharge](#5-priceadjustment-needs-a-surcharge)
 - [6. The next checkout kind](#6-the-next-checkout-kind)
 - [7. Rounding, if VAT ever stops being AAM](#7-rounding-if-vat-ever-stops-being-aam)
-- [8. Paying the full amount at booking (not building)](#8-paying-the-full-amount-at-booking)
+- [8. Paying the full amount at booking](#8-paying-the-full-amount-at-booking)
 - [Open questions](#open-questions)
 
 ## Priority order
@@ -477,22 +477,33 @@ the arithmetic regardless.
 
 ## 8. Paying the full amount at booking
 
-**Decided 2026-10-01: not building this.** Nobody has asked for it, so it is
-absent from the priority table and nothing below is scheduled. Kept because the
-analysis has two durable outputs: it surfaced a bug that is live today (see
+**Built 2026-11-14 as the gift purchase** — see the
+[design spec](../../docs/superpowers/specs/2026-11-14-gift-shootings-design.md).
+The 2026-10-01 decision not to build it was overtaken by the gift-shooting
+feature, which needs exactly this: pay the full amount at booking. The analysis
+below is kept because it explains why the obvious implementation is a trap, and
+it surfaced a bug that is live today (see
 [Known hole](#known-hole-the-balance-gate-asks-a-proxy-question)), which stands
-on its own and needs its own decision; and it records why the obvious
-implementation is a trap, so the next person to propose two ledger rows for one
-payment can read the answer instead of re-deriving it.
+on its own and needs its own decision.
 
-Nothing here is a prerequisite for anything that _is_ scheduled. If it is ever
-picked up, start with the document question at the end — it decides whether this
-is a small job or a large one.
+The könyvelő answered the open question: one NORMAL számla is fine, with issue
+date and completion date both equal to the purchase date. So `completionDate`
+was **not** re-added to `GenerateInvoiceInput`, and there is no előlegszámla or
+végszámla for a gift purchase. The ledger model shipped as described below:
+`INCOME_CLIENT_PAYMENT_FULL`, `SETTLES_BALANCE`, and the widened partial unique
+index.
 
 Today [`createCheckoutSession`](../server/stripe.ts) charges `DEPOSIT_AMOUNT`
 under the line name `'Fotózás előleg'`. "Paying in full" means charging the price
 known at booking instead. Note it is only full _as of booking_: edited and
 retouched counts are still 0 then, so the extras path survives either way.
+
+**Known gap (accepted, later):** a gift shooting that later grows — a
+surcharge, an extra guest on the day — cannot be collected through the balance
+flow, because the `INCOME_CLIENT_PAYMENT_FULL` row already makes
+`isBalanceCollected` true, and `generate-final-invoice` expects an advance
+invoice that does not exist. Staff handle it manually: take the money outside
+the system (or waive it as a `DEDUCTION` adjustment) and invoice it by hand.
 
 ### The partial unique index is not the obstacle
 
@@ -606,10 +617,6 @@ questions below; one conversation settles all three.
   all?** Invoices are issued at `NamedVATRate.AAM`, so there is no VAT to time,
   which makes the question about document semantics rather than tax points — and
   may change the answer.
-- **May a single normal számla cover a payment taken before teljesítés?** This
-  gates [section 8](#8-paying-the-full-amount-at-booking): if the answer is no,
-  paying in full needs a 100% előlegszámla plus a zero-payable végszámla, which
-  is materially more work. Same conversation as the two questions above.
 - **Does SumUp get a real API integration, or does staff record payments by
   hand?** The design above assumes the former. It is much more work, and the
   answer changes everything in section 3.

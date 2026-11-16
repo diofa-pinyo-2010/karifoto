@@ -3,11 +3,11 @@ import { addDays, format, isWeekend, parseISO } from 'date-fns';
 import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { twMerge } from 'tailwind-merge';
 
-import { LedgerEntryCategory } from '@/generated/prisma/enums';
 import {
   isLightPlayChargeable,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
+  SETTLES_BALANCE,
   STUDIO_ADDRESS,
   STUDIO_TZ,
 } from '@/lib/constants';
@@ -165,10 +165,7 @@ export function dayBounds(datetime: Date) {
 }
 
 export function isBalanceCollected(ledgerEntries: LedgerEntry[]) {
-  return ledgerEntries.some(
-    (entry) =>
-      entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_BALANCE,
-  );
+  return ledgerEntries.some((entry) => SETTLES_BALANCE[entry.category]);
 }
 
 export function isWeekday(date: Date) {

@@ -23,6 +23,7 @@ import {
 } from '@/lib/constants';
 import { getPortalAccess, verifySession } from '@/lib/dal';
 import { dbDateToDayKey, earlyBirdDeadlineFromDayKey } from '@/lib/early-bird';
+import { isGiftTransferable } from '@/lib/gift';
 import { PIPELINE_STATUSES } from '@/lib/pipeline';
 import { prisma } from '@/lib/prisma';
 import {
@@ -35,6 +36,7 @@ import { buildStaffAccount } from '@/lib/staff-ledger';
 import { OPEN_STATUSES } from '@/lib/sumup/reconcile';
 import { dayBounds } from '@/lib/utils';
 import { loadStaffLedger } from '@/server/load-staff-ledger';
+import { calculatePricing } from '@/server/pricing';
 
 import type { MentionCandidate } from '@/lib/mentions';
 
@@ -380,6 +382,8 @@ const photoShootingDetailSelect = {
     numberOfGuests: true,
     numberOfPets: true,
     clientNote: true,
+    giftCode: true,
+    purchasedById: true,
     rawImagesUrl: true,
     finalImagesUrl: true,
     selectionRequestedAt: true,
@@ -496,6 +500,7 @@ const photoShootingForClientPortalSelect = {
   select: {
     id: true,
     clientId: true,
+    giftCode: true,
     client: { select: { owner: { select: { name: true } } } },
     status: true,
     package: true,
@@ -512,6 +517,9 @@ const photoShootingForClientPortalSelect = {
     declaredRetouchedImages: true,
     isExpressPostProduction: true,
     photographer: { select: { nickname: true } },
+    // Beváltott ajándéknál az ügyfél csak a saját számláit látja
+    // (`invoicesVisibleToClient`), ehhez kell a vásárló és a könyvelési sor.
+    purchasedById: true,
     // Az Invoice-nak nincs createdAt-je, a számlaszám viszont növekvő.
     invoices: {
       select: {
@@ -520,6 +528,7 @@ const photoShootingForClientPortalSelect = {
         publicUrl: true,
         amountInCents: true,
         status: true,
+        ledgerEntry: { select: { category: true } },
       },
       orderBy: { invoiceNumber: 'asc' },
     },
@@ -631,6 +640,7 @@ const bookingIntentpublicSelect = {
     status: true,
     package: true,
     isLightPlaySelected: true,
+    isGift: true,
     numberOfGuests: true,
     numberOfPets: true,
     requestedStartTime: true,
@@ -671,6 +681,48 @@ export async function getCreatedShooting(bookingIntentId: string) {
     where: { bookingIntentId },
     include: { pricing: true, adjustments: true, ledgerEntries: true },
   });
+}
+
+const giftShootingInclude = {
+  include: {
+    timeSlot: { select: { startTime: true } },
+    client: { select: { owner: { select: { email: true, name: true } } } },
+    pricing: true,
+    adjustments: true,
+    ledgerEntries: true,
+  },
+} satisfies Prisma.PhotoShootingDefaultArgs;
+
+/**
+ * Nyilvános, munkamenet nélkül: az `/ajandek/[giftCode]` oldal és a
+ * `redeemGift` action közös lekérdezése, hogy a kettő ugyanazt tartsa
+ * beválthatónak. `code` már normalizált (`normalizeGiftCode`).
+ *
+ * Az ismeretlen és a nem (már nem) beváltható ajándék egyaránt `null`: a hívó
+ * mindkettőre ugyanazt az üzenetet mutatja, így nem derül ki, létezik-e a kód.
+ */
+export async function getGiftShootingByCode(code: string) {
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { giftCode: code },
+    ...giftShootingInclude,
+  });
+
+  if (shooting?.pricing == null) return null;
+
+  const { totalToBePaid } = calculatePricing({
+    pricing: shooting.pricing,
+    shooting,
+    adjustments: shooting.adjustments,
+    ledgerEntries: shooting.ledgerEntries,
+  });
+
+  const transferable = isGiftTransferable({
+    status: shooting.status,
+    totalToBePaidInCents: totalToBePaid,
+    ledgerEntries: shooting.ledgerEntries,
+  });
+
+  return transferable ? shooting : null;
 }
 
 const converted = await prisma.bookingIntent.findMany({

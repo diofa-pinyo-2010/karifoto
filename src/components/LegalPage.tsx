@@ -197,7 +197,7 @@ function Adatkezeles() {
         Az éles tárhely, levelezés, fizetés, számlázás és képgaléria
         szolgáltatóinak neve, szerepe, adatkezelési helye és esetleges EGT-n
         kívüli adattovábbítási garanciái még megadandók. Az Oktogon Gmail- és
-        Rackhost-használata ezt nem igazolja a Karifotónál.
+        Rackhost-használata ezt nem igazolja a Karifotonál.
       </p> */}
       <h2>5. A jelenlegi oldal technikai működése</h2>
       <p>

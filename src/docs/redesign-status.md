@@ -5,7 +5,7 @@ agency) is a **design spec**, not code to merge. The landing page has been
 restyled in place against it. This file records what is finished, what is not,
 and what is blocked.
 
-Last updated: 2026-09-29.
+Last updated: 2026-11-14.
 
 ---
 
@@ -36,15 +36,22 @@ visitor now crosses a visual seam the moment they click a time slot.
 This is the revenue path, and it is what a visitor sees immediately after the
 redesigned landing page.
 
-| File                                           | Lines | Old-palette hits |
-| ---------------------------------------------- | ----: | ---------------: |
-| `src/components/BookingFormNew.tsx`            |   740 |               40 |
-| `src/components/BookingSummary.tsx`            |   389 |               32 |
-| `src/components/BookingReview.tsx`             |   286 |               26 |
-| `src/app/success/[bookingIntentId]/page.tsx`   |     — |               15 |
-| `src/app/foglalas-veglegesitese/[id]/page.tsx` |     — |               12 |
-| `src/app/(foglalas)/layout.tsx`                |     — |                6 |
-| `src/components/BookingUnavailable.tsx`        |    25 |                4 |
+| File                                                                       | Lines | Old-palette hits |
+| -------------------------------------------------------------------------- | ----: | ---------------: |
+| `src/components/BookingFormNew.tsx`                                        |   740 |               40 |
+| `src/components/BookingSummary.tsx`                                        |   389 |               32 |
+| `src/components/BookingReview.tsx`                                         |   286 |               26 |
+| `src/app/success/[bookingIntentId]/page.tsx`                               |     — |               15 |
+| `src/app/foglalas-veglegesitese/[id]/page.tsx`                             |     — |               12 |
+| `src/app/(foglalas)/layout.tsx`                                            |     — |                6 |
+| `src/components/BookingUnavailable.tsx`                                    |    25 |                4 |
+| `src/app/ajandek/[giftCode]/page.tsx`, `src/components/GiftRedeemForm.tsx` |     — |                — |
+
+`/ajandek/[giftCode]` (gift redemption, added 2026-11-14) belongs here too. It
+reuses the booking-flow layout and the summary page's styling, and like
+`BookingReview.tsx` it still uses old-palette tokens: `text-ink`, `border-ink/10`,
+`text-cream-muted`, `border-cream/15`, `bg-terracotta`, `bg-terracotta-hover`,
+`text-terracotta`, `bg-forest/78`. Migrate it together with the summary page.
 
 **The skeleton does not cover any of these.** It only ever mocked the landing
 page, so there is no design spec for the booking form, the summary, the review

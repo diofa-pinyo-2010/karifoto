@@ -257,6 +257,7 @@ export function BookingFormNew({
       name: values.name.trim(),
       email: values.email.trim(),
       optOutFromMarketingEmails: values.optOutFromMarketingEmails,
+      isGift: false,
     });
 
     if ('error' in result) {

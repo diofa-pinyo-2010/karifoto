@@ -18,11 +18,23 @@ const DEPOSIT_METADATA = {
   booking_intent_id: BOOKING_INTENT_ID,
 } satisfies CheckoutMetadata;
 
+const GIFT_METADATA = {
+  kind: 'booking_gift',
+  booking_intent_id: BOOKING_INTENT_ID,
+} satisfies CheckoutMetadata;
+
 describe('parseCheckoutMetadata', () => {
   it('accepts the metadata a deposit checkout session writes', () => {
     expect(parseCheckoutMetadata(DEPOSIT_METADATA)).toEqual({
       ok: true,
       metadata: DEPOSIT_METADATA,
+    });
+  });
+
+  it('accepts the metadata a gift checkout session writes', () => {
+    expect(parseCheckoutMetadata(GIFT_METADATA)).toEqual({
+      ok: true,
+      metadata: GIFT_METADATA,
     });
   });
 
@@ -132,6 +144,12 @@ describe('CHECKOUT_KIND_LEDGER_CATEGORY', () => {
   it('maps a booking deposit to the deposit income category', () => {
     expect(CHECKOUT_KIND_LEDGER_CATEGORY.booking_deposit).toBe(
       LedgerEntryCategory.INCOME_CLIENT_PAYMENT_DEPOSIT,
+    );
+  });
+
+  it('maps a gift purchase to the full-payment income category', () => {
+    expect(CHECKOUT_KIND_LEDGER_CATEGORY.booking_gift).toBe(
+      LedgerEntryCategory.INCOME_CLIENT_PAYMENT_FULL,
     );
   });
 

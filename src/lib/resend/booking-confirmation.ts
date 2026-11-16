@@ -6,6 +6,7 @@ type SendBookingConfirmationEmailParams = {
   bookedTimeString: string;
   addToGoogleCalendarLink: string;
   clientPortalLoginLink: string;
+  giftUrl?: string;
   shootingId: string;
   clientId: string;
 };
@@ -16,6 +17,7 @@ export function sendBookingConfirmationEmail({
   bookedTimeString,
   addToGoogleCalendarLink,
   clientPortalLoginLink,
+  giftUrl,
   shootingId,
   clientId,
 }: SendBookingConfirmationEmailParams) {
@@ -29,6 +31,7 @@ export function sendBookingConfirmationEmail({
       bookedTime: bookedTimeString,
       addToGoogleCalendarLink,
       clientPortalLoginLink,
+      giftUrl,
     },
     tags: [{ name: 'shootingId', value: shootingId }],
   });

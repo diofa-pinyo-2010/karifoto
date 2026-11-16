@@ -16,6 +16,12 @@ import DepositRequestEmail, {
 import EditorSelectionCompletedEmail, {
   EDITOR_SELECTION_COMPLETED_SUBJECT,
 } from '@/emails/EditorSelectionCompleted';
+import GiftReceivedEmail, {
+  CLIENT_GIFT_RECEIVED_SUBJECT,
+} from '@/emails/GiftReceived';
+import GiftRedeemedEmail, {
+  CLIENT_GIFT_REDEEMED_SUBJECT,
+} from '@/emails/GiftRedeemed';
 import ImageSelectionEmail, {
   CLIENT_IMAGE_SELECTION_SUBJECT,
 } from '@/emails/ImageSelection';
@@ -79,6 +85,40 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <BookingConfirmationEmail
         {...BookingConfirmationEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-booking-confirmation-gift',
+    label: 'Foglalás megerősítése (ajándék)',
+    subject: CLIENT_BOOKING_CONFIRMATION_SUBJECT,
+    element: () => (
+      <BookingConfirmationEmail
+        {...BookingConfirmationEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+        giftUrl="https://karifoto.hu/ajandek/KF7M-Q2XR"
+      />
+    ),
+  },
+  {
+    slug: 'client-gift-received',
+    label: 'Ajándék érkezett (ajándékozottnak)',
+    subject: CLIENT_GIFT_RECEIVED_SUBJECT,
+    element: () => (
+      <GiftReceivedEmail
+        {...GiftReceivedEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-gift-redeemed',
+    label: 'Ajándék beváltva (ajándékozónak)',
+    subject: CLIENT_GIFT_REDEEMED_SUBJECT,
+    element: () => (
+      <GiftRedeemedEmail
+        {...GiftRedeemedEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),

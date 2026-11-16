@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   formatLoginCode,
+  generateGiftCode,
   generateLoginCode,
   hashToken,
   normalizeLoginCode,
@@ -63,4 +64,12 @@ describe('normalizeLoginCode', () => {
       expect(normalizeLoginCode(input)).toBeNull();
     },
   );
+});
+
+describe('generateGiftCode', () => {
+  it('generates 8 chars from the Crockford alphabet', () => {
+    for (let i = 0; i < 200; i++) {
+      expect(generateGiftCode()).toMatch(/^[0-9A-HJKMNP-TV-Z]{8}$/);
+    }
+  });
 });

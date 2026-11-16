@@ -5,6 +5,7 @@ import { env } from '@/env';
 import { createClientPortalToken } from '@/lib/auth';
 import { clientPortalLoginUrl } from '@/lib/client-portal';
 import { formatLongDate } from '@/lib/formatters';
+import { giftRedeemPath } from '@/lib/gift';
 import { markEmailSent, wasEmailSent } from '@/lib/idempotency';
 import { prisma } from '@/lib/prisma';
 import { sendBookingConfirmationEmail } from '@/lib/resend/booking-confirmation';
@@ -84,6 +85,13 @@ export const POST = verifySignatureAppRouter(
           shootingId: photoShooting.id,
           rawToken: portalToken,
         }),
+        giftUrl:
+          photoShooting.giftCode == null
+            ? undefined
+            : new URL(
+                giftRedeemPath(photoShooting.giftCode),
+                env.NEXT_PUBLIC_SITE_URL,
+              ).toString(),
         shootingId: photoShooting.id,
         clientId: photoShooting.clientId,
       });

@@ -4,7 +4,10 @@ import Link from 'next/link';
 
 import { BookingCompletedTracker } from '@/components/BookingCompletedTracker';
 import { PendingBookingPoller } from '@/components/PendingBookingPoller';
-import { BookingIntentStatus } from '@/generated/prisma/enums';
+import {
+  BookingIntentStatus,
+  LedgerEntryCategory,
+} from '@/generated/prisma/enums';
 import { buildBookingCompletedEvent } from '@/lib/booking-tracking';
 import { PACKAGES } from '@/lib/catalog';
 import { formatLongDate } from '@/lib/formatters';
@@ -46,6 +49,18 @@ export default async function SuccessPage(
           }).totalToBeInvoiced,
         })
       : null;
+
+  // Az ajándékot a létrejött fotózásból döntjük el, nem a `bookingIntent.isGift`
+  // jelzőből: egy régi Stripe session mást fizethetett ki, mint amit a
+  // foglalás most mutat. A kód beváltáskor törlődik, a teljes összegű
+  // befizetés (csak ajándékvásárlásból jön) viszont megmarad.
+  const isGiftPurchase =
+    completedShooting != null &&
+    (completedShooting.giftCode != null ||
+      completedShooting.ledgerEntries.some(
+        (entry) =>
+          entry.category === LedgerEntryCategory.INCOME_CLIENT_PAYMENT_FULL,
+      ));
 
   return (
     <div className="min-h-screen bg-brand-cream font-brand-sans text-brand-ink">
@@ -117,8 +132,9 @@ export default async function SuccessPage(
 
             {isConverted && (
               <p className="mx-auto mt-4 max-w-125 text-[13px] leading-[1.6] text-pretty text-brand-muted">
-                A végleges összeget a fotózás napján, a stúdióban fizetitek — az
-                előleg ebből levonásra kerül.
+                {isGiftPurchase
+                  ? 'A fotózás teljes díját kifizetted, további teendőd nincs. Az ajándék linkjét e-mailben elküldtük — azzal tudod átadni, amikor szeretnéd.'
+                  : 'A végleges összeget a fotózás napján, a stúdióban fizetitek — az előleg ebből levonásra kerül.'}
               </p>
             )}
           </>

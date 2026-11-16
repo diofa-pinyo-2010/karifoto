@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 
+import { GIFT_CODE_ALPHABET } from '@/lib/gift';
 import { stripLoginCodeSeparators } from '@/lib/login-code';
 
 const LOGIN_CODE_LENGTH = 8;
@@ -35,4 +36,12 @@ export function normalizeLoginCode(input: unknown): string | null {
 
   const digits = stripLoginCodeSeparators(input);
   return new RegExp(`^\\d{${LOGIN_CODE_LENGTH}}$`).test(digits) ? digits : null;
+}
+
+// 8 Crockford base32 chars. 256 % 32 === 0, so `byte % 32` is unbiased.
+export function generateGiftCode() {
+  return Array.from(
+    randomBytes(8),
+    (byte) => GIFT_CODE_ALPHABET[byte % 32],
+  ).join('');
 }

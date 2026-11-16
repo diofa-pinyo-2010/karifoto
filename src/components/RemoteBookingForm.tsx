@@ -46,6 +46,7 @@ export function RemoteBookingForm() {
       numberOfPets: values.numberOfPets,
       clientNote: values.customerNote.trim() || null,
       optOutFromMarketingEmails: values.optOutFromMarketingEmails,
+      isGift: values.isGift,
     });
 
     if (result.error) {
@@ -203,6 +204,23 @@ export function RemoteBookingForm() {
                   id="remote-booking-light-play"
                   checked={lightLocked || field.value}
                   disabled={lightLocked}
+                  onCheckedChange={field.onChange}
+                />
+              </Field>
+            </FieldLabel>
+          )}
+        />
+
+        <Controller
+          name="isGift"
+          control={form.control}
+          render={({ field }) => (
+            <FieldLabel htmlFor="remote-booking-gift">
+              <Field orientation="horizontal">
+                Ajándék
+                <Switch
+                  id="remote-booking-gift"
+                  checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </Field>

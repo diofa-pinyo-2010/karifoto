@@ -57,6 +57,9 @@ export default async function RemoteBookingSummaryPage({
           label="Csomag"
           value={PACKAGE_LABEL[bookingIntent.package]}
         />
+        {bookingIntent.isGift && (
+          <SummaryRow label="Ajándék" value="🎁 Igen, teljes összeg" />
+        )}
         <SummaryRow
           label="Díszlet"
           value={
@@ -124,10 +127,12 @@ export default async function RemoteBookingSummaryPage({
       {isBookingIntentConverted && (
         <Alert>
           <CheckCircle2Icon />
-          <AlertTitle>Előleg befizetve!</AlertTitle>
-          <AlertDescription>
-            Ezt az egyenlegbekérőt már kifizették.
-          </AlertDescription>
+          <AlertTitle>
+            {bookingIntent.isGift
+              ? 'Teljes összeg befizetve!'
+              : 'Előleg befizetve!'}
+          </AlertTitle>
+          <AlertDescription>Ezt a díjbekérőt már kifizették.</AlertDescription>
         </Alert>
       )}
 

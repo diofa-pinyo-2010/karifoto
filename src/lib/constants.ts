@@ -97,6 +97,7 @@ export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PETS = 3;
 export const COMMENT_MAX_LENGTH = 2000;
 export const DEPOSIT_AMOUNT = 10000_00;
+export const GIFT_LINE_ITEM_NAME = 'Fotózás';
 export const EXTRA_EDIT_PER_IMAGE = 1000_00;
 export const EXTRA_BEAUTY_RETOUCH_PER_IMAGE = 3000_00;
 export const EXPRESS_POST_PRODUCTION_FEE = 10000_00;
@@ -124,6 +125,7 @@ export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 
 export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   INCOME_CLIENT_PAYMENT_DEPOSIT: 1,
   INCOME_CLIENT_PAYMENT_BALANCE: 1,
+  INCOME_CLIENT_PAYMENT_FULL: 1,
   INCOME_CLIENT_PAYMENT_EXTRA: 1,
   INCOME_OTHER: 1,
   EXPENSE_PHOTOGRAPHER_FEE: -1,
@@ -133,6 +135,23 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_RENT: -1,
   EXPENSE_SOFTWARE: -1,
   EXPENSE_OTHER: -1,
+};
+
+// Which income categories close a shooting's remaining balance. At most one such
+// row may exist per shooting (partial unique index in the DB, same list).
+export const SETTLES_BALANCE: Record<LedgerEntryCategory, boolean> = {
+  INCOME_CLIENT_PAYMENT_DEPOSIT: false,
+  INCOME_CLIENT_PAYMENT_BALANCE: true,
+  INCOME_CLIENT_PAYMENT_FULL: true,
+  INCOME_CLIENT_PAYMENT_EXTRA: false,
+  INCOME_OTHER: false,
+  EXPENSE_PHOTOGRAPHER_FEE: false,
+  EXPENSE_EDITOR_FEE: false,
+  EXPENSE_STAFF_BONUS: false,
+  EXPENSE_EQUIPMENT: false,
+  EXPENSE_RENT: false,
+  EXPENSE_SOFTWARE: false,
+  EXPENSE_OTHER: false,
 };
 
 export const PRICE_ADJUSTMENT_TYPE_SIGN: Record<PriceAdjustmentType, 1 | -1> = {
@@ -440,6 +459,7 @@ export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
   {
     INCOME_CLIENT_PAYMENT_DEPOSIT: 'Előleg',
     INCOME_CLIENT_PAYMENT_BALANCE: 'Fennmaradó befizetés',
+    INCOME_CLIENT_PAYMENT_FULL: 'Teljes összeg (ajándék)',
     INCOME_CLIENT_PAYMENT_EXTRA: 'Extra díj',
     INCOME_OTHER: 'Egyéb bevétel',
     EXPENSE_PHOTOGRAPHER_FEE: 'Fotós díja',

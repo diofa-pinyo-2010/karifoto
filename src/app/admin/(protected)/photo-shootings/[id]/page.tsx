@@ -16,6 +16,7 @@ import { AdjustmentNoteTooltip } from '@/components/AdjustmentNoteTooltip';
 // import { DeletePriceAdjustmentButton } from '@/components/DeletePriceAdjustmentButton';
 import { CopyButton } from '@/components/admin/CopyButton';
 import { DeadlineBadge } from '@/components/admin/DeadlineBadge';
+import { GiftLinkRow } from '@/components/admin/GiftLinkRow';
 import { BalancePayment } from '@/components/BalancePayment';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
@@ -37,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { env } from '@/env';
 import { PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   APP_URLS,
@@ -59,6 +61,7 @@ import {
   timeFormatter,
   timeInputFormatter,
 } from '@/lib/formatters';
+import { giftRedeemPath } from '@/lib/gift';
 import { fetchMentionableStaff, getPhotoShooting } from '@/lib/queries';
 import { resendEmailUrl } from '@/lib/resend';
 import { capitalize, cn, formatMoney, getUrlHostname } from '@/lib/utils';
@@ -211,8 +214,11 @@ export default async function PhotoShootingDetailPage({
               action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
             />
           </div>
-          <h1 className="text-3xl font-semibold lg:text-4xl">
+          <h1 className="flex items-center gap-3 text-3xl font-semibold lg:text-4xl">
             {client.owner.name}
+            {shooting.purchasedById != null && (
+              <span aria-hidden="true"> 🎁</span>
+            )}
           </h1>
           <div className="item-center flex flex-col gap-2 lg:flex-row">
             <h2 className="text-lg font-medium text-muted-foreground lg:text-2xl">
@@ -270,6 +276,11 @@ export default async function PhotoShootingDetailPage({
                 }
               />
               <DetailRow label="E-mail cím" value={client.owner.email} />
+              {shooting.giftCode != null && (
+                <GiftLinkRow
+                  url={`${env.NEXT_PUBLIC_SITE_URL}${giftRedeemPath(shooting.giftCode)}`}
+                />
+              )}
               <DetailRow
                 label="Megjegyzés"
                 value={shooting.clientNote ?? '–'}
