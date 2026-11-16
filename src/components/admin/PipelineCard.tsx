@@ -61,7 +61,7 @@ export function PipelineCard({
           title="Fotós"
         >
           <CameraIcon aria-label="Fotós" />
-          {shooting.photographer?.nickname ?? '???'}
+          {shooting.photographer?.nickname ?? 'Fotós?'}
         </Badge>
         <Badge
           variant="secondary"
@@ -73,7 +73,7 @@ export function PipelineCard({
           title="Szerkesztő"
         >
           <WandSparklesIcon aria-label="Szerkesztő" />
-          {shooting.editor?.nickname ?? '???'}
+          {shooting.editor?.nickname ?? 'Szerkesztő?'}
         </Badge>
       </div>
     </article>

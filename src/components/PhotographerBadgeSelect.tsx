@@ -45,7 +45,7 @@ export function PhotographerBadgeSelect({
   const [isPending, startTransition] = useTransition();
 
   const options = buildPhotographerOptions(photographers, photographerId);
-  const currentLabel = photographerNickname ?? '???';
+  const currentLabel = photographerNickname ?? 'Fotós?';
 
   function select(id: string | null) {
     setOpen(false);
