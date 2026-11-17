@@ -213,6 +213,9 @@ _not_ single-use, so the link still works from a new device months later.
   [src/docs/final-amount-calculation.md](src/docs/final-amount-calculation.md).
 - An `Invoice` attaches to an existing `LedgerEntry`; the invoice job never creates
   the ledger row itself.
+- Income vs expense is `LEDGER_ENTRY_CATEGORY_SIDE`, never the sign or the name
+  prefix (a refund is negative income). Cancelling is `cancelPhotoShooting`
+  ([src/server/cancel-photo-shooting.ts](src/server/cancel-photo-shooting.ts)).
 
 ## Time and localization
 

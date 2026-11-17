@@ -303,7 +303,7 @@ model BookingCalendarEvent {
   provider     String   @default("google")
   calendarId   String
   eventId      String
-  status       String // created | updated | failed
+  status       String // created | updated | failed | deleted
   lastSyncedAt DateTime
 
   createdAt DateTime @default(now())

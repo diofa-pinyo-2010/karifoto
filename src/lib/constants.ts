@@ -120,7 +120,8 @@ export const MAX_PERSONS_EXCLUDED_PARTY = Math.max(
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION = 7;
 export const PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS = 3;
 
-// LedgerEntry.amountInCents is signed: positive = income, negative = expense.
+// LedgerEntry.amountInCents is signed: the sign is the stored direction of money
+// (a refund is negative income). Income vs expense is LEDGER_ENTRY_CATEGORY_SIDE.
 // Callers pass a positive raw amount; this maps it to the correct sign.
 export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   INCOME_CLIENT_PAYMENT_DEPOSIT: 1,

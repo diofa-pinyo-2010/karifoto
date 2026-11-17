@@ -31,7 +31,7 @@ is a January problem.
 | 2   | Send raw images → client for selection               | days after the first shooting             |
 | 3   | Portal selection form + extra Stripe checkout        | days after that                           |
 | 4   | Final images → send + mark complete                  | 1–2 weeks after the first shooting        |
-| 5   | Cancellation (± refund)                              | possible any time; workaroundable by hand |
+| 5   | Cancellation (± refund) ✅                           | possible any time; workaroundable by hand |
 | 6   | Paginated shooting list + search                     | when volume hurts, ~December              |
 | 7   | Photographer / editor payout views                   | end of season — Excel does this fine      |
 
@@ -124,10 +124,23 @@ rows happen to exist.
 full-value discount to reach, so it is not worth a rushed schema change during
 the season. Pick one before the first free shoot, not after.
 
-### Cancellation is still a dead end
+### Cancellation
 
-**Nothing writes `cancelledAt`**, so `CANCELLED` is unreachable. Cancellation
-itself (priority 5) has to stamp `cancelledAt` and decide the refund.
+Built: `cancelPhotoShooting` ([src/server/cancel-photo-shooting.ts](src/server/cancel-photo-shooting.ts),
+SUPERADMIN only, button on the admin shooting page) stamps `cancelledAt`, optionally
+refunds the deposit via Stripe (idempotency key from
+[src/lib/cancellation.ts](src/lib/cancellation.ts)) and records a negative
+`REFUND_CLIENT_PAYMENT` ledger row. It then queues the `reverse-invoice` (szamlazz.hu
+storno) and `calendar-event-delete` jobs. Cancelled shootings are read-only
+([photo-shooting-guard.ts](src/server/photo-shooting-guard.ts)).
+
+Still open:
+
+- Client cancellation email (for gifts: buyer vs recipient).
+- `refund.failed` / `refund.updated` webhook → Discord.
+- Partial refunds.
+- Cancelling after balance or extra payments.
+- Un-cancel.
 
 `completedAt` is written by `completePhotoShooting`, behind the **Lezárás**
 button on the admin shooting page. Deriving the status from a `SentEmail` row
