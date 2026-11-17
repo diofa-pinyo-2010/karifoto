@@ -56,9 +56,9 @@ export function CancelPhotoShootingSection({
         <p className="text-muted-foreground">
           Indok: {cancelled.reason ?? '–'}
         </p>
-        {cancelled.refund && (
+        {cancelled.refund ? (
           <p className="text-muted-foreground">
-            Visszatérítve: {formatMoney(cancelled.refund.amountInCents)} ·{' '}
+            Visszatérítés: {formatMoney(cancelled.refund.amountInCents)} ·{' '}
             {cancelled.refund.stornoUrl ? (
               <a
                 href={cancelled.refund.stornoUrl}
@@ -72,6 +72,8 @@ export function CancelPhotoShootingSection({
               'Sztornó számla készül…'
             )}
           </p>
+        ) : (
+          <p className="text-muted-foreground">Visszatérítés: nem</p>
         )}
       </div>
     );
@@ -146,8 +148,8 @@ export function CancelPhotoShootingSection({
         <AlertDialogHeader>
           <AlertDialogTitle>Fotózás lemondása</AlertDialogTitle>
           <AlertDialogDescription>
-            A fotózás lemondva lesz, az időpont felszabadul, a naptári esemény
-            törlődik. Ez nem visszavonható!
+            A fotózás lemondott státuszba kerül, az idősáv nem lesz újra
+            foglalható, a naptáresemény törlődik. Ez nem visszavonható.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -173,14 +175,15 @@ export function CancelPhotoShootingSection({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="cancellation-reason">Lemondás indoka</Label>
+            <Label htmlFor="cancellation-reason">
+              Lemondás indoka (opcionális)
+            </Label>
             <Textarea
               id="cancellation-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               maxLength={1000}
               disabled={isCancelling}
-              placeholder="Opcionális"
             />
           </div>
 
