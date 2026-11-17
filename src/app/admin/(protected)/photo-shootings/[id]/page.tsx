@@ -48,6 +48,7 @@ import {
   PACKAGE_COMBOBOX_ITEMS,
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_LABEL,
+  LEDGER_ENTRY_CATEGORY_SIDE,
   PACKAGE_LABEL,
   PAYMENT_METHOD_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
@@ -540,7 +541,8 @@ export default async function PhotoShootingDetailPage({
                     key={ledgerEntry.id}
                     label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
                     value={formatMoney(
-                      ledgerEntry.category.startsWith('INCOME')
+                      LEDGER_ENTRY_CATEGORY_SIDE[ledgerEntry.category] ===
+                        'INCOME'
                         ? ledgerEntry.amountInCents * -1
                         : ledgerEntry.amountInCents,
                     )}

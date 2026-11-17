@@ -291,7 +291,7 @@ export async function getTimeSlot(id: string) {
 const PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `timeSlotsPublicSelect` alakja változik! A Vercel Data Cache
 // túléli a deployt, és a kulcs csak a callback forrásából + ebből áll.
-const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v4';
+const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v3';
 
 /**
  * A főoldal mindkét foglalási szekciójának idősávjai egyetlen, cache-elt
@@ -779,7 +779,7 @@ const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `buildAdminStats()` visszatérési alakja változik! A Vercel Data
 // Cache túléli a deployt, és a kulcs csak a callback forrásából + ebből áll,
 // ezért enélkül az új kód a régi alakú cache-elt adatot kapná vissza.
-const ADMIN_STATS_CACHE_VERSION = 'v3';
+const ADMIN_STATS_CACHE_VERSION = 'v4';
 
 const INCOME_CATEGORIES = Object.values(LedgerEntryCategory).filter(
   (category) => LEDGER_ENTRY_CATEGORY_SIDE[category] === 'INCOME',

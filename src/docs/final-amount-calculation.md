@@ -162,7 +162,7 @@ function calculateRemainingAmount({
   );
 
   const totalPaid = ledgerEntries
-    .filter((e) => e.category.startsWith('INCOME'))
+    .filter((e) => LEDGER_ENTRY_CATEGORY_SIDE[e.category] === 'INCOME')
     .reduce((sum, e) => sum + e.amountInCents, 0);
 
   return totalCharges - totalDeductions - totalPaid;
