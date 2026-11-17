@@ -69,4 +69,11 @@ export interface InvoiceClient {
     input: GenerateInvoiceInput,
     advanceInvoiceNumber: string,
   ): Promise<GeneratedInvoice>;
+
+  /**
+   * A storno invoice (sztornó számla) cancelling an earlier document in full.
+   * szamlazz derives everything from `invoiceNumber`, so no items or customer
+   * are supplied.
+   */
+  reverseInvoice(invoiceNumber: string): Promise<GeneratedInvoice>;
 }

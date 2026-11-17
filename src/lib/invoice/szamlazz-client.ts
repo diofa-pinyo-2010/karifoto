@@ -60,6 +60,21 @@ async function issue(
   };
 }
 
+async function reverse(invoiceNumber: string): Promise<GeneratedInvoice> {
+  const now = new Date();
+
+  const result = await client.reverseInvoice(invoiceNumber, {
+    eInvoice: true,
+    issueDate: now,
+    completionDate: now,
+  });
+
+  return {
+    invoiceNumber: result.invoice.number,
+    publicUrl: result.invoice.customerAccountUrl,
+  };
+}
+
 export const szamlazzInvoiceClient: InvoiceClient = {
   generateInvoice: (input) => issue(input, {}),
 
@@ -67,4 +82,6 @@ export const szamlazzInvoiceClient: InvoiceClient = {
 
   generateFinalInvoice: (input, advanceInvoiceNumber) =>
     issue(input, { finalInvoice: true, advanceInvoiceNumber }),
+
+  reverseInvoice: (invoiceNumber) => reverse(invoiceNumber),
 };
