@@ -39,7 +39,11 @@ const result = (method: string): GeneratedInvoice => ({
 });
 
 function fakeClient() {
-  const calls: Array<{ method: string; advanceInvoiceNumber?: string }> = [];
+  const calls: Array<{
+    method: string;
+    advanceInvoiceNumber?: string;
+    invoiceNumber?: string;
+  }> = [];
 
   const client: InvoiceClient = {
     generateInvoice: async () => {
@@ -53,6 +57,10 @@ function fakeClient() {
     generateFinalInvoice: async (_input, advanceInvoiceNumber) => {
       calls.push({ method: 'generateFinalInvoice', advanceInvoiceNumber });
       return result('generateFinalInvoice');
+    },
+    reverseInvoice: async (invoiceNumber) => {
+      calls.push({ method: 'reverseInvoice', invoiceNumber });
+      return result('reverseInvoice');
     },
   };
 
@@ -88,6 +96,19 @@ describe('InvoiceService', () => {
     expect(calls).toEqual([
       { method: 'generateFinalInvoice', advanceInvoiceNumber: 'E-2026-123' },
     ]);
+  });
+
+  it('reverses by invoice number', async () => {
+    const { client, calls } = fakeClient();
+
+    const invoice = await new InvoiceService(client).reverseInvoice(
+      'E-2026-123',
+    );
+
+    expect(calls).toEqual([
+      { method: 'reverseInvoice', invoiceNumber: 'E-2026-123' },
+    ]);
+    expect(invoice.invoiceNumber).toBe('reverseInvoice-1');
   });
 
   it('returns what the client returned, unchanged', async () => {

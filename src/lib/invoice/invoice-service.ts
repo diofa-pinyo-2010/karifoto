@@ -25,4 +25,8 @@ export class InvoiceService {
   ): Promise<GeneratedInvoice> {
     return this.client.generateFinalInvoice(input, advanceInvoiceNumber);
   }
+
+  async reverseInvoice(invoiceNumber: string): Promise<GeneratedInvoice> {
+    return this.client.reverseInvoice(invoiceNumber);
+  }
 }

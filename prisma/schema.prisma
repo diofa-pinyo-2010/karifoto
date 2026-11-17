@@ -181,6 +181,8 @@ model PhotoShooting {
 
   completedAt DateTime? @db.Timestamptz()
   cancelledAt DateTime? @db.Timestamptz()
+  // Why staff cancelled the shooting (free text, set together with cancelledAt).
+  cancellationReason String?
 
   calendarEvent         BookingCalendarEvent?
   pricing               PhotoShootingPricing?
@@ -301,7 +303,7 @@ model BookingCalendarEvent {
   provider     String   @default("google")
   calendarId   String
   eventId      String
-  status       String // created | updated | failed
+  status       String // created | updated | failed | deleted
   lastSyncedAt DateTime
 
   createdAt DateTime @default(now())
@@ -315,6 +317,8 @@ model LedgerEntry {
   currency      Currency            @default(HUF)
   method        PaymentMethod
   paymentIntent String?             @unique
+  // Stripe refund id of a REFUND_CLIENT_PAYMENT row; makes refund recording idempotent.
+  stripeRefundId String?            @unique
   description   String?
 
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
@@ -561,6 +565,7 @@ enum LedgerEntryCategory {
   INCOME_CLIENT_PAYMENT_FULL
   INCOME_CLIENT_PAYMENT_EXTRA
   INCOME_OTHER
+  REFUND_CLIENT_PAYMENT
 
   EXPENSE_PHOTOGRAPHER_FEE
   EXPENSE_EDITOR_FEE
@@ -639,6 +644,7 @@ enum EmailType {
   COMPLETED_PROJECT
   GIFT_RECEIVED
   GIFT_REDEEMED
+  CANCELLATION_NOTIFICATION
 }
 
 enum SumupCheckoutAttemptStatus {

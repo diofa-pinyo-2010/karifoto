@@ -6,6 +6,7 @@ import {
 } from '@/generated/prisma/client';
 import {
   isLightPlayChargeable,
+  LEDGER_ENTRY_CATEGORY_SIDE,
   PRICE_ADJUSTMENT_TYPE_SIGN,
 } from '@/lib/constants';
 
@@ -163,7 +164,7 @@ export function calculatePricing({
   );
 
   const totalPaid = ledgerEntries
-    .filter((entry) => entry.category.startsWith('INCOME'))
+    .filter((entry) => LEDGER_ENTRY_CATEGORY_SIDE[entry.category] === 'INCOME')
     .reduce((sum, entry) => sum + entry.amountInCents, 0);
 
   const totalToBeInvoiced = totalCharges + totalAdjustments;

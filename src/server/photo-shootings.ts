@@ -20,6 +20,7 @@ import {
   recalculatePhotoShootingStatus,
   updatePhotoShooting,
 } from '@/server/admin';
+import { assertShootingEditable } from '@/server/photo-shooting-guard';
 
 import type { Prisma } from '@/generated/prisma/client';
 
@@ -87,6 +88,9 @@ export async function changeTimeOfPhotoShooting({
   newStartTime: Date;
 }): Promise<{ error: string } | void> {
   await verifySession();
+
+  const notEditable = await assertShootingEditable(shootingId);
+  if (notEditable != null) return notEditable;
 
   const shooting = await prisma.photoShooting.findUnique({
     where: { id: shootingId },
@@ -168,6 +172,10 @@ export async function sendRawImagesForSelection({
   shootingId: string;
 }): Promise<{ error: string } | { success: true }> {
   await verifySession();
+
+  // Email előtt, hogy lemondott fotózásról ne menjen ki válogatási kérés.
+  const notEditable = await assertShootingEditable(shootingId);
+  if (notEditable != null) return notEditable;
 
   const shooting = await prisma.photoShooting.findUnique({
     where: { id: shootingId },

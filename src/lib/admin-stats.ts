@@ -2,7 +2,7 @@ import { Package, PhotoShootingStatus } from '@/generated/prisma/enums';
 import {
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_LABEL,
-  LEDGER_ENTRY_CATEGORY_SIGN,
+  LEDGER_ENTRY_CATEGORY_SIDE,
   PACKAGE_LABEL,
 } from '@/lib/constants';
 import { calculatePricing } from '@/server/pricing';
@@ -122,7 +122,7 @@ export function buildAdminStats({
   let income = 0;
   let expenses = 0;
   for (const { category, amountInCents } of ledgerSums) {
-    if (LEDGER_ENTRY_CATEGORY_SIGN[category] === 1) {
+    if (LEDGER_ENTRY_CATEGORY_SIDE[category] === 'INCOME') {
       income += amountInCents;
     } else {
       expenses -= amountInCents;

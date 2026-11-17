@@ -15,6 +15,7 @@ import { verifySession } from '@/lib/dal';
 import { prisma } from '@/lib/prisma';
 import { hufToCents } from '@/lib/utils';
 import { recalculatePhotoShootingStatus } from '@/server/admin';
+import { assertShootingEditable } from '@/server/photo-shooting-guard';
 
 export type PriceAdjustmentTarget =
   | { bookingIntentId: string }
@@ -41,6 +42,13 @@ async function isTargetCompleted(target: PriceAdjustmentTarget) {
   });
 
   return shooting?.status === PhotoShootingStatus.COMPLETED;
+}
+
+async function assertTargetEditable(target: PriceAdjustmentTarget) {
+  if ('bookingIntentId' in target) {
+    return null;
+  }
+  return assertShootingEditable(target.photoShootingId);
 }
 
 export async function createPriceAdjustment({
@@ -77,6 +85,8 @@ export async function createPriceAdjustment({
     if (await isTargetCompleted(target)) {
       return { error: 'A lezárt fotózás nem módosítható.' };
     }
+    const notEditable = await assertTargetEditable(target);
+    if (notEditable != null) return notEditable;
 
     const adjustment = await prisma.priceAdjustment.create({
       data: {
@@ -113,6 +123,8 @@ export async function deletePriceAdjustment({
     if (await isTargetCompleted(target)) {
       return { error: 'A lezárt fotózás nem módosítható.' };
     }
+    const notEditable = await assertTargetEditable(target);
+    if (notEditable != null) return notEditable;
 
     await prisma.priceAdjustment.delete({ where: { id } });
   } catch (error) {

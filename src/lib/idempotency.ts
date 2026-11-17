@@ -12,6 +12,8 @@ const emailConfirmKey = (shootingId: string) =>
 const reminderKey = (shootingId: string, dayKey: string) =>
   `reminder_on_the_day:${shootingId}:${dayKey}`;
 const depositInvoiceKey = (shootingId: string) => `deposit_inv:${shootingId}`;
+const stornoInvoiceKey = (originalInvoiceId: string) =>
+  `storno_inv:${originalInvoiceId}`;
 const finalInvoiceKey = (shootingId: string) => `final_inv:${shootingId}`;
 const extraInvoiceKey = (paymentIntent: string) => `extra_inv:${paymentIntent}`;
 const fullAmountInvoiceKey = (shootingId: string) =>
@@ -37,6 +39,14 @@ export const commentMentionEmailKey = (commentMentionId: string) =>
  */
 export const editorSelectionCompletedEmailKey = (shootingId: string) =>
   `editor-selection-completed/${shootingId}`;
+
+/**
+ * Resend `Idempotency-Key`: a fotózást egyszer lehet lemondani, ez csak a
+ * párhuzamos / újrapróbált job dupla küldését fogja meg. 24 órán túl a job a
+ * `SentEmail` sorból tudja, hogy már elment.
+ */
+export const cancellationEmailKey = (shootingId: string) =>
+  `cancellation/${shootingId}`;
 
 /**
  * Atomically marks an event as processed.
@@ -256,6 +266,55 @@ export const releaseFinalInvoiceClaim = async (
     await redis.del(finalInvoiceKey(shootingId));
   } catch (error) {
     console.error(`Error releasing final invoice: ${shootingId}`, error);
+  }
+};
+
+/**
+ * A sztornószámla ugyanazt a három lépést járja, mint az előlegszámla, és
+ * ugyanazokkal a hozzáállásokkal: a foglalás **dob**, ha a Redis nem érhető el
+ * (egy valódi szamlazz.hu dokumentum újrakiállítása rosszabb, mint a késés), a
+ * megerősítés és az elengedés lenyeli a hibát. A kulcs az eredeti számla
+ * azonosítója, így egy számlát legfeljebb egyszer sztornózunk.
+ */
+export const claimStornoInvoice = async (
+  originalInvoiceId: string,
+): Promise<boolean> => {
+  const inserted = await redis.set(
+    stornoInvoiceKey(originalInvoiceId),
+    `claimed_at:${new Date().toISOString()}`,
+    { nx: true, ex: INVOICE_CLAIM_TTL },
+  );
+  return inserted !== null; // null = someone already claimed it
+};
+
+export const confirmStornoInvoice = async (
+  originalInvoiceId: string,
+  invoiceNumber: string,
+): Promise<void> => {
+  try {
+    await redis.set(
+      stornoInvoiceKey(originalInvoiceId),
+      `issued:${invoiceNumber}`,
+      { ex: INVOICE_ISSUED_TTL },
+    );
+  } catch (error) {
+    console.error(
+      `Error confirming storno invoice: ${originalInvoiceId}`,
+      error,
+    );
+  }
+};
+
+export const releaseStornoInvoiceClaim = async (
+  originalInvoiceId: string,
+): Promise<void> => {
+  try {
+    await redis.del(stornoInvoiceKey(originalInvoiceId));
+  } catch (error) {
+    console.error(
+      `Error releasing storno invoice: ${originalInvoiceId}`,
+      error,
+    );
   }
 };
 

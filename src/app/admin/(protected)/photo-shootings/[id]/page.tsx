@@ -18,6 +18,7 @@ import { CopyButton } from '@/components/admin/CopyButton';
 import { DeadlineBadge } from '@/components/admin/DeadlineBadge';
 import { GiftLinkRow } from '@/components/admin/GiftLinkRow';
 import { BalancePayment } from '@/components/BalancePayment';
+import { CancelPhotoShootingSection } from '@/components/CancelPhotoShootingSection';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
 import { CompletePhotoShootingButton } from '@/components/CompletePhotoShootingButton';
@@ -39,7 +40,11 @@ import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import { env } from '@/env';
-import { PhotoShootingStatus } from '@/generated/prisma/enums';
+import {
+  PhotoShootingStatus,
+  StaffProfileRole,
+} from '@/generated/prisma/enums';
+import { getCancellationEligibility } from '@/lib/cancellation';
 import {
   APP_URLS,
   booleanToYesNo,
@@ -48,6 +53,7 @@ import {
   PACKAGE_COMBOBOX_ITEMS,
   isLightPlayChargeable,
   LEDGER_ENTRY_CATEGORY_LABEL,
+  LEDGER_ENTRY_CATEGORY_SIDE,
   PACKAGE_LABEL,
   PAYMENT_METHOD_LABEL,
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
@@ -187,12 +193,26 @@ export default async function PhotoShootingDetailPage({
   );
 
   const isCompleted = status === PhotoShootingStatus.COMPLETED;
+  const isCancelled = status === PhotoShootingStatus.CANCELLED;
+  const isReadOnly = isCompleted || isCancelled;
+
+  const refundEntry = ledgerEntries.find(
+    (entry) => entry.category === 'REFUND_CLIENT_PAYMENT',
+  );
+  const cancellationEligibility = getCancellationEligibility(
+    {
+      cancelledAt: shooting.cancelledAt,
+      completedAt: shooting.completedAt,
+      startTime: timeSlot.startTime,
+      ledgerEntries,
+    },
+    new Date(),
+  );
 
   const readOnlyDetails =
     (shooting.selectionRequestedAt != null &&
       shooting.selectionCompletedAt == null) ||
-    status === PhotoShootingStatus.CANCELLED ||
-    isCompleted;
+    isReadOnly;
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
@@ -210,9 +230,11 @@ export default async function PhotoShootingDetailPage({
             >
               {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
             </Badge>
-            <RefreshStatusButton
-              action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
-            />
+            {!isCancelled && (
+              <RefreshStatusButton
+                action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
+              />
+            )}
           </div>
           <h1 className="flex items-center gap-3 text-3xl font-semibold lg:text-4xl">
             {client.owner.name}
@@ -225,7 +247,7 @@ export default async function PhotoShootingDetailPage({
               {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
               {timeFormatter.format(timeSlot.startTime)}
             </h2>
-            {!isCompleted && (
+            {!isReadOnly && (
               <ChangeStartTimeButton
                 currentStartTime={timeSlot.startTime}
                 shootingId={shooting.id}
@@ -325,7 +347,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'photographerId',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -359,7 +381,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'editorId',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -540,7 +562,8 @@ export default async function PhotoShootingDetailPage({
                     key={ledgerEntry.id}
                     label={`${LEDGER_ENTRY_CATEGORY_LABEL[ledgerEntry.category]} (${PAYMENT_METHOD_LABEL[ledgerEntry.method]})`}
                     value={formatMoney(
-                      ledgerEntry.category.startsWith('INCOME')
+                      LEDGER_ENTRY_CATEGORY_SIDE[ledgerEntry.category] ===
+                        'INCOME'
                         ? ledgerEntry.amountInCents * -1
                         : ledgerEntry.amountInCents,
                     )}
@@ -548,12 +571,14 @@ export default async function PhotoShootingDetailPage({
                 );
               })}
             </div>
-            <BalancePayment
-              remainingAmount={priceBreakdown.totalToBePaid}
-              currentShootingStatus={shooting.status}
-              shootingId={shooting.id}
-              openAttemptId={shooting.sumupCheckoutAttempts[0]?.id ?? null}
-            />
+            {!isCancelled && (
+              <BalancePayment
+                remainingAmount={priceBreakdown.totalToBePaid}
+                currentShootingStatus={shooting.status}
+                shootingId={shooting.id}
+                openAttemptId={shooting.sumupCheckoutAttempts[0]?.id ?? null}
+              />
+            )}
           </div>
 
           <Separator />
@@ -596,16 +621,18 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'rawImagesUrl',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
-              <SendRawImages
-                id={shooting.id}
-                selectionRequestedAt={shooting.selectionRequestedAt}
-                rawImagesUrl={shooting.rawImagesUrl}
-                status={shooting.status}
-              />
+              {!isCancelled && (
+                <SendRawImages
+                  id={shooting.id}
+                  selectionRequestedAt={shooting.selectionRequestedAt}
+                  rawImagesUrl={shooting.rawImagesUrl}
+                  status={shooting.status}
+                />
+              )}
             </div>
             <div className="rounded-lg border bg-card px-4">
               {shooting.selectionCompletedAt && (
@@ -636,7 +663,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'totalEditedImages',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -652,7 +679,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'totalRetouchedImages',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -704,7 +731,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'finalImagesUrl',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -773,6 +800,34 @@ export default async function PhotoShootingDetailPage({
               </>
             }
           />
+          {session.staffProfile.role === StaffProfileRole.SUPERADMIN && (
+            <ItemsCollapsible
+              title="Fotózás lemondása"
+              content={
+                <CancelPhotoShootingSection
+                  shootingId={shooting.id}
+                  eligibility={cancellationEligibility}
+                  cancelled={
+                    shooting.cancelledAt
+                      ? {
+                          at: shooting.cancelledAt,
+                          reason: shooting.cancellationReason,
+                          refund: refundEntry
+                            ? {
+                                amountInCents: Math.abs(
+                                  refundEntry.amountInCents,
+                                ),
+                                stornoUrl:
+                                  refundEntry.invoice?.publicUrl ?? null,
+                              }
+                            : null,
+                        }
+                      : null
+                  }
+                />
+              }
+            />
+          )}
         </div>
       </div>
     </div>

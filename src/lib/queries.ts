@@ -16,7 +16,7 @@ import {
 } from '@/lib/admin-stats';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
-  LEDGER_ENTRY_CATEGORY_SIGN,
+  LEDGER_ENTRY_CATEGORY_SIDE,
   SITE_SETTINGS_TABLE_ID,
   UPCOMING_SHOOTINGS_TO_SHOW,
   UUID_RE,
@@ -261,6 +261,13 @@ export async function fetchAllPhotoShootings({
   });
 }
 
+// A lemondott fotózás sávja a fotózáshoz kötve marad, de az idősáv-listákban
+// nem jelenik meg: lemondáskor egy új, rejtett sáv veszi át a helyét
+// (`cancelPhotoShooting`).
+const WITHOUT_CANCELLED_SHOOTING = {
+  OR: [{ photoShooting: null }, { photoShooting: { cancelledAt: null } }],
+} satisfies Prisma.TimeSlotWhereInput;
+
 const timeSlotsPublicSelect = {
   select: {
     id: true,
@@ -316,6 +323,7 @@ const getPublicTimeSlotsCached = unstable_cache(
     const slots = await prisma.timeSlot.findMany({
       where: {
         startTime: { gte: deadline && deadline < now ? deadline : now },
+        ...WITHOUT_CANCELLED_SHOOTING,
       },
       ...timeSlotsPublicSelect,
       orderBy: { startTime: 'asc' },
@@ -354,6 +362,7 @@ export async function fetchTimeSlotsAdmin() {
   await verifySession();
 
   return prisma.timeSlot.findMany({
+    where: WITHOUT_CANCELLED_SHOOTING,
     select: {
       id: true,
       startTime: true,
@@ -376,6 +385,9 @@ const photoShootingDetailSelect = {
   select: {
     id: true,
     status: true,
+    cancelledAt: true,
+    cancellationReason: true,
+    completedAt: true,
     package: true,
     decorSet: true,
     isLightPlaySelected: true,
@@ -419,6 +431,7 @@ const photoShootingDetailSelect = {
         category: true,
         method: true,
         amountInCents: true,
+        paymentIntent: true,
         invoice: { select: { type: true, publicUrl: true } },
       },
       orderBy: { createdAt: 'asc' },
@@ -503,6 +516,7 @@ const photoShootingForClientPortalSelect = {
     giftCode: true,
     client: { select: { owner: { select: { name: true } } } },
     status: true,
+    cancelledAt: true,
     package: true,
     decorSet: true,
     isLightPlaySelected: true,
@@ -779,10 +793,10 @@ const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `buildAdminStats()` visszatérési alakja változik! A Vercel Data
 // Cache túléli a deployt, és a kulcs csak a callback forrásából + ebből áll,
 // ezért enélkül az új kód a régi alakú cache-elt adatot kapná vissza.
-const ADMIN_STATS_CACHE_VERSION = 'v3';
+const ADMIN_STATS_CACHE_VERSION = 'v4';
 
 const INCOME_CATEGORIES = Object.values(LedgerEntryCategory).filter(
-  (category) => LEDGER_ENTRY_CATEGORY_SIGN[category] === 1,
+  (category) => LEDGER_ENTRY_CATEGORY_SIDE[category] === 'INCOME',
 );
 
 /**

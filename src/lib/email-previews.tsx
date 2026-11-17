@@ -4,6 +4,9 @@ import AdminLoginEmail, { ADMIN_LOGIN_SUBJECT } from '@/emails/AdminLogin';
 import BookingConfirmationEmail, {
   CLIENT_BOOKING_CONFIRMATION_SUBJECT,
 } from '@/emails/BookingConfirmation';
+import CancellationNotificationEmail, {
+  CLIENT_CANCELLATION_NOTIFICATION_SUBJECT,
+} from '@/emails/CancellationNotification';
 import CommentMentionEmail, {
   COMMENT_MENTION_SUBJECT,
 } from '@/emails/CommentMention';
@@ -152,6 +155,17 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     element: () => (
       <RescheduleNotificationEmail
         {...RescheduleNotificationEmail.PreviewProps}
+        baseUrl={BASE_URL_PROD}
+      />
+    ),
+  },
+  {
+    slug: 'client-cancellation-notification',
+    label: 'Lemondás értesítő',
+    subject: CLIENT_CANCELLATION_NOTIFICATION_SUBJECT,
+    element: () => (
+      <CancellationNotificationEmail
+        {...CancellationNotificationEmail.PreviewProps}
         baseUrl={BASE_URL_PROD}
       />
     ),
