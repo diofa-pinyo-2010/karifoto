@@ -88,6 +88,7 @@ function makeShooting(overrides: Partial<PhotoShooting> = {}): PhotoShooting {
     clientNote: null,
     completedAt: null,
     cancelledAt: null,
+    cancellationReason: null,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
@@ -120,6 +121,7 @@ function makeLedgerEntry(overrides: Partial<LedgerEntry> = {}): LedgerEntry {
     currency: 'HUF',
     method: 'CARD',
     paymentIntent: null,
+    stripeRefundId: null,
     invoiceId: null,
     staffProfileId: null,
     staffPayoutId: null,
@@ -574,6 +576,21 @@ describe('calculatePricing', () => {
       });
 
       expect(result.totalPaid).toBe(10_000_00);
+    });
+
+    it('subtracts a refund from totalPaid', () => {
+      const result = breakdown({
+        ledgerEntries: [
+          makeLedgerEntry({ amountInCents: 10_000_00 }),
+          makeLedgerEntry({
+            id: 'ledger-2',
+            category: 'REFUND_CLIENT_PAYMENT',
+            amountInCents: -10_000_00,
+          }),
+        ],
+      });
+
+      expect(result.totalPaid).toBe(0);
     });
 
     // The distinction the végszámla depends on: it lists the full price and

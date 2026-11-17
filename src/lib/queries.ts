@@ -16,7 +16,7 @@ import {
 } from '@/lib/admin-stats';
 import {
   AUTOMATIC_EARLY_BIRD_ENABLED,
-  LEDGER_ENTRY_CATEGORY_SIGN,
+  LEDGER_ENTRY_CATEGORY_SIDE,
   SITE_SETTINGS_TABLE_ID,
   UPCOMING_SHOOTINGS_TO_SHOW,
   UUID_RE,
@@ -291,7 +291,7 @@ export async function getTimeSlot(id: string) {
 const PUBLIC_TIME_SLOTS_REVALIDATE_SECONDS = 60 * 60;
 // Növeld, ha a `timeSlotsPublicSelect` alakja változik! A Vercel Data Cache
 // túléli a deployt, és a kulcs csak a callback forrásából + ebből áll.
-const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v3';
+const PUBLIC_TIME_SLOTS_CACHE_VERSION = 'v4';
 
 /**
  * A főoldal mindkét foglalási szekciójának idősávjai egyetlen, cache-elt
@@ -782,7 +782,7 @@ const ADMIN_STATS_REVALIDATE_SECONDS = 60 * 60;
 const ADMIN_STATS_CACHE_VERSION = 'v3';
 
 const INCOME_CATEGORIES = Object.values(LedgerEntryCategory).filter(
-  (category) => LEDGER_ENTRY_CATEGORY_SIGN[category] === 1,
+  (category) => LEDGER_ENTRY_CATEGORY_SIDE[category] === 'INCOME',
 );
 
 /**

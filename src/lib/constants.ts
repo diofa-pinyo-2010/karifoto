@@ -128,6 +128,7 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   INCOME_CLIENT_PAYMENT_FULL: 1,
   INCOME_CLIENT_PAYMENT_EXTRA: 1,
   INCOME_OTHER: 1,
+  REFUND_CLIENT_PAYMENT: -1,
   EXPENSE_PHOTOGRAPHER_FEE: -1,
   EXPENSE_EDITOR_FEE: -1,
   EXPENSE_STAFF_BONUS: -1,
@@ -135,6 +136,27 @@ export const LEDGER_ENTRY_CATEGORY_SIGN: Record<LedgerEntryCategory, 1 | -1> = {
   EXPENSE_RENT: -1,
   EXPENSE_SOFTWARE: -1,
   EXPENSE_OTHER: -1,
+};
+
+// Which side of the books a category belongs to. Not the same as the sign:
+// a client refund is negative but still reduces income, not an expense.
+export const LEDGER_ENTRY_CATEGORY_SIDE: Record<
+  LedgerEntryCategory,
+  'INCOME' | 'EXPENSE'
+> = {
+  INCOME_CLIENT_PAYMENT_DEPOSIT: 'INCOME',
+  INCOME_CLIENT_PAYMENT_BALANCE: 'INCOME',
+  INCOME_CLIENT_PAYMENT_FULL: 'INCOME',
+  INCOME_CLIENT_PAYMENT_EXTRA: 'INCOME',
+  INCOME_OTHER: 'INCOME',
+  REFUND_CLIENT_PAYMENT: 'INCOME',
+  EXPENSE_PHOTOGRAPHER_FEE: 'EXPENSE',
+  EXPENSE_EDITOR_FEE: 'EXPENSE',
+  EXPENSE_STAFF_BONUS: 'EXPENSE',
+  EXPENSE_EQUIPMENT: 'EXPENSE',
+  EXPENSE_RENT: 'EXPENSE',
+  EXPENSE_SOFTWARE: 'EXPENSE',
+  EXPENSE_OTHER: 'EXPENSE',
 };
 
 // Which income categories close a shooting's remaining balance. At most one such
@@ -145,6 +167,7 @@ export const SETTLES_BALANCE: Record<LedgerEntryCategory, boolean> = {
   INCOME_CLIENT_PAYMENT_FULL: true,
   INCOME_CLIENT_PAYMENT_EXTRA: false,
   INCOME_OTHER: false,
+  REFUND_CLIENT_PAYMENT: false,
   EXPENSE_PHOTOGRAPHER_FEE: false,
   EXPENSE_EDITOR_FEE: false,
   EXPENSE_STAFF_BONUS: false,
@@ -462,6 +485,7 @@ export const LEDGER_ENTRY_CATEGORY_LABEL: Record<LedgerEntryCategory, string> =
     INCOME_CLIENT_PAYMENT_FULL: 'Teljes összeg (ajándék)',
     INCOME_CLIENT_PAYMENT_EXTRA: 'Extra díj',
     INCOME_OTHER: 'Egyéb bevétel',
+    REFUND_CLIENT_PAYMENT: 'Visszatérítés',
     EXPENSE_PHOTOGRAPHER_FEE: 'Fotós díja',
     EXPENSE_EDITOR_FEE: 'Szerkesztő díja',
     EXPENSE_STAFF_BONUS: 'Staff bónusz',

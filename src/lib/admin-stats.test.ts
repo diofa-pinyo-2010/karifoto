@@ -75,6 +75,7 @@ function makeShooting(
     clientNote: null,
     completedAt: null,
     cancelledAt: null,
+    cancellationReason: null,
     createdAt: NOW,
     updatedAt: NOW,
     pricing: makePricing(),
@@ -187,6 +188,20 @@ describe('buildAdminStats', () => {
     expect(stats.income).toBe(20_000_00);
     expect(stats.shootings.total).toBe(1);
     expect(stats.shootings.cancelled).toBe(1);
+  });
+
+  it('nets a refund against income, not expenses', () => {
+    const stats = buildAdminStats({
+      shootings: [],
+      ledgerSums: [
+        { category: 'INCOME_CLIENT_PAYMENT_DEPOSIT', amountInCents: 10_000_00 },
+        { category: 'REFUND_CLIENT_PAYMENT', amountInCents: -10_000_00 },
+        { category: 'EXPENSE_RENT', amountInCents: -5_000_00 },
+      ],
+    });
+
+    expect(stats.income).toBe(0);
+    expect(stats.expenses).toBe(5_000_00);
   });
 
   it('skips and counts shootings without a price snapshot', () => {
