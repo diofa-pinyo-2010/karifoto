@@ -188,12 +188,13 @@ export default async function PhotoShootingDetailPage({
   );
 
   const isCompleted = status === PhotoShootingStatus.COMPLETED;
+  const isCancelled = status === PhotoShootingStatus.CANCELLED;
+  const isReadOnly = isCompleted || isCancelled;
 
   const readOnlyDetails =
     (shooting.selectionRequestedAt != null &&
       shooting.selectionCompletedAt == null) ||
-    status === PhotoShootingStatus.CANCELLED ||
-    isCompleted;
+    isReadOnly;
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
@@ -211,9 +212,11 @@ export default async function PhotoShootingDetailPage({
             >
               {PHOTO_SHOOTING_STATUS_LABEL[shooting.status].long}
             </Badge>
-            <RefreshStatusButton
-              action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
-            />
+            {!isCancelled && (
+              <RefreshStatusButton
+                action={recalculatePhotoShootingStatus.bind(null, shooting.id)}
+              />
+            )}
           </div>
           <h1 className="flex items-center gap-3 text-3xl font-semibold lg:text-4xl">
             {client.owner.name}
@@ -226,7 +229,7 @@ export default async function PhotoShootingDetailPage({
               {capitalize(dateFormatter.format(timeSlot.startTime))} •{' '}
               {timeFormatter.format(timeSlot.startTime)}
             </h2>
-            {!isCompleted && (
+            {!isReadOnly && (
               <ChangeStartTimeButton
                 currentStartTime={timeSlot.startTime}
                 shootingId={shooting.id}
@@ -326,7 +329,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'photographerId',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -360,7 +363,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'editorId',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -550,12 +553,14 @@ export default async function PhotoShootingDetailPage({
                 );
               })}
             </div>
-            <BalancePayment
-              remainingAmount={priceBreakdown.totalToBePaid}
-              currentShootingStatus={shooting.status}
-              shootingId={shooting.id}
-              openAttemptId={shooting.sumupCheckoutAttempts[0]?.id ?? null}
-            />
+            {!isCancelled && (
+              <BalancePayment
+                remainingAmount={priceBreakdown.totalToBePaid}
+                currentShootingStatus={shooting.status}
+                shootingId={shooting.id}
+                openAttemptId={shooting.sumupCheckoutAttempts[0]?.id ?? null}
+              />
+            )}
           </div>
 
           <Separator />
@@ -598,16 +603,18 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'rawImagesUrl',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
-              <SendRawImages
-                id={shooting.id}
-                selectionRequestedAt={shooting.selectionRequestedAt}
-                rawImagesUrl={shooting.rawImagesUrl}
-                status={shooting.status}
-              />
+              {!isCancelled && (
+                <SendRawImages
+                  id={shooting.id}
+                  selectionRequestedAt={shooting.selectionRequestedAt}
+                  rawImagesUrl={shooting.rawImagesUrl}
+                  status={shooting.status}
+                />
+              )}
             </div>
             <div className="rounded-lg border bg-card px-4">
               {shooting.selectionCompletedAt && (
@@ -638,7 +645,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'totalEditedImages',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -654,7 +661,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'totalRetouchedImages',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />
@@ -706,7 +713,7 @@ export default async function PhotoShootingDetailPage({
                       shooting.id,
                       'finalImagesUrl',
                     )}
-                    disabled={isCompleted}
+                    disabled={isReadOnly}
                   />
                 }
               />

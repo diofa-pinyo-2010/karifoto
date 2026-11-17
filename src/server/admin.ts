@@ -21,6 +21,7 @@ import { verifySession } from '@/lib/dal';
 import { buildPricingSnapshot } from '@/lib/pricing-snapshot';
 import { prisma } from '@/lib/prisma';
 import { qStashClient } from '@/lib/upstash';
+import { assertShootingEditable } from '@/server/photo-shooting-guard';
 import { resolveStatus } from '@/server/photo-shooting-status';
 import { syncPhotoShootingStatus } from '@/server/sync-photo-shooting-status';
 
@@ -140,6 +141,9 @@ export async function updatePhotoShooting(
   if (!parsed.success) {
     return { error: 'Érvénytelen URL vagy adat.' };
   }
+
+  const notEditable = await assertShootingEditable(id);
+  if (notEditable != null) return notEditable;
 
   let shouldSyncCalendar = false;
 

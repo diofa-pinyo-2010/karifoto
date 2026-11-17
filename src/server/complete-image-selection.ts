@@ -19,6 +19,8 @@ import { resolveStatus } from '@/server/photo-shooting-status';
  * `false`, ha a válogatás már le volt zárva — a `selectionCompletedAt: null`
  * szűrő védi, hogy a dupla beküldés vagy a webhook újrapróbálása ne írjon
  * felül egy lezárt válogatást, és ne küldjön kétszer emailt.
+ * Lemondott fotózásra (`cancelledAt: null`) is `false`: a webhook ilyenkor csak
+ * naplóz, a pénz a ledgerben van, a visszatérítés kézi.
  *
  * A szerkesztő csak akkor kap emailt, ha már ki van jelölve; ha nincs, a
  * fotózás EDITOR_SELECTION státuszba kerül, és az adminon látszik.
@@ -70,7 +72,7 @@ export async function completeImageSelection(
   });
 
   const { count } = await prisma.photoShooting.updateMany({
-    where: { id: shootingId, selectionCompletedAt: null },
+    where: { id: shootingId, selectionCompletedAt: null, cancelledAt: null },
     data: { ...updates, status },
   });
   if (count === 0) return false;
