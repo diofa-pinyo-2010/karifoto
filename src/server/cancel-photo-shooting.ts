@@ -161,7 +161,27 @@ export async function cancelPhotoShooting(
     });
   } catch (error) {
     if (error instanceof AlreadyCancelledError) {
-      return { error: 'A fotózást közben már lemondták.' };
+      if (!stripeRefund) {
+        return { error: 'A fotózást közben már lemondták.' };
+      }
+      // Egy másik lemondás (visszatérítés nélkül) megelőzött minket, de a
+      // pénz már elindult a Stripe-ból: nincs ledger sor és storno sem.
+      console.error('[cancel-photo-shooting] refund made but unrecorded', {
+        shootingId,
+        refundId: stripeRefund.id,
+      });
+      await sendDiscordNotification({
+        type: 'error',
+        content: [
+          `Rögzítetlen visszatérítés: ${shooting.client.owner.name}`,
+          `A fotózást közben visszatérítés nélkül lemondták, de a Stripe refund (${stripeRefund.id}, ${formatMoney(payment.amountInCents)}) már elindult. Ledger sor és storno számla nincs — kézzel kell rögzíteni.`,
+          `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shootingId)}`,
+        ].join('\n'),
+      });
+      return {
+        error:
+          'A fotózást közben lemondták, de a visszatérítés már elindult — szólj az adminnak, kézzel kell rögzíteni.',
+      };
     }
     console.error('[cancel-photo-shooting] failed to persist cancellation', {
       shootingId,
