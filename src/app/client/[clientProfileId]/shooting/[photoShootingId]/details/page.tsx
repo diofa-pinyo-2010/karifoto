@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import {
   ArrowLeftIcon,
+  BanIcon,
   CameraIcon,
   CheckIcon,
   ClockIcon,
@@ -57,6 +58,7 @@ import {
 import { arrivalSuggestions } from '@/lib/constants-jsx';
 import { getPortalAccess } from '@/lib/dal';
 import {
+  dateTimeWithYearFormatter,
   dateWithYearFormatter,
   // monthDayFormatter,
   timeFormatter,
@@ -133,7 +135,14 @@ export default async function ClientPortalShootingDetailsPage({
     {
       value: 'details',
       trigger: 'Részletek',
-      content: <ClientPortalShootingDetails shooting={photoShooting} />,
+      content:
+        photoShooting.cancelledAt != null ? (
+          <ClientPortalCancelledBanner
+            cancelledAt={photoShooting.cancelledAt}
+          />
+        ) : (
+          <ClientPortalShootingDetails shooting={photoShooting} />
+        ),
       disabled: false,
       icon: LayoutDashboardIcon,
     },
@@ -353,6 +362,18 @@ function DetailRow({
         {label}
       </dt>
       <dd className="min-w-0 flex-1 text-[15px] leading-6">{children}</dd>
+    </div>
+  );
+}
+
+function ClientPortalCancelledBanner({ cancelledAt }: { cancelledAt: Date }) {
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
+      <BanIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
+      <p>
+        Ez a fotózás {dateTimeWithYearFormatter.format(cancelledAt)}-kor
+        törlésre került.
+      </p>
     </div>
   );
 }

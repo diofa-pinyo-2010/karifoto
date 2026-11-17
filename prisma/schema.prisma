@@ -644,6 +644,7 @@ enum EmailType {
   COMPLETED_PROJECT
   GIFT_RECEIVED
   GIFT_REDEEMED
+  CANCELLATION_NOTIFICATION
 }
 
 enum SumupCheckoutAttemptStatus {

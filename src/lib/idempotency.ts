@@ -41,6 +41,14 @@ export const editorSelectionCompletedEmailKey = (shootingId: string) =>
   `editor-selection-completed/${shootingId}`;
 
 /**
+ * Resend `Idempotency-Key`: a fotózást egyszer lehet lemondani, ez csak a
+ * párhuzamos / újrapróbált job dupla küldését fogja meg. 24 órán túl a job a
+ * `SentEmail` sorból tudja, hogy már elment.
+ */
+export const cancellationEmailKey = (shootingId: string) =>
+  `cancellation/${shootingId}`;
+
+/**
  * Atomically marks an event as processed.
  * Returns true if this is the first time we're seeing this event (should process).
  * Returns false if the event was already processed (should skip).

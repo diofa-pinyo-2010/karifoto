@@ -507,6 +507,7 @@ const photoShootingForClientPortalSelect = {
     giftCode: true,
     client: { select: { owner: { select: { name: true } } } },
     status: true,
+    cancelledAt: true,
     package: true,
     decorSet: true,
     isLightPlaySelected: true,

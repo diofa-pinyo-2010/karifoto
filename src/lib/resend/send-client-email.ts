@@ -4,6 +4,9 @@ import type { ComponentProps, FunctionComponent, ReactNode } from 'react';
 import BookingConfirmationEmail, {
   CLIENT_BOOKING_CONFIRMATION_SUBJECT,
 } from '@/emails/BookingConfirmation';
+import CancellationNotificationEmail, {
+  CLIENT_CANCELLATION_NOTIFICATION_SUBJECT,
+} from '@/emails/CancellationNotification';
 import CompletedProjectEmail, {
   CLIENT_COMPLETED_PROJECT_SUBJECT,
 } from '@/emails/CompletedProject';
@@ -67,6 +70,10 @@ const CLIENT_EMAILS = {
     component: GiftRedeemedEmail,
     subject: CLIENT_GIFT_REDEEMED_SUBJECT,
   },
+  CANCELLATION_NOTIFICATION: {
+    component: CancellationNotificationEmail,
+    subject: CLIENT_CANCELLATION_NOTIFICATION_SUBJECT,
+  },
 } satisfies Record<
   EmailType,
   { component: (props: never) => ReactNode; subject: string }
@@ -110,6 +117,7 @@ type SendClientEmailParams<T extends EmailType> = {
   tags?: { name: string; value: string }[];
   clientId?: string;
   photoShootingId?: string;
+  idempotencyKey?: string;
 };
 
 // Sends a client email and records it in `SentEmail`. Recording failures are
@@ -122,6 +130,7 @@ export async function sendClientEmail<T extends EmailType>({
   tags,
   clientId,
   photoShootingId,
+  idempotencyKey,
 }: SendClientEmailParams<T>) {
   const { component, subject } = CLIENT_EMAILS[type];
 
@@ -144,6 +153,7 @@ export async function sendClientEmail<T extends EmailType>({
     subject,
     react,
     tags,
+    idempotencyKey,
   });
 
   if (result.data != null) {
@@ -154,7 +164,7 @@ export async function sendClientEmail<T extends EmailType>({
           type,
           to,
           subject,
-          // Every email prop is a string, so this is plain JSON. The sent
+          // Every email prop is a string or boolean, so this is plain JSON. The sent
           // email keeps the real links — only this audit row is scrubbed.
           variables: redactTokens(props) as Prisma.InputJsonObject,
           clientId,

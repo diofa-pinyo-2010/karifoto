@@ -236,6 +236,15 @@ export async function cancelPhotoShooting(
           retries: 5,
         }),
     },
+    {
+      name: 'email-cancellation',
+      publish: () =>
+        qStashClient.publishJSON({
+          url: `${env.NEXT_PUBLIC_SITE_URL}/api/jobs/email-cancellation`,
+          body: { shootingId, refunded: !!stripeRefund },
+          retries: 5,
+        }),
+    },
   ];
   if (refundLedgerEntryId) {
     const ledgerEntryId = refundLedgerEntryId;
