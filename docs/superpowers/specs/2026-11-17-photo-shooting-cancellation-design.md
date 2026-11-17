@@ -86,8 +86,10 @@ Picked 2.
 
 ### Ledger representation (decided: A)
 
-- **A (chosen):** new category `REFUND_CLIENT_PAYMENT`, positive amount, sign
-  `-1`, but on the **income side**. Original payment row untouched.
+- **A (chosen):** new category `REFUND_CLIENT_PAYMENT`, sign `-1`, but on the
+  **income side**. Like every ledger row its amount is stored signed
+  (`amount * SIGN`, so negative), which makes income sums net out with no
+  special arithmetic. Original payment row untouched.
 - B: negative-amount row in the original category — rejected, misleading and
   `paymentIntent` is unique.
 - C: delete/zero the original — rejected, loses the audit trail.
@@ -109,8 +111,13 @@ Picked 2.
 Today [admin-stats.ts](../../../src/lib/admin-stats.ts) decides income vs
 expense from `LEDGER_ENTRY_CATEGORY_SIGN`. Add a separate
 `LEDGER_ENTRY_CATEGORY_SIDE: Record<LedgerEntryCategory, 'INCOME' | 'EXPENSE'>`
-in `constants.ts`; stats sum `income += sign * amount` for INCOME-side rows, so
-income = payments − refunds and expenses are unchanged. Every
+in `constants.ts`. Three places today decide "is this income?" from the sign or
+the `INCOME` name prefix and must switch to the side map: `buildAdminStats`
+([admin-stats.ts](../../../src/lib/admin-stats.ts)), `INCOME_CATEGORIES`
+([queries.ts](../../../src/lib/queries.ts), which also splits off the expense
+list), and `totalPaid` in `calculatePricing`
+([pricing.ts](../../../src/server/pricing.ts)). Income = payments − refunds,
+expenses unchanged. Every
 `Record<LedgerEntryCategory, …>` (sign, label, `SETTLES_BALANCE`, …) gets an
 entry — the compiler lists them. Audit every `SIGN[...] === 1` "is this
 income?" check (e.g. [gift.ts](../../../src/lib/gift.ts) `isGiftTransferable`,
@@ -208,8 +215,9 @@ Body `{ shootingId }`. Load `BookingCalendarEvent`; none → 200. Call
   image selection (`previewImageSelection`, `confirmImageSelection`,
   `completeImageSelection`). *(My call: comments stay allowed — they are
   internal notes, useful precisely on a cancelled shooting.)*
-- Gift: `getGiftShootingByCode` / `redeemGift` treat a `CANCELLED` shooting as
-  not redeemable (existing "nem beváltható" message).
+- Gift: already handled — `CANCELLED` is not in `GIFT_TRANSFERABLE_STATUSES`,
+  which both `getGiftShootingByCode` and `redeemGift`'s compare-and-swap use,
+  and [gift.test.ts](../../../src/lib/gift.test.ts) pins it. No work.
 - Client portal: shows the shooting as cancelled; no actions.
 
 ### UI
