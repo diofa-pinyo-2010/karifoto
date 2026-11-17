@@ -126,13 +126,13 @@ the season. Pick one before the first free shoot, not after.
 
 ### Cancellation
 
-Built: `cancelPhotoShooting` ([src/server/cancel-photo-shooting.ts](src/server/cancel-photo-shooting.ts),
+Built: `cancelPhotoShooting` ([cancel-photo-shooting.ts](../server/cancel-photo-shooting.ts),
 SUPERADMIN only, button on the admin shooting page) stamps `cancelledAt`, optionally
 refunds the deposit via Stripe (idempotency key from
-[src/lib/cancellation.ts](src/lib/cancellation.ts)) and records a negative
+[cancellation.ts](../lib/cancellation.ts)) and records a negative
 `REFUND_CLIENT_PAYMENT` ledger row. It then queues the `reverse-invoice` (szamlazz.hu
 storno) and `calendar-event-delete` jobs. Cancelled shootings are read-only
-([photo-shooting-guard.ts](src/server/photo-shooting-guard.ts)).
+([photo-shooting-guard.ts](../server/photo-shooting-guard.ts)).
 
 Still open:
 

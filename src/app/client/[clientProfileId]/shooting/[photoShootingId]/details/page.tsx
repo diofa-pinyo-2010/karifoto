@@ -230,15 +230,17 @@ export default async function ClientPortalShootingDetailsPage({
       </Badge>
       {/* A kedvezményezett sosem látja: beváltáskor a `giftCode` nullázódik,
           előtte pedig a fotózás kliense maga a vásárló. A staff is láthatja —
-          az admin oldalon amúgy is ott a link. */}
-      {photoShooting.giftCode != null && (
-        <GiftLinkBanner
-          url={new URL(
-            giftRedeemPath(photoShooting.giftCode),
-            env.NEXT_PUBLIC_SITE_URL,
-          ).toString()}
-        />
-      )}
+          az admin oldalon amúgy is ott a link. Lemondott fotózásnál nem
+          mutatjuk: a lemondott ajándék már nem váltható be. */}
+      {photoShooting.giftCode != null &&
+        photoShooting.status !== 'CANCELLED' && (
+          <GiftLinkBanner
+            url={new URL(
+              giftRedeemPath(photoShooting.giftCode),
+              env.NEXT_PUBLIC_SITE_URL,
+            ).toString()}
+          />
+        )}
       <Accordion
         key={photoShooting.status}
         multiple={false}

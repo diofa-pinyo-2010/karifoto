@@ -25,6 +25,7 @@ export const POST = verifySignatureAppRouter(
       where: { id: parsed.data.shootingId },
       select: {
         id: true,
+        cancelledAt: true,
         clientNote: true,
         package: true,
         isLightPlaySelected: true,
@@ -46,6 +47,15 @@ export const POST = verifySignatureAppRouter(
         status: 489,
         headers: { 'Upstash-NonRetryable-Error': 'true' },
       });
+    }
+
+    // Lemondás után ne jöjjön létre esemény: ha ez a job a törlés után fut le,
+    // a törlő job nem talált sort, és nincs, ami utána takarítana.
+    if (photoShooting.cancelledAt != null) {
+      console.log('[job:calendar-event] shooting cancelled, skipping', {
+        shootingId: parsed.data.shootingId,
+      });
+      return new Response('shooting cancelled', { status: 200 });
     }
 
     try {

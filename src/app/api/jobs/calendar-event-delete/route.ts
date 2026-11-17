@@ -28,6 +28,7 @@ export const POST = verifySignatureAppRouter(
     });
 
     if (calendarEvent == null) {
+      // Biztonságos: a létrehozó job kihagyja a lemondott fotózást, így később sem jön létre esemény.
       return new Response('no calendar event', { status: 200 });
     }
 

@@ -147,6 +147,8 @@ export const POST = verifySignatureAppRouter(
       }
 
       // Keep the claim: the document exists at szamlazz.hu. Retrying must never re-issue.
+      // A QStash retry will hit the claim and return 200 "already claimed", so
+      // nothing lands in the DLQ — repair relies on the Discord alert below.
       console.error('[job:reverse-invoice] storno issued but failed to save', {
         shootingId,
         refundLedgerEntryId,
@@ -163,7 +165,7 @@ export const POST = verifySignatureAppRouter(
           `Sztornó: [${storno.invoiceNumber}](${storno.publicUrl})`,
         ].join('\n'),
       });
-      throw error; // -> 500 -> DLQ for manual repair
+      throw error; // -> 500; the retry stops at the claim, so repair is manual via Discord
     }
 
     return new Response(

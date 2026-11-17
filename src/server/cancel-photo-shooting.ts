@@ -113,6 +113,22 @@ export async function cancelPhotoShooting(
         shootingId,
         error,
       });
+      // A Stripe-ban már visszatérítették (pl. a dashboardon, vagy egy 24 óránál
+      // régebbi kattintás után): nálunk nincs róla ledger sor, kézzel kell egyeztetni.
+      if ((error as { code?: string }).code === 'charge_already_refunded') {
+        await sendDiscordNotification({
+          type: 'error',
+          content: [
+            `Már visszatérített befizetés: ${shooting.client.owner.name}`,
+            `A Stripe szerint a befizetés (${payment.paymentIntent}, ${formatMoney(payment.amountInCents)}) már vissza lett térítve, de a lemondás nem történt meg. Kézzel kell egyeztetni.`,
+            `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shootingId)}`,
+          ].join('\n'),
+        });
+        return {
+          error:
+            'A befizetést a Stripe-ban már visszatérítették — szólj az adminnak, kézzel kell egyeztetni.',
+        };
+      }
       return { error: 'A visszatérítés nem sikerült, nem történt változás.' };
     }
 
@@ -147,8 +163,9 @@ export async function cancelPhotoShooting(
       const refundEntry = await tx.ledgerEntry.create({
         data: {
           category: LedgerEntryCategory.REFUND_CLIENT_PAYMENT,
+          // A Stripe összeg 1:1 fillér (ahogy a webhook az `amount_total`-t tárolja).
           amountInCents:
-            payment.amountInCents *
+            stripeRefund.amount *
             LEDGER_ENTRY_CATEGORY_SIGN.REFUND_CLIENT_PAYMENT,
           method: PaymentMethod.CARD,
           stripeRefundId: stripeRefund.id,
@@ -163,6 +180,17 @@ export async function cancelPhotoShooting(
     if (error instanceof AlreadyCancelledError) {
       if (!stripeRefund) {
         return { error: 'A fotózást közben már lemondták.' };
+      }
+      // Két fül / újrapróbálás ugyanazzal az idempotencia-kulccsal ugyanazt a
+      // refundot kapja: ha a nyertes már rögzítette, nincs teendő.
+      const recordedRefund = await prisma.ledgerEntry.findUnique({
+        where: { stripeRefundId: stripeRefund.id },
+        select: { id: true },
+      });
+      if (recordedRefund) {
+        return {
+          error: 'A fotózást már lemondták, a visszatérítés rögzítve van.',
+        };
       }
       // Egy másik lemondás (visszatérítés nélkül) megelőzött minket, de a
       // pénz már elindult a Stripe-ból: nincs ledger sor és storno sem.
@@ -223,6 +251,17 @@ export async function cancelPhotoShooting(
   }
 
   const adminUrl = `${env.NEXT_PUBLIC_SITE_URL}${APP_URLS.photoShootingAdminPage(shootingId)}`;
+
+  if (stripeRefund && stripeRefund.amount !== payment.amountInCents) {
+    await sendDiscordNotification({
+      type: 'warning',
+      content: [
+        `Eltérő visszatérítési összeg: ${shooting.client.owner.name}`,
+        `Befizetés: ${formatMoney(payment.amountInCents)}, Stripe refund (${stripeRefund.id}): ${formatMoney(stripeRefund.amount)}. A ledgerbe a Stripe összege került.`,
+        adminUrl,
+      ].join('\n'),
+    });
+  }
   const results = await Promise.allSettled(jobs.map((job) => job.publish()));
   for (const [index, result] of results.entries()) {
     if (result.status === 'fulfilled') continue;
