@@ -57,16 +57,16 @@ export default function CancellationNotificationEmail({
                   napon belül meg kell érkeznie a számlátokra.
                 </Text>
                 <Text>A sztornószámlát megtaláljátok az Ügyfélportálon:</Text>
+                <Section className="mb-4 text-center">
+                  <Button
+                    href={clientPortalLoginLink}
+                    className="font-base my-4 inline-block rounded-lg bg-gray-800 px-7 py-4 text-center font-sans leading-6 font-semibold tracking-wide text-white uppercase"
+                  >
+                    Ügyfélportál
+                  </Button>
+                </Section>
               </>
             )}
-            <Section className="mb-4 text-center">
-              <Button
-                href={clientPortalLoginLink}
-                className="font-base my-4 inline-block rounded-lg bg-gray-800 px-7 py-4 text-center font-sans leading-6 font-semibold tracking-wide text-white uppercase"
-              >
-                Ügyfélportál
-              </Button>
-            </Section>
             <Text className="m-0">Üdv.</Text>
             <Text className="m-0 font-semibold">🎄 📸 A Karifoto csapata</Text>
           </Container>
