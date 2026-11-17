@@ -376,6 +376,9 @@ const photoShootingDetailSelect = {
   select: {
     id: true,
     status: true,
+    cancelledAt: true,
+    cancellationReason: true,
+    completedAt: true,
     package: true,
     decorSet: true,
     isLightPlaySelected: true,
@@ -419,6 +422,7 @@ const photoShootingDetailSelect = {
         category: true,
         method: true,
         amountInCents: true,
+        paymentIntent: true,
         invoice: { select: { type: true, publicUrl: true } },
       },
       orderBy: { createdAt: 'asc' },

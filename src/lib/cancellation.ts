@@ -20,7 +20,7 @@ type CancellationInput = {
   }[];
 };
 
-type CancellationEligibility =
+export type CancellationEligibility =
   | { canCancel: false; reason: string }
   | {
       canCancel: true;

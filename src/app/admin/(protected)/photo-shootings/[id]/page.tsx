@@ -18,6 +18,7 @@ import { CopyButton } from '@/components/admin/CopyButton';
 import { DeadlineBadge } from '@/components/admin/DeadlineBadge';
 import { GiftLinkRow } from '@/components/admin/GiftLinkRow';
 import { BalancePayment } from '@/components/BalancePayment';
+import { CancelPhotoShootingSection } from '@/components/CancelPhotoShootingSection';
 import { ChangeStartTimeButton } from '@/components/ChangeStartTimeButton';
 import { CommentsCard } from '@/components/CommentsCard';
 import { CompletePhotoShootingButton } from '@/components/CompletePhotoShootingButton';
@@ -39,7 +40,11 @@ import { Button } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import { env } from '@/env';
-import { PhotoShootingStatus } from '@/generated/prisma/enums';
+import {
+  PhotoShootingStatus,
+  StaffProfileRole,
+} from '@/generated/prisma/enums';
+import { getCancellationEligibility } from '@/lib/cancellation';
 import {
   APP_URLS,
   booleanToYesNo,
@@ -190,6 +195,19 @@ export default async function PhotoShootingDetailPage({
   const isCompleted = status === PhotoShootingStatus.COMPLETED;
   const isCancelled = status === PhotoShootingStatus.CANCELLED;
   const isReadOnly = isCompleted || isCancelled;
+
+  const refundEntry = ledgerEntries.find(
+    (entry) => entry.category === 'REFUND_CLIENT_PAYMENT',
+  );
+  const cancellationEligibility = getCancellationEligibility(
+    {
+      cancelledAt: shooting.cancelledAt,
+      completedAt: shooting.completedAt,
+      startTime: timeSlot.startTime,
+      ledgerEntries,
+    },
+    new Date(),
+  );
 
   const readOnlyDetails =
     (shooting.selectionRequestedAt != null &&
@@ -782,6 +800,34 @@ export default async function PhotoShootingDetailPage({
               </>
             }
           />
+          {session.staffProfile.role === StaffProfileRole.SUPERADMIN && (
+            <ItemsCollapsible
+              title="Fotózás lemondása"
+              content={
+                <CancelPhotoShootingSection
+                  shootingId={shooting.id}
+                  eligibility={cancellationEligibility}
+                  cancelled={
+                    shooting.cancelledAt
+                      ? {
+                          at: shooting.cancelledAt,
+                          reason: shooting.cancellationReason,
+                          refund: refundEntry
+                            ? {
+                                amountInCents: Math.abs(
+                                  refundEntry.amountInCents,
+                                ),
+                                stornoUrl:
+                                  refundEntry.invoice?.publicUrl ?? null,
+                              }
+                            : null,
+                        }
+                      : null
+                  }
+                />
+              }
+            />
+          )}
         </div>
       </div>
     </div>
