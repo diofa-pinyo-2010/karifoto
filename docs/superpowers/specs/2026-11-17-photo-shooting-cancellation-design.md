@@ -100,10 +100,10 @@ Picked 2.
 
 - `PhotoShooting.cancellationReason String?` next to `cancelledAt`.
 - `LedgerEntryCategory.REFUND_CLIENT_PAYMENT`.
-- `LedgerEntry.stripeRefundId String? @unique` — the `re_…` id. *(My call:
+- `LedgerEntry.stripeRefundId String? @unique` — the `re_…` id. _(My call:
   `paymentIntent` is unique and already names the original payment, so the
   refund id gets its own column; the unique index is a second line of defence
-  against a duplicate row.)* The refund row also stores the same
+  against a duplicate row.)_ The refund row also stores the same
   `photoShootingId`; `paymentIntent` stays null on it.
 
 ### Ledger side vs sign
@@ -131,6 +131,7 @@ unaffected: a Stripe refund isn't cash.
 `{ canCancel: false, reason: '<Hungarian>' } | { canCancel: true, payment: { ledgerEntryId, paymentIntent, amountInCents } }`.
 
 Cancellable iff all hold:
+
 - `cancelledAt == null` and `completedAt == null`;
 - the time slot's `startTime` is in the future;
 - exactly **one** income-side ledger row exists, its category is
@@ -139,8 +140,8 @@ Cancellable iff all hold:
 - no `FINAL` invoice exists.
 
 Refund additionally requires the payment row's `method === CARD` and a
-non-empty `paymentIntent`. *(My call: if those are missing the checkbox is
-disabled with an explanation, cancellation without refund still works.)*
+non-empty `paymentIntent`. _(My call: if those are missing the checkbox is
+disabled with an explanation, cancellation without refund still works.)_
 
 Used by the page (show/disable the button, explain why) and re-checked inside
 the action.
@@ -154,15 +155,15 @@ null, length-capped). Returns `{ error }` / `{ ok }` per project convention.
    other role; the page renders the collapsible only for SUPERADMIN.
 2. Load shooting, run eligibility; refuse with its Hungarian reason.
 3. If `refund`: `stripe.refunds.create({ payment_intent }, { idempotencyKey:
-   'cancel-refund:<ledgerEntryId>' })`. Stripe returns the **same** refund on a
+'cancel-refund:<ledgerEntryId>' })`. Stripe returns the **same** refund on a
    repeat, so a retry after a failed step 4 is safe. Refund `status`
    `succeeded` or `pending` both count as done (log + Discord note when
    `pending`); `failed`/`canceled` → return error, nothing written.
 4. One Prisma transaction:
    - `photoShooting.updateMany({ where: { id, cancelledAt: null }, data: {
-     cancelledAt: now, cancellationReason, status: CANCELLED } })`; count 0 →
-     abort (someone else cancelled). *(Status set directly, matching what the
-     derivation returns.)*
+cancelledAt: now, cancellationReason, status: CANCELLED } })`; count 0 →
+     abort (someone else cancelled). _(Status set directly, matching what the
+     derivation returns.)_
    - if refunded: create the `REFUND_CLIENT_PAYMENT` row (amount = payment
      amount, method CARD, `stripeRefundId`, description incl. reason).
 5. After commit, publish QStash jobs: `reverse-invoice` (only if refunded),
@@ -177,6 +178,7 @@ próbáld újra").
 ### Job `src/app/api/jobs/reverse-invoice`
 
 Body `{ shootingId, refundLedgerEntryId }`.
+
 - Load the refund row; it must exist and have no `invoiceId` yet (else 200,
   already done).
 - Find the original payment's invoice (the invoice attached to the shooting's
@@ -188,10 +190,10 @@ Body `{ shootingId, refundLedgerEntryId }`.
   `InvoiceClient.reverseInvoice` wrapping the fork's `reverseInvoice` with
   `eInvoice: true`, `issueDate`/`completionDate` = now.
 - Transaction: create `Invoice { type: STORNO, stornoOfId: original.id,
-  amountInCents: -original.amountInCents, status: SETTLED }`, attach it to the
+amountInCents: -original.amountInCents, status: SETTLED }`, attach it to the
   refund ledger row (`invoiceId`), set original `status: REFUNDED`.
-  *(My call on the negative amount and statuses; existing label "Visszatérítve"
-  already exists for `REFUNDED`.)*
+  _(My call on the negative amount and statuses; existing label "Visszatérítve"
+  already exists for `REFUNDED`.)_
 - The storno PDF is not emailed by szamlazz.hu (the fork has no `sendEmail` for
   storno). Its `publicUrl` is stored and visible on the admin page.
 
@@ -213,8 +215,8 @@ Body `{ shootingId }`. Load `BookingCalendarEvent`; none → 200. Call
   `sendRawImagesForSelection`, `completePhotoShooting`, price adjustments
   (create/delete/attach*), `recordCashBalancePayment`, `createPaymentAttempt`,
   image selection (`previewImageSelection`, `confirmImageSelection`,
-  `completeImageSelection`). *(My call: comments stay allowed — they are
-  internal notes, useful precisely on a cancelled shooting.)*
+  `completeImageSelection`). _(My call: comments stay allowed — they are
+  internal notes, useful precisely on a cancelled shooting.)_
 - Gift: already handled — `CANCELLED` is not in `GIFT_TRANSFERABLE_STATUSES`,
   which both `getGiftShootingByCode` and `redeemGift`'s compare-and-swap use,
   and [gift.test.ts](../../../src/lib/gift.test.ts) pins it. No work.

@@ -38,6 +38,7 @@
 ### Task 1: Schema + ledger side map
 
 **Files:**
+
 - Modify: `prisma/schema.prisma` (PhotoShooting, LedgerEntry, `LedgerEntryCategory`)
 - Create: `prisma/migrations/<timestamp>_photo_shooting_cancellation/migration.sql` (via `pnpm db:migrate --name photo_shooting_cancellation`)
 - Modify: `src/lib/constants.ts` (SIGN, new SIDE, LABEL, `SETTLES_BALANCE`)
@@ -45,6 +46,7 @@
 - Test: `src/lib/admin-stats.test.ts`, `src/server/pricing.test.ts`
 
 **Interfaces:**
+
 - Produces: `PhotoShooting.cancellationReason: string | null`; `LedgerEntry.stripeRefundId: string | null` (`@unique`); `LedgerEntryCategory.REFUND_CLIENT_PAYMENT`; `export const LEDGER_ENTRY_CATEGORY_SIDE: Record<LedgerEntryCategory, 'INCOME' | 'EXPENSE'>` in `@/lib/constants`.
 - Values: SIGN `REFUND_CLIENT_PAYMENT: -1`, SIDE `'INCOME'` (all `INCOME_*` → `'INCOME'`, all `EXPENSE_*` → `'EXPENSE'`), LABEL `'Visszatérítés'`, `SETTLES_BALANCE: false`.
 
@@ -60,9 +62,11 @@
 ### Task 2: Cancellation eligibility (pure)
 
 **Files:**
+
 - Create: `src/lib/cancellation.ts`, `src/lib/cancellation.test.ts`
 
 **Interfaces:**
+
 - Consumes: `LEDGER_ENTRY_CATEGORY_SIDE` (Task 1).
 - Produces:
   ```ts
@@ -70,12 +74,31 @@
     cancelledAt: Date | null;
     completedAt: Date | null;
     startTime: Date;
-    ledgerEntries: { id: string; category: LedgerEntryCategory; amountInCents: number; method: PaymentMethod; paymentIntent: string | null; invoice: { type: InvoiceType } | null }[];
+    ledgerEntries: {
+      id: string;
+      category: LedgerEntryCategory;
+      amountInCents: number;
+      method: PaymentMethod;
+      paymentIntent: string | null;
+      invoice: { type: InvoiceType } | null;
+    }[];
   };
   type CancellationEligibility =
     | { canCancel: false; reason: string }
-    | { canCancel: true; payment: { ledgerEntryId: string; amountInCents: number; paymentIntent: string | null; method: PaymentMethod }; canRefund: boolean };
-  export function getCancellationEligibility(input: CancellationInput, now: Date): CancellationEligibility;
+    | {
+        canCancel: true;
+        payment: {
+          ledgerEntryId: string;
+          amountInCents: number;
+          paymentIntent: string | null;
+          method: PaymentMethod;
+        };
+        canRefund: boolean;
+      };
+  export function getCancellationEligibility(
+    input: CancellationInput,
+    now: Date,
+  ): CancellationEligibility;
   export function buildRefundIdempotencyKey(ledgerEntryId: string): string; // `cancel-refund:${ledgerEntryId}`
   ```
 - Rules (from spec): not cancelled, not completed, `startTime > now`, exactly one INCOME-side row, its category `INCOME_CLIENT_PAYMENT_DEPOSIT` or `INCOME_CLIENT_PAYMENT_FULL`, no row whose `invoice.type === 'FINAL'`. `canRefund = method === 'CARD' && paymentIntent` non-empty. Reasons are Hungarian, e.g. `'A fotózás már le van mondva.'`, `'A fotózás időpontja már elmúlt.'`, `'Csak akkor mondható le, ha kizárólag az előleg / teljes összeg van befizetve.'`. Expense rows (staff fees) do not block.
@@ -89,10 +112,12 @@
 ### Task 3: Storno invoice client + Redis claim
 
 **Files:**
+
 - Modify: `src/lib/invoice/types.ts`, `src/lib/invoice/szamlazz-client.ts`, `src/lib/invoice/invoice-service.ts`, `src/lib/idempotency.ts`
 - Test: `src/lib/invoice/invoice-service.test.ts`
 
 **Interfaces:**
+
 - Produces: `InvoiceClient.reverseInvoice(invoiceNumber: string): Promise<GeneratedInvoice>` and `InvoiceService.reverseInvoice(invoiceNumber: string)`; szamlazz impl calls the fork's `client.reverseInvoice(number, { eInvoice: true, issueDate: now, completionDate: now })` and maps `result.invoice.number` / `customerAccountUrl` like `issue()`.
 - Produces in `@/lib/idempotency`: `claimStornoInvoice(originalInvoiceId): Promise<boolean>` (throws on Redis error), `confirmStornoInvoice(originalInvoiceId, invoiceNumber): Promise<void>`, `releaseStornoInvoiceClaim(originalInvoiceId): Promise<void>`; key `storno_inv:${originalInvoiceId}`, same TTLs and stances as the deposit trio.
 
@@ -105,19 +130,23 @@
 ### Task 4: QStash jobs — reverse-invoice, calendar-event-delete
 
 **Files:**
+
 - Create: `src/app/api/jobs/reverse-invoice/route.ts`, `src/app/api/jobs/calendar-event-delete/route.ts`
 - Create: `src/lib/storno.ts`, `src/lib/storno.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 3 service + Redis trio; `deleteCalendarEvent(eventId)` from `@/lib/google-calendar`.
 - Produces: job bodies `{ shootingId: uuid, refundLedgerEntryId: uuid }` and `{ shootingId: uuid }`.
 - Produces pure helper:
+
   ```ts
   export function planStorno(input: {
     refundEntry: { invoiceId: string | null } | null;
     originalInvoice: { id: string; invoiceNumber: string; amountInCents: number } | null;
   }): { action: 'skip' } | { action: 'retry' } | { action: 'fail' } | { action: 'issue'; originalInvoice: {...} };
   ```
+
   `refundEntry == null` → `fail` (489); `refundEntry.invoiceId != null` → `skip` (200); `originalInvoice == null` → `retry` (throw); else `issue`.
 
 - [ ] **Step 1: Failing tests** for `planStorno` — the four branches above.
@@ -131,13 +160,20 @@
 ### Task 5: `cancelPhotoShooting` server action
 
 **Files:**
+
 - Create: `src/server/cancel-photo-shooting.ts`
 
 **Interfaces:**
+
 - Consumes: Task 2 (`getCancellationEligibility`, `buildRefundIdempotencyKey`), Task 4 job URLs, `stripe` from `@/lib/stripe`, `qStashClient` from `@/lib/upstash`, `sendDiscordNotification`, `verifySession`.
 - Produces:
+
   ```ts
-  export async function cancelPhotoShooting(input: { shootingId: string; refund: boolean; reason: string }): Promise<{ error: string } | { success: true }>;
+  export async function cancelPhotoShooting(input: {
+    shootingId: string;
+    refund: boolean;
+    reason: string;
+  }): Promise<{ error: string } | { success: true }>;
   ```
 
 - [ ] **Step 1: Implement**, in order:
@@ -156,9 +192,11 @@
 ### Task 6: Read-only guards on shooting mutations
 
 **Files:**
+
 - Modify: `src/server/admin.ts`, `src/server/photo-shootings.ts`, `src/server/price-adjustments.ts`, `src/server/balance-payment.ts`, `src/server/payment.ts`, `src/server/image-selection.ts`
 
 **Interfaces:**
+
 - Produces: `assertShootingEditable(shootingId: string): Promise<{ error: string } | null>` in `src/server/photo-shooting-guard.ts` returning `{ error: 'Lemondott fotózás nem módosítható.' }` when `cancelledAt != null`.
 
 - [ ] **Step 1: Audit** each action listed in the spec's Read-only section. Where the action already requires a status a cancelled shooting can never have (e.g. `completePhotoShooting` requires `READY_TO_COMPLETE`), note it and skip. Otherwise call the guard right after `verifySession()` / input parsing. Comments stay allowed.
@@ -169,12 +207,15 @@
 ### Task 7: UI — "Fotózás lemondása" collapsible + dialog
 
 **Files:**
+
 - Create: `src/components/CancelPhotoShootingSection.tsx` (client)
 - Modify: `src/app/admin/(protected)/photo-shootings/[id]/page.tsx` (after "Elküldött email-ek"; extend the shooting query in `src/lib/queries.ts` `getPhotoShooting` only if `cancellationReason`/`stripeRefundId`/`paymentIntent` aren't already selected)
 
 **Interfaces:**
+
 - Consumes: `getCancellationEligibility` (computed on the server in the page, passed as a prop), `cancelPhotoShooting`.
 - Props:
+
   ```ts
   { shootingId: string;
     eligibility: CancellationEligibility;
@@ -185,13 +226,14 @@
   - not cancelled, eligible: destructive **Lemondás** button → AlertDialog with the spec's copy, checkbox `Visszatérítés: <formatMoney(amount)> visszamegy a kártyára (+ sztornó számla)` (default unchecked; disabled with a one-line why when `!canRefund`), optional textarea "Lemondás indoka", Mégse / destructive Lemondás with pending state (`useTransition`), error shown inline, toast/close on success.
   - not cancelled, ineligible: disabled button + `eligibility.reason`.
   - cancelled: `Lemondva: <Budapest formatter>`, reason, refund amount + "Sztornó számla" link when present (else "Sztornó számla készül…").
-  Use formatters from `@/lib/formatters` only.
+    Use formatters from `@/lib/formatters` only.
 - [ ] **Step 2: Verify** `pnpm typecheck && pnpm lint && pnpm fmt`.
 - [ ] **Step 3: Commit** `feat: cancel photo shooting UI`.
 
 ### Task 8: Docs
 
 **Files:**
+
 - Modify: `src/docs/upcoming-work.md` (priority table row 5 ✅, rewrite "Cancellation is still a dead end"), `CLAUDE.md` (Money section: one line on `LEDGER_ENTRY_CATEGORY_SIDE` — "income vs expense is the side map, never the sign or name prefix").
 
 - [ ] **Step 1: Edit both.**
