@@ -261,6 +261,13 @@ export async function fetchAllPhotoShootings({
   });
 }
 
+// A lemondott fotózás sávja a fotózáshoz kötve marad, de az idősáv-listákban
+// nem jelenik meg: lemondáskor egy új, rejtett sáv veszi át a helyét
+// (`cancelPhotoShooting`).
+const WITHOUT_CANCELLED_SHOOTING = {
+  OR: [{ photoShooting: null }, { photoShooting: { cancelledAt: null } }],
+} satisfies Prisma.TimeSlotWhereInput;
+
 const timeSlotsPublicSelect = {
   select: {
     id: true,
@@ -316,6 +323,7 @@ const getPublicTimeSlotsCached = unstable_cache(
     const slots = await prisma.timeSlot.findMany({
       where: {
         startTime: { gte: deadline && deadline < now ? deadline : now },
+        ...WITHOUT_CANCELLED_SHOOTING,
       },
       ...timeSlotsPublicSelect,
       orderBy: { startTime: 'asc' },
@@ -354,6 +362,7 @@ export async function fetchTimeSlotsAdmin() {
   await verifySession();
 
   return prisma.timeSlot.findMany({
+    where: WITHOUT_CANCELLED_SHOOTING,
     select: {
       id: true,
       startTime: true,

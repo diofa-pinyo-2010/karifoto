@@ -20,6 +20,7 @@ import { APP_URLS, LEDGER_ENTRY_CATEGORY_SIGN } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import { sendDiscordNotification } from '@/lib/discord';
 import { prisma } from '@/lib/prisma';
+import { invalidatePublicTimeSlots } from '@/lib/public-time-slots';
 import { stripe } from '@/lib/stripe';
 import { qStashClient } from '@/lib/upstash';
 import { formatMoney } from '@/lib/utils';
@@ -59,7 +60,9 @@ export async function cancelPhotoShooting(
     select: {
       cancelledAt: true,
       completedAt: true,
-      timeSlot: { select: { startTime: true } },
+      timeSlot: {
+        select: { startTime: true, endTime: true, allowedPackages: true },
+      },
       client: { select: { owner: { select: { name: true } } } },
       ledgerEntries: {
         select: {
@@ -157,6 +160,21 @@ export async function cancelPhotoShooting(
         },
       });
       if (count === 0) throw new AlreadyCancelledError();
+
+      // A lemondott fotózás megtartja a saját idősávját (a portál, az email és
+      // az admin oldal abból olvassa az időpontot), de az idősáv-listák elrejtik.
+      // Helyette egy új, rejtett sáv kerül ugyanarra az időpontra: nem
+      // foglalható automatikusan, de a staff felnyithatja vagy telefonos
+      // foglaláshoz felhasználhatja (`getOrCreateTimeSlot` megtalálja).
+      const { startTime, endTime, allowedPackages } = shooting.timeSlot;
+      const freeSlotExists = await tx.timeSlot.count({
+        where: { startTime, photoShooting: null },
+      });
+      if (freeSlotExists === 0) {
+        await tx.timeSlot.create({
+          data: { startTime, endTime, allowedPackages, revealed: false },
+        });
+      }
 
       if (!stripeRefund) return null;
 
@@ -299,6 +317,8 @@ export async function cancelPhotoShooting(
   });
 
   revalidatePath(APP_URLS.photoShootingAdminPage(shootingId));
+  revalidatePath('/admin/time-slots');
+  invalidatePublicTimeSlots();
   revalidateTag(ADMIN_STATS_TAG, { expire: 0 });
   return { success: true };
 }
