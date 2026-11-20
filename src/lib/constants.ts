@@ -92,6 +92,8 @@ export const hasLightPlay = (selectedPackage: Package, isSelected: boolean) => {
   return packageIncludesAddOn(selectedPackage, 'LIGHT_PLAY') || isSelected;
 };
 
+export const finalAlbumName = (name: string) => `🎄 Karifoto 2026 - ${name}`;
+
 export const EXTRA_FEE_PER_EXTRA_PERSON = 5000_00;
 export const EXTRA_FEE_PER_PET = 5000_00;
 export const MAX_PETS = 3;
