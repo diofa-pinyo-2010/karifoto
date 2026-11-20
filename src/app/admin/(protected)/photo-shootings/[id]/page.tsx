@@ -59,6 +59,7 @@ import {
   PHOTO_SHOOTING_STATUS_BADGE_CLASSNAME,
   PHOTO_SHOOTING_STATUS_LABEL,
   YES_NO_COMBOBOX_ITEMS,
+  finalAlbumName,
 } from '@/lib/constants';
 import { verifySession } from '@/lib/dal';
 import {
@@ -173,7 +174,7 @@ export default async function PhotoShootingDetailPage({
     totalRetouchedImages,
   } = shooting;
   const rawImagesGalleryName = `${timeInputFormatter.format(timeSlot.startTime).replace(':', '')} ${client.owner.name}`;
-  const picdropHeading = `🎄 Karifoto 2026 - ${client.owner.name}`;
+  const picdropHeading = finalAlbumName(client.owner.name);
 
   const priceBreakdown = calculatePricing({
     pricing,

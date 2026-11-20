@@ -54,6 +54,7 @@ import {
   STUDIO_ADDRESS,
   STUDIO_MAP_LINK,
   PHOTO_DELIVERY_DEADLINE_DAYS_AFTER_CLIENT_MADE_SELECTION_EXPRESS,
+  finalAlbumName,
 } from '@/lib/constants';
 import { arrivalSuggestions } from '@/lib/constants-jsx';
 import { getPortalAccess } from '@/lib/dal';
@@ -457,9 +458,15 @@ function ClientPortalShootingDetails({
 
 function ClientFinalImages({
   status,
+  rawImagesUrl,
   finalImagesUrl,
+  client,
 }: PhotoShootingForClientPortal) {
-  if (status !== 'COMPLETED' || finalImagesUrl == null) {
+  if (
+    status !== 'COMPLETED' ||
+    finalImagesUrl == null ||
+    rawImagesUrl == null
+  ) {
     return (
       <p className="text-brand-muted">
         A szerkesztett képeket itt fogjátok megtalálni. Szólunk emailben, amint
@@ -469,24 +476,44 @@ function ClientFinalImages({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p>
-        Elkészültek a szerkesztett képeitek! A PicDrop galériában tudjátok
-        megnézni és letölteni őket.
-      </p>
-      <a
-        href={finalImagesUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={buttonVariants({
-          variant: 'secondary',
-          size: 'lg',
-          className: 'w-full sm:w-fit',
-        })}
-      >
-        Szerkesztett képek megnyitása
-        <ExternalLinkIcon />
-      </a>
+    <div className="flex flex-col gap-8">
+      <h2 className="text-xl font-bold">
+        Elkészültek a szerkesztett képeitek! 🎉
+      </h2>
+      <div className="flex flex-col gap-3">
+        <p className="m-0!">
+          A PicDrop galériában tudjátok megnézni és letölteni őket.
+        </p>
+        <a
+          href={finalImagesUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({
+            variant: 'secondary',
+            size: 'lg',
+            className: 'w-full sm:w-fit',
+          })}
+        >
+          {finalAlbumName(client.owner.name)}
+          <ExternalLinkIcon />
+        </a>
+      </div>
+      <div className="flex flex-col gap-3">
+        <p className="m-0!">A nyers képek mappáját itt találjátok:</p>
+        <a
+          href={rawImagesUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({
+            variant: 'ghost',
+            size: 'lg',
+            className: 'w-full sm:w-fit',
+          })}
+        >
+          Nyers képek
+          <ExternalLinkIcon />
+        </a>
+      </div>
     </div>
   );
 }
