@@ -16,12 +16,12 @@ import hofeherPelda3 from '@/photos/2026/decor-sets/hofeher-minta-3.jpg';
 import hofeherPelda4 from '@/photos/2026/decor-sets/hofeher-minta-4.jpg';
 import hofeherPelda5 from '@/photos/2026/decor-sets/hofeher-minta-5.jpg';
 import hofeherPelda6 from '@/photos/2026/decor-sets/hofeher-minta-6.jpg';
-import retroMinta1 from '@/photos/2026/decor-sets/retro-minta_1.jpg';
-import retroMinta2 from '@/photos/2026/decor-sets/retro-minta_2.jpg';
-import retroMinta3 from '@/photos/2026/decor-sets/retro-minta_3.jpg';
-import retroMinta4 from '@/photos/2026/decor-sets/retro-minta_4.jpg';
-import retroMinta5 from '@/photos/2026/decor-sets/retro-minta_5.jpg';
-import retroMinta6 from '@/photos/2026/decor-sets/retro-minta_6.jpg';
+import retro1 from '@/photos/2026/decor-sets/retro-1.jpg';
+import retro2 from '@/photos/2026/decor-sets/retro-2.jpg';
+import retro3 from '@/photos/2026/decor-sets/retro-3.jpg';
+import retro4 from '@/photos/2026/decor-sets/retro-4.jpg';
+import retro5 from '@/photos/2026/decor-sets/retro-5.jpg';
+import retro6 from '@/photos/2026/decor-sets/retro-6.jpg';
 import rawQ7_2 from '@/photos/2026/faq-images/raw-image-example-2.jpg';
 import rawQ7_1 from '@/photos/2026/faq-images/raw-image-example.jpg';
 import fenyjatekPelda from '@/photos/2026/fenyjatek/fenyjatek-pelda-1.jpg';
@@ -42,12 +42,12 @@ export const decorSetGalleries: Record<DecorSet, Photo[]> = {
     { ...hofeherPelda6, alt: 'Hófehér példa 6' },
   ],
   RETRO: [
-    { ...retroMinta1, alt: 'retro díszlet minta' },
-    { ...retroMinta2, alt: 'retro díszlet minta 2' },
-    { ...retroMinta3, alt: 'retro díszlet minta 3' },
-    { ...retroMinta4, alt: 'retro díszlet minta 4' },
-    { ...retroMinta5, alt: 'retro díszlet minta 5' },
-    { ...retroMinta6, alt: 'retro díszlet minta 6' },
+    { ...retro1, alt: 'retro díszlet minta' },
+    { ...retro2, alt: 'retro díszlet minta 2' },
+    { ...retro3, alt: 'retro díszlet minta 3' },
+    { ...retro4, alt: 'retro díszlet minta 4' },
+    { ...retro5, alt: 'retro díszlet minta 5' },
+    { ...retro6, alt: 'retro díszlet minta 6' },
   ],
 };
 
