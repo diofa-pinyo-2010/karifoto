@@ -239,7 +239,7 @@ export const DECOR_SETS = {
     label: 'Retro',
     tagline: 'Családias, nosztalgikus hangulat',
     description:
-      'Olyan karácsony, amilyenre a nagyszülők nappalijából emlékszünk: meleg lámpafény, kockás pléd, fa hintaló és régi képeslapok a falon. Gyertek, és legyetek ti is egy kicsit újra gyerekek!',
+      'Piros masnik a fán, kisvonat az ajándékok között, fa hintaló. A Retro díszlet a gyerekkori karácsonyok hangulatát idézi. Gyertek, kuckózzatok össze a fa mellett, és legyetek ti is egy kicsit újra gyerekek!',
     colors: [
       { name: 'Piros', hex: '#B3262E' },
       { name: 'Sötétzöld', hex: '#1F3D2E' },

@@ -37,6 +37,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { ItemGroup } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import { env } from '@/env';
+import { isBalanceDueInStudio } from '@/lib/balance-due';
 import { buildSub, PACKAGES } from '@/lib/catalog';
 import {
   APP_URLS,
@@ -187,12 +188,20 @@ export default async function ClientPortalShootingDetailsPage({
       value: 'invoices',
       trigger: 'Pénzügyek',
       content: (
-        <ClientPortalInvoices
-          invoices={invoicesVisibleToClient(
-            photoShooting.invoices,
-            photoShooting.purchasedById,
-          )}
-        />
+        <div className="flex flex-col gap-6">
+          {photoShooting.totalToBePaidInCents != null &&
+            isBalanceDueInStudio(photoShooting) && (
+              <ClientPortalBalanceDue
+                totalToBePaidInCents={photoShooting.totalToBePaidInCents}
+              />
+            )}
+          <ClientPortalInvoices
+            invoices={invoicesVisibleToClient(
+              photoShooting.invoices,
+              photoShooting.purchasedById,
+            )}
+          />
+        </div>
       ),
       disabled: false,
       icon: ReceiptTextIcon,
@@ -315,6 +324,26 @@ function ClientPortalAccessDenied({
         azt az emailt — a link bármikor újra használható.
       </p>
     </section>
+  );
+}
+
+function ClientPortalBalanceDue({
+  totalToBePaidInCents,
+}: {
+  totalToBePaidInCents: number;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border p-5">
+      <p className="brand-eyebrow m-0">Helyszínen fizetendő</p>
+      <p className="text-2xl font-semibold">
+        {formatMoney(totalToBePaidInCents)}
+      </p>
+      <p className="text-sm text-brand-muted">
+        A fotózás napján a stúdióban fizethetitek <strong>bankkártyával</strong>{' '}
+        vagy
+        <strong>készpénzzel</strong>.
+      </p>
+    </div>
   );
 }
 

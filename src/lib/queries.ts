@@ -578,7 +578,54 @@ export async function fetchPhotoShootingForClientPortal(
 
   const access = await getPortalAccess(photoShooting.clientId);
 
-  return access == null ? null : photoShooting;
+  if (access == null) return null;
+
+  return {
+    ...photoShooting,
+    totalToBePaidInCents: await fetchTotalToBePaidInCents(photoShootingId),
+  };
+}
+
+/*
+ * Külön lekérdezés, hogy az árazás belső adatai (pillanatkép, a vásárló
+ * könyvelési sorai) ne kerüljenek bele a `PhotoShootingForClientPortal`
+ * típusba — a portálnak csak a végösszeg kell. Szándékosan az összes bevételt
+ * számolja, ajándéknál a vásárlóét is: ez a valódi hátralék.
+ *
+ * `null`, ha nincs árazási pillanatkép, amiből számolni lehetne.
+ */
+async function fetchTotalToBePaidInCents(photoShootingId: string) {
+  const shooting = await prisma.photoShooting.findUnique({
+    where: { id: photoShootingId },
+    select: {
+      package: true,
+      isLightPlaySelected: true,
+      numberOfGuests: true,
+      numberOfPets: true,
+      totalEditedImages: true,
+      totalRetouchedImages: true,
+      isExpressPostProduction: true,
+      pricing: true,
+      adjustments: {
+        select: {
+          id: true,
+          type: true,
+          amountInCents: true,
+          publicLabel: true,
+        },
+      },
+      ledgerEntries: { select: { category: true, amountInCents: true } },
+    },
+  });
+
+  if (shooting?.pricing == null) return null;
+
+  return calculatePricing({
+    pricing: shooting.pricing,
+    shooting,
+    adjustments: shooting.adjustments,
+    ledgerEntries: shooting.ledgerEntries,
+  }).totalToBePaid;
 }
 
 /**
