@@ -339,9 +339,9 @@ function ClientPortalBalanceDue({
         {formatMoney(totalToBePaidInCents)}
       </p>
       <p className="text-sm text-brand-muted">
-        A fotózás napján a stúdióban fizethetitek bankkártyával vagy
-        készpénzzel. A végösszeg a helyszínen változhat (pl. extra személyek,
-        kis kedvencek).
+        A fotózás napján a stúdióban fizethetitek <strong>bankkártyával</strong>{' '}
+        vagy
+        <strong>készpénzzel</strong>.
       </p>
     </div>
   );
