@@ -33,10 +33,12 @@
 ### Task 1: Visibility rule
 
 **Files:**
+
 - Create: `src/lib/balance-due.ts`
 - Test: `src/lib/balance-due.test.ts`
 
 **Interfaces:**
+
 - Produces: `isBalanceDueInStudio(input: { status: PhotoShootingStatus; totalToBePaidInCents: number | null }): boolean`
 
 - [ ] **Step 1: Write the failing tests** using `PhotoShootingStatus` from `@/generated/prisma/enums`:
@@ -52,9 +54,11 @@
 ### Task 2: Query returns `totalToBePaidInCents`
 
 **Files:**
+
 - Modify: `src/lib/queries.ts` (`fetchPhotoShootingForClientPortal`, ~line 567)
 
 **Interfaces:**
+
 - Produces: `fetchPhotoShootingForClientPortal(id)` → `(PhotoShootingForClientPortal & { totalToBePaidInCents: number | null }) | null`. `PhotoShootingForClientPortal` itself stays unchanged.
 
 - [ ] **Step 1: Implement.** After the access check passes, run a second `prisma.photoShooting.findUnique` selecting `pricing: true`, the `calculatePricing` shooting fields (`package`, `isLightPlaySelected`, `numberOfGuests`, `numberOfPets`, `totalEditedImages`, `totalRetouchedImages`, `isExpressPostProduction`), `adjustments: { select: { id, type, amountInCents, publicLabel } }` and `ledgerEntries: { select: { category, amountInCents } }`. Return `{ ...photoShooting, totalToBePaidInCents }`, where the value is `null` if `pricing` is null and `calculatePricing(...).totalToBePaid` otherwise. Do not filter ledger entries by buyer: the gift buyer's payments count. Add a comment saying the pricing internals are kept out of the portal payload on purpose. Return types can be inferred; don't export new types.
@@ -64,9 +68,11 @@
 ### Task 3: Pénzügyek block
 
 **Files:**
+
 - Modify: `src/app/client/[clientProfileId]/shooting/[photoShootingId]/details/page.tsx` (the `invoices` item, ~line 186, and next to `ClientPortalInvoices`)
 
 **Interfaces:**
+
 - Consumes: `isBalanceDueInStudio` (Task 1), `photoShooting.totalToBePaidInCents` (Task 2).
 
 - [ ] **Step 1: Implement** a local `ClientPortalBalanceDue({ totalToBePaidInCents }: { totalToBePaidInCents: number })` component. The `invoices` item's content becomes a `flex flex-col gap-6` wrapper: the balance block (rendered only when `isBalanceDueInStudio(...)` is true) above `<ClientPortalInvoices … />`. The block shows a label (e.g. "Helyszínen fizetendő"), the amount via `formatMoney()` in large type, and muted text along these lines: "A fotózás napján a stúdióban fizethetitek bankkártyával vagy készpénzzel. A végösszeg a helyszínen változhat (pl. extra személyek, kis kedvencek)." Use brand tokens already on the page (`text-brand-muted`, `brand-eyebrow`) and a light bordered box, styled like the rest of the portal.

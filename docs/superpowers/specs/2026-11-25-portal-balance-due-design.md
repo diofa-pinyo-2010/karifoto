@@ -35,7 +35,7 @@ Picked A because the portal only ever needs the total.
    `calculatePricing(...).totalToBePaid` and return it next to the shooting as
    `totalToBePaidInCents`. With no `pricing` snapshot (shouldn't happen for a
    paid booking), return `null` and the block hides.
-   The calculation counts *all* income rows on the shooting, including a gift
+   The calculation counts _all_ income rows on the shooting, including a gift
    buyer's, because that is the true remaining amount.
 2. **Visibility rule**: a pure function, e.g.
    `isBalanceDueInStudio({ status, totalToBePaidInCents })`. True when the
