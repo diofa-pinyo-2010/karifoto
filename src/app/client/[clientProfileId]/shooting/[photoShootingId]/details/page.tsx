@@ -340,8 +340,7 @@ function ClientPortalBalanceDue({
       </p>
       <p className="text-sm text-brand-muted">
         A fotózás napján a stúdióban fizethetitek <strong>bankkártyával</strong>{' '}
-        vagy
-        <strong>készpénzzel</strong>.
+        vagy <strong>készpénzzel</strong>.
       </p>
     </div>
   );
